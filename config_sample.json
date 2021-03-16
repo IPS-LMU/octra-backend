@@ -1,0 +1,14 @@
+{
+  "port": 8080,
+  "hostname": "",
+  "debugging": false,
+  "cors": true,
+  "uploadPath": "data",
+  "apiURL": "",
+  "apiKeys": [
+    {
+      "appName": "testApp",
+      "key": "73426T79ER58VASAD435$1542352AWEQTNBRE"
+    }
+  ]
+}

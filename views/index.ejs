@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title>Sprachstand API</title>
+  <!-- Bootstrap core CSS -->
+  <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css">
+
+  <!-- Custom styles for this template -->
+  <link href="style.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-md navbar-dark bg-dark">
+  <a class="navbar-brand" href="#">Sprachstand API</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault"
+          aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item active">
+        <a class="nav-link" href="#">API Referenz <span class="sr-only">(current)</span></a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<main role="main" class="container">
+  <div class="row">
+    <div class="col-lg-9">
+      <div id="main-inner">
+        <h1><%= appInformation.name %> REST API Referenz v<%= appInformation.version %></h1>
+        <br/>
+
+        <h2 id="Ablauf">Ablauf</h2>
+        <ul>
+          <li>Client erstellt neue Aufnahmesitzung. Er generiert dafür eine neue UUID und erstellt ein Metadatenobjekt
+            mit den Sitzungsdaten (Ort, Datum, Zeit, Aufnahmeleiter/in, Geräte-ID, Kind-ID, usw.)
+          </li>
+          <li>die Sitzungs-UUID sowie die Metadaten werden an den Server übertragen</li>
+          <li>auf dem Client werden nun sukzessive die Aufnahmen erstellt und (evtl. nach kurzer Pufferung) im
+            Hintergrund an den Server hochgeladen; jede Aufnahme ist durch die UUID der Sitzung und einen in der Sitzung
+            eindeutigen Item-Code eindeutig gekennzeichnet
+          </li>
+        </ul>
+
+        <h2 id="AntwortStruktur">Struktur einer Antwort</h2>
+        <div class="card command">
+          <div class="card-body">
+            <p>Jede Antwort der API hat die folgende Struktur:</p>
+            <textarea style="min-height:200px;">
+                {
+                  "status": "success" | "error",
+                  "body": JSON | string | number,
+                  "message": string
+                }
+              </textarea>
+            <div class="alert alert-info">"message" enthält im Fehlerfall eine Fehlermeldung. Ansonsten enthält es
+              ausschließlich Systeminformationen für den Entwickler.
+            </div>
+          </div>
+        </div>
+
+        <h2 style="margin-top: 40px;" id="Authorisierung">Authorisierung</h2>
+        <div class="card command">
+          <div class="card-body">
+            <p>
+              Jede Applikation, die diese API nutzen möchte, benötigt einen API Key. Dieser muss in Form des
+              Authorization Headers mitgesendet werden.
+            </p>
+          </div>
+        </div>
+
+        <h2 style="margin-top: 40px;" id="Methoden">API Methoden</h2>
+        <hr style="margin-bottom: 10px;"/>
+
+        <div class="commands" data-spy="scroll" data-target="#navbar-example2" data-offset="0">
+          <% for(var i = 0; i < commands.length; i++) { %>
+          <div id="<%= commands[i].name %>">
+            <h3><%= commands[i].name %> (<%= commands[i].type %>)</h3>
+          </div>
+          <div class="card command">
+            <div class="card-header"><%= commands[i].type %> - <%= commands[i].name %></div>
+            <div class="card-body">
+              <table class="table table-sm">
+                <tr>
+                  <td>
+                    URL:
+                  </td>
+                  <td><code><%= url.substr(0, url.length - 1) %><%= commands[i].url %></code></td>
+                </tr>
+                <tr>
+                  <td>
+                    Beschreibung:
+                  </td>
+                  <td><p><%= commands[i].description %></p></td>
+                </tr>
+                <tr>
+                  <td>Methode:</td>
+                  <td><%= commands[i].type %></td>
+                </tr>
+                <% if (commands[i].acceptedContentType) { %>
+                <tr>
+                  <td>ContentType der Anfrage:</td>
+                  <td><%= commands[i].acceptedContentType %></td>
+                </tr>
+                <% } %>
+                <% if (commands[i].requestStructure) { %>
+                <tr>
+                  <td>
+                    Struktur der Anfrage:
+                  </td>
+                  <td><textarea readonly><%= commands[i].requestStructure %></textarea></td>
+                </tr>
+                <% } %>
+                <tr>
+                  <td>ContentType der Antwort:</td>
+                  <td><%= commands[i].responseContentType %></td>
+                </tr>
+                <% if (commands[i].responseStructure) { %>
+                <tr>
+                  <td>
+                    Struktur der Antwort:
+                  </td>
+                  <td><textarea readonly><%= commands[i].responseStructure %></textarea></td>
+                </tr>
+                <% } %>
+              </table>
+            </div>
+          </div>
+          <hr/>
+          <% } %>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3 d-none d-lg-block">
+      <div class="sticky-top">
+        <nav id="navbar-example2" class="navbar navbar-light bg-light">
+          <nav class="nav nav-pills flex-column">
+            <a class="nav-link" href="#Ablauf">Ablauf</a>
+            <a class="nav-link" href="#AntwortStruktur">Struktur einer Antwort</a>
+            <a class="nav-link" href="#Authorisierung">Authorisierung</a>
+            <a class="nav-link" href="#Methoden">API Methoden</a>
+            <nav class="nav nav-pills flex-column">
+              <% for(var i = 0; i < commands.length; i++) { %>
+              <a class="nav-link ml-3 my-1" href="#<%= commands[i].name %>"><%= commands[i].name %> (<%= commands[i].type %>)</a>
+              <% } %>
+            </nav>
+          </nav>
+        </nav>
+      </div>
+      <!--
+      <ul class="nav nav-pills nav-stacked" style="position: sticky;" >
+        <% for(var i = 0; i < commands.length; i++) { %>
+        <li><a class="btn btn-secondary" href="#<%= commands[i].name %>"><%= commands[i].name %> (<%= commands[i].type %>)</a></li>
+        <% } %>
+      </ul>-->
+    </div>
+  </div>
+</main><!-- /.container -->
+
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="js/vendor/jquery-slim.min.js"></script>
+<script src="js/vendor/popper.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('body').scrollspy({target: '#navbar-example2'})
+    });
+</script>
+</body>
+</html>
