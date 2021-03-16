@@ -39,46 +39,55 @@
         <h1><%= appInformation.name %> REST API Referenz v<%= appInformation.version %></h1>
         <br/>
 
-        <h2 id="Ablauf">Ablauf</h2>
-        <ul>
-          <li>Client erstellt neue Aufnahmesitzung. Er generiert dafür eine neue UUID und erstellt ein Metadatenobjekt
-            mit den Sitzungsdaten (Ort, Datum, Zeit, Aufnahmeleiter/in, Geräte-ID, Kind-ID, usw.)
-          </li>
-          <li>die Sitzungs-UUID sowie die Metadaten werden an den Server übertragen</li>
-          <li>auf dem Client werden nun sukzessive die Aufnahmen erstellt und (evtl. nach kurzer Pufferung) im
-            Hintergrund an den Server hochgeladen; jede Aufnahme ist durch die UUID der Sitzung und einen in der Sitzung
-            eindeutigen Item-Code eindeutig gekennzeichnet
-          </li>
-        </ul>
-
-        <h2 id="AntwortStruktur">Struktur einer Antwort</h2>
+        <h2 id="ResponseStructure">Response Structure</h2>
         <div class="card command">
           <div class="card-body">
-            <p>Jede Antwort der API hat die folgende Struktur:</p>
+            <p>Each response does contain the same structure:</p>
             <textarea style="min-height:200px;">
                 {
                   "status": "success" | "error",
-                  "body": JSON | string | number,
+                  "authenticated": boolean,
+                  "token": string,
+                  "data": JSON | string | number,
                   "message": string
                 }
               </textarea>
-            <div class="alert alert-info">"message" enthält im Fehlerfall eine Fehlermeldung. Ansonsten enthält es
-              ausschließlich Systeminformationen für den Entwickler.
+            <div class="alert alert-info">
+                "message" contains an error message if "status" is "error". Otherwise it contains messages for developer only.
             </div>
           </div>
         </div>
 
-        <h2 style="margin-top: 40px;" id="Authorisierung">Authorisierung</h2>
+        <h2 style="margin-top: 40px;" id="AppAuthorisation">App Authorisation</h2>
         <div class="card command">
           <div class="card-body">
             <p>
-              Jede Applikation, die diese API nutzen möchte, benötigt einen API Key. Dieser muss in Form des
-              Authorization Headers mitgesendet werden.
+                Each application, that uses this API needs an API key. The application has to send this API key via
+                Authorization Header. Developers have to ask the API owner to register the application.
             </p>
           </div>
         </div>
 
-        <h2 style="margin-top: 40px;" id="Methoden">API Methoden</h2>
+        <h2 style="margin-top: 40px;" id="UserAuthentication">User Authentication</h2>
+                <div class="card command">
+                  <div class="card-body">
+                    <p>
+                        This API makes use of JWT (JSON Web Tokens). On successful signup/signin a token is returned to the client application. The client application must add this token to API requests.
+                    </p>
+                  </div>
+                </div>
+
+        <h2 style="margin-top: 40px;" id="UserAuthorisation">User Authorisation</h2>
+                <div class="card command">
+                  <div class="card-body">
+                    <p>
+                        This API makes use of JWT (JSON Web Tokens). The token is an encrypted JSON object with information about a user, like his ID and role.
+                        The server decrypts the token and reads the containing JSON object. Only if the token is valid and only if the user owns rights to do an action, the server runs the action.
+                    </p>
+                  </div>
+                </div>
+
+        <h2 style="margin-top: 40px;" id="APIMethods">API Methods</h2>
         <hr style="margin-bottom: 10px;"/>
 
         <div class="commands" data-spy="scroll" data-target="#navbar-example2" data-offset="0">
@@ -98,36 +107,36 @@
                 </tr>
                 <tr>
                   <td>
-                    Beschreibung:
+                    Description:
                   </td>
                   <td><p><%= commands[i].description %></p></td>
                 </tr>
                 <tr>
-                  <td>Methode:</td>
+                  <td>Method:</td>
                   <td><%= commands[i].type %></td>
                 </tr>
                 <% if (commands[i].acceptedContentType) { %>
                 <tr>
-                  <td>ContentType der Anfrage:</td>
+                  <td>Response Content Type:</td>
                   <td><%= commands[i].acceptedContentType %></td>
                 </tr>
                 <% } %>
                 <% if (commands[i].requestStructure) { %>
                 <tr>
                   <td>
-                    Struktur der Anfrage:
+                    Request structure:
                   </td>
                   <td><textarea readonly><%= commands[i].requestStructure %></textarea></td>
                 </tr>
                 <% } %>
                 <tr>
-                  <td>ContentType der Antwort:</td>
+                  <td>Response Content Type:</td>
                   <td><%= commands[i].responseContentType %></td>
                 </tr>
                 <% if (commands[i].responseStructure) { %>
                 <tr>
                   <td>
-                    Struktur der Antwort:
+                    Response Structure:
                   </td>
                   <td><textarea readonly><%= commands[i].responseStructure %></textarea></td>
                 </tr>
@@ -144,10 +153,10 @@
       <div class="sticky-top">
         <nav id="navbar-example2" class="navbar navbar-light bg-light">
           <nav class="nav nav-pills flex-column">
-            <a class="nav-link" href="#Ablauf">Ablauf</a>
-            <a class="nav-link" href="#AntwortStruktur">Struktur einer Antwort</a>
-            <a class="nav-link" href="#Authorisierung">Authorisierung</a>
-            <a class="nav-link" href="#Methoden">API Methoden</a>
+            <a class="nav-link" href="#ResponseStructure">ResponseStructure</a>
+            <a class="nav-link" href="#AppAuthorisation">App Authorisation</a>
+            <a class="nav-link" href="#UserAuthentication">User Authentication</a>
+            <a class="nav-link" href="#APIMethods">API Methods</a>
             <nav class="nav nav-pills flex-column">
               <% for(var i = 0; i < commands.length; i++) { %>
               <a class="nav-link ml-3 my-1" href="#<%= commands[i].name %>"><%= commands[i].name %> (<%= commands[i].type %>)</a>

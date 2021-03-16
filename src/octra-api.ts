@@ -2,7 +2,7 @@ import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import {API} from './obj/v1/API';
 import * as path from 'path';
-import {APICommand} from './obj/v1/commands/api-command';
+import {ApiCommand} from './obj/v1/commands/api.command';
 import {createTerminus} from '@godaddy/terminus';
 import * as fsExtra from 'fs-extra';
 
@@ -37,13 +37,13 @@ export class OctraApi {
                 if (authorization !== '' && isValidKey) {
                     next();
                 } else {
-                    const answer = APICommand.createAnswer();
+                    const answer = ApiCommand.createAnswer();
                     answer.status = 'error';
                     answer.message = 'Invalid authorization key';
                     res.status(403).json(answer);
                 }
             } else {
-                const answer = APICommand.createAnswer();
+                const answer = ApiCommand.createAnswer();
                 answer.status = 'error';
                 answer.message = `Missing 'Authorization' Header`;
                 res.status(403).json(answer);
@@ -84,7 +84,7 @@ export class OctraApi {
         app.use('/', router);
 
         router.route('*').all((req, res) => {
-            const answer = APICommand.createAnswer();
+            const answer = ApiCommand.createAnswer();
             answer.status = 'error';
             answer.message = 'This route does not exist. Please check your URL again.';
 
@@ -95,7 +95,7 @@ export class OctraApi {
             console.log('\nActivated routes:\n-------');
             // output activated commands
             for (let i = 0; i < API.commands.length; i++) {
-                const command: APICommand = API.commands[i];
+                const command: ApiCommand = API.commands[i];
 
                 console.log(`Route: ${command.url}`);
             }
