@@ -5,9 +5,9 @@
   "main": "octra-api.js",
   "scripts": {
     "prestart": "rm -rf dist && tsc && cp -rf static dist/static && cp -rf views/ dist/views && cp config.json dist/config.json",
-    "start": "node dist/app.dev.js",
+    "start": "node dist/app.prepare.js && node dist/app.dev.js",
     "test": "node test.js",
-    "build": "sh ./build.sh"
+    "build": "node dist/app.prepare.js && sh ./build.sh"
   },
   "author": "",
   "license": "MIT",
