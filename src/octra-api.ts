@@ -1,8 +1,8 @@
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
-import {API} from './obj/v1/API';
+import {API} from './api/v1/API';
 import * as path from 'path';
-import {ApiCommand} from './obj/v1/commands/api.command';
+import {ApiCommand} from './api/v1/commands/api.command';
 import {createTerminus} from '@godaddy/terminus';
 import * as fsExtra from 'fs-extra';
 import * as ejs from 'ejs';

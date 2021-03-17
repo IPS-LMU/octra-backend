@@ -613,5 +613,5 @@ FodyWeavers.xsd
 /prod/
 /testfiles/
 /static/bootstrap/
-!src/obj
-!src/obj/v1/obj
+!src/api
+!src/api/v1/obj
