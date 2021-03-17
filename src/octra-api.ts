@@ -5,13 +5,13 @@ import * as path from 'path';
 import {ApiCommand} from './obj/v1/commands/api.command';
 import {createTerminus} from '@godaddy/terminus';
 import * as fsExtra from 'fs-extra';
-
-require('ejs');
+import * as ejs from 'ejs';
 
 export class OctraApi {
     constructor(environment: 'development' | 'production') {
         const app = express();
         app.set('view engine', 'ejs');
+        app.engine('ejs', ejs.__express); //<-- this
 
         const router = express.Router();
         API.init(app, router, environment);
@@ -80,6 +80,7 @@ export class OctraApi {
             });
         });
 
+        console.log(`LOAD static: ${path.join(API.appPath, 'static')}`);
         app.use(express.static(path.join(API.appPath, 'static')));
         app.use('/', router);
 

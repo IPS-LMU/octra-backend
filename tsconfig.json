@@ -4,7 +4,7 @@
     "moduleResolution": "node",
     "target": "es6",
     "noImplicitAny": false,
-    "sourceMap": true,
-    "outDir": "dist"
+    "sourceMap": false,
+    "outDir": "build"
   }
 }

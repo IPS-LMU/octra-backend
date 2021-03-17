@@ -4,10 +4,10 @@
   "description": "OCTRA REST API",
   "main": "octra-api.js",
   "scripts": {
-    "prestart": "rm -rf dist && tsc && cp -rf static dist/static && cp -rf views/ dist/views && cp config.json dist/config.json",
-    "start": "node dist/app.prepare.js && node dist/app.dev.js",
+    "prestart": "rm -rf dist && tsc && cp -rf static build/static && cp -rf views/ build/views && cp config.json build/config.json",
+    "start": "node build/app.prepare.js && node build/app.dev.js",
     "test": "node test.js",
-    "build": "node dist/app.prepare.js && sh ./build.sh"
+    "build": "rm -rf dist && tsc && node build/app.prepare.js && npx webpack && cp -rf static dist/static && cp -rf views dist/views && rm -rf build && rm -rf static/bootstrap"
   },
   "author": "Julian Pömp, Christoph Draxler; Institut für Phonetik und Sprachverarbeitung, LMU München",
   "license": "MIT",
@@ -36,7 +36,11 @@
     "@types/express": "^4.16.0",
     "@types/lokijs": "^1.5.2",
     "@types/multer": "^1.3.7",
+    "@types/node": "^14.14.35",
     "nodemon": "^2.0.7",
-    "typescript": "^4.2.3"
+    "ts-loader": "^8.0.18",
+    "typescript": "^4.2.3",
+    "webpack": "^5.26.3",
+    "webpack-cli": "^4.5.0"
   }
 }

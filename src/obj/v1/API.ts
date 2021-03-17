@@ -4,7 +4,6 @@
  */
 import * as fs from 'fs';
 import {FileSystemHandler} from './FileSystemHandler';
-import * as path from 'path';
 import {Express, Router} from 'express';
 import * as bodyParser from 'body-parser';
 import {RegisterCommand} from './commands/register.command';
@@ -36,11 +35,7 @@ export class API {
     private static _appPath: string;
 
     public static init(app: Express, router: Router, environment: 'production' | 'development') {
-        if (environment === 'development') {
-            this._appPath = process.cwd();
-        } else {
-            this._appPath = path.dirname(process.execPath);
-        }
+        this._appPath = process.cwd();
 
         router.use(bodyParser.urlencoded({extended: false}));
         router.use(bodyParser.json());
