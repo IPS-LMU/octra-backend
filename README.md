@@ -1,5 +1,7 @@
 # OCTRA API
 
+**! THIS PROJECT IS STILL IN DEVELOPMENT !**
+
 New backend for OCTRA (online-mode) with REST API using JTW (JSON web tokens) for Authentication and automatically generated API reference.
 
 ## Development
