@@ -27,9 +27,10 @@ export class OctraApi {
         app.use(bodyParser.json());
 
         app.all('/v1/*', (req, res, next) => {
-            const authorization = req.get('Authorization');
+            let authorization = req.get('Authorization');
 
             if (authorization) {
+                authorization = authorization.replace('Bearer ', '');
                 const isValidKey = API.settings.apiKeys.findIndex((a) => {
                     return a.key === authorization;
                 }) > -1;
@@ -117,5 +118,7 @@ export class OctraApi {
                 });
             }
         })
+
+        return app;
     }
 }
