@@ -14,23 +14,29 @@ export class RegisterCommand extends ApiCommand {
         this._responseContentType = 'application/json';
 
         // relevant for reference creation
-        const requestStructure = {
-            'name': 'string',
-            'email': 'string',
-            'password': 'string'
+        this._requestStructure = {
+            properties: {
+                name: {
+                    type: 'string',
+                    required: true
+                },
+                email: {
+                    type: 'string',
+                    required: true
+                },
+                password: {
+                    type: 'string',
+                    required: true
+                }
+            }
         };
 
         // relevant for reference creation
-        const responseStructure = {
-            'auth': 'true',
-            'token': '<TOKEN>',
-            'status': 'success',
-            'data': '<ID>',
-            'message': ''
+        this._responseStructure = {
+            properties: {
+                ...this.defaultResponseSchema.properties
+            }
         };
-
-        this._requestStructure = JSON.stringify(requestStructure, null, 2);
-        this._responseStructure = JSON.stringify(responseStructure, null, 2);
     }
 
     register = (app: Express, router: Router) => {
@@ -52,8 +58,8 @@ export class RegisterCommand extends ApiCommand {
             answer.auth = true;
             answer.token = jwt.sign({id: 123123},
                 API.settings.secret, {
-                expiresIn: 86400 // expires in 24 hours
-            });
+                    expiresIn: 86400 // expires in 24 hours
+                });
 
             res.status(200).send(answer);
         } else {
@@ -61,21 +67,5 @@ export class RegisterCommand extends ApiCommand {
             answer.message = validation;
             res.status(400).send(answer);
         }
-    }
-
-    validate(params, body) {
-        let errors = '';
-
-        if (!body.hasOwnProperty('password')) {
-            errors += 'Missing password field, ';
-        }
-        if (!body.hasOwnProperty('email')) {
-            errors += 'Missing email field, ';
-        }
-        if (!body.hasOwnProperty('name')) {
-            errors += 'Missing password name, ';
-        }
-
-        return errors;
     }
 }

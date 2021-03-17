@@ -19,24 +19,14 @@ export class SampleCommand extends ApiCommand {
         this._responseContentType = 'application/json';
 
         // relevant for reference creation
-        const requestStructure = {
-            'sessionid': '<UUID>',
-            'startdate': '<UTC-Timestamp>',
-            'supervisorcode': 'string',
-            'devicecode': 'string',
-            'speakercode': 'string',
-            'gamecode': 'string'
-        };
+        this._requestStructure = {};
 
         // relevant for reference creation
-        const responseStructure = {
-            'status': 'success',
-            'data': '<UUID>',
-            'message': 'Session created'
+        this._responseStructure = {
+            properties: {
+                ...this.defaultResponseSchema.properties
+            }
         };
-
-        this._requestStructure = JSON.stringify(requestStructure, null, 2);
-        this._responseStructure = JSON.stringify(responseStructure, null, 2);
     }
 
     register = (app: Express, router: Router) => {
@@ -57,13 +47,5 @@ export class SampleCommand extends ApiCommand {
             answer.message = validation;
             res.status(400).send(answer);
         }
-    }
-
-    validate(params, body) {
-        let errors = '';
-
-        // check params and body and add error Messages if invalid
-
-        return errors;
     }
 }

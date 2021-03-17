@@ -1,4 +1,5 @@
 import {Express, Router} from 'express';
+import {Schema, Validator} from 'jsonschema';
 
 export abstract class ApiCommand {
     get responseContentType(): string {
@@ -9,11 +10,11 @@ export abstract class ApiCommand {
         return this._acceptedContentType;
     }
 
-    get responseStructure(): string {
+    get responseStructure(): Schema {
         return this._responseStructure;
     }
 
-    get requestStructure(): string {
+    get requestStructure(): Schema {
         return this._requestStructure;
     }
 
@@ -39,8 +40,33 @@ export abstract class ApiCommand {
     protected _description: string;
     protected _acceptedContentType: string;
     protected _responseContentType: string;
-    protected _requestStructure: string;
-    protected _responseStructure: string;
+    protected _requestStructure: Schema;
+    protected _responseStructure: Schema;
+
+    protected readonly defaultResponseSchema: Schema = {
+        properties: {
+            auth: {
+                type: "boolean",
+                required: false,
+                description: "checks if user is authenticated"
+            },
+            token: {
+                type: 'string',
+                required: false,
+                description: "JSON webtoken"
+            },
+            status: {
+                type: 'string',
+                required: true,
+                description: "'error' or 'success'. If error, the error message is inserted into message."
+            },
+            message: {
+                type: 'string',
+                required: false,
+                description: 'system message or error message.'
+            }
+        }
+    }
 
     /***
      * checks if the UUID is valid
@@ -93,8 +119,8 @@ export abstract class ApiCommand {
             description: this.description,
             url: this.url,
             type: this.type,
-            requestStructure: this.requestStructure,
-            responseStructure: this.responseStructure,
+            requestStructure: JSON.stringify(this.requestStructure, null, 2),
+            responseStructure: JSON.stringify(this.responseStructure, null, 2),
             acceptedContentType: this.acceptedContentType,
             responseContentType: 'application/json'
         };
@@ -114,5 +140,16 @@ export abstract class ApiCommand {
      * @param params
      * @param body
      */
-    abstract validate(params, body);
+    validate(params, body) {
+        let errors = [];
+        const validator = new Validator();
+        const validationResult = validator.validate(body, this.requestStructure);
+        if (!validationResult.valid) {
+            for (const error of validationResult.errors) {
+                errors.push(error.stack);
+            }
+        }
+
+        return errors.join(', ');
+    }
 }

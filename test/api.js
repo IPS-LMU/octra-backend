@@ -25,7 +25,11 @@ describe('User', () => {
                 .send(request)
                 .auth('73426T79ER58VASAD435$1542352AWEQTNBRE', {type: "bearer"})
                 .end((err, res) => {
-                    res.should.have.status(200);
+                    if (res.body.status === "error") {
+                        console.log(`Error: ${res.body.message}`);
+                    }
+
+                    res.body.status.should.be.equal("success");
                     res.body.should.be.a('object');
                     done();
                 });
@@ -45,7 +49,11 @@ describe('User', () => {
                 .send(request)
                 .auth('73426T79ER58VASAD435$1542352AWEQTNBRE', {type: "bearer"})
                 .end((err, res) => {
-                    res.should.have.status(200);
+                    if (res.body.status === "error") {
+                        console.log(`Error: ${res.body.message}`);
+                    }
+
+                    res.body.status.should.be.equal("success");
                     res.body.should.be.a('object');
                     done();
                 });

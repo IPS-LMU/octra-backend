@@ -6,6 +6,7 @@ import {ApiCommand} from './api/v1/commands/api.command';
 import {createTerminus} from '@godaddy/terminus';
 import * as fsExtra from 'fs-extra';
 import * as ejs from 'ejs';
+import {Validator} from 'jsonschema';
 
 export class OctraApi {
     constructor(environment: 'development' | 'production') {
@@ -16,6 +17,12 @@ export class OctraApi {
         const router = express.Router();
         API.init(app, router, environment);
 
+        const validator = new Validator();
+        const instance = "ok";
+        const schema = {"type": "number"};
+        console.log(`validation`);
+        console.log(validator.validate(instance, schema).valid);
+        console.log(validator.validate(instance, schema));
 
         app.get('/robots.txt', function (req, res) {
             res.type('text/plain');

@@ -9,28 +9,34 @@ export class LoginCommand extends ApiCommand {
     constructor() {
         super('login', 'POST', '/v1/user/login');
 
-        this._description = 'Logins a user';
+        this._description = 'Login a user';
         this._acceptedContentType = 'application/json';
         this._responseContentType = 'application/json';
 
         // relevant for reference creation
-        const requestStructure = {
-            'name': 'string',
-            'email': 'string',
-            'password': 'string'
+        this._requestStructure = {
+            properties: {
+                name: {
+                    type: 'string',
+                    required: true
+                },
+                email: {
+                    type: 'string',
+                    required: true
+                },
+                password: {
+                    type: 'string',
+                    required: true
+                }
+            }
         };
 
         // relevant for reference creation
-        const responseStructure = {
-            'auth': 'true',
-            'token': '<TOKEN>',
-            'status': 'success',
-            'data': '<UUID>',
-            'message': ''
+        this._responseStructure = {
+            properties: {
+                ...this.defaultResponseSchema.properties
+            }
         };
-
-        this._requestStructure = JSON.stringify(requestStructure, null, 2);
-        this._responseStructure = JSON.stringify(responseStructure, null, 2);
     }
 
     register = (app: Express, router: Router) => {
@@ -69,17 +75,5 @@ export class LoginCommand extends ApiCommand {
             answer.message = validation;
             res.status(400).send(answer);
         }
-    }
-
-    validate(params, body) {
-        let errors = '';
-
-        if (!body.hasOwnProperty('password')) {
-            errors += 'Missing password field, ';
-        }
-        if (!body.hasOwnProperty('email') && !body.hasOwnProperty('name')) {
-            errors += 'Missing email or name field';
-        }
-        return errors;
     }
 }

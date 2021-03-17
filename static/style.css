@@ -1,20 +1,21 @@
 body {
-  font-family: Helvetica, Arial, serif;
-  position: relative;
+    font-family: Helvetica, Arial, serif;
+    position: relative;
 }
 
-#main-inner{
-  padding: 20px;
+#main-inner {
+    padding: 20px;
 }
 
-hr{
-  margin-bottom:40px;
+hr {
+    margin-bottom: 40px;
 }
 
-textarea{
-  resize: vertical;
-  border: 1px solid gray;
-  padding: 10px;
-  width:100%;
-  min-height: 200px;
+textarea {
+    font-size: 0.9em;
+    resize: vertical;
+    border: 1px solid gray;
+    padding: 10px;
+    width: 100%;
+    min-height: 200px;
 }
