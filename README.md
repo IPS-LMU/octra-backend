@@ -10,6 +10,15 @@
 New backend for OCTRA (online-mode) with REST API using JTW (JSON web tokens) for Authentication and automatically generated API reference.
 </p>
 
+## Features
+
+- Easy implementation of additional API commands thanks to its modular structure.
+- Auto-generated API reference of existing commands.
+- Security features:
+    - app authentication: one app token for each app that uses the API.
+    - [JSON Web Token (JWT)](https://jwt.io/) for user authentication and authorisation and session management.
+    - Validation of incoming requests with JSON schemata.
+
 ## Development
 
 1. Clone this repository, switch to its directory and call `npm install`.
