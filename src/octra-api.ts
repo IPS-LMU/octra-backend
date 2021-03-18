@@ -1,12 +1,13 @@
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
-import {API} from './api/v1/API';
+import {API} from './api/v1/api';
 import * as path from 'path';
 import {ApiCommand} from './api/v1/commands/api.command';
 import {createTerminus} from '@godaddy/terminus';
 import * as fsExtra from 'fs-extra';
 import * as ejs from 'ejs';
 import {Validator} from 'jsonschema';
+import {SampleCommand} from './api/v1/commands/sample.command';
 
 export class OctraApi {
     constructor(environment: 'development' | 'production') {
@@ -18,8 +19,8 @@ export class OctraApi {
         API.init(app, router, environment);
 
         const validator = new Validator();
-        const instance = "ok";
-        const schema = {"type": "number"};
+        const instance = 'ok';
+        const schema = {'type': 'number'};
         console.log(`validation`);
         console.log(validator.validate(instance, schema).valid);
         console.log(validator.validate(instance, schema));
@@ -78,10 +79,11 @@ export class OctraApi {
         }
 
         app.get('/', function (req, res) {
-            const fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
+            // const fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
 
             res.render(API.appPath + '/views/index.ejs', {
                 commands: commandsArray,
+                apiDefaultResponseSchema: JSON.stringify(new SampleCommand().defaultResponseSchema, null, 2),
                 appInformation: API.information,
                 appSettings: API.settings,
                 url: API.settings.apiURL

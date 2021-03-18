@@ -4,17 +4,17 @@ import {Express, Router} from 'express';
 export class SampleCommand extends ApiCommand {
     /*
     Quickstart:
-    1. Replace all matches of "CommandSample" with the new command name
+    1. Replace all matches of "SampleCommand" with the new command name
     2. Change the Method API-URL and Method in the super() call
     3. Change the description, acceptedContentType attributes
     4. Change the requestStructure and responseStructure constants
-    5.
+    5. Open api.ts, look for "API._commands =  [" and add the class instantiation to this array.
      */
 
     constructor() {
-        super('createSession', 'POST', '/v1/RecSession/:uuid');
+        super('commandName', 'POST', '/v1/commandURI');
 
-        this._description = 'Legt ein neues Sitzungs-Objekt mit der vom Client generierten UUID an und speichert die im Sitzungsobjekt angelegten Felder.';
+        this._description = 'ADD YOUR DESCRIPTION HERE';
         this._acceptedContentType = 'application/json';
         this._responseContentType = 'application/json';
 

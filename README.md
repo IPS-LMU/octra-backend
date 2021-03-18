@@ -34,7 +34,7 @@ npm run build
 
 <tr>
 <td style="font-weight:bold;">
-npm run test
+npm test
 </td>
 <td>
     Call test script.
@@ -43,3 +43,14 @@ npm run test
 
 </tbody>
 </table>
+
+
+### How to implement additional API commands
+
+The most important feature of this API is its modularity. You can easily add more commands to its system.
+
+1. Duplicate `src/api/v1/commands/sample.command.ts` and rename it. Move the new file to a path that represents the URI of the command.
+2. Change the name of the new class.
+3. On the most top section of the class there is a comment that contains a Quickstart instruction. Follow this instruction.
+
+After you did these steps, you will see, that your new command was added to the API reference automatically.

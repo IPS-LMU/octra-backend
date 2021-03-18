@@ -1,15 +1,15 @@
-import {ApiCommand} from './api.command';
+import {ApiCommand} from '../api.command';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import {Express, Router} from 'express';
-import {API} from '../API';
+import {API} from '../../api';
 
-export class RegisterCommand extends ApiCommand {
+export class LoginCommand extends ApiCommand {
 
     constructor() {
-        super('registerUser', 'POST', '/v1/user/register');
+        super('login', 'POST', '/v1/user/login');
 
-        this._description = 'Creates an account for a given user.';
+        this._description = 'Login a user';
         this._acceptedContentType = 'application/json';
         this._responseContentType = 'application/json';
 
@@ -17,16 +17,16 @@ export class RegisterCommand extends ApiCommand {
         this._requestStructure = {
             properties: {
                 name: {
-                    type: 'string',
-                    required: true
+                    required: true,
+                    type: 'string'
                 },
                 email: {
-                    type: 'string',
-                    required: true
+                    required: true,
+                    type: 'string'
                 },
                 password: {
-                    type: 'string',
-                    required: true
+                    required: true,
+                    type: 'string'
                 }
             }
         };
@@ -39,7 +39,7 @@ export class RegisterCommand extends ApiCommand {
         };
     }
 
-    register = (app: Express, router: Router) => {
+    register(app: Express, router: Router) {
         router.route(this.url).post((req, res) => {
             this.do(req, res);
         });
@@ -51,15 +51,23 @@ export class RegisterCommand extends ApiCommand {
 
         // do something
         if (validation === '') {
-            const hashedPassword = bcrypt.hashSync(req.body.password);
-            answer.data = hashedPassword;
+            // TODO check if user exists
 
-            // TODO create account in database
-            answer.auth = true;
-            answer.token = jwt.sign({id: 123123},
-                API.settings.secret, {
-                    expiresIn: 86400 // expires in 24 hours
+            const passwordIsValid = bcrypt.compareSync(req.body.password, '$2a$10$b5DTfhUd6Htc3FKkxSa5au/WhCiyyIsOegMac56nGqUzqxLKcm82i');
+            if (!passwordIsValid) {
+                return res.status(401).send({
+                    ...answer,
+                    status: 'error',
+                    message: 'invalid password',
+                    auth: false,
+                    token: null
                 });
+            }
+
+            answer.auth = true;
+            answer.token = jwt.sign({id: 123123}, API.settings.secret, {
+                expiresIn: 86400 // expires in 24 hours
+            });
 
             res.status(200).send(answer);
         } else {

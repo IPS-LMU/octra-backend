@@ -2,6 +2,10 @@ import {Express, Router} from 'express';
 import {Schema, Validator} from 'jsonschema';
 
 export abstract class ApiCommand {
+    get defaultResponseSchema(): Schema {
+        return this._defaultResponseSchema;
+    }
+
     get responseContentType(): string {
         return this._responseContentType;
     }
@@ -34,63 +38,39 @@ export abstract class ApiCommand {
         return this._name;
     }
 
-    private _name: string;
-    private _type: string;
-    private _url: string;
+    private readonly _name: string;
+    private readonly _type: string;
+    private readonly _url: string;
     protected _description: string;
     protected _acceptedContentType: string;
     protected _responseContentType: string;
     protected _requestStructure: Schema;
     protected _responseStructure: Schema;
 
-    protected readonly defaultResponseSchema: Schema = {
+    private readonly _defaultResponseSchema: Schema = {
         properties: {
             auth: {
-                type: "boolean",
                 required: false,
-                description: "checks if user is authenticated"
+                type: 'boolean',
+                description: 'checks if user is authenticated'
             },
             token: {
-                type: 'string',
                 required: false,
-                description: "JSON webtoken"
+                type: 'string',
+                description: 'JSON webtoken'
             },
             status: {
-                type: 'string',
                 required: true,
-                description: "'error' or 'success'. If error, the error message is inserted into message."
+                type: 'string',
+                enum: ['success', 'error'],
+                description: '\'error\' or \'success\'. If error, the error message is inserted into message.'
             },
             message: {
-                type: 'string',
                 required: false,
+                type: 'string',
                 description: 'system message or error message.'
             }
         }
-    }
-
-    /***
-     * checks if the UUID is valid
-     * @param uuid
-     * @returns {boolean}
-     */
-    static isValidUUID(uuid) {
-        const validRegex = /^[\d\w\-]+$/g;
-        return uuid.search(validRegex) > -1;
-    }
-
-    /***
-     * checks if the itemCode is valid
-     * @param uuid
-     * @returns {boolean}
-     */
-    static isValidItemCode(uuid) {
-        const validRegex = /^[0-9a-zA-Z]+$/g;
-        return uuid.search(validRegex) > -1;
-    }
-
-    static isValidFileName(filename) {
-        const inValidRegex = /[%/\/\+&]/g;
-        return filename.search(inValidRegex) < 0;
     }
 
     /***
@@ -113,6 +93,9 @@ export abstract class ApiCommand {
         this._url = url;
     }
 
+    /***
+     * returns information about the command. It's used for the API reference.
+     */
     public getInformation() {
         return {
             name: this.name,
@@ -126,7 +109,10 @@ export abstract class ApiCommand {
         };
     }
 
-    abstract register: (app: Express, router: Router, environment: 'production' | 'development') => void;
+    /***
+     * registers command to server
+     */
+    abstract register(app: Express, router: Router, environment: 'production' | 'development');
 
     /***
      * runs a command

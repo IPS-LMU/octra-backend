@@ -1,14 +1,13 @@
 /***
  * This class contains a list of API commands and a call() method to use a command from list
- * @type {module.API}
  */
 import * as fs from 'fs';
-import {FileSystemHandler} from './FileSystemHandler';
 import {Express, Router} from 'express';
 import * as bodyParser from 'body-parser';
-import {RegisterCommand} from './commands/register.command';
-import {LoginCommand} from './commands/login.command';
+import {RegisterCommand} from './commands/user/register.command';
+import {LoginCommand} from './commands/user/login.command';
 import {ApiCommand} from './commands/api.command';
+import {FileSystemHandler} from './filesystem-handler';
 
 export class API {
     static get appPath(): string {
@@ -34,13 +33,17 @@ export class API {
     private static _settings: any;
     private static _appPath: string;
 
+    /***
+     * initializes API
+     * @param app Express server
+     * @param router Express router
+     * @param environment 'production' or 'development'
+     */
     public static init(app: Express, router: Router, environment: 'production' | 'development') {
         this._appPath = process.cwd();
 
         router.use(bodyParser.urlencoded({extended: false}));
         router.use(bodyParser.json());
-
-        console.log(this._appPath);
 
         const settings = fs.readFileSync(this._appPath + '/config.json',
             {
@@ -67,17 +70,5 @@ export class API {
         if (!FileSystemHandler.existsPath(this.settings.uploadPath)) {
             FileSystemHandler.mkDir(this.settings.uploadPath);
         }
-    }
-
-    /***
-     * creates the default answer structure
-     * @returns {{status: string, data: string, message: string}}
-     */
-    public static createAnswer() {
-        return {
-            status: 'success',
-            data: '',
-            message: ''
-        };
     }
 }
