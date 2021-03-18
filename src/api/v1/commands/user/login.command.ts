@@ -7,7 +7,7 @@ import {API} from '../../api';
 export class LoginCommand extends ApiCommand {
 
     constructor() {
-        super('login', 'POST', '/v1/user/login');
+        super('loginUser', 'POST', '/v1/user/login');
 
         this._description = 'Login a user';
         this._acceptedContentType = 'application/json';
