@@ -1,9 +1,8 @@
 
 <h1 align="center">OCTRA API</h1>
 
-**! THIS PROJECT IS STILL IN DEVELOPMENT !**
-
 <p align="center">
+<b>! THIS PROJECT IS STILL IN DEVELOPMENT !</b>
 <img width="600" height="521" style="border:1px solid gray;" src="https://github.com/IPS-LMU/octra-api/raw/main/screenshots/api.png">
  <br/>
     <br/>
