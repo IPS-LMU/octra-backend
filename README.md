@@ -1,13 +1,15 @@
-<div style="text-align: center;">
 
-# OCTRA API
+<h1 align="center">OCTRA API</h1>
 
 **! THIS PROJECT IS STILL IN DEVELOPMENT !**
 
-<img width="600" height="390" style="border:1px solid gray;" src="https://github.com/IPS-LMU/octra-api/raw/main/screenshots/api.png">
-</div>
-
+<p align="center">
+<img width="600" height="521" style="border:1px solid gray;" src="https://github.com/IPS-LMU/octra-api/raw/main/screenshots/api.png">
+ <br/>
+    <br/>
+    
 New backend for OCTRA (online-mode) with REST API using JTW (JSON web tokens) for Authentication and automatically generated API reference.
+</p>
 
 ## Development
 
