@@ -13,6 +13,7 @@ export interface IDBConfiguration {
     dbHost: string,
     dbPort: number,
     dbName: string,
+    dbUser: string,
     dbPassword: string,
 }
 

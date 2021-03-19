@@ -7,6 +7,7 @@ import {ApiCommand} from './commands/api.command';
 import {SampleCommand} from './commands/sample.command';
 import {APIV1Module} from './api.module';
 import {AppConfiguration} from '../../obj/app-config/app-config';
+import {DBManager} from '../../db/DBManager';
 
 export class APIV1 {
     get appPath(): string {
@@ -36,6 +37,8 @@ export class APIV1 {
     private _appPath: string;
     private static instance: APIV1;
 
+    private dbManager: DBManager<any, any>;
+
     /***
      * initializes API
      * @param app Express server
@@ -43,8 +46,10 @@ export class APIV1 {
      * @param environment 'production' or 'development'
      * @param settings
      */
-    public init(app: Express, router: Router, environment: 'production' | 'development', settings: AppConfiguration) {
+    public init(app: Express, router: Router, environment: 'production' | 'development', settings: AppConfiguration,
+                dbManager: DBManager<any, any>) {
         this._appPath = process.cwd();
+        this.dbManager = dbManager;
 
         router.use(bodyParser.urlencoded({extended: false}));
         router.use(bodyParser.json());
@@ -55,8 +60,7 @@ export class APIV1 {
         // register all commands
         for (let i = 0; i < this._commands.length; i++) {
             const command = this._commands[i];
-
-            command.register(app, router, environment, settings);
+            command.register(app, router, environment, settings, dbManager);
         }
 
         const commandsArray = [];

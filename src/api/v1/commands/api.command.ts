@@ -1,6 +1,7 @@
 import {Express, Router} from 'express';
 import {Schema, Validator} from 'jsonschema';
 import {AppConfiguration} from '../../../obj/app-config/app-config';
+import {DBManager} from '../../../db/DBManager';
 
 export abstract class ApiCommand {
     get defaultResponseSchema(): Schema {
@@ -47,6 +48,8 @@ export abstract class ApiCommand {
     protected _responseContentType: string;
     protected _requestStructure: Schema;
     protected _responseStructure: Schema;
+    protected dbManager: DBManager<any, any>;
+    protected settings: AppConfiguration;
 
     private readonly _defaultResponseSchema: Schema = {
         properties: {
@@ -113,7 +116,11 @@ export abstract class ApiCommand {
     /***
      * registers command to server
      */
-    abstract register(app: Express, router: Router, environment: 'production' | 'development', settings: AppConfiguration);
+    public register(app: Express, router: Router, environment: 'production' | 'development', settings: AppConfiguration,
+                    dbManager: DBManager<any, any>) {
+        this.dbManager = dbManager;
+        this.settings = settings;
+    }
 
     /***
      * runs a command

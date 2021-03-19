@@ -9,7 +9,9 @@ import * as fsExtra from 'fs-extra';
 import * as ejs from 'ejs';
 import * as fs from 'fs';
 import {APIModule} from './octra-api.module';
-import {AppConfiguration} from './obj/app-config/app-config';
+import {AppConfiguration, IDBConfiguration} from './obj/app-config/app-config';
+import {DBManager} from './db/DBManager';
+import {PostgreSQLManager} from './db/postgreSQL.manager';
 
 export class OctraApi {
     get appPath(): string {
@@ -27,6 +29,7 @@ export class OctraApi {
     private name = 'OCTRA';
     private version = '0.0.1';
     private environment: 'development' | 'production';
+    private dbManager: DBManager<any, any>;
 
     constructor() {
         this._appPath = __dirname;
@@ -54,8 +57,10 @@ export class OctraApi {
 
             const router = express.Router();
 
+            this.dbManager = this.getDBWrapper(this.settings.database);
+
             for (const api of this._activeAPIs) {
-                api.init(app, router, environment, this.settings);
+                api.init(app, router, environment, this.settings, this.dbManager);
             }
 
             app.get('/robots.txt', function (req, res) {
@@ -122,7 +127,12 @@ export class OctraApi {
                             console.log(`\nDev mode: Clear auto generated folders...`);
                             fsExtra.removeSync('./build');
                         }
-                        resolve(null);
+                        this.dbManager.close().then(() => {
+                            resolve(null);
+                        }).catch((error) => {
+                            console.log(error);
+                            resolve(null);
+                        });
                     });
                 }
             })
@@ -133,5 +143,14 @@ export class OctraApi {
             console.log(`The config file is invalid:`);
             console.log(this.settings.validation.errors.map(a => `-> Error: ${a.stack}`).join('\n'));
         }
+    }
+
+    private getDBWrapper(dbConfiguration: IDBConfiguration): DBManager<any, any> {
+        switch (dbConfiguration.dbType) {
+            case 'PostgreSQL':
+                return new PostgreSQLManager(dbConfiguration);
+        }
+
+        return null;
     }
 }

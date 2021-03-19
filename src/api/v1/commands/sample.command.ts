@@ -30,7 +30,9 @@ export class SampleCommand extends ApiCommand {
         };
     }
 
-    register(app: Express, router: Router, environment, settings: AppConfiguration) {
+    register(app: Express, router: Router, environment, settings: AppConfiguration,
+             dbManager) {
+        super.register(app,router, environment, settings, dbManager);
         router.route(this.url).post((req, res) => {
             this.do(req, res, settings);
         });

@@ -22,6 +22,10 @@ export const AppConfigurationSchema: Schema = {
                     type: 'string',
                     required: true,
                 },
+                dbUser: {
+                    type: 'string',
+                    required: true,
+                },
                 dbPassword: {
                     type: 'string',
                     required: true,
