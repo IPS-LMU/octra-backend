@@ -112,14 +112,15 @@ export abstract class ApiCommand {
     /***
      * registers command to server
      */
-    abstract register(app: Express, router: Router, environment: 'production' | 'development');
+    abstract register(app: Express, router: Router, environment: 'production' | 'development', settings: any);
 
     /***
      * runs a command
      * @param req
      * @param res
+     * @param settings
      */
-    abstract do(req, res);
+    abstract do(req, res, settings: any);
 
     /***
      * checks if the request by the client is valid

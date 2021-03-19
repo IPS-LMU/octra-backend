@@ -615,3 +615,4 @@ FodyWeavers.xsd
 /static/bootstrap/
 !src/api
 !src/api/v1/obj
+/doc/

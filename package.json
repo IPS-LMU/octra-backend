@@ -5,7 +5,7 @@
   "main": "octra-api.js",
   "scripts": {
     "prestart": "npm run compile",
-    "compile": "rm -rf dist && tsc && cp -rf static build/static && cp -rf views/ build/views && cp config.json build/config.json",
+    "compile": "rm -rf build dist && tsc",
     "start": "node build/app.prepare.js && node build/app.dev.js",
     "test": "npm run compile && node build/app.prepare.js && echo '\n Test API...' && mocha --timeout 10000",
     "build": "rm -rf dist && tsc && node build/app.prepare.js && npx webpack && cp -rf static dist/static && cp -rf views dist/views && rm -rf build && rm -rf static/bootstrap"

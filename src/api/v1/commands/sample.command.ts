@@ -29,13 +29,13 @@ export class SampleCommand extends ApiCommand {
         };
     }
 
-    register(app: Express, router: Router) {
+    register(app: Express, router: Router, settings: any) {
         router.route(this.url).post((req, res) => {
-            this.do(req, res);
+            this.do(req, res, settings);
         });
     };
 
-    do(req, res) {
+    do(req, res, settings) {
         const answer = ApiCommand.createAnswer();
         const validation = this.validate(req.params, req.body);
 

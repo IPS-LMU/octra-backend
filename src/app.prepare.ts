@@ -1,9 +1,22 @@
-import * as fsExtra from "fs-extra";
+import * as fsExtra from 'fs-extra';
+import {OctraApi} from './octra-api';
+
+const octraAPI = new OctraApi();
+
+// copy reference folders to api forlder in views
+fsExtra.copySync('./views', './build/views');
+for (const api of octraAPI.activeAPIs) {
+    console.log(`copy api ${api.information.apiSlug}...`);
+    fsExtra.copySync('./src/api/' + api.information.apiSlug + '/reference', './build/views/api/' + api.information.apiSlug);
+}
+
+fsExtra.copySync('./config.json', './build/config.json');
 
 console.log(`Load resources...`);
-fsExtra.copySync("./node_modules/bootstrap/dist", "./static/bootstrap");
-fsExtra.copySync("./node_modules/anchor-js/anchor.min.js", "./static/bootstrap/js/vendor/anchor.min.js");
-fsExtra.copySync("./node_modules/clipboard/dist/clipboard.min.js", "./static/bootstrap/js/vendor/clipboard.min.js");
-fsExtra.copySync("./node_modules/jquery/dist/jquery.slim.min.js", "./static/bootstrap/js/vendor/jquery.slim.min.js");
-fsExtra.copySync("./node_modules/popper.js/dist/popper.min.js", "./static/bootstrap/js/vendor/popper.min.js");
-fsExtra.copySync("./node_modules/holderjs/holder.min.js", "./static/bootstrap/js/vendor/holder.min.js");
+fsExtra.copySync('./static', './build/static');
+fsExtra.copySync('./node_modules/bootstrap/dist', './build/static/bootstrap');
+fsExtra.copySync('./node_modules/anchor-js/anchor.min.js', './build/static/bootstrap/js/vendor/anchor.min.js');
+fsExtra.copySync('./node_modules/clipboard/dist/clipboard.min.js', './build/static/bootstrap/js/vendor/clipboard.min.js');
+fsExtra.copySync('./node_modules/jquery/dist/jquery.slim.min.js', './build/static/bootstrap/js/vendor/jquery.slim.min.js');
+fsExtra.copySync('./node_modules/popper.js/dist/popper.min.js', './build/static/bootstrap/js/vendor/popper.min.js');
+fsExtra.copySync('./node_modules/holderjs/holder.min.js', './build/static/bootstrap/js/vendor/holder.min.js');

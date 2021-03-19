@@ -1,22 +1,60 @@
 import * as express from 'express';
+import {Express} from 'express';
 import * as bodyParser from 'body-parser';
-import {API} from './api/v1/api';
+import {APIV1} from './api/v1/api';
 import * as path from 'path';
 import {ApiCommand} from './api/v1/commands/api.command';
 import {createTerminus} from '@godaddy/terminus';
 import * as fsExtra from 'fs-extra';
 import * as ejs from 'ejs';
 import {Validator} from 'jsonschema';
-import {SampleCommand} from './api/v1/commands/sample.command';
+import * as fs from 'fs';
+import {APIModule} from './octra-api.module';
 
 export class OctraApi {
-    constructor(environment: 'development' | 'production') {
+    get appPath(): string {
+        return this._appPath;
+    }
+
+    get activeAPIs(): APIV1[] {
+        return this._activeAPIs;
+    }
+
+    private _activeAPIs = [];
+
+    private _appPath: string;
+    private settings: any;
+    private name = 'OCTRA';
+    private version = '0.0.1';
+    private environment: 'development' | 'production';
+
+    constructor() {
+        this._appPath = __dirname;
+        this._activeAPIs = APIModule.activeAPIs;
+    }
+
+    public init(environment: 'development' | 'production'): Express {
+        this.environment = environment;
+
+        // loadSettings
+        const settingsJSON = fs.readFileSync(this._appPath + '/config.json',
+            {
+                encoding: 'utf-8'
+            }
+        );
+
+        this.settings = JSON.parse(settingsJSON);
+        this.settings.appPath = this._appPath;
+
         const app = express();
         app.set('view engine', 'ejs');
         app.engine('ejs', ejs.__express); //<-- this
 
         const router = express.Router();
-        API.init(app, router, environment);
+
+        for (const api of this._activeAPIs) {
+            api.init(app, router, environment, this.settings);
+        }
 
         const validator = new Validator();
         const instance = 'ok';
@@ -34,12 +72,23 @@ export class OctraApi {
         app.use(bodyParser.urlencoded({extended: true}));
         app.use(bodyParser.json());
 
+        app.get('/', (req, res) => {
+            res.render(this._appPath + '/views/backend/index.ejs');
+        });
+
+        app.get('/login', (req, res) => {
+            res.render(this._appPath + '/views/backend/login/index.ejs');
+        });
+
+        // TODO convert API object to Class
+        // TODO add static instance to API Class
+
         app.all('/v1/*', (req, res, next) => {
             let authorization = req.get('Authorization');
 
             if (authorization) {
                 authorization = authorization.replace('Bearer ', '');
-                const isValidKey = API.settings.apiKeys.findIndex((a) => {
+                const isValidKey = this.settings.apiKeys.findIndex((a) => {
                     return a.key === authorization;
                 }) > -1;
 
@@ -60,9 +109,9 @@ export class OctraApi {
         });
 
         //set port
-        const port = process.env.PORT || API.settings.port;
+        const port = process.env.PORT || this.settings.port;
 
-        if (API.settings.debugging) {
+        if (this.settings.debugging) {
             router.use(function (req, res, next) {
                 // do logging
                 console.log(`Got new request`);
@@ -71,27 +120,8 @@ export class OctraApi {
             });
         }
 
-        const commandsArray = [];
-
-        for (let i = 0; i < API.commands.length; i++) {
-            const command = API.commands[i];
-            commandsArray.push(command.getInformation());
-        }
-
-        app.get('/', function (req, res) {
-            // const fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
-
-            res.render(API.appPath + '/views/index.ejs', {
-                commands: commandsArray,
-                apiDefaultResponseSchema: JSON.stringify(new SampleCommand().defaultResponseSchema, null, 2),
-                appInformation: API.information,
-                appSettings: API.settings,
-                url: API.settings.apiURL
-            });
-        });
-
-        console.log(`LOAD static: ${path.join(API.appPath, 'static')}`);
-        app.use(express.static(path.join(API.appPath, 'static')));
+        console.log(`LOAD static: ${path.join(this._appPath, 'static')}`);
+        app.use(express.static(path.join(this._appPath, 'static')));
         app.use('/', router);
 
         router.route('*').all((req, res) => {
@@ -102,27 +132,24 @@ export class OctraApi {
             res.status(400).send(answer);
         });
 
-        if (API.settings.debugging) {
-            console.log('\nActivated routes:\n-------');
-            // output activated commands
-            for (let i = 0; i < API.commands.length; i++) {
-                const command: ApiCommand = API.commands[i];
-
-                console.log(`Route: ${command.url}`);
-            }
-        }
-
         // Start listening!
-        const server = app.listen(port, API.settings.hostname, () => {
-            console.log(`\nStarted ${API.information.name} REST API (v${API.information.version}) on http://localhost:${API.settings.port}!`);
+        const server = app.listen(port, this.settings.hostname, () => {
+            console.log(`\nStarted ${this.name} REST API (v${this.version}) on http://localhost:${this.settings.port}!\n`);
+            console.log(`Active APIs:`);
+            for (const api of this._activeAPIs) {
+                console.log(`|- ${api.information.apiSlug}`);
+                console.log(`|-- Reference: http://localhost:${this.settings.port}/${api.information.apiSlug}/reference\n\n`);
+            }
         });
 
         createTerminus(server, {
             signal: 'SIGINT',
             onSignal: () => {
                 return new Promise<any>((resolve) => {
-                    console.log(`\nShutdown...`);
-                    fsExtra.removeSync('./static/bootstrap/');
+                    if (this.environment === 'development') {
+                        console.log(`\nDev mode: Clear auto generated folders...`);
+                        fsExtra.removeSync('./build');
+                    }
                     resolve(null);
                 });
             }

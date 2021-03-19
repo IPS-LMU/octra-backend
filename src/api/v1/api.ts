@@ -8,67 +8,77 @@ import {RegisterCommand} from './commands/user/register.command';
 import {LoginCommand} from './commands/user/login.command';
 import {ApiCommand} from './commands/api.command';
 import {FileSystemHandler} from './filesystem-handler';
+import {SampleCommand} from './commands/sample.command';
+import {APIV1Module} from './api.module';
 
-export class API {
-    static get appPath(): string {
+export class APIV1 {
+    get appPath(): string {
         return this._appPath;
     }
 
-    static get settings(): any {
-        return this._settings;
-    }
-
-    static get commands(): any[] {
+    get commands(): any[] {
         return this._commands;
     }
 
-    public static get information() {
+    public get information() {
         return {
             name: 'OCTRA',
-            version: '0.0.1'
+            version: '0.0.1',
+            apiSlug: 'v1'
         }
     }
 
-    private static _commands: ApiCommand[] = [];
-    private static _settings: any;
-    private static _appPath: string;
+    public get instance(): APIV1 {
+        if (APIV1.instance === undefined) {
+            return new APIV1();
+        }
+        return APIV1.instance;
+    }
+
+    private _commands: ApiCommand[] = [];
+    private _appPath: string;
+    private static instance: APIV1;
 
     /***
      * initializes API
      * @param app Express server
      * @param router Express router
      * @param environment 'production' or 'development'
+     * @param settings
      */
-    public static init(app: Express, router: Router, environment: 'production' | 'development') {
+    public init(app: Express, router: Router, environment: 'production' | 'development', settings: any) {
         this._appPath = process.cwd();
 
         router.use(bodyParser.urlencoded({extended: false}));
         router.use(bodyParser.json());
 
-        const settings = fs.readFileSync(this._appPath + '/config.json',
-            {
-                encoding: 'utf-8'
-            }
-        );
-
-        API._settings = JSON.parse(settings);
-
         // list of supported commands
-        API._commands = [
-            new RegisterCommand(),
-            new LoginCommand()
-        ];
+        this._commands = APIV1Module.commands;
 
         // register all commands
-        for (let i = 0; i < API._commands.length; i++) {
-            const command = API._commands[i];
+        for (let i = 0; i < this._commands.length; i++) {
+            const command = this._commands[i];
 
-            command.register(app, router, environment);
+            command.register(app, router, environment, settings);
         }
 
-        //create data directory
-        if (!FileSystemHandler.existsPath(this.settings.uploadPath)) {
-            FileSystemHandler.mkDir(this.settings.uploadPath);
+        const commandsArray = [];
+
+        for (let i = 0; i < this.commands.length; i++) {
+            const command = this.commands[i];
+            commandsArray.push(command.getInformation());
         }
+
+        app.get(`/${this.information.apiSlug}/reference`, (req, res) => {
+            // const fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
+
+            res.render(settings.appPath + `/views/api/${this.information.apiSlug}/index.ejs`, {
+                commands: commandsArray,
+                apiDefaultResponseSchema: JSON.stringify(new SampleCommand().defaultResponseSchema, null, 2),
+                apiInformation: this.information,
+                appSettings: settings,
+                url: settings.apiURL
+            });
+        });
     }
 }

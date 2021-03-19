@@ -1,8 +1,7 @@
 import {OctraApi} from './octra-api';
-
 const environment = 'development';
 
-const app = new OctraApi(environment);
+const app = new OctraApi().init(environment);
 
 console.log(`\x1b[33m
 -----------------------

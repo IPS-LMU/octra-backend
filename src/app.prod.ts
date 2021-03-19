@@ -1,5 +1,6 @@
 import {OctraApi} from './octra-api';
 const environment = 'production';
 
-new OctraApi(environment);
+const app = new OctraApi().init(environment);
 
+module.exports = app;

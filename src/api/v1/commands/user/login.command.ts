@@ -2,7 +2,6 @@ import {ApiCommand} from '../api.command';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import {Express, Router} from 'express';
-import {API} from '../../api';
 
 export class LoginCommand extends ApiCommand {
 
@@ -39,13 +38,13 @@ export class LoginCommand extends ApiCommand {
         };
     }
 
-    register(app: Express, router: Router) {
+    register(app: Express, router: Router, settings: any) {
         router.route(this.url).post((req, res) => {
-            this.do(req, res);
+            this.do(req, res, settings);
         });
     };
 
-    do(req, res) {
+    do(req, res, settings: any) {
         const answer = ApiCommand.createAnswer();
         const validation = this.validate(req.params, req.body);
 
@@ -65,7 +64,7 @@ export class LoginCommand extends ApiCommand {
             }
 
             answer.auth = true;
-            answer.token = jwt.sign({id: 123123}, API.settings.secret, {
+            answer.token = jwt.sign({id: 123123}, settings.secret, {
                 expiresIn: 86400 // expires in 24 hours
             });
 
