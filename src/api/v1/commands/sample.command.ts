@@ -1,5 +1,6 @@
 import {ApiCommand} from './api.command';
 import {Express, Router} from 'express';
+import {AppConfiguration} from '../../../obj/app-config/app-config';
 
 export class SampleCommand extends ApiCommand {
     /*
@@ -29,13 +30,13 @@ export class SampleCommand extends ApiCommand {
         };
     }
 
-    register(app: Express, router: Router, settings: any) {
+    register(app: Express, router: Router, environment, settings: AppConfiguration) {
         router.route(this.url).post((req, res) => {
             this.do(req, res, settings);
         });
     };
 
-    do(req, res, settings) {
+    do(req, res, settings: AppConfiguration) {
         const answer = ApiCommand.createAnswer();
         const validation = this.validate(req.params, req.body);
 

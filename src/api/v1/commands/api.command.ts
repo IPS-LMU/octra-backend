@@ -1,5 +1,6 @@
 import {Express, Router} from 'express';
 import {Schema, Validator} from 'jsonschema';
+import {AppConfiguration} from '../../../obj/app-config/app-config';
 
 export abstract class ApiCommand {
     get defaultResponseSchema(): Schema {
@@ -112,7 +113,7 @@ export abstract class ApiCommand {
     /***
      * registers command to server
      */
-    abstract register(app: Express, router: Router, environment: 'production' | 'development', settings: any);
+    abstract register(app: Express, router: Router, environment: 'production' | 'development', settings: AppConfiguration);
 
     /***
      * runs a command
