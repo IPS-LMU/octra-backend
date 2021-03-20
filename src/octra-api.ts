@@ -102,10 +102,7 @@ export class OctraApi {
             app.use('/', router);
 
             router.route('*').all((req, res) => {
-                const answer = ApiCommand.createAnswer();
-                answer.status = 'error';
-                answer.message = 'This route does not exist. Please check your URL again.';
-                res.status(400).send(answer);
+                ApiCommand.sendError(res, 400, 'This route does not exist. Please check your URL again.');
             });
 
             // Start listening!

@@ -56,21 +56,15 @@ export class AppTokenCreateCommand extends ApiCommand {
                     if (result.length === 1) {
                         answer.data = result[0];
                     }
-                    return res.status(200).send(answer);
+                    res.status(200).send(answer);
                 }).catch((error) => {
-                    answer.status = 'error';
-                    answer.message = error;
-                    return res.status(400).send(answer);
+                    ApiCommand.sendError(res, 400, error);
                 });
             } catch (e) {
-                answer.status = 'error';
-                answer.message = e;
-                return res.status(400).send(answer);
+                ApiCommand.sendError(res, 400, e);
             }
         } else {
-            answer.status = 'error';
-            answer.message = validation;
-            return res.status(400).send(answer);
+            ApiCommand.sendError(res, 400, validation);
         }
     }
 }

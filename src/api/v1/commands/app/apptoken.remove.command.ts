@@ -58,21 +58,15 @@ export class AppTokenRemoveCommand extends ApiCommand {
                     answer.data = {
                         removedRows: removeResult.rowCount
                     };
-                    return res.status(200).send(answer);
-                } catch (e){
-                    answer.status = 'error';
-                    answer.message = e;
-                    return res.status(400).send(answer);
+                    res.status(200).send(answer);
+                } catch (e) {
+                    ApiCommand.sendError(res, 400, e);
                 }
             } else {
-                answer.status = 'error';
-                answer.message = 'Missing id in URI.';
-                return res.status(400).send(answer);
+                ApiCommand.sendError(res, 400, 'Missing id in URI.');
             }
         } else {
-            answer.status = 'error';
-            answer.message = validation;
-            return res.status(400).send(answer);
+            ApiCommand.sendError(res, 400, validation);
         }
     }
 

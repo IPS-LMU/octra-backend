@@ -145,7 +145,7 @@ export abstract class ApiCommand {
         if (this._needsJWTAuthentication) {
             router.use(this.url, (req, res, next) => {
                 verifyWebToken(req, res, next, settings, (tokenBody: { name: string, id: number }) => {
-                    this._tokenData = tokenBody;
+                    (req as any).decoded = tokenBody;
                     next();
                 });
             });
@@ -178,5 +178,12 @@ export abstract class ApiCommand {
         }
 
         return errors.join(', ');
+    }
+
+    public getUserDataFromTokenObj(req) : {
+        name: string;
+        id: string;
+    } {
+        return req.decoded;
     }
 }

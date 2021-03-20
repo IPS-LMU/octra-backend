@@ -50,9 +50,7 @@ export class SampleCommand extends ApiCommand {
         if (validation === '') {
             return res.status(200).send(answer);
         } else {
-            answer.status = 'error';
-            answer.message = validation;
-            return res.status(400).send(answer);
+            ApiCommand.sendError(res, 400, validation);
         }
     }
 }
