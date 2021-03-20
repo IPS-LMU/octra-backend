@@ -27,11 +27,10 @@ export class PostgreSQLManager extends DBManager<Client, Result> {
             if (!this._connected) {
                 this.client.connect((err) => {
                     if (err) {
-                        console.error('connection error', err.stack);
+                        console.log('connection error', err.stack);
                         this._connected = false;
                         reject(err);
                     } else {
-                        console.log('connected')
                         this._connected = true;
                         resolve();
                     }

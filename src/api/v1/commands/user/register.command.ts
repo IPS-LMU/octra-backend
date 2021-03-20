@@ -25,9 +25,11 @@ export class RegisterCommand extends ApiCommand {
                 }
             ],
             properties: {
+                ...this.defaultRequestSchema.properties,
                 name: {
                     type: 'string'
                 },
+                token: undefined,
                 email: {
                     type: 'string'
                 },
@@ -41,6 +43,16 @@ export class RegisterCommand extends ApiCommand {
         // relevant for reference creation
         this._responseStructure = {
             properties: {
+                auth: {
+                    required: false,
+                    type: 'boolean',
+                    description: 'checks if user is authenticated'
+                },
+                token: {
+                    required: true,
+                    type: 'string',
+                    description: 'JSON Web Token.'
+                },
                 ...this.defaultResponseSchema.properties
             }
         };
@@ -48,7 +60,7 @@ export class RegisterCommand extends ApiCommand {
 
     register(app: Express, router: Router, environment, settings: AppConfiguration,
              dbManager) {
-        super.register(app,router, environment, settings, dbManager);
+        super.register(app, router, environment, settings, dbManager);
         router.route(this.url).post((req, res) => {
             this.do(req, res, settings);
         });

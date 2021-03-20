@@ -4,6 +4,9 @@ import {AppConfiguration} from '../../../obj/app-config/app-config';
 import {DBManager} from '../../../db/DBManager';
 
 export abstract class ApiCommand {
+    get defaultRequestSchema(): Schema {
+        return this._defaultRequestSchema;
+    }
     get defaultResponseSchema(): Schema {
         return this._defaultResponseSchema;
     }
@@ -53,16 +56,6 @@ export abstract class ApiCommand {
 
     private readonly _defaultResponseSchema: Schema = {
         properties: {
-            auth: {
-                required: false,
-                type: 'boolean',
-                description: 'checks if user is authenticated'
-            },
-            token: {
-                required: false,
-                type: 'string',
-                description: 'JSON webtoken'
-            },
             status: {
                 required: true,
                 type: 'string',
@@ -73,9 +66,23 @@ export abstract class ApiCommand {
                 required: false,
                 type: 'string',
                 description: 'system message or error message.'
+            },
+            data: {
+                required: false,
+                description: 'data can be string, number or JSON'
             }
         }
-    }
+    };
+
+    private readonly _defaultRequestSchema: Schema = {
+        properties: {
+            token: {
+                required: true,
+                type: 'string',
+                description: 'JSON Web Token.'
+            }
+        }
+    };
 
     /***
      * creates a default answer
@@ -86,7 +93,7 @@ export abstract class ApiCommand {
             status: 'success',
             auth: false,
             token: '',
-            data: '',
+            data: undefined,
             message: ''
         };
     }

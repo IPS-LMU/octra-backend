@@ -20,7 +20,11 @@ export class SampleCommand extends ApiCommand {
         this._responseContentType = 'application/json';
 
         // relevant for reference creation
-        this._requestStructure = {};
+        this._requestStructure = {
+            properties: {
+                ...this.defaultRequestSchema.properties,
+            }
+        };
 
         // relevant for reference creation
         this._responseStructure = {

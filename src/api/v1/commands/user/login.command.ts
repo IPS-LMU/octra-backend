@@ -16,6 +16,8 @@ export class LoginCommand extends ApiCommand {
         // relevant for reference creation
         this._requestStructure = {
             properties: {
+                ...this.defaultRequestSchema.properties,
+                token: undefined,
                 name: {
                     required: true,
                     type: 'string'
@@ -34,6 +36,16 @@ export class LoginCommand extends ApiCommand {
         // relevant for reference creation
         this._responseStructure = {
             properties: {
+                auth: {
+                    required: false,
+                    type: 'boolean',
+                    description: 'checks if user is authenticated'
+                },
+                token: {
+                    required: true,
+                    type: 'string',
+                    description: 'JSON Web Token.'
+                },
                 ...this.defaultResponseSchema.properties
             }
         };

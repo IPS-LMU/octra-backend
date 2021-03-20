@@ -36,7 +36,7 @@ export class OctraApi {
         this._activeAPIs = APIModule.activeAPIs;
     }
 
-    public async init(environment: 'development' | 'production'): Promise<Express> {
+    public init(environment: 'development' | 'production'): Express {
         this.environment = environment;
 
         // loadSettings
@@ -85,7 +85,7 @@ export class OctraApi {
             if (process.env.PORT) {
                 port = Number(process.env.PORT);
             } else {
-                this.settings.api.port
+                port = this.settings.api.port
             }
 
             if (this.settings.api.debugging) {
@@ -110,7 +110,7 @@ export class OctraApi {
             });
 
             // Start listening!
-            const server = app.listen(this.settings.api.port, this.settings.api.host, () => {
+            const server = app.listen(port, this.settings.api.host, () => {
                 console.log(`\nStarted ${this.name} REST API (v${this.version}) on http://localhost:${this.settings.api.port}!\n`);
                 console.log(`Active APIs:`);
                 for (const api of this._activeAPIs) {
@@ -137,11 +137,13 @@ export class OctraApi {
                 }
             })
 
+            console.log(`ok`);
             return app;
         } else {
             // invalid config
             console.log(`The config file is invalid:`);
             console.log(this.settings.validation.errors.map(a => `-> Error: ${a.stack}`).join('\n'));
+            return null;
         }
     }
 

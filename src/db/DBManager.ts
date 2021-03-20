@@ -2,7 +2,7 @@ import {IDBConfiguration} from '../obj/app-config/app-config';
 
 export interface SQLQuery {
     text: string;
-    variables?: (string | number)[];
+    values?: (string | number)[];
 }
 
 export abstract class DBManager<T, R> {
