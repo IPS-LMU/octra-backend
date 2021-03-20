@@ -3,9 +3,9 @@ import {Express, Router} from 'express';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import * as bcrypt from 'bcryptjs';
 
-export class AppTokenAddCommand extends ApiCommand {
+export class AppTokenCreateCommand extends ApiCommand {
     constructor() {
-        super('addAppToken', 'POST', '/v1/app/token/');
+        super('createAppToken', 'POST', '/v1/app/token/');
 
         this._description = 'Registers an app and returns a new App Token.';
         this._acceptedContentType = 'application/json';
