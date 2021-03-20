@@ -7,7 +7,7 @@
  <br/>
     <br/>
     
-New backend for OCTRA (online-mode) with REST API using JTW (JSON web tokens) for Authentication and automatically generated API reference.
+New REST API for annotation database used by OCTRA. It  using JTW (JSON web tokens) for Authentication and automatically generated API reference.
 </p>
 
 ## Features
