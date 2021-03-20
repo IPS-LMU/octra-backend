@@ -1,11 +1,11 @@
 import {DBManager, SQLQuery} from './DBManager';
-import {Client, Result} from 'pg';
+import {Client, QueryResult} from 'pg';
 import {IDBConfiguration} from '../obj/app-config/app-config';
 
 /**
  * See https://node-postgres.com/
  */
-export class PostgreSQLManager extends DBManager<Client, Result> {
+export class PostgreSQLManager extends DBManager<Client, QueryResult> {
     protected client: Client;
 
     constructor(dbSettings: IDBConfiguration) {
@@ -37,21 +37,19 @@ export class PostgreSQLManager extends DBManager<Client, Result> {
                 });
 
                 this.client.on('end', () => {
-                    console.log(`client closed!`);
                     this._connected = false;
                 });
             } else {
-                console.log(`already connected`);
                 resolve();
             }
         });
     }
 
-    async query(query: SQLQuery): Promise<Result> {
+    async query(query: SQLQuery): Promise<QueryResult> {
         return this.client.query(query);
     }
 
-    async transaction(queries: SQLQuery[]): Promise<void> {
+    async transaction(queries: SQLQuery[]): Promise<QueryResult> {
         try {
             await this.client.query('BEGIN');
 
@@ -59,7 +57,7 @@ export class PostgreSQLManager extends DBManager<Client, Result> {
                 await this.client.query(sqlQuery);
             }
 
-            await this.client.query('COMMIT');
+            return await this.client.query('COMMIT');
         } catch (e) {
             await this.client.query('ROLLBACK')
             throw e;
