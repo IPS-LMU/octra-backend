@@ -3,11 +3,12 @@ import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import {Express, Router} from 'express';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
+import {Database} from '../../obj/database';
 
 export class RegisterCommand extends ApiCommand {
 
     constructor() {
-        super('registerUser', 'POST', '/v1/user/register');
+        super('registerUser', 'POST', '/v1/user/register', false);
 
         this._description = 'Creates an account for a given user.';
         this._acceptedContentType = 'application/json';
@@ -27,10 +28,6 @@ export class RegisterCommand extends ApiCommand {
             properties: {
                 ...this.defaultRequestSchema.properties,
                 name: {
-                    type: 'string'
-                },
-                token: undefined,
-                email: {
                     type: 'string'
                 },
                 password: {
@@ -72,20 +69,31 @@ export class RegisterCommand extends ApiCommand {
 
         // do something
         if (validation === '') {
-            answer.data = bcrypt.hashSync(req.body.password);
+            const userData: RequestStructure = req.body;
 
-            // TODO create account in database
-            answer.auth = true;
-            answer.token = jwt.sign({id: 123123},
-                settings.api.secret, {
+
+            Database.createUser({
+                name: userData.name,
+                password: bcrypt.hashSync(userData.password)
+            }).then((result: any) => {
+                answer.auth = true;
+                answer.token = jwt.sign({
+                    id: result.id,
+                    name: result.username
+                }, settings.api.secret, {
                     expiresIn: 86400 // expires in 24 hours
                 });
-
-            res.status(200).send(answer);
+                res.status(200).send(answer);
+            }).catch((error) => {
+                ApiCommand.sendError(res, 400, "adding user failed");
+            });
         } else {
-            answer.status = 'error';
-            answer.message = validation;
-            res.status(400).send(answer);
+            ApiCommand.sendError(res, 400, validation);
         }
     }
+}
+
+interface RequestStructure {
+    name: string;
+    password: string;
 }

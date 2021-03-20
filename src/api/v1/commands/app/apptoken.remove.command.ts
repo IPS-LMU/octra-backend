@@ -6,7 +6,7 @@ import {PostgreSQLManager} from '../../../../db/postgreSQL.manager';
 
 export class AppTokenRemoveCommand extends ApiCommand {
     constructor() {
-        super('removeAppToken', 'DELETE', '/v1/app/token/:id');
+        super('removeAppToken', 'DELETE', '/v1/app/token/:id', true);
 
         this._description = 'Removes an app token.';
         this._acceptedContentType = 'application/json';
@@ -58,22 +58,21 @@ export class AppTokenRemoveCommand extends ApiCommand {
                     answer.data = {
                         removedRows: removeResult.rowCount
                     };
-                    res.status(200).send(answer);
-                } catch (e) {
-                    console.log(e);
+                    return res.status(200).send(answer);
+                } catch (e){
                     answer.status = 'error';
                     answer.message = e;
-                    res.status(400).send(answer);
+                    return res.status(400).send(answer);
                 }
             } else {
                 answer.status = 'error';
                 answer.message = 'Missing id in URI.';
-                res.status(400).send(answer);
+                return res.status(400).send(answer);
             }
         } else {
             answer.status = 'error';
             answer.message = validation;
-            res.status(400).send(answer);
+            return res.status(400).send(answer);
         }
     }
 

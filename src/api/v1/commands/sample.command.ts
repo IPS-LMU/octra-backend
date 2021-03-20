@@ -13,7 +13,7 @@ export class SampleCommand extends ApiCommand {
      */
 
     constructor() {
-        super('commandName', 'POST', '/v1/commandURI');
+        super('commandName', 'POST', '/v1/commandURI', true);
 
         this._description = 'ADD YOUR DESCRIPTION HERE';
         this._acceptedContentType = 'application/json';
@@ -48,11 +48,11 @@ export class SampleCommand extends ApiCommand {
 
         // do something
         if (validation === '') {
-            res.status(200).send(answer);
+            return res.status(200).send(answer);
         } else {
             answer.status = 'error';
             answer.message = validation;
-            res.status(400).send(answer);
+            return res.status(400).send(answer);
         }
     }
 }

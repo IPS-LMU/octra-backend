@@ -8,6 +8,8 @@ import {SampleCommand} from './commands/sample.command';
 import {APIV1Module} from './api.module';
 import {AppConfiguration} from '../../obj/app-config/app-config';
 import {DBManager} from '../../db/DBManager';
+import {Database} from './obj/database';
+import {verifyAppToken} from './obj/middlewares';
 
 export class APIV1 {
     get appPath(): string {
@@ -37,7 +39,7 @@ export class APIV1 {
     private _appPath: string;
     private static instance: APIV1;
 
-    private dbManager: DBManager<any, any>;
+    private dbManager: DBManager<any>;
 
     /***
      * initializes API
@@ -47,9 +49,10 @@ export class APIV1 {
      * @param settings
      */
     public init(app: Express, router: Router, environment: 'production' | 'development', settings: AppConfiguration,
-                dbManager: DBManager<any, any>) {
+                dbManager: DBManager<any>) {
         this._appPath = process.cwd();
         this.dbManager = dbManager;
+        Database.init(this.dbManager, settings);
 
         router.use(bodyParser.urlencoded({extended: false}));
         router.use(bodyParser.json());
@@ -70,36 +73,8 @@ export class APIV1 {
             commandsArray.push(command.getInformation());
         }
 
-        app.all(`/${this.information.apiSlug}/*`, (req, res, next) => {
-            let authorization = req.get('Authorization');
-            next();
-            /*
-            if (authorization) {
-                authorization = authorization.replace('Bearer ', '');
-                const isValidKey = this.settings.apiKeys.findIndex((a) => {
-                    return a.key === authorization;
-                }) > -1;
-
-                if (authorization !== '' && isValidKey) {
-                    next();
-                } else {
-                    const answer = ApiCommand.createAnswer();
-                    answer.status = 'error';
-                    answer.message = 'Invalid authorization key';
-                    res.status(403).json(answer);
-                }
-            } else {
-                const answer = ApiCommand.createAnswer();
-                answer.status = 'error';
-                answer.message = `Missing 'Authorization' Header`;
-                res.status(403).json(answer);
-            }
-             */
-        });
-
         app.get(`/${this.information.apiSlug}/reference`, (req, res) => {
             // const fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
-
             res.render(settings.appPath + `/views/api/${this.information.apiSlug}/index.ejs`, {
                 commands: commandsArray,
                 apiDefaultResponseSchema: JSON.stringify(new SampleCommand().defaultResponseSchema, null, 2),
@@ -108,5 +83,6 @@ export class APIV1 {
                 url: settings.api.url
             });
         });
+
     }
 }

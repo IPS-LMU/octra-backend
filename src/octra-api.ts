@@ -29,7 +29,7 @@ export class OctraApi {
     private name = 'OCTRA';
     private version = '0.0.1';
     private environment: 'development' | 'production';
-    private dbManager: DBManager<any, any>;
+    private dbManager: DBManager<any>;
 
     constructor() {
         this._appPath = __dirname;
@@ -105,7 +105,6 @@ export class OctraApi {
                 const answer = ApiCommand.createAnswer();
                 answer.status = 'error';
                 answer.message = 'This route does not exist. Please check your URL again.';
-
                 res.status(400).send(answer);
             });
 
@@ -137,7 +136,6 @@ export class OctraApi {
                 }
             })
 
-            console.log(`ok`);
             return app;
         } else {
             // invalid config
@@ -147,7 +145,7 @@ export class OctraApi {
         }
     }
 
-    private getDBWrapper(dbConfiguration: IDBConfiguration): DBManager<any, any> {
+    private getDBWrapper(dbConfiguration: IDBConfiguration): DBManager<any> {
         switch (dbConfiguration.dbType) {
             case 'PostgreSQL':
                 return new PostgreSQLManager(dbConfiguration);

@@ -11,133 +11,128 @@ chai.should();
 chai.use(chaiHttp);
 
 const tempData = {
-  apptoken: {
-      addedID: 0,
-      removedID: 0
-  }
+    apptoken: {
+        addedID: 0,
+        removedID: 0,
+    },
+    jwtToken: ""
 };
 describe('User', () => {
 
-    describe('/POST v1/user/register', () => {
-        it('it should POST a new user registration', (done) => {
-            const request = {
-                "name": "Julian",
-                "email": "somemail@email.de",
-                "password": "Password1234"
-            }
+    if (true) {
+        describe('/POST v1/user/register', () => {
+            it('it should POST a new user registration', (done) => {
+                const request = {
+                    "name": "Julian_" + Date.now(),
+                    "password": "Password1234"
+                }
 
-            chai.request(server)
-                .post('/v1/user/register')
-                .send(request)
-                .auth('73426T79ER58VASAD435$1542352AWEQTNBRE', {type: "bearer"})
-                .end((err, res) => {
-                    if (res.body.status === "error") {
-                        log(`Error: ${res.body.message}`);
-                    }
-                    res.body.status.should.be.equal("success");
-                    res.body.should.be.a('object');
-                    done();
-                });
+                chai.request(server)
+                    .post('/v1/user/register')
+                    .set("Authorization", "Bearer $2a$08$uI7CEEXl47wxc")
+                    .send(request)
+                    .end((err, res) => {
+                        if (!anyErrors(err, res)) {
+                            tempData.jwtToken = res.body.token;
+                        }
+                        res.body.status.should.be.equal("success");
+                        res.body.should.be.a('object');
+                        done();
+                    });
+            });
         });
-    });
+    }
 
-    describe('/POST v1/login', () => {
-        it('it should POST a user login', (done) => {
-            const request = {
-                "name": "Julian",
-                "email": "somemail@email.de",
-                "password": "Password1234"
-            }
-            chai.request(server)
-                .post('/v1/user/login')
-                .send(request)
-                .auth('73426T79ER58VASAD435$1542352AWEQTNBRE', {type: "bearer"})
-                .end((err, res) => {
-                    if (res.body.status === "error") {
-                        log(`Error: ${res.body.message}`);
-                    }
-                    res.body.status.should.be.equal("success");
-                    res.body.should.be.a('object');
-                    done();
-                });
+    if (true) {
+        describe('/POST v1/login', () => {
+            it('it should POST a user login', (done) => {
+                const request = {
+                    "name": "Julian",
+                    "email": "somemail@email.de",
+                    "password": "Password1234"
+                }
+                chai.request(server)
+                    .post('/v1/user/login')
+                    .set("Authorization", "Bearer $2a$08$uI7CEEXl47wxc")
+                    .send(request)
+                    .end((err, res) => {
+                        res.body.status.should.be.equal("success");
+                        res.body.should.be.a('object');
+                        done();
+                    });
+            });
         });
-    });
-
-    describe('/POST v1/app/token', () => {
-        it('it should POST an app token', (done) => {
-            const request = {
-                "name": "Julian",
-                "key": "oaspdkasdpokaspdkdasd",
-                "domain": "https://localhost.de",
-                "description": "aosdkaopsdk opkasd paos",
-                "token": "73426T79ER58VASAD435$1542352AWEQTNBRE"
-            }
-            chai.request(server)
-                .post('/v1/app/token')
-                .send(request)
-                .auth('73426T79ER58VASAD435$1542352AWEQTNBRE', {type: "bearer"})
-                .end((err, res) => {
-                    if (res.body.status === "error") {
-                        log(`Error: ${res.body.message}`);
-                    }
-                    res.status.should.be.equal(200);
-                    res.body.should.be.a('object');
-                    done();
-                });
-        });
-    });
+    }
 });
 
 
-describe('App', () => {
-    describe('/POST v1/app/token', () => {
-        it('it should save an app token to the database', (done) => {
-            const request = {
-                "name": "Julian",
-                "domain": "https://localhost.de",
-                "description": "aosdkaopsdk opkasd paos",
-                "token": "73426T79ER58VASAD435$1542352AWEQTNBRE"
-            }
-            chai.request(server)
-                .post('/v1/app/token')
-                .send(request)
-                .auth('73426T79ER58VASAD435$1542352AWEQTNBRE', {type: "bearer"})
-                .end((err, res) => {
-                    if (res.body.status === "error") {
-                        log(`Error: ${res.body.message}`);
+if (true) {
+    describe('App', () => {
+        if (true) {
+            describe('/POST v1/app/token', () => {
+                it('it should save an app token to the database', (done) => {
+                    const request = {
+                        "name": "Julian",
+                        "domain": "https://localhost.de",
+                        "description": "aosdkaopsdk opkasd paos"
                     }
-                    tempData.apptoken.addedID = res.body.data.id;
-                    log(`added ${res.body.data.id}`);
-                    res.status.should.be.equal(200);
-                    res.body.should.be.a('object');
-                    done();
+                    chai.request(server)
+                        .post('/v1/app/token')
+                        .set("Authorization", "Bearer $2a$08$uI7CEEXl47wxc")
+                        .set("x-access-token", tempData.jwtToken)
+                        .send(request)
+                        .end((err, res) => {
+                            if (!anyErrors(err, res)) {
+                                tempData.apptoken.addedID = res.body.data.id;
+                                log(`added ${res.body.data.id}`);
+                            }
+                            res.status.should.be.equal(200);
+                            res.body.should.be.a('object');
+                            done();
+                        });
                 });
-        });
-    });
+            });
+        }
 
-    describe('/DELETE v1/app/token', () => {
-        it('it should remove an app token', (done) => {
-            const request = {
-                "token": "73426T79ER58VASAD435$1542352AWEQTNBRE"
-            }
-            chai.request(server)
-                .delete(`/v1/app/token/${tempData.apptoken.addedID}`)
-                .send(request)
-                .auth('73426T79ER58VASAD435$1542352AWEQTNBRE', {type: "bearer"})
-                .end((err, res) => {
-                    if (res.body.status === "error") {
-                        log(`Error: ${res.body.message}`);
-                    } else {
-                        log(`removed rows: ${res.body.data.removedRows}`);
-                    }
-                    res.status.should.be.equal(200);
-                    res.body.should.be.a('object');
-                    done();
+        if (true) {
+            describe('/DELETE v1/app/token', () => {
+                it('it should remove an app token', (done) => {
+                    chai.request(server)
+                        .delete(`/v1/app/token/${tempData.apptoken.addedID}`)
+                        .set("Authorization", "Bearer $2a$08$uI7CEEXl47wxc")
+                        .set("x-access-token", tempData.jwtToken)
+                        .end((err, res) => {
+                            if (!anyErrors(err, res)) {
+                                log(`removedRows: ${res.body.data.removedRows}`);
+                            }
+                            res.status.should.be.equal(200);
+                            res.body.should.be.a('object');
+                            done();
+                        });
                 });
-        });
+            });
+        }
     });
-});
+}
 
-function log(str){
+function log(str) {
     console.log(`\t[CHAI]: ${str}`);
+}
+
+
+function anyErrors(err, res) {
+    if (res.body && res.body.status === "error") {
+        log(`Error from body: ${res.body.message}`);
+        return true;
+    }
+    if (err) {
+        log(`Error from err: ${err}`);
+        return true;
+    }
+    if (res.error) {
+        log(`Error from response: ${res.error.message}`);
+        return true;
+    }
+
+    return false;
 }

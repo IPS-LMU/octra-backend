@@ -2,8 +2,14 @@ import {Express, Router} from 'express';
 import {Schema, Validator} from 'jsonschema';
 import {AppConfiguration} from '../../../obj/app-config/app-config';
 import {DBManager} from '../../../db/DBManager';
+import {verifyAppToken, verifyWebToken} from '../obj/middlewares';
+
 
 export abstract class ApiCommand {
+    get needsJWTAuthentication(): boolean {
+        return this._needsJWTAuthentication;
+    }
+
     get defaultRequestSchema(): Schema {
         return this._defaultRequestSchema;
     }
@@ -52,8 +58,10 @@ export abstract class ApiCommand {
     protected _responseContentType: string;
     protected _requestStructure: Schema;
     protected _responseStructure: Schema;
-    protected dbManager: DBManager<any, any>;
+    protected _needsJWTAuthentication = false;
+    protected dbManager: DBManager<any>;
     protected settings: AppConfiguration;
+    protected _tokenData: any;
 
     private readonly _defaultResponseSchema: Schema = {
         properties: {
@@ -76,13 +84,7 @@ export abstract class ApiCommand {
     };
 
     private readonly _defaultRequestSchema: Schema = {
-        properties: {
-            token: {
-                required: true,
-                type: 'string',
-                description: 'JSON Web Token.'
-            }
-        }
+        properties: {}
     };
 
     /***
@@ -102,10 +104,19 @@ export abstract class ApiCommand {
         };
     }
 
-    constructor(name: string, type: string, url: string) {
+    static sendError(res, code: number, message: string) {
+        const answer = ApiCommand.createAnswer();
+        answer.status = 'error';
+        answer.message = message;
+
+        res.status(code).send(answer);
+    }
+
+    constructor(name: string, type: string, url: string, needsJWTAuthentication: boolean) {
         this._name = name;
         this._type = type;
         this._url = url;
+        this._needsJWTAuthentication = needsJWTAuthentication;
     }
 
     /***
@@ -128,7 +139,17 @@ export abstract class ApiCommand {
      * registers command to server
      */
     public register(app: Express, router: Router, environment: 'production' | 'development', settings: AppConfiguration,
-                    dbManager: DBManager<any, any>) {
+                    dbManager: DBManager<any>) {
+        router.use(this.url, verifyAppToken);
+
+        if (this._needsJWTAuthentication) {
+            router.use(this.url, (req, res, next) => {
+                verifyWebToken(req, res, next, settings, (tokenBody: { name: string, id: number }) => {
+                    this._tokenData = tokenBody;
+                    next();
+                });
+            });
+        }
         this.dbManager = dbManager;
         this.settings = settings;
     }

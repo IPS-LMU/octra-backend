@@ -5,7 +5,7 @@ import {IDBConfiguration} from '../obj/app-config/app-config';
 /**
  * See https://node-postgres.com/
  */
-export class PostgreSQLManager extends DBManager<Client, QueryResult> {
+export class PostgreSQLManager extends DBManager<Client> {
     protected client: Client;
 
     constructor(dbSettings: IDBConfiguration) {

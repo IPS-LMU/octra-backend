@@ -5,7 +5,12 @@ export interface SQLQuery {
     values?: (string | number)[];
 }
 
-export abstract class DBManager<T, R> {
+export interface QueryResult {
+    rows: any[];
+    rowCount: number;
+}
+
+export abstract class DBManager<T> {
     get connected(): boolean {
         return this._connected;
     }
@@ -16,8 +21,9 @@ export abstract class DBManager<T, R> {
 
     abstract connect(): Promise<void>;
 
-    abstract query(query: SQLQuery): Promise<R>
-    abstract transaction(query: SQLQuery[]): Promise<R>;
+    abstract query(query: SQLQuery): Promise<QueryResult>
+
+    abstract transaction(query: SQLQuery[]): Promise<QueryResult>;
 
     abstract close(): Promise<void>;
 

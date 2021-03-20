@@ -7,7 +7,7 @@ import {AppConfiguration} from '../../../../obj/app-config/app-config';
 export class LoginCommand extends ApiCommand {
 
     constructor() {
-        super('loginUser', 'POST', '/v1/user/login');
+        super('loginUser', 'POST', '/v1/user/login', false);
 
         this._description = 'Login a user';
         this._acceptedContentType = 'application/json';
@@ -17,7 +17,6 @@ export class LoginCommand extends ApiCommand {
         this._requestStructure = {
             properties: {
                 ...this.defaultRequestSchema.properties,
-                token: undefined,
                 name: {
                     required: true,
                     type: 'string'
