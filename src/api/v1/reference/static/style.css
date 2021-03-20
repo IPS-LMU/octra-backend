@@ -1,0 +1,26 @@
+body {
+    font-family: Helvetica, Arial, serif;
+    position: relative;
+}
+
+#main-inner {
+    padding: 20px;
+}
+
+hr {
+    margin-bottom: 40px;
+}
+
+textarea {
+    font-size: 0.9em;
+    resize: vertical;
+    border: 1px solid gray;
+    padding: 10px;
+    width: 100%;
+    min-height: 200px;
+}
+
+#navbar-sticky a.nav-link {
+    font-size: 0.9em;
+    padding: 6px 16px 6px 16px;
+}

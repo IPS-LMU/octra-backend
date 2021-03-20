@@ -73,11 +73,11 @@ export class OctraApi {
             app.use(bodyParser.json());
 
             app.get('/', (req, res) => {
-                res.render(this._appPath + '/views/backend/index.ejs');
-            });
-
-            app.get('/login', (req, res) => {
-                res.render(this._appPath + '/views/backend/login/index.ejs');
+                res.render(this._appPath + '/views/index.ejs', {
+                    activeAPIs: this._activeAPIs,
+                    settings: this.settings,
+                    url: this.settings.api.url
+                });
             });
 
             //set port

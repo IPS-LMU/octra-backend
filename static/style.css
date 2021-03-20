@@ -1,3 +1,7 @@
+/*
+This stylesheet is for the entry point only! To change a stylesheet of an reference, go to its reference folder.
+ */
+
 body {
     font-family: Helvetica, Arial, serif;
     position: relative;
@@ -5,17 +9,4 @@ body {
 
 #main-inner {
     padding: 20px;
-}
-
-hr {
-    margin-bottom: 40px;
-}
-
-textarea {
-    font-size: 0.9em;
-    resize: vertical;
-    border: 1px solid gray;
-    padding: 10px;
-    width: 100%;
-    min-height: 200px;
 }

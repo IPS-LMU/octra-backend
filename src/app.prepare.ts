@@ -3,17 +3,20 @@ import {OctraApi} from './octra-api';
 
 const octraAPI = new OctraApi();
 
+console.log(`Prepare resources...`);
+
 // copy reference folders to api forlder in views
 fsExtra.copySync('./views', './build/views');
+fsExtra.copySync('./static', './build/static');
+
 for (const api of octraAPI.activeAPIs) {
     console.log(`copy api ${api.information.apiSlug}...`);
     fsExtra.copySync('./src/api/' + api.information.apiSlug + '/reference', './build/views/api/' + api.information.apiSlug);
+    fsExtra.moveSync('./build/views/api/' + api.information.apiSlug + '/static', './build/static/' + api.information.apiSlug);
 }
 
 fsExtra.copySync('./config.json', './build/config.json');
 
-console.log(`Load resources...`);
-fsExtra.copySync('./static', './build/static');
 fsExtra.copySync('./node_modules/bootstrap/dist', './build/static/bootstrap');
 fsExtra.copySync('./node_modules/anchor-js/anchor.min.js', './build/static/bootstrap/js/vendor/anchor.min.js');
 fsExtra.copySync('./node_modules/clipboard/dist/clipboard.min.js', './build/static/bootstrap/js/vendor/clipboard.min.js');
