@@ -9,6 +9,13 @@ chai.should();
 
 
 chai.use(chaiHttp);
+
+const tempData = {
+  apptoken: {
+      addedID: 0,
+      removedID: 0
+  }
+};
 describe('User', () => {
 
     describe('/POST v1/user/register', () => {
@@ -25,7 +32,7 @@ describe('User', () => {
                 .auth('73426T79ER58VASAD435$1542352AWEQTNBRE', {type: "bearer"})
                 .end((err, res) => {
                     if (res.body.status === "error") {
-                        console.log(`Error: ${res.body.message}`);
+                        log(`Error: ${res.body.message}`);
                     }
                     res.body.status.should.be.equal("success");
                     res.body.should.be.a('object');
@@ -47,7 +54,7 @@ describe('User', () => {
                 .auth('73426T79ER58VASAD435$1542352AWEQTNBRE', {type: "bearer"})
                 .end((err, res) => {
                     if (res.body.status === "error") {
-                        console.log(`Error: ${res.body.message}`);
+                        log(`Error: ${res.body.message}`);
                     }
                     res.body.status.should.be.equal("success");
                     res.body.should.be.a('object');
@@ -71,7 +78,7 @@ describe('User', () => {
                 .auth('73426T79ER58VASAD435$1542352AWEQTNBRE', {type: "bearer"})
                 .end((err, res) => {
                     if (res.body.status === "error") {
-                        console.log(`Error: ${res.body.message}`);
+                        log(`Error: ${res.body.message}`);
                     }
                     res.status.should.be.equal(200);
                     res.body.should.be.a('object');
@@ -97,7 +104,31 @@ describe('App', () => {
                 .auth('73426T79ER58VASAD435$1542352AWEQTNBRE', {type: "bearer"})
                 .end((err, res) => {
                     if (res.body.status === "error") {
-                        console.log(`Error: ${res.body.message}`);
+                        log(`Error: ${res.body.message}`);
+                    }
+                    tempData.apptoken.addedID = res.body.data.id;
+                    log(`added ${res.body.data.id}`);
+                    res.status.should.be.equal(200);
+                    res.body.should.be.a('object');
+                    done();
+                });
+        });
+    });
+
+    describe('/DELETE v1/app/token', () => {
+        it('it should remove an app token', (done) => {
+            const request = {
+                "token": "73426T79ER58VASAD435$1542352AWEQTNBRE"
+            }
+            chai.request(server)
+                .delete(`/v1/app/token/${tempData.apptoken.addedID}`)
+                .send(request)
+                .auth('73426T79ER58VASAD435$1542352AWEQTNBRE', {type: "bearer"})
+                .end((err, res) => {
+                    if (res.body.status === "error") {
+                        log(`Error: ${res.body.message}`);
+                    } else {
+                        log(`removed rows: ${res.body.data.removedRows}`);
                     }
                     res.status.should.be.equal(200);
                     res.body.should.be.a('object');
@@ -106,3 +137,7 @@ describe('App', () => {
         });
     });
 });
+
+function log(str){
+    console.log(`\t[CHAI]: ${str}`);
+}

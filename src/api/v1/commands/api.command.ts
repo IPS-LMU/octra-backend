@@ -7,6 +7,7 @@ export abstract class ApiCommand {
     get defaultRequestSchema(): Schema {
         return this._defaultRequestSchema;
     }
+
     get defaultResponseSchema(): Schema {
         return this._defaultResponseSchema;
     }
@@ -88,13 +89,16 @@ export abstract class ApiCommand {
      * creates a default answer
      * @returns {{status: string, data: string, message: string}}
      */
-    static createAnswer() {
+    static createAnswer(): {
+        status: 'success' | 'error',
+        data: any,
+        message?: string,
+        auth?: boolean,
+        token?: string
+    } {
         return {
             status: 'success',
-            auth: false,
-            token: '',
-            data: undefined,
-            message: ''
+            data: undefined
         };
     }
 
