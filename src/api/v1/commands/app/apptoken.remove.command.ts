@@ -1,7 +1,6 @@
 import {ApiCommand} from '../api.command';
 import {Express, Router} from 'express';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
-import * as bcrypt from 'bcryptjs';
 import {PostgreSQLManager} from '../../../../db/postgreSQL.manager';
 
 export class AppTokenRemoveCommand extends ApiCommand {

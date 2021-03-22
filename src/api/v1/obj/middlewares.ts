@@ -5,23 +5,28 @@ import {Database} from './database';
 
 export const verifyAppToken = (req, res, next) => {
     let appToken = req.get('Authorization');
+    let originHost = req.get('origin')
 
-    if (appToken) {
+    if (originHost) {
+        originHost = originHost.replace(/:[0-9]{1,5}$/g, '');
         appToken = appToken.replace('Bearer ', '');
-        Database.isValidAppToken(appToken).then(() => {
-            next();
-        }).catch(() => {
-            ApiCommand.sendError(res, 403, 'Invalid app authorization key');
-        });
 
-        // TODO check app domain
+        if (appToken) {
+            Database.isValidAppToken(appToken, originHost).then(() => {
+                next();
+            }).catch((error) => {
+                next();
+            });
+        }
+        else {
+            ApiCommand.sendError(res, 403, `Missing 'Authorization' Header`);
+        }
     } else {
-        ApiCommand.sendError(res, 403, `Missing 'Authorization' Header`);
+        ApiCommand.sendError(res, 403, `Missing 'Origin' Header`);
     }
 };
 
 export const verifyWebToken = (req, res, next, settings: AppConfiguration, callback) => {
-    const answer = ApiCommand.createAnswer();
     const token = req.get('x-access-token');
     if (!token) {
         ApiCommand.sendError(res, 401, 'Missing token in x-access-token header.');

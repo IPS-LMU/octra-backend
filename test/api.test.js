@@ -17,6 +17,7 @@ const tempData = {
     },
     jwtToken: ""
 };
+const appToken = "c817cda2c5f7635e8f5dd49c3d7958ad32bfdbd2";
 describe('User', () => {
 
     if (true) {
@@ -29,7 +30,8 @@ describe('User', () => {
 
                 chai.request(server)
                     .post('/v1/user/register')
-                    .set("Authorization", "Bearer $2a$08$uI7CEEXl47wxc")
+                    .set("Authorization", `Bearer ${appToken}`)
+                    .set("Origin", "http:localhost:8080")
                     .send(request)
                     .end((err, res) => {
                         if (!anyErrors(err, res)) {
@@ -53,7 +55,8 @@ describe('User', () => {
                 }
                 chai.request(server)
                     .post('/v1/user/login')
-                    .set("Authorization", "Bearer $2a$08$uI7CEEXl47wxc")
+                    .set("Authorization", `Bearer ${appToken}`)
+                    .set("Origin", "http:localhost:8080")
                     .send(request)
                     .end((err, res) => {
                         res.body.status.should.be.equal("success");
@@ -73,12 +76,13 @@ if (true) {
                 it('it should save an app token to the database', (done) => {
                     const request = {
                         "name": "Julian",
-                        "domain": "https://localhost.de",
-                        "description": "aosdkaopsdk opkasd paos"
+                        "domain": "http://localhost",
+                        "description": "Neuer Key2"
                     }
                     chai.request(server)
                         .post('/v1/app/token')
-                        .set("Authorization", "Bearer $2a$08$uI7CEEXl47wxc")
+                        .set("Authorization", `Bearer ${appToken}`)
+                        .set("Origin", "http:localhost:8080")
                         .set("x-access-token", tempData.jwtToken)
                         .send(request)
                         .end((err, res) => {
@@ -99,7 +103,8 @@ if (true) {
                 it('it should remove an app token', (done) => {
                     chai.request(server)
                         .delete(`/v1/app/token/${tempData.apptoken.addedID}`)
-                        .set("Authorization", "Bearer $2a$08$uI7CEEXl47wxc")
+                        .set("Authorization", `Bearer ${appToken}`)
+                        .set("Origin", "http:localhost:8080")
                         .set("x-access-token", tempData.jwtToken)
                         .end((err, res) => {
                             if (!anyErrors(err, res)) {
@@ -107,6 +112,26 @@ if (true) {
                             }
                             res.status.should.be.equal(200);
                             res.body.should.be.a('object');
+                            done();
+                        });
+                });
+            });
+        }
+
+        if (true) {
+            describe('/GET v1/app/token', () => {
+                it('it should retrieve a list of app tokens', (done) => {
+                    chai.request(server)
+                        .get(`/v1/app/token`)
+                        .set("Authorization", `Bearer ${appToken}`)
+                        .set("Origin", "http:localhost:8080")
+                        .set("x-access-token", tempData.jwtToken)
+                        .end((err, res) => {
+                            if (!anyErrors(err, res)) {
+                                log(`retrieved rows: ${res.body.data.length}`);
+                            }
+                            res.status.should.be.equal(200);
+                            res.body.data.should.be.a('array');
                             done();
                         });
                 });

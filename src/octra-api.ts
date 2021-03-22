@@ -8,6 +8,7 @@ import {createTerminus} from '@godaddy/terminus';
 import * as fsExtra from 'fs-extra';
 import * as ejs from 'ejs';
 import * as fs from 'fs';
+import * as cors from 'cors';
 import {APIModule} from './octra-api.module';
 import {AppConfiguration, IDBConfiguration} from './obj/app-config/app-config';
 import {DBManager} from './db/DBManager';
@@ -71,6 +72,7 @@ export class OctraApi {
             // use bodyParser in order to parse JSON data
             app.use(bodyParser.urlencoded({extended: true}));
             app.use(bodyParser.json());
+            app.use(cors())
 
             app.get('/', (req, res) => {
                 res.render(this._appPath + '/views/index.ejs', {
