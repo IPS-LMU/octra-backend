@@ -1,4 +1,4 @@
-import {Express, IRoute, IRouterHandler, Router} from 'express';
+import {Express, Router} from 'express';
 import {Schema, Validator} from 'jsonschema';
 import {AppConfiguration} from '../../../obj/app-config/app-config';
 import {DBManager} from '../../../db/DBManager';
@@ -193,6 +193,19 @@ export abstract class ApiCommand {
         let errors = [];
         const validator = new Validator();
         const validationResult = validator.validate(body, this.requestStructure);
+        if (!validationResult.valid) {
+            for (const error of validationResult.errors) {
+                errors.push(error.stack);
+            }
+        }
+
+        return errors.join(', ');
+    }
+
+    validateAnswer(answer) {
+        let errors = [];
+        const validator = new Validator();
+        const validationResult = validator.validate(answer, this.responseStructure);
         if (!validationResult.valid) {
             for (const error of validationResult.errors) {
                 errors.push(error.stack);

@@ -19,10 +19,33 @@ export class AppTokenListCommand extends ApiCommand {
         // relevant for reference creation
         this._responseStructure = {
             properties: {
-                ...this.defaultResponseSchema.properties
+                ...this.defaultResponseSchema.properties,
+                data: {
+                    type: 'array',
+                    items: {
+                        type: 'object',
+                        required: ['id', 'name', 'domain', 'description'],
+                        properties: {
+                            id: {
+                                type: 'number'
+                            },
+                            name: {
+                                type: 'string'
+                            },
+                            key: {
+                                type: 'string'
+                            },
+                            domain: {
+                                type: 'string'
+                            },
+                            description: {
+                                type: 'string'
+                            }
+                        }
+                    }
+                }
             }
         };
-        // TODO change response structure
     }
 
     register(app: Express, router: Router, environment, settings: AppConfiguration,
@@ -37,7 +60,13 @@ export class AppTokenListCommand extends ApiCommand {
         if (validation === '') {
             try {
                 answer.data = await Database.listAppTokens();
-                res.status(200).send(answer);
+                const responseValidation = this.validateAnswer(answer);
+                if (responseValidation === '') {
+                    res.status(200).send(answer);
+                } else {
+                    console.log(answer);
+                    ApiCommand.sendError(res, 400, 'Response validation failed: ' + responseValidation);
+                }
             } catch (e) {
                 ApiCommand.sendError(res, 400, e);
             }
