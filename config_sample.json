@@ -1,14 +1,18 @@
 {
-  "port": 8080,
-  "hostname": "",
-  "debugging": false,
-  "cors": true,
-  "uploadPath": "data",
-  "apiURL": "",
-  "apiKeys": [
-    {
-      "appName": "testApp",
-      "key": "73426T79ER58VASAD435$1542352AWEQTNBRE"
-    }
-  ]
+  "database": {
+    "dbType": "PostgreSQL",
+    "dbHost": "",
+    "dbPort": 54321,
+    "dbName": "",
+    "dbUser": "",
+    "dbPassword": ""
+  },
+  "api": {
+    "url": "http://localhost",
+    "host": "",
+    "port": 8080,
+    "debugging": false,
+    "uploadPath": "data",
+    "secret": ""
+  }
 }
