@@ -1,6 +1,7 @@
 import {DBManager} from '../../../db/DBManager';
 import {AppConfiguration} from '../../../obj/app-config/app-config';
 import {randomBytes} from 'crypto';
+import {PostgreSQLManager} from '../../../db/postgreSQL.manager';
 
 export class Database {
     private static dbManager: DBManager<any>;
@@ -60,6 +61,18 @@ export class Database {
         }
     }
 
+    public static async removeAppToken(id: number): Promise<void> {
+        await Database.dbManager.connect();
+        const removeResult = await (this.dbManager as PostgreSQLManager).query({
+            text: 'delete from apptokens where id=$1::numeric',
+            values: [id]
+        });
+        if (removeResult.rowCount < 1) {
+            throw 'could not remove app token';
+        }
+        return;
+    }
+
     public static async listAppTokens(): Promise<any[]> {
         await Database.dbManager.connect();
         const selectResult = await this.dbManager.query({
@@ -100,6 +113,23 @@ export class Database {
 
         if (selectResult.rowCount === 1) {
             return selectResult.rows[0];
+        }
+
+        throw 'could not find user';
+    }
+
+    static async getUserPasswordByName(name: string) {
+        await Database.dbManager.connect();
+        const selectResult = await this.dbManager.query({
+            text: 'select hash from account where username=$1::text',
+            values: [name]
+        });
+
+        if (selectResult.rowCount === 1) {
+            return {
+                password: selectResult.rows[0].hash,
+                id: selectResult.rows[0].id
+            };
         }
 
         throw 'could not find user';

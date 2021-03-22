@@ -1,4 +1,4 @@
-import {ApiCommand} from './api.command';
+import {ApiCommand, RequestType} from './api.command';
 import {Express, Router} from 'express';
 import {AppConfiguration} from '../../../obj/app-config/app-config';
 
@@ -13,7 +13,7 @@ export class SampleCommand extends ApiCommand {
      */
 
     constructor() {
-        super('commandName', 'POST', '/v1/commandURI', true);
+        super('commandName', RequestType.POST, '/v1/commandURI', true);
 
         this._description = 'ADD YOUR DESCRIPTION HERE';
         this._acceptedContentType = 'application/json';
@@ -37,12 +37,9 @@ export class SampleCommand extends ApiCommand {
     register(app: Express, router: Router, environment, settings: AppConfiguration,
              dbManager) {
         super.register(app,router, environment, settings, dbManager);
-        router.route(this.url).post((req, res) => {
-            this.do(req, res, settings);
-        });
     };
 
-    do(req, res, settings: AppConfiguration) {
+    async do(req, res, settings: AppConfiguration) {
         const answer = ApiCommand.createAnswer();
         const validation = this.validate(req.params, req.body);
 
@@ -52,5 +49,8 @@ export class SampleCommand extends ApiCommand {
         } else {
             ApiCommand.sendError(res, 400, validation);
         }
+
+        // it's important if you are using await keyword!
+        return;
     }
 }

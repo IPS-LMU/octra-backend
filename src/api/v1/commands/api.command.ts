@@ -1,9 +1,14 @@
-import {Express, Router} from 'express';
+import {Express, IRoute, IRouterHandler, Router} from 'express';
 import {Schema, Validator} from 'jsonschema';
 import {AppConfiguration} from '../../../obj/app-config/app-config';
 import {DBManager} from '../../../db/DBManager';
 import {verifyAppToken, verifyWebToken} from '../obj/middlewares';
 
+export enum RequestType {
+    GET = 'GET',
+    POST = 'POST',
+    DELETE = 'DELETE'
+}
 
 export abstract class ApiCommand {
     get needsJWTAuthentication(): boolean {
@@ -42,7 +47,7 @@ export abstract class ApiCommand {
         return this._description;
     }
 
-    get type(): string {
+    get type(): RequestType {
         return this._type;
     }
 
@@ -51,7 +56,7 @@ export abstract class ApiCommand {
     }
 
     private readonly _name: string;
-    private readonly _type: string;
+    private readonly _type: RequestType;
     private readonly _url: string;
     protected _description: string;
     protected _acceptedContentType: string;
@@ -112,7 +117,7 @@ export abstract class ApiCommand {
         res.status(code).send(answer);
     }
 
-    constructor(name: string, type: string, url: string, needsJWTAuthentication: boolean) {
+    constructor(name: string, type: RequestType, url: string, needsJWTAuthentication: boolean) {
         this._name = name;
         this._type = type;
         this._url = url;
@@ -152,6 +157,23 @@ export abstract class ApiCommand {
         }
         this.dbManager = dbManager;
         this.settings = settings;
+
+        const route = router.route(this.url);
+        const callback = (req, res) => {
+            this.do(req, res, settings);
+        };
+
+        switch (this._type) {
+            case RequestType.GET:
+                route.get(callback);
+                break;
+            case RequestType.POST:
+                route.post(callback);
+                break;
+            case RequestType.DELETE:
+                route.delete(callback);
+                break;
+        }
     }
 
     /***
@@ -160,7 +182,7 @@ export abstract class ApiCommand {
      * @param res
      * @param settings
      */
-    abstract do(req, res, settings: any);
+    abstract do(req, res, settings: any): Promise<void>;
 
     /***
      * checks if the request by the client is valid
@@ -180,9 +202,9 @@ export abstract class ApiCommand {
         return errors.join(', ');
     }
 
-    public getUserDataFromTokenObj(req) : {
+    public getUserDataFromTokenObj(req): {
         name: string;
-        id: string;
+        id: number;
     } {
         return req.decoded;
     }

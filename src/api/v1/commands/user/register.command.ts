@@ -1,14 +1,14 @@
-import {ApiCommand} from '../api.command';
-import * as bcrypt from 'bcryptjs';
+import {ApiCommand, RequestType} from '../api.command';
 import * as jwt from 'jsonwebtoken';
 import {Express, Router} from 'express';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {Database} from '../../obj/database';
+import {SHA256} from 'crypto-js';
 
 export class RegisterCommand extends ApiCommand {
 
     constructor() {
-        super('registerUser', 'POST', '/v1/user/register', false);
+        super('registerUser', RequestType.POST, '/v1/user/register', false);
 
         this._description = 'Creates an account for a given user.';
         this._acceptedContentType = 'application/json';
@@ -58,24 +58,21 @@ export class RegisterCommand extends ApiCommand {
     register(app: Express, router: Router, environment, settings: AppConfiguration,
              dbManager) {
         super.register(app, router, environment, settings, dbManager);
-        router.route(this.url).post((req, res) => {
-            this.do(req, res, settings);
-        });
     };
 
-    do(req, res, settings: AppConfiguration) {
+    async do(req, res, settings: AppConfiguration) {
         const answer = ApiCommand.createAnswer();
         const validation = this.validate(req.params, req.body);
 
         // do something
         if (validation === '') {
             const userData: RequestStructure = req.body;
+            try {
+                const result = await Database.createUser({
+                    name: userData.name,
+                    password: SHA256(userData.password).toString()
+                });
 
-
-            Database.createUser({
-                name: userData.name,
-                password: bcrypt.hashSync(userData.password)
-            }).then((result: any) => {
                 answer.auth = true;
                 answer.token = jwt.sign({
                     id: result.id,
@@ -84,12 +81,14 @@ export class RegisterCommand extends ApiCommand {
                     expiresIn: 86400 // expires in 24 hours
                 });
                 res.status(200).send(answer);
-            }).catch((error) => {
-                ApiCommand.sendError(res, 400, "adding user failed");
-            });
+            } catch (e) {
+                ApiCommand.sendError(res, 400, 'Adding user failed');
+            }
         } else {
             ApiCommand.sendError(res, 400, validation);
         }
+
+        return;
     }
 }
 

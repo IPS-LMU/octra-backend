@@ -1,11 +1,11 @@
-import {ApiCommand} from '../api.command';
+import {ApiCommand, RequestType} from '../api.command';
 import {Express, Router} from 'express';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
-import {PostgreSQLManager} from '../../../../db/postgreSQL.manager';
+import {Database} from '../../obj/database';
 
 export class AppTokenRemoveCommand extends ApiCommand {
     constructor() {
-        super('removeAppToken', 'DELETE', '/v1/app/token/:id', true);
+        super('removeAppToken', RequestType.DELETE, '/v1/app/token/:id', true);
 
         this._description = 'Removes an app token.';
         this._acceptedContentType = 'application/json';
@@ -36,9 +36,6 @@ export class AppTokenRemoveCommand extends ApiCommand {
     register(app: Express, router: Router, environment, settings: AppConfiguration,
              dbManager) {
         super.register(app, router, environment, settings, dbManager);
-        router.route(this.url).delete((req, res) => {
-            this.do(req, res, settings);
-        });
     };
 
     async do(req, res, settings: AppConfiguration) {
@@ -49,13 +46,9 @@ export class AppTokenRemoveCommand extends ApiCommand {
         if (validation === '') {
             if (req.params.hasOwnProperty('id')) {
                 try {
-                    await this.dbManager.connect();
-                    const removeResult = await (this.dbManager as PostgreSQLManager).query({
-                        text: 'delete from apptokens where id=$1::numeric',
-                        values: [req.params.id]
-                    });
+                    const removedRows = await Database.removeAppToken(req.params.id);
                     answer.data = {
-                        removedRows: removeResult.rowCount
+                        removedRows
                     };
                     res.status(200).send(answer);
                 } catch (e) {
@@ -67,10 +60,8 @@ export class AppTokenRemoveCommand extends ApiCommand {
         } else {
             ApiCommand.sendError(res, 400, validation);
         }
-    }
 
-    generateAppToken() {
-        return bcrypt.hash(Date.now() + this.settings.api.secret, 8);
+        return;
     }
 }
 

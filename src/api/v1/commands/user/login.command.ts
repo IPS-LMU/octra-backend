@@ -1,13 +1,14 @@
-import {ApiCommand} from '../api.command';
-import * as bcrypt from 'bcryptjs';
+import {ApiCommand, RequestType} from '../api.command';
 import * as jwt from 'jsonwebtoken';
 import {Express, Router} from 'express';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
+import {SHA256} from 'crypto-js';
+import {Database} from '../../obj/database';
 
 export class LoginCommand extends ApiCommand {
 
     constructor() {
-        super('loginUser', 'POST', '/v1/user/login', false);
+        super('loginUser', RequestType.POST, '/v1/user/login', false);
 
         this._description = 'Login a user';
         this._acceptedContentType = 'application/json';
@@ -48,39 +49,45 @@ export class LoginCommand extends ApiCommand {
 
     register(app: Express, router: Router, environment, settings: AppConfiguration,
              dbManager) {
-        super.register(app,router, environment, settings, dbManager);
-        router.route(this.url).post((req, res) => {
-            this.do(req, res, settings);
-        });
+        super.register(app, router, environment, settings, dbManager);
     };
 
-    do(req, res, settings: AppConfiguration) {
-        const answer = ApiCommand.createAnswer();
+    async do(req, res, settings: AppConfiguration) {
         const validation = this.validate(req.params, req.body);
+        const body: RequestStructure = req.body;
 
-        // do something
+        const answer = ApiCommand.createAnswer();
+
         if (validation === '') {
-            // TODO check if user exists
+            try {
+                const {password, id} = await Database.getUserPasswordByName(body.name);
+                const passwordIsValid = SHA256(body.password).toString() === password;
 
-            const passwordIsValid = bcrypt.compareSync(req.body.password, '$2a$10$b5DTfhUd6Htc3FKkxSa5au/WhCiyyIsOegMac56nGqUzqxLKcm82i');
-            if (!passwordIsValid) {
-                return res.status(401).send({
-                    ...answer,
-                    status: 'error',
-                    message: 'invalid password',
-                    auth: false,
-                    token: null
+                if (!passwordIsValid) {
+                    ApiCommand.sendError(res, 401, 'Invalid password.');
+                }
+
+                answer.auth = true;
+                answer.token = jwt.sign({
+                    name: body.name,
+                    id
+                }, settings.api.secret, {
+                    expiresIn: 86400 // expires in 24 hours
                 });
+
+                res.status(200).send(answer);
+            } catch (e) {
+                console.log(e);
+                ApiCommand.sendError(res, 500, e);
             }
-
-            answer.auth = true;
-            answer.token = jwt.sign({id: 123123}, settings.api.secret, {
-                expiresIn: 86400 // expires in 24 hours
-            });
-
-            res.status(200).send(answer);
         } else {
             ApiCommand.sendError(res, 400, validation);
         }
+        return;
     }
+}
+
+interface RequestStructure {
+    name: string;
+    password: string;
 }
