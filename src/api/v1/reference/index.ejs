@@ -85,7 +85,7 @@
         <div class="commands" data-spy="scroll" data-target="#navbar-example2" data-offset="0">
           <% for(var i = 0; i < commands.length; i++) { %>
           <div id="<%= commands[i].name %>">
-            <h3><%= commands[i].name %> (<%= commands[i].type %>)</h3>
+            <h3><%= commands[i].name %> <span class="badge rounded-pill bg-secondary"><%= commands[i].type %></span></h3>
           </div>
           <div class="card command">
             <div class="card-header"><%= commands[i].type %> - <%= commands[i].name %></div>
@@ -105,7 +105,7 @@
                 </tr>
                 <tr>
                   <td>Method:</td>
-                  <td><%= commands[i].type %></td>
+                  <td><span class="badge rounded-pill bg-secondary"><%= commands[i].type %></span></td>
                 </tr>
                 <% if (commands[i].acceptedContentType) { %>
                 <tr>
@@ -151,7 +151,7 @@
             <a class="nav-link" href="#APIMethods">API Methods</a>
             <nav class="nav nav-pills flex-column">
               <% for(var i = 0; i < commands.length; i++) { %>
-              <a class="nav-link ml-3 my-1" href="#<%= commands[i].name %>"><%= commands[i].name %> (<%= commands[i].type %>)</a>
+              <a class="nav-link ml-3 my-1" href="#<%= commands[i].name %>"><%= commands[i].name %> <span class="badge rounded-pill bg-secondary"><%= commands[i].type %></span></a>
               <% } %>
             </nav>
           </nav>

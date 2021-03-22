@@ -24,3 +24,7 @@ textarea {
     font-size: 0.9em;
     padding: 6px 16px 6px 16px;
 }
+
+.badge.bg-secondary {
+    color:white;
+}
