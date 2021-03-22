@@ -21,7 +21,7 @@ const tempData = {
     },
     jwtToken: ""
 };
-const appToken = "c817cda2c5f7635e8f5dd49c3d7958ad32bfdbd2";
+const appToken = "a810c2e6e76774fadf03d8edd1fc9d1954cc27d6";
 describe('User', () => {
 
     if (true) {
@@ -35,7 +35,7 @@ describe('User', () => {
                 chai.request(server)
                     .post('/v1/user/register')
                     .set("Authorization", `Bearer ${appToken}`)
-                    .set("Origin", "http:localhost:8080")
+                    .set("Origin", "http://localhost:8080")
                     .send(request)
                     .end((err, res) => {
                         checkForErrors(err, res);
@@ -59,7 +59,7 @@ describe('User', () => {
                 chai.request(server)
                     .post('/v1/user/login')
                     .set("Authorization", `Bearer ${appToken}`)
-                    .set("Origin", "http:localhost:8080")
+                    .set("Origin", "http://localhost:8080")
                     .send(request)
                     .end((err, res) => {
                         checkForErrors(err, res);
@@ -80,13 +80,13 @@ if (true) {
                 it('it should save an app token to the database', (done) => {
                     const request = {
                         "name": "Julian",
-                        "domain": "http://localhost",
+                        "domain": "localhost",
                         "description": "Neuer Key2"
                     }
                     chai.request(server)
                         .post('/v1/app/token')
                         .set("Authorization", `Bearer ${appToken}`)
-                        .set("Origin", "http:localhost:8080")
+                        .set("Origin", "http://localhost:8080")
                         .set("x-access-token", tempData.jwtToken)
                         .send(request)
                         .end((err, res) => {
@@ -108,7 +108,7 @@ if (true) {
                     chai.request(server)
                         .delete(`/v1/app/token/${tempData.apptoken.addedID}`)
                         .set("Authorization", `Bearer ${appToken}`)
-                        .set("Origin", "http:localhost:8080")
+                        .set("Origin", "http://localhost:8080")
                         .set("x-access-token", tempData.jwtToken)
                         .end((err, res) => {
                             checkForErrors(err, res);
@@ -128,7 +128,7 @@ if (true) {
                     chai.request(server)
                         .get(`/v1/app/token`)
                         .set("Authorization", `Bearer ${appToken}`)
-                        .set("Origin", "http:localhost:8080")
+                        .set("Origin", "http://localhost:8080")
                         .set("x-access-token", tempData.jwtToken)
                         .end((err, res) => {
                             checkForErrors(err, res);

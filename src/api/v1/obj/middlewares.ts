@@ -15,14 +15,14 @@ export const verifyAppToken = (req, res, next) => {
             Database.isValidAppToken(appToken, originHost).then(() => {
                 next();
             }).catch((error) => {
-                next();
+                ApiCommand.sendError(res, 401, `Invalid app token.`);
             });
         }
         else {
-            ApiCommand.sendError(res, 403, `Missing 'Authorization' Header`);
+            ApiCommand.sendError(res, 403, `Missing 'Authorization' Header.`);
         }
     } else {
-        ApiCommand.sendError(res, 403, `Missing 'Origin' Header`);
+        ApiCommand.sendError(res, 403, `Missing 'Origin' Header.`);
     }
 };
 

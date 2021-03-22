@@ -7,6 +7,11 @@ export class Database {
     private static dbManager: DBManager<any>;
     private static settings: AppConfiguration;
 
+    private static selectAllStatements = {
+        appTokens: 'select id::integer, name::text, key::text, domain::text, description::text from apptokens',
+        account: 'select id::bigint, username::text, active::boolean, hash::text, training::text, comment::text from account'
+    };
+
     constructor() {
     }
 
@@ -18,7 +23,7 @@ export class Database {
     public static async isValidAppToken(token: string, originHost: string): Promise<void> {
         await Database.dbManager.connect();
         const selectResult = await this.dbManager.query({
-            text: 'select * from apptokens where key=$1::text',
+            text: Database.selectAllStatements.appTokens + ' where key=$1::text',
             values: [token]
         });
 
@@ -48,12 +53,14 @@ export class Database {
                 values: [data.name, token, data.domain, data.description]
             });
             if (insertionResult.rowCount === 1 && insertionResult.rows[0].hasOwnProperty('id')) {
+                const id = insertionResult.rows[0].id;
                 const selectResult = await this.dbManager.query({
-                    text: 'select * from apptokens where id=$1::numeric',
-                    values: [insertionResult.rows[0].id]
+                    text: Database.selectAllStatements.appTokens + ' where id=$1',
+                    values: [id]
                 });
                 return selectResult.rows;
             }
+            throw "insertionResult does not habe id";
         } catch (e) {
             console.log(`[Error]:`);
             console.log(e);
@@ -73,10 +80,16 @@ export class Database {
         return;
     }
 
-    public static async listAppTokens(): Promise<any[]> {
+    public static async listAppTokens(): Promise<{
+        id: number,
+        name: string,
+        key: string,
+        domain: string,
+        description: string
+    }[]> {
         await Database.dbManager.connect();
         const selectResult = await this.dbManager.query({
-            text: 'select * from apptokens'
+            text: Database.selectAllStatements.appTokens
         });
         return selectResult.rows;
     }
@@ -93,7 +106,7 @@ export class Database {
 
         if (insertionResult.rowCount === 1 && insertionResult.rows[0].hasOwnProperty('id')) {
             const selectResult = await this.dbManager.query({
-                text: 'select * from account where id=$1::numeric',
+                text: this.selectAllStatements.account + ' where id=$1::numeric',
                 values: [insertionResult.rows[0].id]
             });
             if (selectResult.rowCount === 1) {
@@ -107,7 +120,7 @@ export class Database {
     static async getUser(id: number) {
         await Database.dbManager.connect();
         const selectResult = await this.dbManager.query({
-            text: 'select * from account where id=$1::numeric',
+            text: this.selectAllStatements.account + ' where id=$1::numeric',
             values: [id]
         });
 
@@ -121,7 +134,7 @@ export class Database {
     static async getUserPasswordByName(name: string) {
         await Database.dbManager.connect();
         const selectResult = await this.dbManager.query({
-            text: 'select hash from account where username=$1::text',
+            text: 'select hash::text from account where username=$1::text',
             values: [name]
         });
 
