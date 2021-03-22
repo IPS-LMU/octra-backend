@@ -9,7 +9,7 @@ import {APIV1Module} from './api.module';
 import {AppConfiguration} from '../../obj/app-config/app-config';
 import {DBManager} from '../../db/DBManager';
 import {Database} from './obj/database';
-import {verifyAppToken} from './obj/middlewares';
+import * as Path from 'path';
 
 export class APIV1 {
     get appPath(): string {
@@ -75,7 +75,7 @@ export class APIV1 {
 
         app.get(`/${this.information.apiSlug}/reference`, (req, res) => {
             // const fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
-            res.render(settings.appPath + `/views/api/${this.information.apiSlug}/index.ejs`, {
+            res.render(`api/${this.information.apiSlug}/index.ejs`, {
                 commands: commandsArray,
                 apiDefaultResponseSchema: JSON.stringify(new SampleCommand().defaultResponseSchema, null, 2),
                 apiInformation: this.information,

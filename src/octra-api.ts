@@ -3,6 +3,7 @@ import {Express} from 'express';
 import * as bodyParser from 'body-parser';
 import {APIV1} from './api/v1/api';
 import * as path from 'path';
+import * as Path from 'path';
 import {ApiCommand} from './api/v1/commands/api.command';
 import {createTerminus} from '@godaddy/terminus';
 import * as fsExtra from 'fs-extra';
@@ -19,12 +20,17 @@ export class OctraApi {
         return this._appPath;
     }
 
+    get executionPath(): string {
+        return this._executionPath;
+    }
+
     get activeAPIs(): APIV1[] {
         return this._activeAPIs;
     }
 
     private _activeAPIs = [];
 
+    private _executionPath: string;
     private _appPath: string;
     private settings: AppConfiguration;
     private name = 'OCTRA';
@@ -33,15 +39,21 @@ export class OctraApi {
     private dbManager: DBManager<any>;
 
     constructor() {
-        this._appPath = __dirname;
         this._activeAPIs = APIModule.activeAPIs;
     }
 
     public init(environment: 'development' | 'production'): Express {
         this.environment = environment;
+        console.log(`environment is ${environment}`);
+        if (environment === 'development') {
+            this._executionPath = __dirname;
+        } else {
+            this._executionPath = path.dirname(process.execPath);
+        }
+        this._appPath = __dirname;
 
         // loadSettings
-        const settingsJSON = fs.readFileSync(this._appPath + '/config.json',
+        const settingsJSON = fs.readFileSync(path.join(this._executionPath, 'config.json'),
             {
                 encoding: 'utf-8'
             }
@@ -50,11 +62,14 @@ export class OctraApi {
         const appConfiguration = new AppConfiguration(JSON.parse(settingsJSON));
         this.settings = appConfiguration;
         this.settings.appPath = this._appPath;
+        this.settings.executionPath = this._executionPath;
 
         if (this.settings.validation.valid) {
             const app = express();
             app.set('view engine', 'ejs');
             app.engine('ejs', ejs.__express); //<-- this
+
+            app.set('views', path.join(this._appPath, 'views'));
 
             const router = express.Router();
 
@@ -74,8 +89,9 @@ export class OctraApi {
             app.use(bodyParser.json());
             app.use(cors())
 
+            console.log(`app path is ${Path.join(this._appPath, '/views/index.ejs')}`);
             app.get('/', (req, res) => {
-                res.render(this._appPath + '/views/index.ejs', {
+                res.render('index.ejs', {
                     activeAPIs: this._activeAPIs,
                     settings: this.settings,
                     url: this.settings.api.url
@@ -99,7 +115,7 @@ export class OctraApi {
                 });
             }
 
-            console.log(`LOAD static: ${path.join(this._appPath, 'static')}`);
+            console.log(`static is ${path.join(this._appPath, 'static')}`);
             app.use(express.static(path.join(this._appPath, 'static')));
             app.use('/', router);
 

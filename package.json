@@ -8,7 +8,7 @@
     "compile": "rm -rf build dist && tsc",
     "start": "node build/app.prepare.js && node build/app.dev.js",
     "test": "npm run compile && node build/app.prepare.js && echo '\n Test API...' && mocha --exit",
-    "build": "rm -rf dist && tsc && node build/app.prepare.js && npx webpack && cp -rf static dist/static && cp -rf views dist/views && rm -rf build && rm -rf static/bootstrap"
+    "build": "npm run compile && node build/app.prepare.js && rm -rf prod && mkdir prod && cd prod && pkg ../build/app.prod.js -c ../package.json && cd .."
   },
   "author": "Julian Pömp, Christoph Draxler; Institut für Phonetik und Sprachverarbeitung, LMU München",
   "license": "MIT",
@@ -32,7 +32,7 @@
     "lokijs": "^1.5.5",
     "multer": "^1.3.0",
     "pg": "^8.5.1",
-    "pkg": "^4.3.1",
+    "pkg": "^4.4.9",
     "popper.js": "^1.16.1",
     "request": "^2.87.0"
   },
@@ -51,11 +51,22 @@
     "mocha": "^8.3.2",
     "nodemon": "^2.0.7",
     "ts-loader": "^8.0.18",
-    "typescript": "^4.2.3",
-    "webpack": "^5.26.3",
-    "webpack-cli": "^4.5.0"
+    "typescript": "^4.2.3"
   },
   "repository": {
     "url": "https://github.com/IPS-LMU/octra-api"
+  },
+  "pkg": {
+    "output": "octra-api",
+    "scripts": "build/**/*.js",
+    "assets": [
+      "build/views/**/*",
+      "build/static/**/*"
+    ],
+    "targets": [
+      "node12-macos-x64",
+      "node12-win-x64",
+      "node12-linux-x64"
+    ]
   }
 }

@@ -42,6 +42,7 @@ export class AppConfiguration implements IAppConfiguration {
     private configuration: IAppConfiguration;
     private _validation: ValidatorResult;
     public appPath: string;
+    public executionPath: string;
 
     constructor(configuration: IAppConfiguration) {
         const validator = new Validator();
