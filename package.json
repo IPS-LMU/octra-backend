@@ -7,7 +7,7 @@
     "prestart": "npm run compile",
     "compile": "rm -rf build dist && tsc",
     "start": "node build/app.prepare.js && node build/app.dev.js",
-    "test": "npm run compile && node build/app.prepare.js && echo '\n Test API...' && mocha --timeout 10000",
+    "test": "npm run compile && node build/app.prepare.js && echo '\n Test API...' && mocha --exit",
     "build": "rm -rf dist && tsc && node build/app.prepare.js && npx webpack && cp -rf static dist/static && cp -rf views dist/views && rm -rf build && rm -rf static/bootstrap"
   },
   "author": "Julian Pömp, Christoph Draxler; Institut für Phonetik und Sprachverarbeitung, LMU München",
@@ -16,7 +16,6 @@
   "dependencies": {
     "@godaddy/terminus": "^4.7.0",
     "anchor-js": "^4.3.0",
-    "bcryptjs": "^2.4.3",
     "bootstrap": "^4.6.0",
     "clipboard": "^2.0.8",
     "config": "^3.3.6",
@@ -39,6 +38,7 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",
+    "@types/crypto-js": "^4.0.1",
     "@types/del": "^4.0.0",
     "@types/express": "^4.16.0",
     "@types/fs-extra": "^9.0.8",
