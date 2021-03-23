@@ -16,6 +16,8 @@ export class UserLoginCommand extends ApiCommand {
 
         // relevant for reference creation
         this._requestStructure = {
+            ...this.defaultRequestSchema,
+            type: 'object',
             properties: {
                 ...this.defaultRequestSchema.properties,
                 name: {
@@ -65,7 +67,7 @@ export class UserLoginCommand extends ApiCommand {
         if (validation === '') {
             try {
                 const answer = ApiCommand.createAnswer();
-                const {password, id} = await DatabaseFunctions.getUserPasswordHashByName(body.name);
+                const {password, id} = await DatabaseFunctions.getUserInfoByUserName(body.name);
                 const passwordIsValid = SHA256(body.password).toString() === password;
 
                 if (!passwordIsValid) {
@@ -96,6 +98,7 @@ export class UserLoginCommand extends ApiCommand {
 }
 
 interface RequestStructure {
-    name: string;
+    name?: string;
+    email?: string;
     password: string;
 }

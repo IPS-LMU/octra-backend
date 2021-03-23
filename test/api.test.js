@@ -18,7 +18,8 @@ const tempData = {
     },
     user: {
         id: 0,
-        name: "TestUser"
+        name: "TestUser",
+        email: "testemail@testtest.de"
     },
     jwtToken: ""
 };
@@ -30,6 +31,7 @@ describe('User', () => {
             it('it should POST a new user registration', (done) => {
                 const request = {
                     "name": tempData.user.name,
+                    "email": tempData.user.email,
                     "password": "Password12345"
                 }
 

@@ -9,7 +9,7 @@ export class DatabaseFunctions {
 
     private static selectAllStatements = {
         appTokens: 'select id::integer, name::text, key::text, domain::text, description::text from apptokens',
-        account: 'select id::integer, username::text, active::boolean, hash::text, training::text, comment::text from account'
+        account: 'select id::integer, username::text, email::text, loginmethod::text, active::boolean, hash::text, training::text, comment::text from account'
     };
 
     constructor() {
@@ -93,13 +93,14 @@ export class DatabaseFunctions {
     }
 
     static async createUser(userData: {
-        name: string,
+        name?: string,
+        email?: string,
         password: string
     }): Promise<AccountRow> {
         await DatabaseFunctions.dbManager.connect();
         const insertionResult = await this.dbManager.query({
-            text: 'insert into account(username, hash) values($1::text, $2::text) returning id',
-            values: [userData.name, userData.password]
+            text: 'insert into account(username, email, hash) values($1::text, $2::text, $3::text) returning id',
+            values: [userData.name, userData.email, userData.password]
         });
 
         if (insertionResult.rowCount === 1 && insertionResult.rows[0].hasOwnProperty('id')) {
@@ -153,13 +154,13 @@ export class DatabaseFunctions {
         throw 'could not find user';
     }
 
-    static async getUserPasswordHashByName(name: string): Promise<{
+    static async getUserInfoByUserName(name: string): Promise<{
         password: string,
         id: number
     }> {
         await DatabaseFunctions.dbManager.connect();
         const selectResult = await this.dbManager.query({
-            text: 'select id::integer, hash::text from account where username=$1::text',
+            text: 'select id::integer, email::text, hash::text from account where username=$1::text',
             values: [name]
         });
 

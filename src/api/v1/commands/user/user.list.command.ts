@@ -15,6 +15,7 @@ export class UserListCommand extends ApiCommand {
 
         // relevant for reference creation
         this._responseStructure = {
+            ...this.defaultRequestSchema,
             properties: {
                 ...this.defaultResponseSchema.properties,
                 data: {

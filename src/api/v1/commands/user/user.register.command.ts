@@ -1,6 +1,5 @@
 import {ApiCommand, RequestType} from '../api.command';
 import * as jwt from 'jsonwebtoken';
-import {Express, Router} from 'express';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {SHA256} from 'crypto-js';
@@ -16,18 +15,15 @@ export class UserRegisterCommand extends ApiCommand {
 
         // relevant for reference creation
         this._requestStructure = {
+            ...this.defaultRequestSchema,
             type: 'object',
-            anyOf: [
-                {
-                    required: ['name']
-                },
-                {
-                    required: ['email']
-                }
-            ],
             properties: {
                 ...this.defaultRequestSchema.properties,
                 name: {
+                    required: true,
+                    type: 'string'
+                },
+                email: {
                     type: 'string'
                 },
                 password: {
@@ -75,6 +71,7 @@ export class UserRegisterCommand extends ApiCommand {
                 const answer = ApiCommand.createAnswer();
                 const result = await DatabaseFunctions.createUser({
                     name: userData.name,
+                    email: userData.email,
                     password: SHA256(userData.password).toString()
                 });
 
@@ -90,6 +87,7 @@ export class UserRegisterCommand extends ApiCommand {
                 };
                 this.checkAndSendAnswer(res, answer, false);
             } catch (e) {
+                console.log(e);
                 ApiCommand.sendError(res, 400, 'Could not create user account.', false);
             }
         } else {
@@ -101,6 +99,7 @@ export class UserRegisterCommand extends ApiCommand {
 }
 
 interface RequestStructure {
-    name: string;
+    name?: string;
+    email?: string;
     password: string;
 }

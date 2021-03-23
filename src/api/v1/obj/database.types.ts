@@ -2,8 +2,10 @@ export interface DatabaseRow {
     id: number;
 }
 
-export interface AccountRow extends DatabaseRow{
+export interface AccountRow extends DatabaseRow {
     username: string;
+    email: string;
+    loginmethod: string;
     createdate: string;
     active: boolean;
     hash: string;
