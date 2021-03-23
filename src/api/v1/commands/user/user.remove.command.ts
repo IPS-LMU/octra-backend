@@ -1,28 +1,24 @@
 import {ApiCommand, RequestType} from '../api.command';
-import {Express, Router} from 'express';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
 
-export class AppTokenRemoveCommand extends ApiCommand {
+export class UserRemoveCommand extends ApiCommand {
     constructor() {
-        super('removeAppToken', RequestType.DELETE, '/v1/app/token/:id', true);
+        super('listUsers', RequestType.DELETE, '/v1/user/:id', true);
 
-        this._description = 'Removes an app token.';
+        this._description = 'Removes a user by id.';
         this._acceptedContentType = 'application/json';
         this._responseContentType = 'application/json';
 
         // relevant for reference creation
-        this._requestStructure = {
-            properties: {
-                ...this.defaultRequestSchema.properties
-            }
-        };
+        this._requestStructure = {};
 
         // relevant for reference creation
         this._responseStructure = {
             properties: {
                 ...this.defaultResponseSchema.properties,
                 data: {
+                    type: 'object',
                     properties: {
                         removedRows: {
                             type: 'number'
@@ -33,29 +29,27 @@ export class AppTokenRemoveCommand extends ApiCommand {
         };
     }
 
-    register(app: Express, router: Router, environment, settings: AppConfiguration,
-             dbManager) {
-        super.register(app, router, environment, settings, dbManager);
-    };
-
     async do(req, res, settings: AppConfiguration) {
         const answer = ApiCommand.createAnswer();
         const validation = this.validate(req.params, req.body);
 
-        // do something
         if (validation === '') {
             if (req.params.hasOwnProperty('id')) {
                 try {
-                    const removedRows = await DatabaseFunctions.removeAppToken(req.params.id);
-                    answer.data = {
-                        removedRows
-                    };
-                    res.status(200).send(answer);
+                    await DatabaseFunctions.removeUserByID(req.params.id);
+                    const responseValidation = this.validateAnswer(answer);
+                    answer.data = {};
+                    if (responseValidation === '') {
+                        res.status(200).send(answer);
+                    } else {
+                        ApiCommand.sendError(res, 400, 'Response validation failed: ' + responseValidation);
+                    }
                 } catch (e) {
+                    console.log(e);
                     ApiCommand.sendError(res, 400, e);
                 }
             } else {
-                ApiCommand.sendError(res, 400, 'Missing id in URI.');
+                ApiCommand.sendError(res, 400, 'Missing ID in URI');
             }
         } else {
             ApiCommand.sendError(res, 400, validation);
@@ -63,8 +57,4 @@ export class AppTokenRemoveCommand extends ApiCommand {
 
         return;
     }
-}
-
-interface RequestStructure {
-    id: number
 }

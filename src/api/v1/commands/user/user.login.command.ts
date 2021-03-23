@@ -3,9 +3,9 @@ import * as jwt from 'jsonwebtoken';
 import {Express, Router} from 'express';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {SHA256} from 'crypto-js';
-import {Database} from '../../obj/database';
+import {DatabaseFunctions} from '../../obj/database.functions';
 
-export class LoginCommand extends ApiCommand {
+export class UserLoginCommand extends ApiCommand {
 
     constructor() {
         super('loginUser', RequestType.POST, '/v1/user/login', false);
@@ -42,7 +42,17 @@ export class LoginCommand extends ApiCommand {
                     type: 'string',
                     description: 'JSON Web Token.'
                 },
-                ...this.defaultResponseSchema.properties
+                ...this.defaultResponseSchema.properties,
+                data: {
+                    ...this.defaultResponseSchema.properties.data,
+                    properties: {
+                        ...this.defaultResponseSchema.properties.data.properties,
+                        id: {
+                            type: 'number',
+                            required: true
+                        }
+                    }
+                }
             }
         };
     }
@@ -60,7 +70,7 @@ export class LoginCommand extends ApiCommand {
 
         if (validation === '') {
             try {
-                const {password, id} = await Database.getUserPasswordByName(body.name);
+                const {password, id} = await DatabaseFunctions.getUserPasswordHashByName(body.name);
                 const passwordIsValid = SHA256(body.password).toString() === password;
 
                 if (!passwordIsValid) {
@@ -74,7 +84,9 @@ export class LoginCommand extends ApiCommand {
                 }, settings.api.secret, {
                     expiresIn: 86400 // expires in 24 hours
                 });
-
+                answer.data = {
+                    id: id
+                };
                 res.status(200).send(answer);
             } catch (e) {
                 console.log(e);

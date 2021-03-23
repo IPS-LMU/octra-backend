@@ -1,9 +1,9 @@
 import {DBManager} from '../../../db/DBManager';
 import {AppConfiguration} from '../../../obj/app-config/app-config';
 import {randomBytes} from 'crypto';
-import {PostgreSQLManager} from '../../../db/postgreSQL.manager';
+import {AccountRow, AppTokensRow} from './database.types';
 
-export class Database {
+export class DatabaseFunctions {
     private static dbManager: DBManager<any>;
     private static settings: AppConfiguration;
 
@@ -16,19 +16,19 @@ export class Database {
     }
 
     public static init(_dbManager: DBManager<any>, settings: AppConfiguration) {
-        Database.dbManager = _dbManager;
-        Database.settings = settings;
+        DatabaseFunctions.dbManager = _dbManager;
+        DatabaseFunctions.settings = settings;
     }
 
     public static async isValidAppToken(token: string, originHost: string): Promise<void> {
-        await Database.dbManager.connect();
+        await DatabaseFunctions.dbManager.connect();
         const selectResult = await this.dbManager.query({
-            text: Database.selectAllStatements.appTokens + ' where key=$1::text',
+            text: DatabaseFunctions.selectAllStatements.appTokens + ' where key=$1::text',
             values: [token]
         });
 
         if (selectResult.rowCount === 1) {
-            const resultRow = selectResult.rows[0];
+            const resultRow = selectResult.rows[0] as AppTokensRow;
             if (resultRow.hasOwnProperty('domain') && resultRow.domain === originHost) {
                 return;
             } else {
@@ -43,24 +43,25 @@ export class Database {
         name: string,
         domain?: string,
         description?: string
-    }): Promise<any[]> {
+    }): Promise<AppTokensRow[]> {
         try {
-            await Database.dbManager.connect();
-            let token = await Database.generateAppToken();
+            await DatabaseFunctions.dbManager.connect();
+            let token = await DatabaseFunctions.generateAppToken();
 
             const insertionResult = await this.dbManager.query({
                 text: 'insert into apptokens(name, key, domain, description) values($1::text, $2::text, $3::text, $4::text) returning id',
                 values: [data.name, token, data.domain, data.description]
             });
+
             if (insertionResult.rowCount === 1 && insertionResult.rows[0].hasOwnProperty('id')) {
                 const id = insertionResult.rows[0].id;
                 const selectResult = await this.dbManager.query({
-                    text: Database.selectAllStatements.appTokens + ' where id=$1',
+                    text: DatabaseFunctions.selectAllStatements.appTokens + ' where id=$1',
                     values: [id]
                 });
-                return selectResult.rows;
+                return selectResult.rows as AppTokensRow[];
             }
-            throw "insertionResult does not habe id";
+            throw 'insertionResult does not have id';
         } catch (e) {
             console.log(`[Error]:`);
             console.log(e);
@@ -69,8 +70,8 @@ export class Database {
     }
 
     public static async removeAppToken(id: number): Promise<void> {
-        await Database.dbManager.connect();
-        const removeResult = await (this.dbManager as PostgreSQLManager).query({
+        await DatabaseFunctions.dbManager.connect();
+        const removeResult = await this.dbManager.query({
             text: 'delete from apptokens where id=$1::numeric',
             values: [id]
         });
@@ -80,25 +81,20 @@ export class Database {
         return;
     }
 
-    public static async listAppTokens(): Promise<{
-        id: number,
-        name: string,
-        key: string,
-        domain: string,
-        description: string
-    }[]> {
-        await Database.dbManager.connect();
+    public static async listAppTokens(): Promise<AppTokensRow[]> {
+        await DatabaseFunctions.dbManager.connect();
         const selectResult = await this.dbManager.query({
-            text: Database.selectAllStatements.appTokens
+            text: DatabaseFunctions.selectAllStatements.appTokens
         });
-        return selectResult.rows;
+        DatabaseFunctions.removePropertiesIfNull(selectResult.rows, ['description']);
+        return selectResult.rows as AppTokensRow[];
     }
 
     static async createUser(userData: {
         name: string,
         password: string
-    }) {
-        await Database.dbManager.connect();
+    }): Promise<AccountRow> {
+        await DatabaseFunctions.dbManager.connect();
         const insertionResult = await this.dbManager.query({
             text: 'insert into account(username, hash) values($1::text, $2::text) returning id',
             values: [userData.name, userData.password]
@@ -110,38 +106,66 @@ export class Database {
                 values: [insertionResult.rows[0].id]
             });
             if (selectResult.rowCount === 1) {
-                return selectResult.rows[0];
+                return selectResult.rows[0] as AccountRow;
             }
         }
 
         throw 'could not create user';
     }
 
-    static async getUser(id: number) {
-        await Database.dbManager.connect();
+    static async listUsers(): Promise<AccountRow[]> {
+        await DatabaseFunctions.dbManager.connect();
+        const selectResult = await this.dbManager.query({
+            text: 'select id::integer, username::text, createdate::text, active::boolean, training::text, comment::text from account'
+        });
+
+        DatabaseFunctions.removePropertiesIfNull(selectResult.rows, ['comment', 'training']);
+
+        return selectResult.rows as AccountRow[];
+    }
+
+    static async removeUserByID(id: number): Promise<void> {
+        await DatabaseFunctions.dbManager.connect();
+        const removeResult = await this.dbManager.query({
+            text: 'delete from account where id=$1::numeric',
+            values: [id]
+        });
+        if (removeResult.rowCount < 1) {
+            throw `Could not remove user account.}.`;
+        }
+        return;
+    }
+
+    static async getUser(id: number): Promise<AccountRow> {
+        await DatabaseFunctions.dbManager.connect();
         const selectResult = await this.dbManager.query({
             text: this.selectAllStatements.account + ' where id=$1::numeric',
             values: [id]
         });
 
         if (selectResult.rowCount === 1) {
-            return selectResult.rows[0];
+            DatabaseFunctions.removePropertiesIfNull(selectResult.rows, ['comment', 'training']);
+            return selectResult.rows[0] as AccountRow;
         }
 
         throw 'could not find user';
     }
 
-    static async getUserPasswordByName(name: string) {
-        await Database.dbManager.connect();
+    static async getUserPasswordHashByName(name: string): Promise<{
+        password: string,
+        id: number
+    }> {
+        await DatabaseFunctions.dbManager.connect();
         const selectResult = await this.dbManager.query({
-            text: 'select hash::text from account where username=$1::text',
+            text: 'select ID::numeric, hash::text from account where username=$1::text',
             values: [name]
         });
 
+        const row = selectResult.rows[0] as AccountRow;
         if (selectResult.rowCount === 1) {
             return {
-                password: selectResult.rows[0].hash,
-                id: selectResult.rows[0].id
+                password: row.hash,
+                id: row.id
             };
         }
 
@@ -158,5 +182,16 @@ export class Database {
                 }
             });
         });
+    }
+
+    static removePropertiesIfNull(rows: any[], attributes: string[]) {
+        for (const row of rows) {
+            for (const attribute of attributes) {
+                if (row.hasOwnProperty(attribute) && row[attribute] === null) {
+                    delete row[attribute];
+                }
+            }
+        }
+
     }
 }

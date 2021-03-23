@@ -1,7 +1,7 @@
 import {ApiCommand} from '../commands/api.command';
 import * as jwt from 'jsonwebtoken';
 import {AppConfiguration} from '../../../obj/app-config/app-config';
-import {Database} from './database';
+import {DatabaseFunctions} from './database.functions';
 
 export const verifyAppToken = (req, res, next) => {
     let appToken = req.get('Authorization');
@@ -12,7 +12,7 @@ export const verifyAppToken = (req, res, next) => {
         appToken = appToken.replace('Bearer ', '');
 
         if (appToken) {
-            Database.isValidAppToken(appToken, originHost).then(() => {
+            DatabaseFunctions.isValidAppToken(appToken, originHost).then(() => {
                 next();
             }).catch((error) => {
                 ApiCommand.sendError(res, 401, `Invalid app token.`);

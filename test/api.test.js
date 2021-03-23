@@ -17,7 +17,8 @@ const tempData = {
         removedID: 0,
     },
     user: {
-        name: "Julian_" + Date.now()
+        id: 0,
+        name: "Julian"
     },
     jwtToken: ""
 };
@@ -40,6 +41,10 @@ describe('User', () => {
                     .end((err, res) => {
                         checkForErrors(err, res);
                         tempData.jwtToken = res.body.token;
+
+                        console.log(`app test1 `);
+                        console.log(res.body);
+                        tempData.user.id = res.body.data.id;
 
                         res.body.status.should.be.equal("success");
                         res.body.should.be.a('object');
@@ -64,7 +69,31 @@ describe('User', () => {
                     .end((err, res) => {
                         checkForErrors(err, res);
                         res.body.status.should.be.equal("success");
-                        res.body.should.be.a('object');
+                        res.body.should.be.a('object')
+                        console.log(`app test `);
+                        console.log(res.body);
+                        tempData.user.id = res.body.data.id;
+                        console.log(`id is ${tempData.user.id}`);
+                        done();
+                    });
+            });
+        });
+    }
+
+    if (true) {
+        describe('/GET v1/user/', () => {
+            it('it should retrieve a list of users', (done) => {
+                chai.request(server)
+                    .get(`/v1/user`)
+                    .set("Authorization", `Bearer ${appToken}`)
+                    .set("Origin", "http://localhost:8080")
+                    .set("x-access-token", tempData.jwtToken)
+                    .end((err, res) => {
+                        checkForErrors(err, res);
+                        log(`retrieved rows: ${res.body.data.length}`);
+
+                        res.status.should.be.equal(200);
+                        res.body.data.should.be.a('array');
                         done();
                     });
             });
@@ -125,6 +154,7 @@ if (true) {
         if (true) {
             describe('/GET v1/app/token', () => {
                 it('it should retrieve a list of app tokens', (done) => {
+                    console.log(`TEST ID IS ${tempData.user.id}`);
                     chai.request(server)
                         .get(`/v1/app/token`)
                         .set("Authorization", `Bearer ${appToken}`)
@@ -136,6 +166,25 @@ if (true) {
 
                             res.status.should.be.equal(200);
                             res.body.data.should.be.a('array');
+                            done();
+                        });
+                });
+            });
+        }
+
+        if (true) {
+            describe(`/DELETE v1/user/`, () => {
+                it('it should remove a user account', (done) => {
+                    chai.request(server)
+                        .delete(`/v1/user/${tempData.user.id}`)
+                        .set("Authorization", `Bearer ${appToken}`)
+                        .set("Origin", "http://localhost:8080")
+                        .set("x-access-token", tempData.jwtToken)
+                        .end((err, res) => {
+                            checkForErrors(err, res);
+                            res.status.should.be.equal(200);
+                            res.body.data.should.be.a('object');
+
                             done();
                         });
                 });

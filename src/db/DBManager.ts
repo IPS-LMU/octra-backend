@@ -1,4 +1,5 @@
 import {IDBConfiguration} from '../obj/app-config/app-config';
+import {DatabaseRow} from '../api/v1/obj/database.types';
 
 export interface SQLQuery {
     text: string;
@@ -6,7 +7,7 @@ export interface SQLQuery {
 }
 
 export interface QueryResult {
-    rows: any[];
+    rows: DatabaseRow[];
     rowCount: number;
 }
 

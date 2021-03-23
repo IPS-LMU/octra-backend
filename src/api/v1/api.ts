@@ -8,8 +8,7 @@ import {SampleCommand} from './commands/sample.command';
 import {APIV1Module} from './api.module';
 import {AppConfiguration} from '../../obj/app-config/app-config';
 import {DBManager} from '../../db/DBManager';
-import {Database} from './obj/database';
-import * as Path from 'path';
+import {DatabaseFunctions} from './obj/database.functions';
 
 export class APIV1 {
     get appPath(): string {
@@ -52,7 +51,7 @@ export class APIV1 {
                 dbManager: DBManager<any>) {
         this._appPath = process.cwd();
         this.dbManager = dbManager;
-        Database.init(this.dbManager, settings);
+        DatabaseFunctions.init(this.dbManager, settings);
 
         router.use(bodyParser.urlencoded({extended: false}));
         router.use(bodyParser.json());

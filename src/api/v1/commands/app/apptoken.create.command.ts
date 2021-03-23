@@ -1,7 +1,7 @@
 import {ApiCommand, RequestType} from '../api.command';
 import {Express, Router} from 'express';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
-import {Database} from '../../obj/database';
+import {DatabaseFunctions} from '../../obj/database.functions';
 
 export class AppTokenCreateCommand extends ApiCommand {
     constructor() {
@@ -49,7 +49,7 @@ export class AppTokenCreateCommand extends ApiCommand {
         if (validation === '') {
             const body: RequestStructure = req.body;
             try {
-               const result = await Database.createAppToken(body);
+               const result = await DatabaseFunctions.createAppToken(body);
                 if (result.length === 1) {
                     answer.data = result[0];
                     res.status(200).send(answer);

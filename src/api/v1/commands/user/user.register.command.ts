@@ -2,10 +2,10 @@ import {ApiCommand, RequestType} from '../api.command';
 import * as jwt from 'jsonwebtoken';
 import {Express, Router} from 'express';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
-import {Database} from '../../obj/database';
+import {DatabaseFunctions} from '../../obj/database.functions';
 import {SHA256} from 'crypto-js';
 
-export class RegisterCommand extends ApiCommand {
+export class UserRegisterCommand extends ApiCommand {
 
     constructor() {
         super('registerUser', RequestType.POST, '/v1/user/register', false);
@@ -50,7 +50,17 @@ export class RegisterCommand extends ApiCommand {
                     type: 'string',
                     description: 'JSON Web Token.'
                 },
-                ...this.defaultResponseSchema.properties
+                ...this.defaultResponseSchema.properties,
+                data: {
+                    ...this.defaultResponseSchema.properties.data,
+                    properties: {
+                        ...this.defaultResponseSchema.properties.data.properties,
+                        id: {
+                            type: 'number',
+                            required: true
+                        }
+                    }
+                }
             }
         };
     }
@@ -68,7 +78,7 @@ export class RegisterCommand extends ApiCommand {
         if (validation === '') {
             const userData: RequestStructure = req.body;
             try {
-                const result = await Database.createUser({
+                const result = await DatabaseFunctions.createUser({
                     name: userData.name,
                     password: SHA256(userData.password).toString()
                 });
@@ -80,6 +90,9 @@ export class RegisterCommand extends ApiCommand {
                 }, settings.api.secret, {
                     expiresIn: 86400 // expires in 24 hours
                 });
+                answer.data = {
+                    id: result.id
+                };
                 res.status(200).send(answer);
             } catch (e) {
                 ApiCommand.sendError(res, 400, 'Adding user failed');
