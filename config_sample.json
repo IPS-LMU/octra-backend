@@ -1,5 +1,7 @@
 {
+  "version": "0.1.0",
   "database": {
+    "dbVersion": "0.1.0",
     "dbType": "PostgreSQL",
     "dbHost": "",
     "dbPort": 54321,

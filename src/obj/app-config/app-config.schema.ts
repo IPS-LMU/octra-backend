@@ -2,9 +2,19 @@ import {Schema} from 'jsonschema';
 
 export const AppConfigurationSchema: Schema = {
     properties: {
+        version: {
+            type: "string",
+            pattern: "[0-9].[0-9].[0-9]",
+            required: true
+        },
         database: {
             required: true,
             properties: {
+                dbVersion: {
+                    type: "string",
+                    pattern: "[0-9].[0-9].[0-9]",
+                    required: true
+                },
                 dbType: {
                     type: 'string',
                     enum: ['PostgreSQL'],
