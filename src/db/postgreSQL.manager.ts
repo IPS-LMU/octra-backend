@@ -1,4 +1,4 @@
-import {DBManager, SQLQuery} from './DBManager';
+import {DBManager, InsertQuery, SQLQuery} from './DBManager';
 import {Client, QueryResult} from 'pg';
 import {IDBConfiguration} from '../obj/app-config/app-config';
 
@@ -72,5 +72,25 @@ export class PostgreSQLManager extends DBManager<Client> {
                 resolve();
             }
         })
+    }
+
+    async insert(query: InsertQuery) {
+        const columns = query.columns.filter(a => !(a.value === undefined || a.value === null));
+
+        if (columns.length === 0) {
+            throw 'InsertQuery error: columns length is 0.'
+        }
+
+        let statement = `${query.tableName}`;
+        const variables: any[] = columns.map(a => a.value);
+        statement += '(' + columns.map(a => a.key).join(', ') + ')';
+        statement += ' values(' + columns.map((a, index) => `$${index + 1}::${a.type}`).join(', ') + ')'
+
+        statement = `insert into ${statement} returning id`;
+
+        return this.query({
+            text: statement,
+            values: variables
+        });
     }
 }

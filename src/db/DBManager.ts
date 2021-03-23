@@ -11,6 +11,15 @@ export interface QueryResult {
     rowCount: number;
 }
 
+export interface InsertQuery {
+    tableName: string;
+    columns:{
+        key: string;
+        type: string;
+        value: any;
+    }[];
+}
+
 export abstract class DBManager<T> {
     get connected(): boolean {
         return this._connected;
@@ -23,6 +32,8 @@ export abstract class DBManager<T> {
     abstract connect(): Promise<void>;
 
     abstract query(query: SQLQuery): Promise<QueryResult>
+
+    abstract insert(query: InsertQuery): Promise<QueryResult>
 
     abstract transaction(query: SQLQuery[]): Promise<QueryResult>;
 

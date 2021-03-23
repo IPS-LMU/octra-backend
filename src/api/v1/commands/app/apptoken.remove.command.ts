@@ -17,14 +17,7 @@ export class AppTokenRemoveCommand extends ApiCommand {
         // relevant for reference creation
         this._responseStructure = {
             properties: {
-                ...this.defaultResponseSchema.properties,
-                data: {
-                    properties: {
-                        removedRows: {
-                            type: 'number'
-                        }
-                    }
-                }
+                ...this.defaultResponseSchema.properties
             }
         };
     }
@@ -42,10 +35,7 @@ export class AppTokenRemoveCommand extends ApiCommand {
         if (validation === '') {
             if (req.params.hasOwnProperty('id')) {
                 try {
-                    const removedRows = await DatabaseFunctions.removeAppToken(req.params.id);
-                    answer.data = {
-                        removedRows
-                    };
+                    await DatabaseFunctions.removeAppToken(req.params.id);
                     this.checkAndSendAnswer(res, answer);
                 } catch (e) {
                     ApiCommand.sendError(res, 400, e);

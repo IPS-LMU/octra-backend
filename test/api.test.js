@@ -242,6 +242,43 @@ if (true) {
     });
 }
 
+if (true) {
+    describe('Transcript', () => {
+        if (true) {
+            describe('/POST v1/transcript', () => {
+                it('it should add a new transcript', (done) => {
+                    const request = {
+                        pid: "pid",
+                        orgtext: "orgtext",
+                        assessment: "assassment",
+                        priority: 12,
+                        status: "status",
+                        "code": "code",
+                        tool_id: 3,
+                        transcriber_id: 22,
+                        project_id: 5,
+                        mediaitem_id: 8
+                    }
+                    chai.request(server)
+                        .post('/v1/transcript')
+                        .set("Authorization", `Bearer ${appToken}`)
+                        .set("Origin", "http://localhost:8080")
+                        .set("x-access-token", tempData.jwtToken)
+                        .send(request)
+                        .end((err, res) => {
+                            checkForErrors(err, res);
+                            log(`added ${res.body.data.id}`);
+
+                            res.status.should.be.equal(200);
+                            res.body.should.be.a('object');
+                            done();
+                        });
+                });
+            });
+        }
+    });
+}
+
 
 if (true) {
     describe('Delete Entries', () => {
@@ -255,7 +292,6 @@ if (true) {
                         .set("x-access-token", tempData.jwtToken)
                         .end((err, res) => {
                             checkForErrors(err, res);
-                            log(`removedRows: ${res.body.data.removedRows}`);
 
                             res.status.should.be.equal(200);
                             res.body.should.be.a('object');
@@ -290,9 +326,16 @@ function log(str) {
     console.log(`\t[CHAI]: ${str}`);
 }
 
+function logJSON(json) {
+    const jsonStr = JSON.stringify(json, null, 2);
+    const array = jsonStr.split("\n");
+
+    console.log(array.map(a => `\t${a}`).join("\n"));
+}
+
 
 function checkForErrors(err, res) {
-    //console.log(res.body);
+    // logJSON(res.body);
     assert.equal(err, undefined, err);
     res.body.status.should.be.equal('success', res.body.message);
     assert.equal(res.error, false, res.error.message);
