@@ -60,7 +60,3 @@ export class AppTokenRemoveCommand extends ApiCommand {
         return;
     }
 }
-
-interface RequestStructure {
-    id: number
-}

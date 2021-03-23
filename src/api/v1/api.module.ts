@@ -6,6 +6,7 @@ import {AppTokenRemoveCommand} from './commands/app/apptoken.remove.command';
 import {AppTokenListCommand} from './commands/app/apptoken.list.command';
 import {UserListCommand} from './commands/user/user.list.command';
 import {UserRemoveCommand} from './commands/user/user.remove.command';
+import {ProjectCreateCommand} from './commands/project/project.create.command';
 
 export class APIV1Module {
     public static commands: ApiCommand[] = [
@@ -15,6 +16,7 @@ export class APIV1Module {
         new UserRegisterCommand(),
         new UserLoginCommand(),
         new UserListCommand(),
-        new UserRemoveCommand()
+        new UserRemoveCommand(),
+        new ProjectCreateCommand()
     ]
 }

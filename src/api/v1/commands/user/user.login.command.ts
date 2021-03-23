@@ -4,6 +4,7 @@ import {Express, Router} from 'express';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {SHA256} from 'crypto-js';
 import {DatabaseFunctions} from '../../obj/database.functions';
+import {UserLoginRequest} from '../../obj/request.types';
 
 export class UserLoginCommand extends ApiCommand {
 
@@ -61,7 +62,7 @@ export class UserLoginCommand extends ApiCommand {
 
     async do(req, res, settings: AppConfiguration) {
         const validation = this.validate(req.params, req.body);
-        const body: RequestStructure = req.body;
+        const body: UserLoginRequest = req.body;
 
 
         if (validation === '') {
@@ -95,10 +96,4 @@ export class UserLoginCommand extends ApiCommand {
         }
         return;
     }
-}
-
-interface RequestStructure {
-    name?: string;
-    email?: string;
-    password: string;
 }

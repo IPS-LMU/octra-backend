@@ -1,14 +1,13 @@
 import {ApiCommand, RequestType} from '../api.command';
-import {Express, Router} from 'express';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
-import {CreateAppTokenRequest} from '../../obj/request.types';
+import {CreateProjectRequest} from '../../obj/request.types';
 
-export class AppTokenCreateCommand extends ApiCommand {
+export class ProjectCreateCommand extends ApiCommand {
     constructor() {
-        super('createAppToken', RequestType.POST, '/v1/app/token/', true);
+        super('createProject', RequestType.POST, '/v1/project/', true);
 
-        this._description = 'Registers an app and returns a new App Token.';
+        this._description = 'Creates a new transcription project.';
         this._acceptedContentType = 'application/json';
         this._responseContentType = 'application/json';
 
@@ -20,11 +19,26 @@ export class AppTokenCreateCommand extends ApiCommand {
                     type: 'string',
                     required: true
                 },
-                domain: {
+                shortname: {
                     type: 'string'
                 },
                 description: {
                     type: 'string'
+                },
+                configuration: {
+                    type: 'json'
+                },
+                startdate: {
+                    type: 'string'
+                },
+                enddate: {
+                    type: 'string'
+                },
+                active: {
+                    type: 'boolean'
+                },
+                admin_id: {
+                    type: 'number'
                 }
             }
         };
@@ -35,19 +49,35 @@ export class AppTokenCreateCommand extends ApiCommand {
                 ...this.defaultResponseSchema.properties,
                 data: {
                     type: 'object',
-                    required: ['name', 'key'],
                     properties: {
+                        id: {
+                            type: 'number',
+                            required: true
+                        },
                         name: {
-                            type: 'string'
+                            type: 'string',
+                            required: true
                         },
-                        key: {
-                            type: 'string'
-                        },
-                        domain: {
+                        shortname: {
                             type: 'string'
                         },
                         description: {
                             type: 'string'
+                        },
+                        configuration: {
+                            type: 'json'
+                        },
+                        startdate: {
+                            type: 'string'
+                        },
+                        enddate: {
+                            type: 'string'
+                        },
+                        active: {
+                            type: 'boolean'
+                        },
+                        admin_id: {
+                            type: 'number'
                         }
                     }
                 }
@@ -61,15 +91,17 @@ export class AppTokenCreateCommand extends ApiCommand {
 
         // do something
         if (validation === '') {
-            const body: CreateAppTokenRequest = req.body;
+            const body: CreateProjectRequest = req.body;
             try {
-                const result = await DatabaseFunctions.createAppToken(body);
+                const result = await DatabaseFunctions.createProject(body);
                 if (result.length === 1) {
                     answer.data = result[0];
-
+                    console.log(`answer:::`);
+                    console.log(answer.data);
                     this.checkAndSendAnswer(res, answer);
                 }
-                ApiCommand.sendError(res, 400, 'Could not create app token.');
+
+                ApiCommand.sendError(res, 400, 'Could not create project.');
             } catch (e) {
                 ApiCommand.sendError(res, 400, e);
             }

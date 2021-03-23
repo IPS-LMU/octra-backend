@@ -131,26 +131,6 @@ if (true) {
         }
 
         if (true) {
-            describe('/DELETE v1/app/token', () => {
-                it('it should remove an app token', (done) => {
-                    chai.request(server)
-                        .delete(`/v1/app/token/${tempData.apptoken.addedID}`)
-                        .set("Authorization", `Bearer ${appToken}`)
-                        .set("Origin", "http://localhost:8080")
-                        .set("x-access-token", tempData.jwtToken)
-                        .end((err, res) => {
-                            checkForErrors(err, res);
-                            log(`removedRows: ${res.body.data.removedRows}`);
-
-                            res.status.should.be.equal(200);
-                            res.body.should.be.a('object');
-                            done();
-                        });
-                });
-            });
-        }
-
-        if (true) {
             describe('/GET v1/app/token', () => {
                 it('it should retrieve a list of app tokens', (done) => {
                     console.log(`TEST ID IS ${tempData.user.id}`);
@@ -165,6 +145,62 @@ if (true) {
 
                             res.status.should.be.equal(200);
                             res.body.data.should.be.a('array');
+                            done();
+                        });
+                });
+            });
+        }
+    });
+}
+
+
+if (true) {
+    describe('Project', () => {
+        if (true) {
+            describe('/POST v1/project', () => {
+                it('it should create a project', (done) => {
+                    const request = {
+                        "name": "SuperDuperProjekt!",
+                        "admin_id": 22
+                    }
+                    chai.request(server)
+                        .post('/v1/project')
+                        .set("Authorization", `Bearer ${appToken}`)
+                        .set("Origin", "http://localhost:8080")
+                        .set("x-access-token", tempData.jwtToken)
+                        .send(request)
+                        .end((err, res) => {
+                            console.log(res.body);
+                            checkForErrors(err, res);
+                            log(`added ${res.body.data.id}`);
+
+                            res.status.should.be.equal(200);
+                            res.body.should.be.a('object');
+                            done();
+                        });
+                });
+            });
+        }
+    });
+}
+
+
+if (true) {
+    describe('Delete Entries', () => {
+        if (true) {
+            describe('/DELETE v1/app/token', () => {
+                it('it should remove an app token', (done) => {
+                    chai.request(server)
+                        .delete(`/v1/app/token/${tempData.apptoken.addedID}`)
+                        .set("Authorization", `Bearer ${appToken}`)
+                        .set("Origin", "http://localhost:8080")
+                        .set("x-access-token", tempData.jwtToken)
+                        .end((err, res) => {
+                            checkForErrors(err, res);
+                            log(`removedRows: ${res.body.data.removedRows}`);
+
+                            res.status.should.be.equal(200);
+                            res.body.should.be.a('object');
                             done();
                         });
                 });

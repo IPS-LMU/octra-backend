@@ -1,5 +1,4 @@
 import {ApiCommand, RequestType} from '../api.command';
-import {Express, Router} from 'express';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
 
@@ -24,7 +23,7 @@ export class AppTokenListCommand extends ApiCommand {
                     type: 'array',
                     items: {
                         type: 'object',
-                        required: ['id', 'name', 'domain', 'description'],
+                        required: ['id', 'name', 'key'],
                         properties: {
                             id: {
                                 type: 'number'

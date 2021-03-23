@@ -3,6 +3,7 @@ import * as jwt from 'jsonwebtoken';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {SHA256} from 'crypto-js';
+import {UserRegisterRequest} from '../../obj/request.types';
 
 export class UserRegisterCommand extends ApiCommand {
 
@@ -66,7 +67,8 @@ export class UserRegisterCommand extends ApiCommand {
 
         // do something
         if (validation === '') {
-            const userData: RequestStructure = req.body;
+            const userData: UserRegisterRequest = req.body;
+
             try {
                 const answer = ApiCommand.createAnswer();
                 const result = await DatabaseFunctions.createUser({
@@ -96,10 +98,4 @@ export class UserRegisterCommand extends ApiCommand {
 
         return;
     }
-}
-
-interface RequestStructure {
-    name?: string;
-    email?: string;
-    password: string;
 }

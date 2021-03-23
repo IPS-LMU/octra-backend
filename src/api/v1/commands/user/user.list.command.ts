@@ -68,9 +68,3 @@ export class UserListCommand extends ApiCommand {
         return;
     }
 }
-
-interface RequestStructure {
-    name: string;
-    domain?: string;
-    description?: string;
-}
