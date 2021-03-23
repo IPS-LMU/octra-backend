@@ -1,13 +1,13 @@
 import {ApiCommand, RequestType} from '../api.command';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
-import {CreateProjectRequest} from '../../obj/request.types';
+import {AddMediaItemRequest} from '../../obj/request.types';
 
-export class ProjectCreateCommand extends ApiCommand {
+export class MediaAddCommand extends ApiCommand {
     constructor() {
-        super('createProject', RequestType.POST, '/v1/project/', true);
+        super('addMediaItem', RequestType.POST, '/v1/media/', true);
 
-        this._description = 'Creates a new transcription project.';
+        this._description = 'Adds a new media item.';
         this._acceptedContentType = 'application/json';
         this._responseContentType = 'application/json';
 
@@ -15,30 +15,18 @@ export class ProjectCreateCommand extends ApiCommand {
         this._requestStructure = {
             properties: {
                 ...this.defaultRequestSchema.properties,
-                name: {
+                url: {
                     type: 'string',
                     required: true
                 },
-                shortname: {
+                type: {
                     type: 'string'
                 },
-                description: {
-                    type: 'string'
-                },
-                configuration: {
-                    type: 'json'
-                },
-                startdate: {
-                    type: 'string'
-                },
-                enddate: {
-                    type: 'string'
-                },
-                active: {
-                    type: 'boolean'
-                },
-                admin_id: {
+                size: {
                     type: 'number'
+                },
+                metadata: {
+                    type: 'string'
                 }
             }
         };
@@ -54,30 +42,18 @@ export class ProjectCreateCommand extends ApiCommand {
                             type: 'number',
                             required: true
                         },
-                        name: {
+                        url: {
                             type: 'string',
                             required: true
                         },
-                        shortname: {
+                        type: {
                             type: 'string'
                         },
-                        description: {
-                            type: 'string'
-                        },
-                        configuration: {
-                            type: 'json'
-                        },
-                        startdate: {
-                            type: 'string'
-                        },
-                        enddate: {
-                            type: 'string'
-                        },
-                        active: {
-                            type: 'boolean'
-                        },
-                        admin_id: {
+                        size: {
                             type: 'number'
+                        },
+                        metadata: {
+                            type: 'string'
                         }
                     }
                 }
@@ -91,15 +67,15 @@ export class ProjectCreateCommand extends ApiCommand {
 
         // do something
         if (validation === '') {
-            const body: CreateProjectRequest = req.body;
+            const body: AddMediaItemRequest = req.body;
             try {
-                const result = await DatabaseFunctions.createProject(body);
+                const result = await DatabaseFunctions.addMediaItem(body);
                 if (result.length === 1) {
                     answer.data = result[0];
                     this.checkAndSendAnswer(res, answer);
                 }
 
-                ApiCommand.sendError(res, 400, 'Could not create project.');
+                ApiCommand.sendError(res, 400, 'Could not add media item.');
             } catch (e) {
                 ApiCommand.sendError(res, 400, e);
             }

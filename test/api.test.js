@@ -44,8 +44,6 @@ describe('User', () => {
                         checkForErrors(err, res);
                         tempData.jwtToken = res.body.token;
 
-                        console.log(`app test1 `);
-                        console.log(res.body);
                         tempData.user.id = res.body.data.id;
 
                         res.body.status.should.be.equal("success");
@@ -133,7 +131,6 @@ if (true) {
         if (true) {
             describe('/GET v1/app/token', () => {
                 it('it should retrieve a list of app tokens', (done) => {
-                    console.log(`TEST ID IS ${tempData.user.id}`);
                     chai.request(server)
                         .get(`/v1/app/token`)
                         .set("Authorization", `Bearer ${appToken}`)
@@ -170,7 +167,68 @@ if (true) {
                         .set("x-access-token", tempData.jwtToken)
                         .send(request)
                         .end((err, res) => {
-                            console.log(res.body);
+                            checkForErrors(err, res);
+                            log(`added ${res.body.data.id}`);
+
+                            res.status.should.be.equal(200);
+                            res.body.should.be.a('object');
+                            done();
+                        });
+                });
+            });
+        }
+    });
+}
+
+
+if (true) {
+    describe('Media', () => {
+        if (true) {
+            describe('/POST v1/media', () => {
+                it('it should add a new mediaitem', (done) => {
+                    const request = {
+                        "url": "http://localhost/test.wav",
+                        "type": "audio/wav",
+                        "size": 12345567
+                    }
+                    chai.request(server)
+                        .post('/v1/media')
+                        .set("Authorization", `Bearer ${appToken}`)
+                        .set("Origin", "http://localhost:8080")
+                        .set("x-access-token", tempData.jwtToken)
+                        .send(request)
+                        .end((err, res) => {
+                            checkForErrors(err, res);
+                            log(`added ${res.body.data.id}`);
+
+                            res.status.should.be.equal(200);
+                            res.body.should.be.a('object');
+                            done();
+                        });
+                });
+            });
+        }
+    });
+}
+
+
+if (true) {
+    describe('Tool', () => {
+        if (true) {
+            describe('/POST v1/tool', () => {
+                it('it should add a new tool', (done) => {
+                    const request = {
+                        "name": "newSuperTool",
+                        "version": "1.0.0",
+                        "description": "some description"
+                    }
+                    chai.request(server)
+                        .post('/v1/tool')
+                        .set("Authorization", `Bearer ${appToken}`)
+                        .set("Origin", "http://localhost:8080")
+                        .set("x-access-token", tempData.jwtToken)
+                        .send(request)
+                        .end((err, res) => {
                             checkForErrors(err, res);
                             log(`added ${res.body.data.id}`);
 

@@ -2,7 +2,7 @@ import {DBManager} from '../../../db/DBManager';
 import {AppConfiguration} from '../../../obj/app-config/app-config';
 import {randomBytes} from 'crypto';
 import {AccountRow, AppTokensRow} from './database.types';
-import {CreateProjectRequest} from './request.types';
+import {AddMediaItemRequest, AddToolRequest, CreateProjectRequest} from './request.types';
 
 export class DatabaseFunctions {
     private static dbManager: DBManager<any>;
@@ -11,7 +11,9 @@ export class DatabaseFunctions {
     private static selectAllStatements = {
         appTokens: 'select id::integer, name::text, key::text, domain::text, description::text from apptokens',
         account: 'select id::integer, username::text, email::text, loginmethod::text, active::boolean, hash::text, training::text, comment::text from account',
-        project: 'select id::integer, name::text, shortname::text, description::text, configuration::text, startdate::text, enddate::text, active::boolean, admin_id::integer from project'
+        project: 'select id::integer, name::text, shortname::text, description::text, configuration::text, startdate::text, enddate::text, active::boolean, admin_id::integer from project',
+        mediaitem: 'select id::integer, url::text, type::text, size::integer, metadata::boolean from mediaitem',
+        tool: 'select id::integer, name::text, version::text, description::text, pid::text from tool'
     };
 
     constructor() {
@@ -87,7 +89,6 @@ export class DatabaseFunctions {
 
             if (insertionResult.rowCount === 1 && insertionResult.rows[0].hasOwnProperty('id')) {
                 const id = insertionResult.rows[0].id;
-                console.log(`added ${id}`);
                 const selectResult = await this.dbManager.query({
                     text: DatabaseFunctions.selectAllStatements.project + ' where id=$1',
                     values: [id]
@@ -101,6 +102,62 @@ export class DatabaseFunctions {
             console.log(`[Error]:`);
             console.log(e);
             throw 'Could not create and save a new project.';
+        }
+    }
+
+    public static async addMediaItem(data: AddMediaItemRequest): Promise<AppTokensRow[]> {
+        try {
+            await DatabaseFunctions.dbManager.connect();
+
+            const insertionResult = await this.dbManager.query({
+                text: 'insert into mediaitem(url, type, size, metadata) values($1::text, $2::text, $3::integer, $4::text) returning id',
+                values: [
+                    data.url, data.type, data.size, data.metadata
+                ]
+            });
+
+            if (insertionResult.rowCount === 1 && insertionResult.rows[0].hasOwnProperty('id')) {
+                const id = insertionResult.rows[0].id;
+                const selectResult = await this.dbManager.query({
+                    text: DatabaseFunctions.selectAllStatements.mediaitem + ' where id=$1',
+                    values: [id]
+                });
+                this.removePropertiesIfNull(selectResult.rows, ['type', 'size', 'metadata']);
+                return selectResult.rows as AppTokensRow[];
+            }
+            throw 'insertionResult does not have id';
+        } catch (e) {
+            console.log(`[Error]:`);
+            console.log(e);
+            throw 'Could not save a new media item.';
+        }
+    }
+
+    public static async addTool(data: AddToolRequest): Promise<AppTokensRow[]> {
+        try {
+            await DatabaseFunctions.dbManager.connect();
+
+            const insertionResult = await this.dbManager.query({
+                text: 'insert into tool(name, version, description, pid) values($1::text, $2::text, $3::text, $4::text) returning id',
+                values: [
+                    data.name, data.version, data.description, data.pid
+                ]
+            });
+
+            if (insertionResult.rowCount === 1 && insertionResult.rows[0].hasOwnProperty('id')) {
+                const id = insertionResult.rows[0].id;
+                const selectResult = await this.dbManager.query({
+                    text: DatabaseFunctions.selectAllStatements.tool + ' where id=$1',
+                    values: [id]
+                });
+                this.removePropertiesIfNull(selectResult.rows, ['version', 'description', 'pid']);
+                return selectResult.rows as AppTokensRow[];
+            }
+            throw 'insertionResult does not have id';
+        } catch (e) {
+            console.log(`[Error]:`);
+            console.log(e);
+            throw 'Could not save a new tool.';
         }
     }
 

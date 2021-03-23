@@ -1,13 +1,13 @@
 import {ApiCommand, RequestType} from '../api.command';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
-import {CreateProjectRequest} from '../../obj/request.types';
+import {AddMediaItemRequest, AddToolRequest} from '../../obj/request.types';
 
-export class ProjectCreateCommand extends ApiCommand {
+export class ToolAddCommand extends ApiCommand {
     constructor() {
-        super('createProject', RequestType.POST, '/v1/project/', true);
+        super('addTool', RequestType.POST, '/v1/tool/', true);
 
-        this._description = 'Creates a new transcription project.';
+        this._description = 'Adds a new tool.';
         this._acceptedContentType = 'application/json';
         this._responseContentType = 'application/json';
 
@@ -16,29 +16,17 @@ export class ProjectCreateCommand extends ApiCommand {
             properties: {
                 ...this.defaultRequestSchema.properties,
                 name: {
-                    type: 'string',
+                    type: "string",
                     required: true
                 },
-                shortname: {
-                    type: 'string'
+                version: {
+                    type: "string"
                 },
                 description: {
-                    type: 'string'
+                    type: "string"
                 },
-                configuration: {
-                    type: 'json'
-                },
-                startdate: {
-                    type: 'string'
-                },
-                enddate: {
-                    type: 'string'
-                },
-                active: {
-                    type: 'boolean'
-                },
-                admin_id: {
-                    type: 'number'
+                pid: {
+                    type: "string"
                 }
             }
         };
@@ -55,29 +43,17 @@ export class ProjectCreateCommand extends ApiCommand {
                             required: true
                         },
                         name: {
-                            type: 'string',
+                            type: "string",
                             required: true
                         },
-                        shortname: {
-                            type: 'string'
+                        version: {
+                            type: "string"
                         },
                         description: {
-                            type: 'string'
+                            type: "string"
                         },
-                        configuration: {
-                            type: 'json'
-                        },
-                        startdate: {
-                            type: 'string'
-                        },
-                        enddate: {
-                            type: 'string'
-                        },
-                        active: {
-                            type: 'boolean'
-                        },
-                        admin_id: {
-                            type: 'number'
+                        pid: {
+                            type: "string"
                         }
                     }
                 }
@@ -91,15 +67,15 @@ export class ProjectCreateCommand extends ApiCommand {
 
         // do something
         if (validation === '') {
-            const body: CreateProjectRequest = req.body;
+            const body: AddToolRequest = req.body;
             try {
-                const result = await DatabaseFunctions.createProject(body);
+                const result = await DatabaseFunctions.addTool(body);
                 if (result.length === 1) {
                     answer.data = result[0];
                     this.checkAndSendAnswer(res, answer);
                 }
 
-                ApiCommand.sendError(res, 400, 'Could not create project.');
+                ApiCommand.sendError(res, 400, 'Could not add tool.');
             } catch (e) {
                 ApiCommand.sendError(res, 400, e);
             }

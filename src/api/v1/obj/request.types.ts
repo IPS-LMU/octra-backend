@@ -25,3 +25,17 @@ export interface UserRegisterRequest {
     email?: string;
     password: string;
 }
+
+export interface AddMediaItemRequest {
+    url: string;
+    type?: string;
+    size?: number;
+    metadata?: string;
+}
+
+export interface AddToolRequest {
+    name?: string;
+    version?: string;
+    description?: number;
+    pid?: string;
+}
