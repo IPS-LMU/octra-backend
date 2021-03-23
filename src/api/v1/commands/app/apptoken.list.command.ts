@@ -48,11 +48,6 @@ export class AppTokenListCommand extends ApiCommand {
         };
     }
 
-    register(app: Express, router: Router, environment, settings: AppConfiguration,
-             dbManager) {
-        super.register(app, router, environment, settings, dbManager);
-    };
-
     async do(req, res, settings: AppConfiguration) {
         const answer = ApiCommand.createAnswer();
         const validation = this.validate(req.params, req.body);
@@ -60,13 +55,7 @@ export class AppTokenListCommand extends ApiCommand {
         if (validation === '') {
             try {
                 answer.data = await DatabaseFunctions.listAppTokens();
-                const responseValidation = this.validateAnswer(answer);
-                if (responseValidation === '') {
-                    res.status(200).send(answer);
-                } else {
-                    console.log(answer);
-                    ApiCommand.sendError(res, 400, 'Response validation failed: ' + responseValidation);
-                }
+                this.checkAndSendAnswer(res, answer);
             } catch (e) {
                 ApiCommand.sendError(res, 400, e);
             }
@@ -76,10 +65,4 @@ export class AppTokenListCommand extends ApiCommand {
 
         return;
     }
-}
-
-interface RequestStructure {
-    name: string;
-    domain?: string;
-    description?: string;
 }

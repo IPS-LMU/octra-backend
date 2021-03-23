@@ -32,11 +32,6 @@ export class UserLoginCommand extends ApiCommand {
         // relevant for reference creation
         this._responseStructure = {
             properties: {
-                auth: {
-                    required: false,
-                    type: 'boolean',
-                    description: 'checks if user is authenticated'
-                },
                 token: {
                     required: true,
                     type: 'string',
@@ -66,15 +61,16 @@ export class UserLoginCommand extends ApiCommand {
         const validation = this.validate(req.params, req.body);
         const body: RequestStructure = req.body;
 
-        const answer = ApiCommand.createAnswer();
 
         if (validation === '') {
             try {
+                const answer = ApiCommand.createAnswer();
                 const {password, id} = await DatabaseFunctions.getUserPasswordHashByName(body.name);
                 const passwordIsValid = SHA256(body.password).toString() === password;
 
                 if (!passwordIsValid) {
-                    ApiCommand.sendError(res, 401, 'Invalid password.');
+                    ApiCommand.sendError(res, 401, 'Invalid password.', false);
+                    return;
                 }
 
                 answer.auth = true;
@@ -87,13 +83,13 @@ export class UserLoginCommand extends ApiCommand {
                 answer.data = {
                     id: id
                 };
-                res.status(200).send(answer);
+                this.checkAndSendAnswer(res, answer, false);
             } catch (e) {
                 console.log(e);
-                ApiCommand.sendError(res, 500, e);
+                ApiCommand.sendError(res, 500, e, false);
             }
         } else {
-            ApiCommand.sendError(res, 400, validation);
+            ApiCommand.sendError(res, 400, validation, false);
         }
         return;
     }

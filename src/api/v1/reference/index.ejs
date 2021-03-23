@@ -1,170 +1,178 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="">
-  <meta name="author" content="">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
 
-  <title>OCTRA API</title>
-  <!-- Bootstrap core CSS -->
-  <link href="../bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <title>OCTRA API</title>
+    <!-- Bootstrap core CSS -->
+    <link href="../bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css">
 
-  <!-- Custom styles for this template -->
-  <link href="../v1/style.css" rel="stylesheet" type="text/css">
+    <!-- Custom styles for this template -->
+    <link href="../v1/style.css" rel="stylesheet" type="text/css">
 </head>
 
 <body>
 
 <nav class="navbar navbar-expand-md navbar-dark bg-dark">
-  <a class="navbar-brand" href="#">OCTRA API</a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault"
-          aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
+    <a class="navbar-brand" href="#">OCTRA API</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault"
+            aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
 
-  <div class="collapse navbar-collapse" id="navbarsExampleDefault">
-    <ul class="navbar-nav mr-auto">
-      <li class="nav-item active">
-        <a class="nav-link" href="#">API Reference <span class="sr-only">(current)</span></a>
-      </li>
-    </ul>
-  </div>
+    <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+                <a class="nav-link" href="#">API Reference <span class="sr-only">(current)</span></a>
+            </li>
+        </ul>
+    </div>
 </nav>
 
 <main role="main" class="container">
-  <div class="row">
-    <div class="col-lg-9">
-      <div id="main-inner">
-        <h1><%= apiInformation.name %> REST API Reference v<%= apiInformation.version %></h1>
-        <br/>
+    <div class="row">
+        <div class="col-lg-9">
+            <div id="main-inner">
+                <h1><%= apiInformation.name %> REST API Reference v<%= apiInformation.version %></h1>
+                <br/>
 
-        <h2 id="ResponseStructure">Response Structure</h2>
-        <div class="card command">
-          <div class="card-body">
-            <p>Each response makes use of the same JSON schema:</p>
-            <textarea style="min-height:200px;" readonly><%= apiDefaultResponseSchema %></textarea>
-            <div class="alert alert-info">
-                "message" contains an error message if "status" is "error". Otherwise it contains messages for developer only.
-            </div>
-          </div>
-        </div>
-
-        <h2 style="margin-top: 40px;" id="AppAuthorisation">App Authorisation</h2>
-        <div class="card command">
-          <div class="card-body">
-            <p>
-                Each application, that uses this API needs an API key. The application has to send this API key via
-                Authorization Header. Developers have to ask the API owner to register the application.
-            </p>
-          </div>
-        </div>
-
-        <h2 style="margin-top: 40px;" id="UserAuthentication">User Authentication</h2>
+                <h2 id="ResponseStructure">Response Structure</h2>
                 <div class="card command">
-                  <div class="card-body">
-                    <p>
-                        This API makes use of JWT (JSON Web Tokens). On successful signup/signin a token is returned to the client application. The client application must add this token to API requests.
-                    </p>
-                  </div>
+                    <div class="card-body">
+                        <p>Each response makes use of the same JSON schema:</p>
+                        <textarea style="min-height:200px;" readonly><%= apiDefaultResponseSchema %></textarea>
+                        <div class="alert alert-info">
+                            "message" contains an error message if "status" is "error". Otherwise it contains messages
+                            for developer only.
+                        </div>
+                    </div>
                 </div>
 
-        <h2 style="margin-top: 40px;" id="UserAuthorisation">User Authorisation</h2>
+                <h2 style="margin-top: 40px;" id="AppAuthorisation">App Authorisation</h2>
                 <div class="card command">
-                  <div class="card-body">
-                    <p>
-                        This API makes use of JWT (JSON Web Tokens). The token is an encrypted JSON object with information about a user, like his ID and role.
-                        The server decrypts the token and reads the containing JSON object. Only if the token is valid and only if the user owns rights to do an action, the server runs the action.
-                    </p>
-                  </div>
+                    <div class="card-body">
+                        <p>
+                            Each application, that uses this API needs an API key. The application has to send this API
+                            key via
+                            Authorization Header. Developers have to ask the API owner to register the application.
+                        </p>
+                    </div>
                 </div>
 
-        <h2 style="margin-top: 40px;" id="APIMethods">API Methods</h2>
-        <hr style="margin-bottom: 10px;"/>
+                <h2 style="margin-top: 40px;" id="UserAuthentication">User Authentication</h2>
+                <div class="card command">
+                    <div class="card-body">
+                        <p>
+                            This API makes use of JWT (JSON Web Tokens). On successful signup/signin a token is returned
+                            to the client application. The client application must add this token to API requests.
+                        </p>
+                    </div>
+                </div>
 
-        <div class="commands" data-spy="scroll" data-target="#navbar-example2" data-offset="0">
-          <% for(var i = 0; i < commands.length; i++) { %>
-          <div id="<%= commands[i].name %>">
-            <h3><%= commands[i].name %> <span class="badge rounded-pill bg-secondary"><%= commands[i].type %></span></h3>
-          </div>
-          <div class="card command">
-            <div class="card-header"><%= commands[i].type %> - <%= commands[i].name %></div>
-            <div class="card-body">
-              <table class="table table-sm">
-                <tr>
-                  <td>
-                    URL:
-                  </td>
-                  <td><code><%= url.substr(0, url.length - 1) %><%= commands[i].url %></code></td>
-                </tr>
-                <tr>
-                  <td>
-                    Description:
-                  </td>
-                  <td><p><%= commands[i].description %></p></td>
-                </tr>
-                <tr>
-                  <td>Method:</td>
-                  <td><span class="badge rounded-pill bg-secondary"><%= commands[i].type %></span></td>
-                </tr>
-                <% if (commands[i].acceptedContentType) { %>
-                <tr>
-                  <td>Response Content Type:</td>
-                  <td><%= commands[i].acceptedContentType %></td>
-                </tr>
-                <% } %>
-                <% if (commands[i].requestStructure) { %>
-                <tr>
-                  <td>
-                    Request Schema:
-                  </td>
-                  <td><textarea readonly><%= commands[i].requestStructure %></textarea></td>
-                </tr>
-                <% } %>
-                <tr>
-                  <td>Response Content Type:</td>
-                  <td><%= commands[i].responseContentType %></td>
-                </tr>
-                <% if (commands[i].responseStructure) { %>
-                <tr>
-                  <td>
-                    Response Schema:
-                  </td>
-                  <td><textarea readonly><%= commands[i].responseStructure %></textarea></td>
-                </tr>
-                <% } %>
-              </table>
+                <h2 style="margin-top: 40px;" id="UserAuthorisation">User Authorisation</h2>
+                <div class="card command">
+                    <div class="card-body">
+                        <p>
+                            This API makes use of JWT (JSON Web Tokens). The token is an encrypted JSON object with
+                            information about a user, like his ID and role.
+                            The server decrypts the token and reads the containing JSON object. Only if the token is
+                            valid and only if the user owns rights to do an action, the server runs the action.
+                        </p>
+                    </div>
+                </div>
+
+                <h2 style="margin-top: 40px;" id="APIMethods">API Methods</h2>
+                <hr style="margin-bottom: 10px;"/>
+
+                <div class="commands" data-spy="scroll" data-target="#navbar-example2" data-offset="0">
+                    <% for(var i = 0; i < commands.length; i++) { %>
+                        <div id="<%= commands[i].name %>">
+                            <h3><%= commands[i].name %> <span
+                                        class="badge rounded-pill bg-secondary"><%= commands[i].type %></span></h3>
+                        </div>
+                        <div class="card command">
+                            <div class="card-header"><%= commands[i].type %> - <%= commands[i].name %></div>
+                            <div class="card-body">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td>
+                                            URL:
+                                        </td>
+                                        <td><code><%= url.substr(0, url.length - 1) %><%= commands[i].url %></code></td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Description:
+                                        </td>
+                                        <td><p><%= commands[i].description %></p></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Method:</td>
+                                        <td><span class="badge rounded-pill bg-secondary"><%= commands[i].type %></span>
+                                        </td>
+                                    </tr>
+                                    <% if (commands[i].requestStructure) { %>
+                                        <% if (commands[i].acceptedContentType) { %>
+                                            <tr>
+                                                <td>Request Content Type:</td>
+                                                <td><%= commands[i].acceptedContentType %></td>
+                                            </tr>
+                                        <% } %>
+                                        <tr>
+                                            <td>
+                                                Request Schema:
+                                            </td>
+                                            <td><textarea readonly><%= commands[i].requestStructure %></textarea></td>
+                                        </tr>
+                                    <% } %>
+                                    <% if (commands[i].responseStructure) { %>
+                                        <tr>
+                                            <td>Response Content Type:</td>
+                                            <td><%= commands[i].responseContentType %></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Response Schema:
+                                            </td>
+                                            <td><textarea readonly><%= commands[i].responseStructure %></textarea></td>
+                                        </tr>
+                                    <% } %>
+                                </table>
+                            </div>
+                        </div>
+                        <hr/>
+                    <% } %>
+                </div>
             </div>
-          </div>
-          <hr/>
-          <% } %>
         </div>
-      </div>
-    </div>
-    <div class="col-lg-3 d-none d-lg-block">
-      <div class="sticky-top">
-        <nav id="navbar-sticky" class="navbar navbar-light bg-light">
-          <nav class="nav nav-pills flex-column">
-            <a class="nav-link" href="#ResponseStructure">ResponseStructure</a>
-            <a class="nav-link" href="#AppAuthorisation">App Authorisation</a>
-            <a class="nav-link" href="#UserAuthentication">User Authentication</a>
-            <a class="nav-link" href="#APIMethods">API Methods</a>
-            <nav class="nav nav-pills flex-column">
-              <% for(var i = 0; i < commands.length; i++) { %>
-              <a class="nav-link ml-3 my-1" href="#<%= commands[i].name %>"><%= commands[i].name %> <span class="badge rounded-pill bg-secondary"><%= commands[i].type %></span></a>
-              <% } %>
-            </nav>
-          </nav>
-        </nav>
-      </div>
-      <!--
+        <div class="col-lg-3 d-none d-lg-block">
+            <div class="sticky-top">
+                <nav id="navbar-sticky" class="navbar navbar-light bg-light">
+                    <nav class="nav nav-pills flex-column">
+                        <a class="nav-link" href="#ResponseStructure">ResponseStructure</a>
+                        <a class="nav-link" href="#AppAuthorisation">App Authorisation</a>
+                        <a class="nav-link" href="#UserAuthentication">User Authentication</a>
+                        <a class="nav-link" href="#APIMethods">API Methods</a>
+                        <nav class="nav nav-pills flex-column">
+                            <% for(var i = 0; i < commands.length; i++) { %>
+                                <a class="nav-link ml-3 my-1" href="#<%= commands[i].name %>"><%= commands[i].name %>
+                                    <span class="badge rounded-pill bg-secondary"><%= commands[i].type %></span></a>
+                            <% } %>
+                        </nav>
+                    </nav>
+                </nav>
+            </div>
+            <!--
       <ul class="nav nav-pills nav-stacked" style="position: sticky;" >
         <% for(var i = 0; i < commands.length; i++) { %>
         <li><a class="btn btn-secondary" href="#<%= commands[i].name %>"><%= commands[i].name %> (<%= commands[i].type %>)</a></li>
         <% } %>
       </ul>-->
+        </div>
     </div>
-  </div>
 </main><!-- /.container -->
 
 <!-- Bootstrap core JavaScript

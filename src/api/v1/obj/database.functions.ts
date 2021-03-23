@@ -9,7 +9,7 @@ export class DatabaseFunctions {
 
     private static selectAllStatements = {
         appTokens: 'select id::integer, name::text, key::text, domain::text, description::text from apptokens',
-        account: 'select id::bigint, username::text, active::boolean, hash::text, training::text, comment::text from account'
+        account: 'select id::integer, username::text, active::boolean, hash::text, training::text, comment::text from account'
     };
 
     constructor() {
@@ -59,6 +59,8 @@ export class DatabaseFunctions {
                     text: DatabaseFunctions.selectAllStatements.appTokens + ' where id=$1',
                     values: [id]
                 });
+                this.removePropertiesIfNull(selectResult.rows, ['domain', 'description']);
+
                 return selectResult.rows as AppTokensRow[];
             }
             throw 'insertionResult does not have id';
@@ -157,7 +159,7 @@ export class DatabaseFunctions {
     }> {
         await DatabaseFunctions.dbManager.connect();
         const selectResult = await this.dbManager.query({
-            text: 'select ID::numeric, hash::text from account where username=$1::text',
+            text: 'select id::integer, hash::text from account where username=$1::text',
             values: [name]
         });
 

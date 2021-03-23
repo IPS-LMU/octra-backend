@@ -18,7 +18,7 @@ const tempData = {
     },
     user: {
         id: 0,
-        name: "Julian"
+        name: "TestUser"
     },
     jwtToken: ""
 };
@@ -30,7 +30,7 @@ describe('User', () => {
             it('it should POST a new user registration', (done) => {
                 const request = {
                     "name": tempData.user.name,
-                    "password": "Password1234"
+                    "password": "Password12345"
                 }
 
                 chai.request(server)
@@ -59,7 +59,7 @@ describe('User', () => {
             it('it should POST a user login', (done) => {
                 const request = {
                     "name": tempData.user.name,
-                    "password": "Password1234"
+                    "password": "Password12345"
                 }
                 chai.request(server)
                     .post('/v1/user/login')
@@ -70,10 +70,7 @@ describe('User', () => {
                         checkForErrors(err, res);
                         res.body.status.should.be.equal("success");
                         res.body.should.be.a('object')
-                        console.log(`app test `);
-                        console.log(res.body);
                         tempData.user.id = res.body.data.id;
-                        console.log(`id is ${tempData.user.id}`);
                         done();
                     });
             });
@@ -199,6 +196,7 @@ function log(str) {
 
 
 function checkForErrors(err, res) {
+    //console.log(res.body);
     assert.equal(err, undefined, err);
     res.body.status.should.be.equal('success', res.body.message);
     assert.equal(res.error, false, res.error.message);

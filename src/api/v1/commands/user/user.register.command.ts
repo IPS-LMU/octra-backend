@@ -65,19 +65,14 @@ export class UserRegisterCommand extends ApiCommand {
         };
     }
 
-    register(app: Express, router: Router, environment, settings: AppConfiguration,
-             dbManager) {
-        super.register(app, router, environment, settings, dbManager);
-    };
-
     async do(req, res, settings: AppConfiguration) {
-        const answer = ApiCommand.createAnswer();
         const validation = this.validate(req.params, req.body);
 
         // do something
         if (validation === '') {
             const userData: RequestStructure = req.body;
             try {
+                const answer = ApiCommand.createAnswer();
                 const result = await DatabaseFunctions.createUser({
                     name: userData.name,
                     password: SHA256(userData.password).toString()
@@ -93,12 +88,12 @@ export class UserRegisterCommand extends ApiCommand {
                 answer.data = {
                     id: result.id
                 };
-                res.status(200).send(answer);
+                this.checkAndSendAnswer(res, answer, false);
             } catch (e) {
-                ApiCommand.sendError(res, 400, 'Adding user failed');
+                ApiCommand.sendError(res, 400, 'Could not create user account.', false);
             }
         } else {
-            ApiCommand.sendError(res, 400, validation);
+            ApiCommand.sendError(res, 400, validation, false);
         }
 
         return;

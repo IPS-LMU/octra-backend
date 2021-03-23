@@ -76,6 +76,11 @@ export abstract class ApiCommand {
                 enum: ['success', 'error'],
                 description: '\'error\' or \'success\'. If error, the error message is inserted into message.'
             },
+            auth: {
+                required: true,
+                type: 'boolean',
+                description: 'checks if user is authenticated'
+            },
             message: {
                 required: false,
                 type: 'string',
@@ -100,19 +105,21 @@ export abstract class ApiCommand {
         status: 'success' | 'error',
         data: any,
         message?: string,
-        auth?: boolean,
+        auth: boolean,
         token?: string
     } {
         return {
             status: 'success',
+            auth: true,
             data: undefined
         };
     }
 
-    static sendError(res, code: number, message: string) {
+    static sendError(res, code: number, message: string, authenticated = true) {
         const answer = ApiCommand.createAnswer();
         answer.status = 'error';
         answer.message = message;
+        answer.auth = authenticated;
 
         res.status(code).send(answer);
     }
@@ -122,7 +129,10 @@ export abstract class ApiCommand {
         this._type = type;
         this._url = url;
         this._needsJWTAuthentication = needsJWTAuthentication;
+
+        this._responseStructure = this._defaultResponseSchema;
     }
+
 
     /***
      * returns information about the command. It's used for the API reference.
@@ -133,8 +143,8 @@ export abstract class ApiCommand {
             description: this.description,
             url: this.url,
             type: this.type,
-            requestStructure: JSON.stringify(this.requestStructure, null, 2),
-            responseStructure: JSON.stringify(this.responseStructure, null, 2),
+            requestStructure: (this.requestStructure.hasOwnProperty('properties')) ? JSON.stringify(this.requestStructure, null, 2) : undefined,
+            responseStructure: (this.responseStructure.hasOwnProperty('properties')) ? JSON.stringify(this.responseStructure, null, 2) : undefined,
             acceptedContentType: this.acceptedContentType,
             responseContentType: 'application/json'
         };
@@ -220,5 +230,17 @@ export abstract class ApiCommand {
         id: number;
     } {
         return req.decoded;
+    }
+
+    public checkAndSendAnswer(res: any, answer: any, authenticated = true) {
+        const answerValidation = this.validateAnswer(answer);
+
+        if (answerValidation === '') {
+            // a user must be authenticated to get an positive answer
+            answer.auth = true;
+            res.status(200).send(answer);
+        } else {
+            ApiCommand.sendError(res, 400, `Response validation failed: ${answerValidation}`, authenticated);
+        }
     }
 }

@@ -12,11 +12,7 @@ export class AppTokenRemoveCommand extends ApiCommand {
         this._responseContentType = 'application/json';
 
         // relevant for reference creation
-        this._requestStructure = {
-            properties: {
-                ...this.defaultRequestSchema.properties
-            }
-        };
+        this._requestStructure = {};
 
         // relevant for reference creation
         this._responseStructure = {
@@ -50,7 +46,7 @@ export class AppTokenRemoveCommand extends ApiCommand {
                     answer.data = {
                         removedRows
                     };
-                    res.status(200).send(answer);
+                    this.checkAndSendAnswer(res, answer);
                 } catch (e) {
                     ApiCommand.sendError(res, 400, e);
                 }

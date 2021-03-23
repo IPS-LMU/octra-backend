@@ -4,7 +4,7 @@ import {DatabaseFunctions} from '../../obj/database.functions';
 
 export class UserRemoveCommand extends ApiCommand {
     constructor() {
-        super('listUsers', RequestType.DELETE, '/v1/user/:id', true);
+        super('removeUser', RequestType.DELETE, '/v1/user/:id', true);
 
         this._description = 'Removes a user by id.';
         this._acceptedContentType = 'application/json';
@@ -37,13 +37,8 @@ export class UserRemoveCommand extends ApiCommand {
             if (req.params.hasOwnProperty('id')) {
                 try {
                     await DatabaseFunctions.removeUserByID(req.params.id);
-                    const responseValidation = this.validateAnswer(answer);
                     answer.data = {};
-                    if (responseValidation === '') {
-                        res.status(200).send(answer);
-                    } else {
-                        ApiCommand.sendError(res, 400, 'Response validation failed: ' + responseValidation);
-                    }
+                    this.checkAndSendAnswer(res, answer);
                 } catch (e) {
                     console.log(e);
                     ApiCommand.sendError(res, 400, e);

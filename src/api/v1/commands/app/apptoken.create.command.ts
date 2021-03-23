@@ -31,15 +31,28 @@ export class AppTokenCreateCommand extends ApiCommand {
         // relevant for reference creation
         this._responseStructure = {
             properties: {
-                ...this.defaultResponseSchema.properties
+                ...this.defaultResponseSchema.properties,
+                data: {
+                    type: 'object',
+                    required: ['name', 'key'],
+                    properties: {
+                        name: {
+                            type: 'string'
+                        },
+                        key: {
+                            type: 'string'
+                        },
+                        domain: {
+                            type: 'string'
+                        },
+                        description: {
+                            type: 'string'
+                        }
+                    }
+                }
             }
         };
     }
-
-    register(app: Express, router: Router, environment, settings: AppConfiguration,
-             dbManager) {
-        super.register(app, router, environment, settings, dbManager);
-    };
 
     async do(req, res, settings: AppConfiguration) {
         const answer = ApiCommand.createAnswer();
@@ -49,10 +62,11 @@ export class AppTokenCreateCommand extends ApiCommand {
         if (validation === '') {
             const body: RequestStructure = req.body;
             try {
-               const result = await DatabaseFunctions.createAppToken(body);
+                const result = await DatabaseFunctions.createAppToken(body);
                 if (result.length === 1) {
                     answer.data = result[0];
-                    res.status(200).send(answer);
+
+                    this.checkAndSendAnswer(res, answer);
                 }
                 ApiCommand.sendError(res, 400, 'Could not create app token.');
             } catch (e) {

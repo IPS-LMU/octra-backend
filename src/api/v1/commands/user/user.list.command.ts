@@ -55,12 +55,7 @@ export class UserListCommand extends ApiCommand {
         if (validation === '') {
             try {
                 answer.data = await DatabaseFunctions.listUsers();
-                const responseValidation = this.validateAnswer(answer);
-                if (responseValidation === '') {
-                    res.status(200).send(answer);
-                } else {
-                    ApiCommand.sendError(res, 400, 'Response validation failed: ' + responseValidation);
-                }
+                this.checkAndSendAnswer(res, answer);
             } catch (e) {
                 console.log(e);
                 ApiCommand.sendError(res, 400, e);
