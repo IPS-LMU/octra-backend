@@ -2,6 +2,8 @@ import {ApiCommand, RequestType} from './api.command';
 import {Express, Router} from 'express';
 import {AppConfiguration} from '../../../obj/app-config/app-config';
 import {UserRole} from '../obj/database.types';
+import {OK} from '../../../obj/htpp-codes/success.codes';
+import {InternalServerError} from '../../../obj/htpp-codes/server.codes';
 
 export class SampleCommand extends ApiCommand {
     /*
@@ -48,9 +50,9 @@ export class SampleCommand extends ApiCommand {
 
         // do something
         if (validation === '') {
-            return res.status(200).send(answer);
+            return res.status(OK).send(answer);
         } else {
-            ApiCommand.sendError(res, 400, validation);
+            ApiCommand.sendError(res, InternalServerError, validation);
         }
 
         // it's important if you are using await keyword!

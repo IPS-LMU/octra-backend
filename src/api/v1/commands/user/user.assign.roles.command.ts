@@ -3,6 +3,8 @@ import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {AssignUserRoleRequest} from '../../obj/request.types';
 import {UserRole} from '../../obj/database.types';
+import {InternalServerError} from '../../../../obj/htpp-codes/server.codes';
+import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
 
 export class UserAssignRolesCommand extends ApiCommand {
 
@@ -53,10 +55,10 @@ export class UserAssignRolesCommand extends ApiCommand {
                 this.checkAndSendAnswer(res, answer, false);
             } catch (e) {
                 console.log(e);
-                ApiCommand.sendError(res, 400, 'Could not assign user role.', false);
+                ApiCommand.sendError(res, InternalServerError, 'Could not assign user role.', false);
             }
         } else {
-            ApiCommand.sendError(res, 400, validation, false);
+            ApiCommand.sendError(res, BadRequest, validation, false);
         }
 
         return;

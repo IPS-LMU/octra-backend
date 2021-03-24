@@ -2,6 +2,8 @@ import {ApiCommand, RequestType} from '../api.command';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {UserRole} from '../../obj/database.types';
+import {InternalServerError} from '../../../../obj/htpp-codes/server.codes';
+import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
 
 export class AppTokenListCommand extends ApiCommand {
     constructor() {
@@ -60,10 +62,10 @@ export class AppTokenListCommand extends ApiCommand {
                 answer.data = await DatabaseFunctions.listAppTokens();
                 this.checkAndSendAnswer(res, answer);
             } catch (e) {
-                ApiCommand.sendError(res, 400, e);
+                ApiCommand.sendError(res, InternalServerError, e);
             }
         } else {
-            ApiCommand.sendError(res, 400, validation);
+            ApiCommand.sendError(res, BadRequest, validation);
         }
 
         return;

@@ -1,0 +1,11 @@
+export const InternalServerError = 500;
+export const NotImplemented = 501;
+export const BadGateway = 502;
+export const ServiceUnavailable = 503;
+export const Gateway = 504;
+export const HTTPVersionNotSupported = 505;
+export const VariantAlsoNegotiates = 506;
+export const InsufficientStorage = 507;
+export const LoopDetected = 508;
+export const NotExtended = 510;
+export const NetworkAuthenticationRequired = 511;

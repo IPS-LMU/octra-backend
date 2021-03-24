@@ -2,6 +2,7 @@ import {ApiCommand, RequestType} from '../api.command';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {UserRole} from '../../obj/database.types';
+import {InternalServerError} from '../../../../obj/htpp-codes/server.codes';
 
 export class TranscriptGetCommand extends ApiCommand {
     constructor() {
@@ -97,12 +98,12 @@ export class TranscriptGetCommand extends ApiCommand {
                 return;
             } catch (e) {
                 console.log(e);
-                ApiCommand.sendError(res, 400, e);
+                ApiCommand.sendError(res, InternalServerError, e);
             }
         } else {
-            ApiCommand.sendError(res, 400, validation);
+            ApiCommand.sendError(res, InternalServerError, validation);
         }
-        ApiCommand.sendError(res, 400, "nothing happened");
+        ApiCommand.sendError(res, InternalServerError, "nothing happened");
         return;
     }
 }

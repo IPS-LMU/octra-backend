@@ -5,6 +5,8 @@ import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {SHA256} from 'crypto-js';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {UserLoginRequest} from '../../obj/request.types';
+import {InternalServerError} from '../../../../obj/htpp-codes/server.codes';
+import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
 
 export class UserLoginCommand extends ApiCommand {
 
@@ -93,7 +95,7 @@ export class UserLoginCommand extends ApiCommand {
                 ApiCommand.sendError(res, 500, e, false);
             }
         } else {
-            ApiCommand.sendError(res, 400, validation, false);
+            ApiCommand.sendError(res, BadRequest, validation, false);
         }
         return;
     }

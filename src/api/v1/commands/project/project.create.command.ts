@@ -3,6 +3,8 @@ import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {CreateProjectRequest} from '../../obj/request.types';
 import {UserRole} from '../../obj/database.types';
+import {InternalServerError} from '../../../../obj/htpp-codes/server.codes';
+import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
 
 export class ProjectCreateCommand extends ApiCommand {
     constructor() {
@@ -103,12 +105,12 @@ export class ProjectCreateCommand extends ApiCommand {
                     this.checkAndSendAnswer(res, answer);
                 }
 
-                ApiCommand.sendError(res, 400, 'Could not create project.');
+                ApiCommand.sendError(res, InternalServerError, 'Could not create project.');
             } catch (e) {
-                ApiCommand.sendError(res, 400, e);
+                ApiCommand.sendError(res, InternalServerError, e);
             }
         } else {
-            ApiCommand.sendError(res, 400, validation);
+            ApiCommand.sendError(res, BadRequest, validation);
         }
 
         return;

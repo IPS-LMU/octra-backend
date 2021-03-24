@@ -5,6 +5,9 @@ import {DBManager} from '../../../db/DBManager';
 import {verifyAppToken, verifyUserRole, verifyWebToken} from '../obj/middlewares';
 import {UserRole} from '../obj/database.types';
 import {TokenData} from '../obj/request.types';
+import {OK} from '../../../obj/htpp-codes/success.codes';
+import {InternalServerError} from '../../../obj/htpp-codes/server.codes';
+import {BadRequest} from '../../../obj/htpp-codes/client.codes';
 
 export enum RequestType {
     GET = 'GET',
@@ -252,9 +255,9 @@ export abstract class ApiCommand {
         if (answerValidation === '') {
             // a user must be authenticated to get an positive answer
             answer.auth = true;
-            res.status(200).send(answer);
+            res.status(OK).send(answer);
         } else {
-            ApiCommand.sendError(res, 400, `Response validation failed: ${answerValidation}`, authenticated);
+            ApiCommand.sendError(res, BadRequest, `Response validation failed: ${answerValidation}`, authenticated);
         }
     }
 }
