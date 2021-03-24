@@ -1,3 +1,5 @@
+import {UserRole} from './database.types';
+
 export interface CreateProjectRequest {
     name: string;
     shortname?: string;
@@ -58,4 +60,9 @@ export interface AddTranscriptRequest {
     project_id?: number;
     mediaitem_id?: number;
     nexttranscription_id?: number;
+}
+
+export interface AssignUserRoleRequest {
+    accountID: number;
+    role: UserRole;
 }

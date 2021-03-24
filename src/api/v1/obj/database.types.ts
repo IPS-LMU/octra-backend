@@ -1,3 +1,10 @@
+export enum UserRole {
+    administrator = 'administrator',
+    transcriber = 'transcriber',
+    projectAdministrator = 'project administrator',
+    dataDelivery = 'data delivery'
+}
+
 export interface DatabaseRow {
     id: number;
 }
@@ -11,7 +18,7 @@ export interface AccountRow extends DatabaseRow {
     hash: string;
     training: string;
     comment: string;
-    role: 'administrator' | 'transcriber' | 'projectadministrator' | 'data delivery'
+    role: UserRole;
 }
 
 export interface AccountRolesRow {
@@ -20,7 +27,7 @@ export interface AccountRolesRow {
 }
 
 export interface RolesRow extends DatabaseRow {
-    label: 'administrator' | 'transcriber' | 'projectadministrator' | 'data delivery';
+    label: UserRole;
     description: string;
 }
 

@@ -9,9 +9,16 @@ import {
     ProjectRow,
     RolesRow,
     ToolRow,
-    TranscriptRow
+    TranscriptRow,
+    UserRole
 } from './database.types';
-import {AddMediaItemRequest, AddToolRequest, AddTranscriptRequest, CreateProjectRequest} from './request.types';
+import {
+    AddMediaItemRequest,
+    AddToolRequest,
+    AddTranscriptRequest,
+    AssignUserRoleRequest,
+    CreateProjectRequest
+} from './request.types';
 
 export class DatabaseFunctions {
     private static dbManager: DBManager<any>;
@@ -295,45 +302,52 @@ export class DatabaseFunctions {
         if (insertionResult.rowCount === 1 && insertionResult.rows[0].hasOwnProperty('id')) {
             const id = insertionResult.rows[0].id;
 
-            const rolesTable = await this.getRoles();
-            let roleEntry = rolesTable.find(a => a.label === 'transcriber');
+            await DatabaseFunctions.assignUserRole({
+                role: UserRole.transcriber,
+                accountID: id
+            });
 
-            if (roleEntry) {
-                const roleID = roleEntry.id;
-                const insertAccountRolesQuery = {
-                    tableName: 'account_roles',
-                    columns: [
-                        DatabaseFunctions.getColumnDefinition('account_id', 'integer', id),
-                        DatabaseFunctions.getColumnDefinition('roles_id', 'integer', roleID)
+            const selectResult = await DatabaseFunctions.dbManager.query({
+                text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_roles ar ON ac.id=ar.account_id full outer join roles r ON r.id=ar.roles_id where ac.id=$1::integer',
+                values: [id]
+            });
+
+            if (selectResult.rowCount === 1) {
+                DatabaseFunctions.removePropertiesIfNull(selectResult.rows,
+                    [
+                        ...insertAccountQuery.columns.filter(a => a.maybeNull).map(a => a.key),
+                        'comment', 'training'
                     ]
-                };
-                const insertionAccountRolesResult = await DatabaseFunctions.dbManager.insert(insertAccountRolesQuery, 'account_id');
-
-                if (insertionAccountRolesResult.rowCount === 1 && insertionAccountRolesResult.rows[0].hasOwnProperty('account_id')) {
-
-                    const selectResult = await DatabaseFunctions.dbManager.query({
-                        text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_roles ar ON ac.id=ar.account_id full outer join roles r ON r.id=ar.roles_id where ac.id=$1::integer',
-                        values: [id]
-                    });
-                    if (selectResult.rowCount === 1) {
-                        DatabaseFunctions.removePropertiesIfNull(selectResult.rows,
-                            [
-                                ...insertAccountQuery.columns.filter(a => a.maybeNull).map(a => a.key),
-                                'comment', 'training'
-                            ]
-                        );
-                        this.convertColumnsToDatetimeString(selectResult.rows);
-                        return selectResult.rows[0] as AccountRow;
-                    }
-                } else {
-                    throw 'Role not inserted';
-                }
-            } else {
-                throw 'Could not find role.';
+                );
+                this.convertColumnsToDatetimeString(selectResult.rows);
+                return selectResult.rows[0] as AccountRow;
             }
         }
 
         throw 'Could not create user.';
+    }
+
+    static async assignUserRole(data: AssignUserRoleRequest) {
+        const rolesTable = await this.getRoles();
+        let roleEntry = rolesTable.find(a => a.label === data.role);
+
+        if (roleEntry) {
+            const roleID = roleEntry.id;
+            const insertAccountRolesQuery = {
+                tableName: 'account_roles',
+                columns: [
+                    DatabaseFunctions.getColumnDefinition('account_id', 'integer', data.accountID),
+                    DatabaseFunctions.getColumnDefinition('roles_id', 'integer', roleID)
+                ]
+            };
+            const insertionAccountRolesResult = await DatabaseFunctions.dbManager.insert(insertAccountRolesQuery, 'account_id');
+
+            if (insertionAccountRolesResult.rowCount === 1 && insertionAccountRolesResult.rows[0].hasOwnProperty('account_id')) {
+                return;
+            }
+            throw 'Could not assign role';
+        }
+        throw `Could not find role '${data.role}'`;
     }
 
     static async getRoles() {
@@ -358,6 +372,10 @@ export class DatabaseFunctions {
     static async removeUserByID(id: number): Promise<void> {
         await DatabaseFunctions.dbManager.connect();
         const removeResult = await DatabaseFunctions.dbManager.transaction([
+            {
+                text: 'update transcript set transcriber_id=null where transcriber_id=$1::integer',
+                values: [id]
+            },
             {
                 text: 'update project set admin_id=null where admin_id=$1::integer',
                 values: [id]
