@@ -5,7 +5,7 @@ import {UserRole} from '../../obj/database.types';
 
 export class AppTokenListCommand extends ApiCommand {
     constructor() {
-        super('listAppTokens', RequestType.GET, '/v1/app/token/', true,
+        super('listAppTokens', RequestType.GET, '/v1/app/tokens/', true,
             [
                 UserRole.administrator
             ]);

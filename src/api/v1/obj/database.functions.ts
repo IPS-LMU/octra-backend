@@ -91,9 +91,7 @@ export class DatabaseFunctions {
                     values: [id]
                 });
 
-                this.removePropertiesIfNull(selectResult.rows,
-                    insertQuery.columns.filter(a => a.maybeNull).map(a => a.key)
-                );
+                this.removePropertiesIfNull(selectResult.rows);
                 this.convertColumnsToDatetimeString(selectResult.rows);
 
                 return selectResult.rows as AppTokensRow[];
@@ -131,9 +129,7 @@ export class DatabaseFunctions {
                     text: DatabaseFunctions.selectAllStatements.project + ' where id=$1',
                     values: [id]
                 });
-                this.removePropertiesIfNull(selectResult.rows,
-                    insertQuery.columns.filter(a => a.maybeNull).map(a => a.key)
-                );
+                this.removePropertiesIfNull(selectResult.rows);
                 this.convertColumnsToDatetimeString(selectResult.rows);
                 return selectResult.rows as ProjectRow[];
             }
@@ -167,9 +163,7 @@ export class DatabaseFunctions {
                     text: DatabaseFunctions.selectAllStatements.mediaitem + ' where id=$1',
                     values: [id]
                 });
-                this.removePropertiesIfNull(selectResult.rows,
-                    insertQuery.columns.filter(a => a.maybeNull).map(a => a.key)
-                );
+                this.removePropertiesIfNull(selectResult.rows);
                 this.convertColumnsToDatetimeString(selectResult.rows);
                 return selectResult.rows as MediaItemRow[];
             }
@@ -201,9 +195,7 @@ export class DatabaseFunctions {
                     text: DatabaseFunctions.selectAllStatements.tool + ' where id=$1',
                     values: [id]
                 });
-                this.removePropertiesIfNull(selectResult.rows,
-                    insertQuery.columns.filter(a => a.maybeNull).map(a => a.key)
-                );
+                this.removePropertiesIfNull(selectResult.rows);
                 this.convertColumnsToDatetimeString(selectResult.rows);
                 return selectResult.rows as ToolRow[];
             }
@@ -250,9 +242,7 @@ export class DatabaseFunctions {
                     text: DatabaseFunctions.selectAllStatements.transcript + ' where id=$1',
                     values: [id]
                 });
-                this.removePropertiesIfNull(selectResult.rows,
-                    insertQuery.columns.filter(a => a.maybeNull).map(a => a.key)
-                );
+                this.removePropertiesIfNull(selectResult.rows);
                 this.convertColumnsToDatetimeString(selectResult.rows);
                 return selectResult.rows as TranscriptRow[];
             }
@@ -262,6 +252,20 @@ export class DatabaseFunctions {
             console.log(e);
             throw 'Could not save a new tool.';
         }
+    }
+
+    public static async getTranscriptByID(id: number): Promise<TranscriptRow> {
+        const selectResult = await DatabaseFunctions.dbManager.query({
+            text: 'select * from transcript where id=$1::integer',
+            values: [id]
+        });
+
+        if (selectResult.rowCount === 1) {
+            DatabaseFunctions.removePropertiesIfNull(selectResult.rows);
+            this.convertColumnsToDatetimeString(selectResult.rows);
+            return selectResult.rows[0] as TranscriptRow;
+        }
+        throw 'Could not find a transcript with this ID.'
     }
 
     public static async removeAppToken(id: number): Promise<void> {
@@ -282,7 +286,7 @@ export class DatabaseFunctions {
         const selectResult = await DatabaseFunctions.dbManager.query({
             text: DatabaseFunctions.selectAllStatements.appTokens
         });
-        DatabaseFunctions.removePropertiesIfNull(selectResult.rows, ['description', 'domain']);
+        DatabaseFunctions.removePropertiesIfNull(selectResult.rows);
         this.convertColumnsToDatetimeString(selectResult.rows);
         return selectResult.rows as AppTokensRow[];
     }
@@ -322,12 +326,7 @@ export class DatabaseFunctions {
             });
 
             if (selectResult.rowCount > 0) {
-                DatabaseFunctions.removePropertiesIfNull(selectResult.rows,
-                    [
-                        ...insertAccountQuery.columns.filter(a => a.maybeNull).map(a => a.key),
-                        'comment', 'training'
-                    ]
-                );
+                DatabaseFunctions.removePropertiesIfNull(selectResult.rows);
                 this.convertColumnsToDatetimeString(selectResult.rows);
                 const roles = (selectResult.rows as AccountRow[]).map(a => a.role).filter(a => !(a === undefined || a === null));
 
@@ -388,7 +387,7 @@ export class DatabaseFunctions {
             text: this.selectAllStatements.account
         });
 
-        DatabaseFunctions.removePropertiesIfNull(selectResult.rows, ['comment', 'training']);
+        DatabaseFunctions.removePropertiesIfNull(selectResult.rows);
         this.convertColumnsToDatetimeString(selectResult.rows);
 
         return selectResult.rows as AccountRow[];
@@ -429,7 +428,7 @@ export class DatabaseFunctions {
         });
 
         if (selectResult.rowCount === 1) {
-            DatabaseFunctions.removePropertiesIfNull(selectResult.rows, ['comment', 'training']);
+            DatabaseFunctions.removePropertiesIfNull(selectResult.rows);
             this.convertColumnsToDatetimeString(selectResult.rows);
             return selectResult.rows[0] as AccountRow;
         }
@@ -498,7 +497,6 @@ export class DatabaseFunctions {
         }
 
         const projectID = projectRow.rows[0].id;
-        console.log(`found project id ${projectID}`);
         const media = dataDeliveryRequest.media;
 
         // TODO better use transaction
@@ -511,7 +509,6 @@ export class DatabaseFunctions {
 
         if (mediaInsertResult.length > 0) {
             const mediaID = mediaInsertResult[0].id;
-            console.log(`added media item with id ${mediaID}`);
             const transriptInsertResult = await DatabaseFunctions.addTranscript({
                 orgtext: dataDeliveryRequest.orgText,
                 transcript: dataDeliveryRequest.transcript,
@@ -539,11 +536,11 @@ export class DatabaseFunctions {
         });
     }
 
-    static removePropertiesIfNull(rows: DatabaseRow[], attributes: string[]) {
+    static removePropertiesIfNull(rows: DatabaseRow[]) {
         for (const row of rows) {
-            for (const attribute of attributes) {
-                if (row.hasOwnProperty(attribute) && row[attribute] === null) {
-                    delete row[attribute];
+            for (let col in row) {
+                if (row[col] === null || row[col] === undefined) {
+                    delete row[col];
                 }
             }
         }

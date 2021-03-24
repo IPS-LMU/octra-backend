@@ -1,77 +1,22 @@
 import {ApiCommand, RequestType} from '../api.command';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
-import {AddTranscriptRequest} from '../../obj/request.types';
 import {UserRole} from '../../obj/database.types';
 
-export class TranscriptAddCommand extends ApiCommand {
+export class TranscriptGetCommand extends ApiCommand {
     constructor() {
-        super('addTranscript', RequestType.POST, '/v1/transcripts/', true,
+        super('getTranscript', RequestType.GET, '/v1/transcripts/:id', true,
             [
-                UserRole.administrator
+                UserRole.administrator,
+                UserRole.dataDelivery
             ]);
 
-        this._description = 'Adds a new empty transcript.';
+        this._description = 'Returns a transcript object by ID.';
         this._acceptedContentType = 'application/json';
         this._responseContentType = 'application/json';
 
         // relevant for reference creation
-        this._requestStructure = {
-            properties: {
-                ...this.defaultRequestSchema.properties,
-                pid: {
-                    type: 'string'
-                },
-                orgtext: {
-                    type: 'string'
-                },
-                transcript: {
-                    type: 'string'
-                },
-                assessment: {
-                    type: 'string'
-                },
-                priority: {
-                    type: 'number'
-                },
-                status: {
-                    type: 'string'
-                },
-                code: {
-                    type: 'string'
-                },
-                creationdate: {
-                    type: 'string'
-                },
-                startdate: {
-                    type: 'string'
-                },
-                enddate: {
-                    type: 'string'
-                },
-                log: {
-                    type: 'string'
-                },
-                comment: {
-                    type: 'string'
-                },
-                tool_id: {
-                    type: 'number'
-                },
-                transcriber_id: {
-                    type: 'number'
-                },
-                project_id: {
-                    type: 'number'
-                },
-                mediaitem_id: {
-                    type: 'number'
-                },
-                nexttranscription_id: {
-                    type: 'number'
-                }
-            }
-        };
+        this._requestStructure = {};
 
         // relevant for reference creation
         this._responseStructure = {
@@ -144,25 +89,20 @@ export class TranscriptAddCommand extends ApiCommand {
     async do(req, res, settings: AppConfiguration) {
         const answer = ApiCommand.createAnswer();
         const validation = this.validate(req.params, req.body);
-
         // do something
-        if (validation === '') {
-            const body: AddTranscriptRequest = req.body;
+        if (validation === '' && req.params && req.params.id) {
             try {
-                const result = await DatabaseFunctions.addTranscript(body);
-                if (result.length === 1) {
-                    answer.data = result[0];
-                    this.checkAndSendAnswer(res, answer);
-                }
-
-                ApiCommand.sendError(res, 400, 'Could not add tool.');
+                answer.data = await DatabaseFunctions.getTranscriptByID(req.params.id);
+                this.checkAndSendAnswer(res, answer);
+                return;
             } catch (e) {
+                console.log(e);
                 ApiCommand.sendError(res, 400, e);
             }
         } else {
             ApiCommand.sendError(res, 400, validation);
         }
-
+        ApiCommand.sendError(res, 400, "nothing happened");
         return;
     }
 }

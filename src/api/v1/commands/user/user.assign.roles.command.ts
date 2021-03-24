@@ -7,7 +7,7 @@ import {UserRole} from '../../obj/database.types';
 export class UserAssignRolesCommand extends ApiCommand {
 
     constructor() {
-        super('assignUserRoles', RequestType.POST, '/v1/user/roles/assign', true,
+        super('assignUserRoles', RequestType.POST, '/v1/users/:id/roles', true,
             [
                 UserRole.administrator
             ]);
@@ -21,10 +21,6 @@ export class UserAssignRolesCommand extends ApiCommand {
             type: 'object',
             properties: {
                 ...this.defaultRequestSchema.properties,
-                accountID: {
-                    required: true,
-                    type: 'number'
-                },
                 roles: {
                     type: 'array',
                     items: {
@@ -48,8 +44,9 @@ export class UserAssignRolesCommand extends ApiCommand {
     async do(req, res, settings: AppConfiguration) {
         const validation = this.validate(req.params, req.body);
         // do something
-        if (validation === '') {
+        if (validation === '' && req.params && req.params.id) {
             const userData: AssignUserRoleRequest = req.body;
+            userData.accountID = req.params.id;
             try {
                 const answer = ApiCommand.createAnswer();
                 await DatabaseFunctions.assignUserRolesToUser(userData);

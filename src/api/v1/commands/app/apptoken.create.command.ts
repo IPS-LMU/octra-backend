@@ -6,7 +6,7 @@ import {UserRole} from '../../obj/database.types';
 
 export class AppTokenCreateCommand extends ApiCommand {
     constructor() {
-        super('createAppToken', RequestType.POST, '/v1/app/token/', true,
+        super('createAppToken', RequestType.POST, '/v1/app/tokens/', true,
             [
                 UserRole.administrator
             ]

@@ -9,7 +9,7 @@ import {UserLoginRequest} from '../../obj/request.types';
 export class UserLoginCommand extends ApiCommand {
 
     constructor() {
-        super('loginUser', RequestType.POST, '/v1/user/login', false,
+        super('loginUser', RequestType.POST, '/v1/users/login', false,
             []);
 
         this._description = 'Login a user';

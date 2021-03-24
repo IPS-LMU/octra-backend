@@ -6,7 +6,7 @@ import {UserRole} from '../../obj/database.types';
 
 export class ToolAddCommand extends ApiCommand {
     constructor() {
-        super('addTool', RequestType.POST, '/v1/tool/', true,
+        super('addTool', RequestType.POST, '/v1/tools/', true,
             [
                 UserRole.administrator
             ]);

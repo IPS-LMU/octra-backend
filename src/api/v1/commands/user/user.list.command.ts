@@ -5,7 +5,7 @@ import {UserRole} from '../../obj/database.types';
 
 export class UserListCommand extends ApiCommand {
     constructor() {
-        super('listUsers', RequestType.GET, '/v1/user/', true,
+        super('listUsers', RequestType.GET, '/v1/users/', true,
             [
                 UserRole.administrator
             ]);

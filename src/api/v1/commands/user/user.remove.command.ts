@@ -5,7 +5,7 @@ import {UserRole} from '../../obj/database.types';
 
 export class UserRemoveCommand extends ApiCommand {
     constructor() {
-        super('removeUser', RequestType.DELETE, '/v1/user/:id', true,
+        super('removeUser', RequestType.DELETE, '/v1/users/:id', true,
             [
                 UserRole.administrator
             ]);

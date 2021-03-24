@@ -6,7 +6,7 @@ import {UserRole} from '../../obj/database.types';
 
 export class ProjectCreateCommand extends ApiCommand {
     constructor() {
-        super('createProject', RequestType.POST, '/v1/project/', true,
+        super('createProject', RequestType.POST, '/v1/projects/', true,
             [
                 UserRole.administrator
             ]);

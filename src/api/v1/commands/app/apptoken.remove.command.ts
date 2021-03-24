@@ -6,7 +6,7 @@ import {UserRole} from '../../obj/database.types';
 
 export class AppTokenRemoveCommand extends ApiCommand {
     constructor() {
-        super('removeAppToken', RequestType.DELETE, '/v1/app/token/:id', true,
+        super('removeAppToken', RequestType.DELETE, '/v1/app/tokens/:id', true,
             [
                 UserRole.administrator
             ]);
