@@ -362,6 +362,30 @@ if (true) {
                 });
             });
         }
+
+        if (true) {
+            describe('/GET v1/projects/transcripts', () => {
+                it('it should list an array of transcripts for a given project', (done) => {
+                    const request = {
+                        projectName: tempData.project.name
+                    }
+                    chai.request(server)
+                        .get('/v1/projects/transcripts')
+                        .set("Authorization", `Bearer ${appToken}`)
+                        .set("Origin", "http://localhost:8080")
+                        .set("x-access-token", tempData.user.jwtToken)
+                        .send(request)
+                        .end((err, res) => {
+                            checkForErrors(err, res);
+                            log(`list of ${res.body.data.length} transcripts for project ${tempData.project.name}`);
+
+                            res.status.should.be.equal(200);
+                            res.body.should.be.a('object');
+                            done();
+                        });
+                });
+            });
+        }
     });
 }
 
@@ -421,7 +445,7 @@ function logJSON(json) {
 
 
 function checkForErrors(err, res) {
-    logJSON(res.body);
+    // logJSON(res.body);
     assert.equal(err, undefined, err);
     res.body.status.should.be.equal('success', res.body.message);
     assert.equal(res.error, false, res.error.message);

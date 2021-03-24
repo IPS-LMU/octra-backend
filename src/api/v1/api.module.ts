@@ -13,6 +13,7 @@ import {TranscriptAddCommand} from './commands/transcript/transcript.add.command
 import {UserAssignRolesCommand} from './commands/user/user.assign.roles.command';
 import {DeliveryMediaAddCommand} from './commands/delivery/delivery.media.add.command';
 import {TranscriptGetCommand} from './commands/transcript/transcript.get.command';
+import {ProjectTranscriptsGetCommand} from './commands/project/project.transcripts.get.command';
 
 export class APIV1Module {
     public static commands: ApiCommand[] = [
@@ -29,6 +30,7 @@ export class APIV1Module {
         new TranscriptAddCommand(),
         new UserAssignRolesCommand(),
         new DeliveryMediaAddCommand(),
-        new TranscriptGetCommand()
+        new TranscriptGetCommand(),
+        new ProjectTranscriptsGetCommand()
     ]
 }

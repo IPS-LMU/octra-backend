@@ -91,8 +91,7 @@ export class DatabaseFunctions {
                     values: [id]
                 });
 
-                this.removePropertiesIfNull(selectResult.rows);
-                this.convertColumnsToDatetimeString(selectResult.rows);
+                DatabaseFunctions.prepareRows(selectResult.rows)
 
                 return selectResult.rows as AppTokensRow[];
             }
@@ -129,8 +128,7 @@ export class DatabaseFunctions {
                     text: DatabaseFunctions.selectAllStatements.project + ' where id=$1',
                     values: [id]
                 });
-                this.removePropertiesIfNull(selectResult.rows);
-                this.convertColumnsToDatetimeString(selectResult.rows);
+                this.prepareRows(selectResult.rows);
                 return selectResult.rows as ProjectRow[];
             }
             throw 'insertionResult does not have id';
@@ -163,8 +161,7 @@ export class DatabaseFunctions {
                     text: DatabaseFunctions.selectAllStatements.mediaitem + ' where id=$1',
                     values: [id]
                 });
-                this.removePropertiesIfNull(selectResult.rows);
-                this.convertColumnsToDatetimeString(selectResult.rows);
+                this.prepareRows(selectResult.rows);
                 return selectResult.rows as MediaItemRow[];
             }
             throw 'insertionResult does not have id';
@@ -195,8 +192,7 @@ export class DatabaseFunctions {
                     text: DatabaseFunctions.selectAllStatements.tool + ' where id=$1',
                     values: [id]
                 });
-                this.removePropertiesIfNull(selectResult.rows);
-                this.convertColumnsToDatetimeString(selectResult.rows);
+                this.prepareRows(selectResult.rows);
                 return selectResult.rows as ToolRow[];
             }
             throw 'insertionResult does not have id';
@@ -242,8 +238,7 @@ export class DatabaseFunctions {
                     text: DatabaseFunctions.selectAllStatements.transcript + ' where id=$1',
                     values: [id]
                 });
-                this.removePropertiesIfNull(selectResult.rows);
-                this.convertColumnsToDatetimeString(selectResult.rows);
+                this.prepareRows(selectResult.rows);
                 return selectResult.rows as TranscriptRow[];
             }
             throw 'insertionResult does not have id';
@@ -261,11 +256,29 @@ export class DatabaseFunctions {
         });
 
         if (selectResult.rowCount === 1) {
-            DatabaseFunctions.removePropertiesIfNull(selectResult.rows);
-            this.convertColumnsToDatetimeString(selectResult.rows);
+            DatabaseFunctions.prepareRows(selectResult.rows);
             return selectResult.rows[0] as TranscriptRow;
         }
         throw 'Could not find a transcript with this ID.'
+    }
+
+    public static async getTranscripstByProjectName(projectName: string): Promise<TranscriptRow[]> {
+        const projectSelectResult = await DatabaseFunctions.dbManager.query({
+            text: 'select id from project where name=$1::text',
+            values: [projectName]
+        })
+
+        if (projectSelectResult.rowCount === 1) {
+            const projectID = projectSelectResult.rows[0].id;
+            const selectResult = await DatabaseFunctions.dbManager.query({
+                text: 'select * from transcript where project_id=$1::integer',
+                values: [projectID]
+            });
+
+            DatabaseFunctions.prepareRows(selectResult.rows);
+            return selectResult.rows as TranscriptRow[];
+        }
+        throw 'Could not find a project with this name.';
     }
 
     public static async removeAppToken(id: number): Promise<void> {
@@ -286,8 +299,7 @@ export class DatabaseFunctions {
         const selectResult = await DatabaseFunctions.dbManager.query({
             text: DatabaseFunctions.selectAllStatements.appTokens
         });
-        DatabaseFunctions.removePropertiesIfNull(selectResult.rows);
-        this.convertColumnsToDatetimeString(selectResult.rows);
+        DatabaseFunctions.prepareRows(selectResult.rows);
         return selectResult.rows as AppTokensRow[];
     }
 
@@ -326,8 +338,7 @@ export class DatabaseFunctions {
             });
 
             if (selectResult.rowCount > 0) {
-                DatabaseFunctions.removePropertiesIfNull(selectResult.rows);
-                this.convertColumnsToDatetimeString(selectResult.rows);
+                DatabaseFunctions.prepareRows(selectResult.rows);
                 const roles = (selectResult.rows as AccountRow[]).map(a => a.role).filter(a => !(a === undefined || a === null));
 
                 return {
@@ -387,8 +398,7 @@ export class DatabaseFunctions {
             text: this.selectAllStatements.account
         });
 
-        DatabaseFunctions.removePropertiesIfNull(selectResult.rows);
-        this.convertColumnsToDatetimeString(selectResult.rows);
+        DatabaseFunctions.prepareRows(selectResult.rows);
 
         return selectResult.rows as AccountRow[];
     }
@@ -428,8 +438,7 @@ export class DatabaseFunctions {
         });
 
         if (selectResult.rowCount === 1) {
-            DatabaseFunctions.removePropertiesIfNull(selectResult.rows);
-            this.convertColumnsToDatetimeString(selectResult.rows);
+            DatabaseFunctions.prepareRows(selectResult.rows);
             return selectResult.rows[0] as AccountRow;
         }
 
@@ -536,11 +545,16 @@ export class DatabaseFunctions {
         });
     }
 
-    static removePropertiesIfNull(rows: DatabaseRow[]) {
+    static prepareRows(rows: DatabaseRow[]) {
         for (const row of rows) {
             for (let col in row) {
-                if (row[col] === null || row[col] === undefined) {
-                    delete row[col];
+                if (row.hasOwnProperty(col)) {
+                    if (row[col] === null || row[col] === undefined) {
+                        delete row[col];
+                    } else if (row.hasOwnProperty(col) && col.indexOf('date') > -1
+                        && !(row[col] === undefined || row[col] === null)) {
+                        row[col] = row[col].toISOString();
+                    }
                 }
             }
         }
@@ -552,13 +566,4 @@ export class DatabaseFunctions {
         };
     }
 
-    static convertColumnsToDatetimeString(rows: DatabaseRow[]) {
-        for (const row of rows) {
-            for (const attr in row) {
-                if (row.hasOwnProperty(attr) && attr.indexOf('date') > -1 && !(row[attr] === undefined || row[attr] === null)) {
-                    row[attr] = row[attr].toISOString();
-                }
-            }
-        }
-    }
 }

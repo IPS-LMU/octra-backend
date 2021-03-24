@@ -79,6 +79,10 @@ export interface DeliverNewMediaRequest {
     transcript: string;
 }
 
+export interface GetProjectTranscriptsRequest {
+    projectName: string;
+}
+
 export interface TokenData {
     id: number;
     roles: UserRole[]
