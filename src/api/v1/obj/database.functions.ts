@@ -7,6 +7,7 @@ import {
     DatabaseRow,
     MediaItemRow,
     ProjectRow,
+    RolesRow,
     ToolRow,
     TranscriptRow
 } from './database.types';
@@ -18,7 +19,7 @@ export class DatabaseFunctions {
 
     private static selectAllStatements = {
         appTokens: 'select id::integer, name::text, key::text, domain::text, description::text from apptokens',
-        account: 'select id::integer, username::text, email::text, loginmethod::text, active::boolean, hash::text, training::text, comment::text, createdate::timestamp from account',
+        account: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp from account ac',
         project: 'select id::integer, name::text, shortname::text, description::text, configuration::text, startdate::timestamp, enddate::timestamp, active::boolean, admin_id::integer from project',
         mediaitem: 'select id::integer, url::text, type::text, size::integer, metadata::text from mediaitem',
         tool: 'select id::integer, name::text, version::text, description::text, pid::text from tool',
@@ -70,7 +71,7 @@ export class DatabaseFunctions {
                     DatabaseFunctions.getColumnDefinition('description', 'text', data.description)
                 ]
             };
-            const insertionResult = await DatabaseFunctions.dbManager.insert(insertQuery);
+            const insertionResult = await DatabaseFunctions.dbManager.insert(insertQuery, 'id');
 
             if (insertionResult.rowCount === 1 && insertionResult.rows[0].hasOwnProperty('id')) {
                 const id = insertionResult.rows[0].id;
@@ -111,7 +112,7 @@ export class DatabaseFunctions {
                     DatabaseFunctions.getColumnDefinition('admin_id', 'integer', data.admin_id)
                 ]
             };
-            const insertionResult = await DatabaseFunctions.dbManager.insert(insertQuery);
+            const insertionResult = await DatabaseFunctions.dbManager.insert(insertQuery, 'id');
 
             if (insertionResult.rowCount === 1 && insertionResult.rows[0].hasOwnProperty('id')) {
                 const id = insertionResult.rows[0].id;
@@ -147,7 +148,7 @@ export class DatabaseFunctions {
                 ]
             };
 
-            const insertionResult = await DatabaseFunctions.dbManager.insert(insertQuery);
+            const insertionResult = await DatabaseFunctions.dbManager.insert(insertQuery, 'id');
 
             if (insertionResult.rowCount === 1 && insertionResult.rows[0].hasOwnProperty('id')) {
                 const id = insertionResult.rows[0].id;
@@ -181,7 +182,7 @@ export class DatabaseFunctions {
                     DatabaseFunctions.getColumnDefinition('pid', 'text', data.description)
                 ]
             };
-            const insertionResult = await DatabaseFunctions.dbManager.insert(insertQuery);
+            const insertionResult = await DatabaseFunctions.dbManager.insert(insertQuery, 'id');
 
             if (insertionResult.rowCount === 1 && insertionResult.rows[0].hasOwnProperty('id')) {
                 const id = insertionResult.rows[0].id;
@@ -230,7 +231,7 @@ export class DatabaseFunctions {
                 ]
             };
 
-            const insertionResult = await DatabaseFunctions.dbManager.insert(insertQuery);
+            const insertionResult = await DatabaseFunctions.dbManager.insert(insertQuery, 'id');
 
             if (insertionResult.rowCount === 1 && insertionResult.rows[0].hasOwnProperty('id')) {
                 const id = insertionResult.rows[0].id;
@@ -281,7 +282,7 @@ export class DatabaseFunctions {
         password: string
     }): Promise<AccountRow> {
         await DatabaseFunctions.dbManager.connect();
-        const insertQuery = {
+        const insertAccountQuery = {
             tableName: 'account',
             columns: [
                 DatabaseFunctions.getColumnDefinition('username', 'text', userData.name),
@@ -289,23 +290,57 @@ export class DatabaseFunctions {
                 DatabaseFunctions.getColumnDefinition('hash', 'text', userData.password)
             ]
         };
-        const insertionResult = await DatabaseFunctions.dbManager.insert(insertQuery);
+        const insertionResult = await DatabaseFunctions.dbManager.insert(insertAccountQuery, 'id');
 
         if (insertionResult.rowCount === 1 && insertionResult.rows[0].hasOwnProperty('id')) {
-            const selectResult = await DatabaseFunctions.dbManager.query({
-                text: this.selectAllStatements.account + ' where id=$1::numeric',
-                values: [insertionResult.rows[0].id]
-            });
-            if (selectResult.rowCount === 1) {
-                DatabaseFunctions.removePropertiesIfNull(selectResult.rows,
-                    insertQuery.columns.filter(a => a.maybeNull).map(a => a.key)
-                );
-                this.convertColumnsToDatetimeString(selectResult.rows);
-                return selectResult.rows[0] as AccountRow;
+            const id = insertionResult.rows[0].id;
+
+            const rolesTable = await this.getRoles();
+            let roleEntry = rolesTable.find(a => a.label === 'transcriber');
+
+            if (roleEntry) {
+                const roleID = roleEntry.id;
+                const insertAccountRolesQuery = {
+                    tableName: 'account_roles',
+                    columns: [
+                        DatabaseFunctions.getColumnDefinition('account_id', 'integer', id),
+                        DatabaseFunctions.getColumnDefinition('roles_id', 'integer', roleID)
+                    ]
+                };
+                const insertionAccountRolesResult = await DatabaseFunctions.dbManager.insert(insertAccountRolesQuery, 'account_id');
+
+                if (insertionAccountRolesResult.rowCount === 1 && insertionAccountRolesResult.rows[0].hasOwnProperty('account_id')) {
+
+                    const selectResult = await DatabaseFunctions.dbManager.query({
+                        text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_roles ar ON ac.id=ar.account_id full outer join roles r ON r.id=ar.roles_id where ac.id=$1::integer',
+                        values: [id]
+                    });
+                    if (selectResult.rowCount === 1) {
+                        DatabaseFunctions.removePropertiesIfNull(selectResult.rows,
+                            [
+                                ...insertAccountQuery.columns.filter(a => a.maybeNull).map(a => a.key),
+                                'comment', 'training'
+                            ]
+                        );
+                        this.convertColumnsToDatetimeString(selectResult.rows);
+                        return selectResult.rows[0] as AccountRow;
+                    }
+                } else {
+                    throw 'Role not inserted';
+                }
+            } else {
+                throw 'Could not find role.';
             }
         }
 
-        throw 'could not create user';
+        throw 'Could not create user.';
+    }
+
+    static async getRoles() {
+        const result = await DatabaseFunctions.dbManager.query({
+            text: 'select * FROM roles'
+        });
+        return result.rows as RolesRow[];
     }
 
     static async listUsers(): Promise<AccountRow[]> {
@@ -322,11 +357,22 @@ export class DatabaseFunctions {
 
     static async removeUserByID(id: number): Promise<void> {
         await DatabaseFunctions.dbManager.connect();
-        const removeResult = await DatabaseFunctions.dbManager.query({
-            text: 'delete from account where id=$1::numeric',
-            values: [id]
-        });
-        if (removeResult.rowCount < 1) {
+        const removeResult = await DatabaseFunctions.dbManager.transaction([
+            {
+                text: 'update project set admin_id=null where admin_id=$1::integer',
+                values: [id]
+            },
+            {
+                text: 'delete from account_roles where account_id=$1::integer',
+                values: [id]
+            },
+            {
+                text: 'delete from account where id=$1::integer',
+                values: [id]
+            }
+        ]);
+
+        if (removeResult.command !== 'COMMIT') {
             throw `Could not remove user account.}.`;
         }
         return;
@@ -350,11 +396,12 @@ export class DatabaseFunctions {
 
     static async getUserInfoByUserName(name: string): Promise<{
         password: string,
-        id: number
+        id: number,
+        role: string
     }> {
         await DatabaseFunctions.dbManager.connect();
         const selectResult = await DatabaseFunctions.dbManager.query({
-            text: 'select id::integer, email::text, hash::text from account where username=$1::text',
+            text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_roles ar ON ac.id=ar.account_id full outer join roles r ON r.id=ar.roles_id where ac.username=$1::text',
             values: [name]
         });
 
@@ -362,7 +409,8 @@ export class DatabaseFunctions {
         if (selectResult.rowCount === 1) {
             return {
                 password: row.hash,
-                id: row.id
+                id: row.id,
+                role: row.role
             };
         }
 

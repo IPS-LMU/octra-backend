@@ -11,11 +11,17 @@ export interface AccountRow extends DatabaseRow {
     hash: string;
     training: string;
     comment: string;
+    role: 'administrator' | 'transcriber' | 'projectadministrator' | 'data delivery'
 }
 
 export interface AccountRolesRow {
     account_id: number;
     roles_id: number;
+}
+
+export interface RolesRow extends DatabaseRow {
+    label: 'administrator' | 'transcriber' | 'projectadministrator' | 'data delivery';
+    description: string;
 }
 
 export interface AppTokensRow extends DatabaseRow {

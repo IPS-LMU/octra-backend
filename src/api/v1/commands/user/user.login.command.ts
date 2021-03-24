@@ -68,7 +68,7 @@ export class UserLoginCommand extends ApiCommand {
         if (validation === '') {
             try {
                 const answer = ApiCommand.createAnswer();
-                const {password, id} = await DatabaseFunctions.getUserInfoByUserName(body.name);
+                const {password, id, role} = await DatabaseFunctions.getUserInfoByUserName(body.name);
                 const passwordIsValid = SHA256(body.password).toString() === password;
 
                 if (!passwordIsValid) {
@@ -79,7 +79,7 @@ export class UserLoginCommand extends ApiCommand {
                 answer.auth = true;
                 answer.token = jwt.sign({
                     name: body.name,
-                    id
+                    id, role
                 }, settings.api.secret, {
                     expiresIn: 86400 // expires in 24 hours
                 });

@@ -80,7 +80,8 @@ export class UserRegisterCommand extends ApiCommand {
                 answer.auth = true;
                 answer.token = jwt.sign({
                     id: result.id,
-                    name: result.username
+                    name: result.username,
+                    role: result.role
                 }, settings.api.secret, {
                     expiresIn: 86400 // expires in 24 hours
                 });

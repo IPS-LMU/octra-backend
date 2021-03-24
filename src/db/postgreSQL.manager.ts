@@ -49,7 +49,7 @@ export class PostgreSQLManager extends DBManager<Client> {
         return this.client.query(query);
     }
 
-    async transaction(queries: SQLQuery[]): Promise<QueryResult> {
+    async transaction(queries: SQLQuery[]): Promise<any> {
         try {
             await this.client.query('BEGIN');
 
@@ -74,7 +74,7 @@ export class PostgreSQLManager extends DBManager<Client> {
         })
     }
 
-    async insert(query: InsertQuery) {
+    async insert(query: InsertQuery, idColumn = 'id') {
         const columns = query.columns.filter(a => !(a.value === undefined || a.value === null));
 
         if (columns.length === 0) {
@@ -86,7 +86,7 @@ export class PostgreSQLManager extends DBManager<Client> {
         statement += '(' + columns.map(a => a.key).join(', ') + ')';
         statement += ' values(' + columns.map((a, index) => `$${index + 1}::${a.type}`).join(', ') + ')'
 
-        statement = `insert into ${statement} returning id`;
+        statement = `insert into ${statement} returning ${idColumn}`;
 
         return this.query({
             text: statement,

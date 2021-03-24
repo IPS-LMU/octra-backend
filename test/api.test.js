@@ -43,7 +43,6 @@ describe('User', () => {
                     .end((err, res) => {
                         checkForErrors(err, res);
                         tempData.jwtToken = res.body.token;
-
                         tempData.user.id = res.body.data.id;
 
                         res.body.status.should.be.equal("success");

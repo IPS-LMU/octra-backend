@@ -13,7 +13,7 @@ export interface QueryResult {
 
 export interface InsertQuery {
     tableName: string;
-    columns:{
+    columns: {
         key: string;
         type: string;
         value: any;
@@ -33,9 +33,9 @@ export abstract class DBManager<T> {
 
     abstract query(query: SQLQuery): Promise<QueryResult>
 
-    abstract insert(query: InsertQuery): Promise<QueryResult>
+    abstract insert(query: InsertQuery, idColumn: string): Promise<QueryResult>
 
-    abstract transaction(query: SQLQuery[]): Promise<QueryResult>;
+    abstract transaction(query: SQLQuery[]): Promise<any>;
 
     abstract close(): Promise<void>;
 

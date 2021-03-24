@@ -30,6 +30,9 @@ export class UserListCommand extends ApiCommand {
                             username: {
                                 type: 'string'
                             },
+                            role: {
+                                type: 'string'
+                            },
                             createdate: {
                                 type: 'string'
                             },
