@@ -9,6 +9,7 @@
     <title>OCTRA API</title>
     <!-- Bootstrap core CSS -->
     <link href="../bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../bootstrap/bootstrap-icons/bootstrap-icons.css" rel="stylesheet" type="text/css">
 
     <!-- Custom styles for this template -->
     <link href="../v1/style.css" rel="stylesheet" type="text/css">
@@ -56,8 +57,9 @@
                     <div class="card-body">
                         <p>
                             Each application, that uses this API needs an API key. The application has to send this API
-                            key via
-                            Authorization Header. Developers have to ask the API owner to register the application.
+                            key via Authorization Header. Developers have to ask the API owner to register the
+                            application.<br/><br/>
+                            Example: <code> Authentication: Bearer 65423gzu123f647t123892r3j01r732h</code>
                         </p>
                     </div>
                 </div>
@@ -67,7 +69,7 @@
                     <div class="card-body">
                         <p>
                             This API makes use of JWT (JSON Web Tokens). On successful signup/signin a token is returned
-                            to the client application. The client application must add this token to API requests.
+                            to the client application. The client application must add this token to each API request.
                         </p>
                     </div>
                 </div>
@@ -77,8 +79,7 @@
                     <div class="card-body">
                         <p>
                             This API makes use of JWT (JSON Web Tokens). The token is an encrypted JSON object with
-                            information about a user, like his ID and role.
-                            The server decrypts the token and reads the containing JSON object. Only if the token is
+                            information about a user access rights. This token is validated by the server. Only if the token is
                             valid and only if the user owns rights to do an action, the server runs the action.
                         </p>
                     </div>
@@ -89,19 +90,35 @@
 
                 <div class="commands" data-spy="scroll" data-target="#navbar-example2" data-offset="0">
                     <% for(var i = 0; i < commands.length; i++) { %>
-                        <div id="<%= commands[i].name %>">
-                            <h3><%= commands[i].name %> <span
-                                        class="badge rounded-pill bg-secondary"><%= commands[i].type %></span></h3>
-                        </div>
                         <div class="card command">
-                            <div class="card-header"><%= commands[i].type %> - <%= commands[i].name %></div>
+                            <div class="card-header">
+                                <span class="title" id="<%= commands[i].name %>">
+                                    <%= commands[i].name %>
+                                </span>
+                                <div class="info">
+                                    <span class="badge pill bg-info"><i
+                                                class="bi bi-shield-lock-fill"></i> App Token</span>
+                                    <% if (commands[i].needsJWT) { %>
+                                        <span class="badge pill bg-info"><i
+                                                    class="bi bi-shield-lock-fill"></i> JWT</span>
+                                    <% } %>
+                                </div>
+                            </div>
                             <div class="card-body">
                                 <table class="table table-sm">
+                                    <% if (commands[i].allowedUserRoles.length > 0) { %>
+                                        <tr>
+                                            <td>
+                                                Allowed user roles:
+                                            </td>
+                                            <td><%= commands[i].allowedUserRoles.join(', ') %></td>
+                                        </tr>
+                                    <% } %>
                                     <tr>
                                         <td>
                                             URL:
                                         </td>
-                                        <td><code><%= url.substr(0, url.length - 1) %><%= commands[i].url %></code></td>
+                                        <td><code><%= url %><%= commands[i].url %></code></td>
                                     </tr>
                                     <tr>
                                         <td>
@@ -111,7 +128,8 @@
                                     </tr>
                                     <tr>
                                         <td>Method:</td>
-                                        <td><span class="badge rounded-pill bg-secondary"><%= commands[i].type %></span>
+                                        <td>
+                                            <span class="badge rounded-pill bg-secondary"><%= commands[i].type %></span>
                                         </td>
                                     </tr>
                                     <% if (commands[i].requestStructure) { %>

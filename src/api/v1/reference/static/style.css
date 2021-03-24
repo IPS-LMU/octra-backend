@@ -26,5 +26,34 @@ textarea {
 }
 
 .badge.bg-secondary {
-    color:white;
+    color: white;
+}
+
+.card-header {
+    padding: 0;
+    position: relative;
+}
+
+.title {
+    font-weight: 500;
+    font-size: 1.2em;
+    padding: .75rem 1.25rem;
+    display: inline-block;
+}
+
+.card-header .info {
+    padding: .75rem 1.25rem;
+    display: inline-block !important;
+    position: absolute;
+    height: 100%;
+    right: 0;
+}
+
+.card-header .badge.pill.bg-info {
+    color: white;
+}
+
+.card-header .badge.pill {
+    padding: 5px;
+    font-size: 0.7em;
 }

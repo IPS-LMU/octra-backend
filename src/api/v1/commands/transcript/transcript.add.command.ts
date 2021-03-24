@@ -2,10 +2,15 @@ import {ApiCommand, RequestType} from '../api.command';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {AddTranscriptRequest} from '../../obj/request.types';
+import {UserRole} from '../../obj/database.types';
 
 export class TranscriptAddCommand extends ApiCommand {
     constructor() {
-        super('addTranscript', RequestType.POST, '/v1/transcript/', true);
+        super('addTranscript', RequestType.POST, '/v1/transcript/', true,
+            [
+                UserRole.administrator,
+                UserRole.dataDelivery
+            ]);
 
         this._description = 'Adds a new empty transcript.';
         this._acceptedContentType = 'application/json';

@@ -2,12 +2,15 @@ import {ApiCommand, RequestType} from '../api.command';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {AssignUserRoleRequest} from '../../obj/request.types';
+import {UserRole} from '../../obj/database.types';
 
-export class UserAssignRoleCommand extends ApiCommand {
+export class UserAssignRolesCommand extends ApiCommand {
 
     constructor() {
-        super('assignUserRole', RequestType.POST, '/v1/user/roles/assign', true);
-
+        super('assignUserRoles', RequestType.POST, '/v1/user/roles/assign', true,
+            [
+                UserRole.administrator
+            ]);
         this._description = 'Assign user role for given account id.';
         this._acceptedContentType = 'application/json';
         this._responseContentType = 'application/json';
@@ -20,10 +23,14 @@ export class UserAssignRoleCommand extends ApiCommand {
                 ...this.defaultRequestSchema.properties,
                 accountID: {
                     required: true,
-                    type: 'string'
+                    type: 'number'
                 },
-                role: {
-                    type: 'string',
+                roles: {
+                    type: 'array',
+                    items: {
+                        type: 'string',
+                        enum: ['administrator', 'transcriber', 'data delivery', 'project administrator']
+                    },
                     required: true
                 }
             }
@@ -40,14 +47,14 @@ export class UserAssignRoleCommand extends ApiCommand {
 
     async do(req, res, settings: AppConfiguration) {
         const validation = this.validate(req.params, req.body);
-
+        console.log(`DECODED`);
+        console.log(req.decoded);
         // do something
         if (validation === '') {
             const userData: AssignUserRoleRequest = req.body;
-
             try {
                 const answer = ApiCommand.createAnswer();
-                await DatabaseFunctions.assignUserRole(userData);
+                await DatabaseFunctions.assignUserRolesToUser(userData);
                 this.checkAndSendAnswer(res, answer, false);
             } catch (e) {
                 console.log(e);

@@ -1,12 +1,16 @@
 import {ApiCommand, RequestType} from '../api.command';
-import {Express, Router} from 'express';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {CreateAppTokenRequest} from '../../obj/request.types';
+import {UserRole} from '../../obj/database.types';
 
 export class AppTokenCreateCommand extends ApiCommand {
     constructor() {
-        super('createAppToken', RequestType.POST, '/v1/app/token/', true);
+        super('createAppToken', RequestType.POST, '/v1/app/token/', true,
+            [
+                UserRole.administrator
+            ]
+        );
 
         this._description = 'Registers an app and returns a new App Token.';
         this._acceptedContentType = 'application/json';

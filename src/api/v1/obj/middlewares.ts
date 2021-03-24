@@ -2,6 +2,7 @@ import {ApiCommand} from '../commands/api.command';
 import * as jwt from 'jsonwebtoken';
 import {AppConfiguration} from '../../../obj/app-config/app-config';
 import {DatabaseFunctions} from './database.functions';
+import {TokenData} from './request.types';
 
 export const verifyAppToken = (req, res, next) => {
     let appToken = req.get('Authorization');
@@ -15,10 +16,10 @@ export const verifyAppToken = (req, res, next) => {
             DatabaseFunctions.isValidAppToken(appToken, originHost).then(() => {
                 next();
             }).catch((error) => {
+                console.log(error);
                 ApiCommand.sendError(res, 401, `Invalid app token.`);
             });
-        }
-        else {
+        } else {
             ApiCommand.sendError(res, 403, `Missing 'Authorization' Header.`);
         }
     } else {
@@ -38,5 +39,33 @@ export const verifyWebToken = (req, res, next, settings: AppConfiguration, callb
                 callback(tokenBody);
             }
         });
+    }
+}
+
+export const verifyUserRole = (req, res, command: ApiCommand, callback) => {
+    const tokenData = req.decoded as TokenData;
+    if (tokenData) {
+        if (tokenData.hasOwnProperty('id')) {
+            if (command.allowedUserRoles.length > 0) {
+                // verify roles
+                DatabaseFunctions.getUserInfoByUserID(tokenData.id).then((info) => {
+                    const foundOne = info.roles.find(a => command.allowedUserRoles.findIndex(b => b === a) > -1);
+
+                    if (foundOne) {
+                        callback();
+                    } else {
+                        ApiCommand.sendError(res, 401, 'You don\'t have access right to use this function.');
+                    }
+                }).catch((error) => {
+                    console.log(error);
+                    ApiCommand.sendError(res, 401, 'Invalid Web Token. Please authenticate again.');
+                });
+            } else {
+                // this command is allowed to all users
+                callback();
+            }
+        }
+    } else {
+        ApiCommand.sendError(res, 401, 'Invalid Web Token. Please authenticate again.');
     }
 }

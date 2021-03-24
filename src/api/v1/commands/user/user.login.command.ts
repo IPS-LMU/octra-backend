@@ -9,7 +9,8 @@ import {UserLoginRequest} from '../../obj/request.types';
 export class UserLoginCommand extends ApiCommand {
 
     constructor() {
-        super('loginUser', RequestType.POST, '/v1/user/login', false);
+        super('loginUser', RequestType.POST, '/v1/user/login', false,
+            []);
 
         this._description = 'Login a user';
         this._acceptedContentType = 'application/json';
@@ -68,7 +69,7 @@ export class UserLoginCommand extends ApiCommand {
         if (validation === '') {
             try {
                 const answer = ApiCommand.createAnswer();
-                const {password, id, role} = await DatabaseFunctions.getUserInfoByUserName(body.name);
+                const {password, id, roles} = await DatabaseFunctions.getUserInfoByUserName(body.name);
                 const passwordIsValid = SHA256(body.password).toString() === password;
 
                 if (!passwordIsValid) {
@@ -79,7 +80,7 @@ export class UserLoginCommand extends ApiCommand {
                 answer.auth = true;
                 answer.token = jwt.sign({
                     name: body.name,
-                    id, role
+                    id, roles
                 }, settings.api.secret, {
                     expiresIn: 86400 // expires in 24 hours
                 });

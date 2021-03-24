@@ -64,5 +64,10 @@ export interface AddTranscriptRequest {
 
 export interface AssignUserRoleRequest {
     accountID: number;
-    role: UserRole;
+    roles: UserRole[];
+}
+
+export interface TokenData {
+    id: number;
+    roles: UserRole[]
 }

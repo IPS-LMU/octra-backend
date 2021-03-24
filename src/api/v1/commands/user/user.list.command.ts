@@ -1,10 +1,14 @@
 import {ApiCommand, RequestType} from '../api.command';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
+import {UserRole} from '../../obj/database.types';
 
 export class UserListCommand extends ApiCommand {
     constructor() {
-        super('listUsers', RequestType.GET, '/v1/user/', true);
+        super('listUsers', RequestType.GET, '/v1/user/', true,
+            [
+                UserRole.administrator
+            ]);
 
         this._description = 'Returns a list of users.';
         this._acceptedContentType = 'application/json';

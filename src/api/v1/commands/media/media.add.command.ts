@@ -2,10 +2,15 @@ import {ApiCommand, RequestType} from '../api.command';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {AddMediaItemRequest} from '../../obj/request.types';
+import {UserRole} from '../../obj/database.types';
 
 export class MediaAddCommand extends ApiCommand {
     constructor() {
-        super('addMediaItem', RequestType.POST, '/v1/media/', true);
+        super('addMediaItem', RequestType.POST, '/v1/media/', true,
+            [
+                UserRole.administrator,
+                UserRole.dataDelivery
+            ]);
 
         this._description = 'Adds a new media item.';
         this._acceptedContentType = 'application/json';

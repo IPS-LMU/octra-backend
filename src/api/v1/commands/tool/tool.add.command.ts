@@ -2,10 +2,14 @@ import {ApiCommand, RequestType} from '../api.command';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {AddMediaItemRequest, AddToolRequest} from '../../obj/request.types';
+import {UserRole} from '../../obj/database.types';
 
 export class ToolAddCommand extends ApiCommand {
     constructor() {
-        super('addTool', RequestType.POST, '/v1/tool/', true);
+        super('addTool', RequestType.POST, '/v1/tool/', true,
+            [
+                UserRole.administrator
+            ]);
 
         this._description = 'Adds a new tool.';
         this._acceptedContentType = 'application/json';

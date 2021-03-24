@@ -8,7 +8,7 @@ import {UserRegisterRequest} from '../../obj/request.types';
 export class UserRegisterCommand extends ApiCommand {
 
     constructor() {
-        super('registerUser', RequestType.POST, '/v1/user/register', false);
+        super('registerUser', RequestType.POST, '/v1/user/register', false, []);
 
         this._description = 'Creates an account for a given user.';
         this._acceptedContentType = 'application/json';
@@ -76,12 +76,13 @@ export class UserRegisterCommand extends ApiCommand {
                     email: userData.email,
                     password: SHA256(userData.password).toString()
                 });
-
+                
+                console.log(`admin: ${SHA256('a2$7823z4h20s87%om').toString()}`);
                 answer.auth = true;
                 answer.token = jwt.sign({
                     id: result.id,
-                    name: result.username,
-                    role: result.role
+                    name: userData.name,
+                    role: result.roles
                 }, settings.api.secret, {
                     expiresIn: 86400 // expires in 24 hours
                 });

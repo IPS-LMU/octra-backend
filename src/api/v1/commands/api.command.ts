@@ -2,7 +2,9 @@ import {Express, Router} from 'express';
 import {Schema, Validator} from 'jsonschema';
 import {AppConfiguration} from '../../../obj/app-config/app-config';
 import {DBManager} from '../../../db/DBManager';
-import {verifyAppToken, verifyWebToken} from '../obj/middlewares';
+import {verifyAppToken, verifyUserRole, verifyWebToken} from '../obj/middlewares';
+import {UserRole} from '../obj/database.types';
+import {TokenData} from '../obj/request.types';
 
 export enum RequestType {
     GET = 'GET',
@@ -11,6 +13,10 @@ export enum RequestType {
 }
 
 export abstract class ApiCommand {
+    get allowedUserRoles(): UserRole[] {
+        return this._allowedUserRoles;
+    }
+
     get needsJWTAuthentication(): boolean {
         return this._needsJWTAuthentication;
     }
@@ -67,6 +73,7 @@ export abstract class ApiCommand {
     protected dbManager: DBManager<any>;
     protected settings: AppConfiguration;
     protected _tokenData: any;
+    protected _allowedUserRoles: UserRole[];
 
     private readonly _defaultResponseSchema: Schema = {
         properties: {
@@ -124,11 +131,12 @@ export abstract class ApiCommand {
         res.status(code).send(answer);
     }
 
-    constructor(name: string, type: RequestType, url: string, needsJWTAuthentication: boolean) {
+    constructor(name: string, type: RequestType, url: string, needsJWTAuthentication: boolean, allowedAccountRoles: UserRole[]) {
         this._name = name;
         this._type = type;
         this._url = url;
         this._needsJWTAuthentication = needsJWTAuthentication;
+        this._allowedUserRoles = allowedAccountRoles;
 
         this._responseStructure = this._defaultResponseSchema;
     }
@@ -139,13 +147,15 @@ export abstract class ApiCommand {
      */
     public getInformation() {
         return {
-            name: this.name,
-            description: this.description,
-            url: this.url,
-            type: this.type,
-            requestStructure: (this.requestStructure.hasOwnProperty('properties')) ? JSON.stringify(this.requestStructure, null, 2) : undefined,
-            responseStructure: (this.responseStructure.hasOwnProperty('properties')) ? JSON.stringify(this.responseStructure, null, 2) : undefined,
-            acceptedContentType: this.acceptedContentType,
+            name: this._name,
+            description: this._description,
+            url: this._url,
+            type: this._type,
+            needsJWT: this._needsJWTAuthentication,
+            allowedUserRoles: this._allowedUserRoles,
+            requestStructure: (this._requestStructure.hasOwnProperty('properties')) ? JSON.stringify(this._requestStructure, null, 2) : undefined,
+            responseStructure: (this._responseStructure.hasOwnProperty('properties')) ? JSON.stringify(this._responseStructure, null, 2) : undefined,
+            acceptedContentType: this._acceptedContentType,
             responseContentType: 'application/json'
         };
     }
@@ -159,9 +169,12 @@ export abstract class ApiCommand {
 
         if (this._needsJWTAuthentication) {
             router.use(this.url, (req, res, next) => {
-                verifyWebToken(req, res, next, settings, (tokenBody: { name: string, id: number }) => {
+                verifyWebToken(req, res, next, settings, (tokenBody: TokenData) => {
                     (req as any).decoded = tokenBody;
-                    next();
+                    verifyUserRole(req, res, this, () => {
+                        // user may use this api method
+                        next();
+                    });
                 });
             });
         }
@@ -227,6 +240,7 @@ export abstract class ApiCommand {
 
     public getUserDataFromTokenObj(req): {
         name: string;
+        roles: UserRole[];
         id: number;
     } {
         return req.decoded;

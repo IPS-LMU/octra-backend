@@ -2,10 +2,14 @@ import {ApiCommand, RequestType} from '../api.command';
 import {Express, Router} from 'express';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
+import {UserRole} from '../../obj/database.types';
 
 export class AppTokenRemoveCommand extends ApiCommand {
     constructor() {
-        super('removeAppToken', RequestType.DELETE, '/v1/app/token/:id', true);
+        super('removeAppToken', RequestType.DELETE, '/v1/app/token/:id', true,
+            [
+                UserRole.administrator
+            ]);
 
         this._description = 'Removes an app token.';
         this._acceptedContentType = 'application/json';

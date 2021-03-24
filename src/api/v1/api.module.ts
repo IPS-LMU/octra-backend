@@ -10,7 +10,7 @@ import {ProjectCreateCommand} from './commands/project/project.create.command';
 import {MediaAddCommand} from './commands/media/media.add.command';
 import {ToolAddCommand} from './commands/tool/tool.add.command';
 import {TranscriptAddCommand} from './commands/transcript/transcript.add.command';
-import {UserAssignRoleCommand} from './commands/user/user.assign.role.command';
+import {UserAssignRolesCommand} from './commands/user/user.assign.roles.command';
 
 export class APIV1Module {
     public static commands: ApiCommand[] = [
@@ -25,6 +25,6 @@ export class APIV1Module {
         new MediaAddCommand(),
         new ToolAddCommand(),
         new TranscriptAddCommand(),
-        new UserAssignRoleCommand()
+        new UserAssignRolesCommand()
     ]
 }

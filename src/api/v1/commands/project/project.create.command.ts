@@ -2,10 +2,14 @@ import {ApiCommand, RequestType} from '../api.command';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {CreateProjectRequest} from '../../obj/request.types';
+import {UserRole} from '../../obj/database.types';
 
 export class ProjectCreateCommand extends ApiCommand {
     constructor() {
-        super('createProject', RequestType.POST, '/v1/project/', true);
+        super('createProject', RequestType.POST, '/v1/project/', true,
+            [
+                UserRole.administrator
+            ]);
 
         this._description = 'Creates a new transcription project.';
         this._acceptedContentType = 'application/json';

@@ -1,6 +1,7 @@
 import {ApiCommand, RequestType} from './api.command';
 import {Express, Router} from 'express';
 import {AppConfiguration} from '../../../obj/app-config/app-config';
+import {UserRole} from '../obj/database.types';
 
 export class SampleCommand extends ApiCommand {
     /*
@@ -13,7 +14,9 @@ export class SampleCommand extends ApiCommand {
      */
 
     constructor() {
-        super('commandName', RequestType.POST, '/v1/commandURI', true);
+        super('commandName', RequestType.POST, '/v1/commandURI', true, [
+            UserRole.administrator
+        ]);
 
         this._description = 'ADD YOUR DESCRIPTION HERE';
         this._acceptedContentType = 'application/json';
@@ -22,7 +25,7 @@ export class SampleCommand extends ApiCommand {
         // relevant for reference creation
         this._requestStructure = {
             properties: {
-                ...this.defaultRequestSchema.properties,
+                ...this.defaultRequestSchema.properties
             }
         };
 
@@ -36,7 +39,7 @@ export class SampleCommand extends ApiCommand {
 
     register(app: Express, router: Router, environment, settings: AppConfiguration,
              dbManager) {
-        super.register(app,router, environment, settings, dbManager);
+        super.register(app, router, environment, settings, dbManager);
     };
 
     async do(req, res, settings: AppConfiguration) {

@@ -1,10 +1,14 @@
 import {ApiCommand, RequestType} from '../api.command';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
+import {UserRole} from '../../obj/database.types';
 
 export class UserRemoveCommand extends ApiCommand {
     constructor() {
-        super('removeUser', RequestType.DELETE, '/v1/user/:id', true);
+        super('removeUser', RequestType.DELETE, '/v1/user/:id', true,
+            [
+                UserRole.administrator
+            ]);
 
         this._description = 'Removes a user by id.';
         this._acceptedContentType = 'application/json';

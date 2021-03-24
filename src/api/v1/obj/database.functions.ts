@@ -1,4 +1,4 @@
-import {DBManager} from '../../../db/DBManager';
+import {DBManager, SQLQuery} from '../../../db/DBManager';
 import {AppConfiguration} from '../../../obj/app-config/app-config';
 import {randomBytes} from 'crypto';
 import {
@@ -50,11 +50,14 @@ export class DatabaseFunctions {
 
         if (selectResult.rowCount === 1) {
             const resultRow = selectResult.rows[0] as AppTokensRow;
-            if (resultRow.hasOwnProperty('domain') && resultRow.domain === originHost) {
+            if (resultRow.hasOwnProperty('domain') &&
+                (!resultRow.domain || resultRow.domain === '' || resultRow.domain === originHost)
+            ) {
                 return;
-            } else {
+            } else if (resultRow.hasOwnProperty('domain')) {
                 throw 'Domain does not match the domain registered for this app key.';
             }
+            return;
         }
 
         throw 'Could not find app token';
@@ -287,7 +290,10 @@ export class DatabaseFunctions {
         name?: string,
         email?: string,
         password: string
-    }): Promise<AccountRow> {
+    }): Promise<{
+        id: number;
+        roles: UserRole[];
+    }> {
         await DatabaseFunctions.dbManager.connect();
         const insertAccountQuery = {
             tableName: 'account',
@@ -302,17 +308,19 @@ export class DatabaseFunctions {
         if (insertionResult.rowCount === 1 && insertionResult.rows[0].hasOwnProperty('id')) {
             const id = insertionResult.rows[0].id;
 
-            await DatabaseFunctions.assignUserRole({
-                role: UserRole.transcriber,
+            await DatabaseFunctions.assignUserRolesToUser({
+                roles: [UserRole.transcriber],
                 accountID: id
             });
 
             const selectResult = await DatabaseFunctions.dbManager.query({
                 text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_roles ar ON ac.id=ar.account_id full outer join roles r ON r.id=ar.roles_id where ac.id=$1::integer',
-                values: [id]
+                values: [
+                    id
+                ]
             });
 
-            if (selectResult.rowCount === 1) {
+            if (selectResult.rowCount > 0) {
                 DatabaseFunctions.removePropertiesIfNull(selectResult.rows,
                     [
                         ...insertAccountQuery.columns.filter(a => a.maybeNull).map(a => a.key),
@@ -320,34 +328,50 @@ export class DatabaseFunctions {
                     ]
                 );
                 this.convertColumnsToDatetimeString(selectResult.rows);
-                return selectResult.rows[0] as AccountRow;
+                const roles = (selectResult.rows as AccountRow[]).map(a => a.role).filter(a => !(a === undefined || a === null));
+
+                return {
+                    id: selectResult.rows[0].id,
+                    roles
+                };
             }
         }
 
         throw 'Could not create user.';
     }
 
-    static async assignUserRole(data: AssignUserRoleRequest) {
+    static async assignUserRolesToUser(data: AssignUserRoleRequest) {
+        await DatabaseFunctions.dbManager.connect();
         const rolesTable = await this.getRoles();
-        let roleEntry = rolesTable.find(a => a.label === data.role);
 
-        if (roleEntry) {
-            const roleID = roleEntry.id;
-            const insertAccountRolesQuery = {
-                tableName: 'account_roles',
-                columns: [
-                    DatabaseFunctions.getColumnDefinition('account_id', 'integer', data.accountID),
-                    DatabaseFunctions.getColumnDefinition('roles_id', 'integer', roleID)
-                ]
-            };
-            const insertionAccountRolesResult = await DatabaseFunctions.dbManager.insert(insertAccountRolesQuery, 'account_id');
+        const queries: SQLQuery[] = [];
 
-            if (insertionAccountRolesResult.rowCount === 1 && insertionAccountRolesResult.rows[0].hasOwnProperty('account_id')) {
-                return;
+        // remove all roles from this account at first
+        queries.push({
+            text: 'delete from account_roles where account_id=$1::integer',
+            values: [data.accountID]
+        });
+
+        for (const role of data.roles) {
+            let roleEntry = rolesTable.find(a => a.label === role);
+
+            if (roleEntry) {
+                const roleID = roleEntry.id;
+                queries.push({
+                    text: 'insert into account_roles(account_id, roles_id) values($1::integer, $2::integer)',
+                    values: [data.accountID, roleID]
+                });
+            } else {
+                throw `Could not find role '${role}'`;
             }
-            throw 'Could not assign role';
         }
-        throw `Could not find role '${data.role}'`;
+
+        const transactionResult = await DatabaseFunctions.dbManager.transaction(queries);
+
+        if (transactionResult.command === 'COMMIT') {
+            return;
+        }
+        throw 'Could not assign role';
     }
 
     static async getRoles() {
@@ -415,7 +439,7 @@ export class DatabaseFunctions {
     static async getUserInfoByUserName(name: string): Promise<{
         password: string,
         id: number,
-        role: string
+        roles: UserRole[]
     }> {
         await DatabaseFunctions.dbManager.connect();
         const selectResult = await DatabaseFunctions.dbManager.query({
@@ -423,12 +447,38 @@ export class DatabaseFunctions {
             values: [name]
         });
 
+        const roles = (selectResult.rows as AccountRow[]).map(a => a.role).filter(a => !(a === undefined || a === null));
         const row = selectResult.rows[0] as AccountRow;
-        if (selectResult.rowCount === 1) {
+        if (selectResult.rowCount > 0) {
             return {
                 password: row.hash,
                 id: row.id,
-                role: row.role
+                roles
+            };
+        }
+
+        throw 'could not find user';
+    }
+
+
+    static async getUserInfoByUserID(id: number): Promise<{
+        password: string,
+        id: number,
+        roles: UserRole[]
+    }> {
+        await DatabaseFunctions.dbManager.connect();
+        const selectResult = await DatabaseFunctions.dbManager.query({
+            text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_roles ar ON ac.id=ar.account_id full outer join roles r ON r.id=ar.roles_id where ac.id=$1::integer',
+            values: [id]
+        });
+
+        const roles = (selectResult.rows as AccountRow[]).map(a => a.role).filter(a => !(a === undefined || a === null));
+        const row = selectResult.rows[0] as AccountRow;
+        if (selectResult.rowCount > 0) {
+            return {
+                password: row.hash,
+                id,
+                roles
             };
         }
 

@@ -16,12 +16,25 @@ const tempData = {
         addedID: 0,
         removedID: 0,
     },
+    admin: {
+        id: 0,
+        jwtToken: ""
+    },
     user: {
         id: 0,
         name: "TestUser_" + Date.now(),
-        email: "testemail@testtest.de"
+        email: "testemail@testtest.de",
+        jwtToken: ""
     },
-    jwtToken: ""
+    project: {
+        id: 0
+    },
+    mediaItem: {
+        id: 0
+    },
+    tool: {
+        id: 0
+    }
 };
 const appToken = "a810c2e6e76774fadf03d8edd1fc9d1954cc27d6";
 describe('User', () => {
@@ -42,7 +55,7 @@ describe('User', () => {
                     .send(request)
                     .end((err, res) => {
                         checkForErrors(err, res);
-                        tempData.jwtToken = res.body.token;
+                        tempData.user.jwtToken = res.body.token;
                         tempData.user.id = res.body.data.id;
 
                         res.body.status.should.be.equal("success");
@@ -57,7 +70,7 @@ describe('User', () => {
         describe('/POST v1/login', () => {
             it('it should POST a user login', (done) => {
                 const request = {
-                    "name": tempData.user.name,
+                    "name": "Julian",
                     "password": "Password12345"
                 }
                 chai.request(server)
@@ -69,7 +82,31 @@ describe('User', () => {
                         checkForErrors(err, res);
                         res.body.status.should.be.equal("success");
                         res.body.should.be.a('object')
-                        tempData.user.id = res.body.data.id;
+                        tempData.admin.id = res.body.data.id;
+                        tempData.admin.jwtToken = res.body.token;
+                        done();
+                    });
+            });
+        });
+    }
+
+    if (true) {
+        describe('/POST v1/user/roles/assign', () => {
+            it('it should assign user roles', (done) => {
+                const request = {
+                    accountID: tempData.user.id,
+                    roles: ["administrator"]
+                }
+                chai.request(server)
+                    .post('/v1/user/roles/assign')
+                    .set("Authorization", `Bearer ${appToken}`)
+                    .set("x-access-token", tempData.admin.jwtToken)
+                    .set("Origin", "http://localhost:8080")
+                    .send(request)
+                    .end((err, res) => {
+                        checkForErrors(err, res);
+                        res.body.status.should.be.equal("success");
+                        res.body.should.be.a('object')
                         done();
                     });
             });
@@ -83,7 +120,7 @@ describe('User', () => {
                     .get(`/v1/user`)
                     .set("Authorization", `Bearer ${appToken}`)
                     .set("Origin", "http://localhost:8080")
-                    .set("x-access-token", tempData.jwtToken)
+                    .set("x-access-token", tempData.admin.jwtToken)
                     .end((err, res) => {
                         checkForErrors(err, res);
                         log(`retrieved rows: ${res.body.data.length}`);
@@ -112,7 +149,7 @@ if (true) {
                         .post('/v1/app/token')
                         .set("Authorization", `Bearer ${appToken}`)
                         .set("Origin", "http://localhost:8080")
-                        .set("x-access-token", tempData.jwtToken)
+                        .set("x-access-token", tempData.admin.jwtToken)
                         .send(request)
                         .end((err, res) => {
                             checkForErrors(err, res);
@@ -134,7 +171,7 @@ if (true) {
                         .get(`/v1/app/token`)
                         .set("Authorization", `Bearer ${appToken}`)
                         .set("Origin", "http://localhost:8080")
-                        .set("x-access-token", tempData.jwtToken)
+                        .set("x-access-token", tempData.admin.jwtToken)
                         .end((err, res) => {
                             checkForErrors(err, res);
                             log(`retrieved rows: ${res.body.data.length}`);
@@ -157,17 +194,17 @@ if (true) {
                 it('it should create a project', (done) => {
                     const request = {
                         "name": "SuperDuperProjekt!",
-                        "admin_id": 22
+                        "admin_id": tempData.admin.id
                     }
                     chai.request(server)
                         .post('/v1/project')
                         .set("Authorization", `Bearer ${appToken}`)
                         .set("Origin", "http://localhost:8080")
-                        .set("x-access-token", tempData.jwtToken)
+                        .set("x-access-token", tempData.admin.jwtToken)
                         .send(request)
                         .end((err, res) => {
                             checkForErrors(err, res);
-                            log(`added ${res.body.data.id}`);
+                            tempData.project.id = res.body.data.id;
 
                             res.status.should.be.equal(200);
                             res.body.should.be.a('object');
@@ -194,12 +231,12 @@ if (true) {
                         .post('/v1/media')
                         .set("Authorization", `Bearer ${appToken}`)
                         .set("Origin", "http://localhost:8080")
-                        .set("x-access-token", tempData.jwtToken)
+                        .set("x-access-token", tempData.user.jwtToken)
                         .send(request)
                         .end((err, res) => {
                             checkForErrors(err, res);
                             log(`added ${res.body.data.id}`);
-
+                            tempData.mediaItem.id = res.body.data.id;
                             res.status.should.be.equal(200);
                             res.body.should.be.a('object');
                             done();
@@ -225,12 +262,12 @@ if (true) {
                         .post('/v1/tool')
                         .set("Authorization", `Bearer ${appToken}`)
                         .set("Origin", "http://localhost:8080")
-                        .set("x-access-token", tempData.jwtToken)
+                        .set("x-access-token", tempData.admin.jwtToken)
                         .send(request)
                         .end((err, res) => {
                             checkForErrors(err, res);
                             log(`added ${res.body.data.id}`);
-
+                            tempData.tool.id = res.body.data.id;
                             res.status.should.be.equal(200);
                             res.body.should.be.a('object');
                             done();
@@ -253,16 +290,16 @@ if (true) {
                         priority: 12,
                         status: "status",
                         "code": "code",
-                        tool_id: 3,
-                        transcriber_id: 22,
-                        project_id: 5,
-                        mediaitem_id: 8
+                        tool_id: tempData.tool.id,
+                        transcriber_id: tempData.user.id,
+                        project_id: tempData.project.id,
+                        mediaitem_id: tempData.mediaItem.id
                     }
                     chai.request(server)
                         .post('/v1/transcript')
                         .set("Authorization", `Bearer ${appToken}`)
                         .set("Origin", "http://localhost:8080")
-                        .set("x-access-token", tempData.jwtToken)
+                        .set("x-access-token", tempData.user.jwtToken)
                         .send(request)
                         .end((err, res) => {
                             checkForErrors(err, res);
@@ -288,7 +325,7 @@ if (true) {
                         .delete(`/v1/app/token/${tempData.apptoken.addedID}`)
                         .set("Authorization", `Bearer ${appToken}`)
                         .set("Origin", "http://localhost:8080")
-                        .set("x-access-token", tempData.jwtToken)
+                        .set("x-access-token", tempData.admin.jwtToken)
                         .end((err, res) => {
                             checkForErrors(err, res);
 
@@ -300,14 +337,14 @@ if (true) {
             });
         }
 
-        if (true) {
+        if (false) {
             describe(`/DELETE v1/user/`, () => {
                 it('it should remove a user account', (done) => {
                     chai.request(server)
                         .delete(`/v1/user/${tempData.user.id}`)
                         .set("Authorization", `Bearer ${appToken}`)
                         .set("Origin", "http://localhost:8080")
-                        .set("x-access-token", tempData.jwtToken)
+                        .set("x-access-token", tempData.admin.jwtToken)
                         .end((err, res) => {
                             checkForErrors(err, res);
                             res.status.should.be.equal(200);

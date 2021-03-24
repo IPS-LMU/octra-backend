@@ -1,10 +1,14 @@
 import {ApiCommand, RequestType} from '../api.command';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
+import {UserRole} from '../../obj/database.types';
 
 export class AppTokenListCommand extends ApiCommand {
     constructor() {
-        super('listAppTokens', RequestType.GET, '/v1/app/token/', true);
+        super('listAppTokens', RequestType.GET, '/v1/app/token/', true,
+            [
+                UserRole.administrator
+            ]);
 
         this._description = 'Returns a list of app tokens';
         this._acceptedContentType = 'application/json';
