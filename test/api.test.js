@@ -332,7 +332,7 @@ if (true) {
                         .end((err, res) => {
                             checkForErrors(err, res);
                             res.status.should.be.equal(200);
-                            log(`delivered new media!`);
+                            log(`delivered new media! Transcript ID: ${res.body.data.transcriptID}`);
                             res.body.should.be.a('object');
                             done();
                         });

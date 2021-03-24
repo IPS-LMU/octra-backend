@@ -58,7 +58,14 @@ export class DeliveryMediaAddCommand extends ApiCommand {
             ...this.defaultResponseSchema,
             properties: {
                 ...this.defaultResponseSchema.properties,
-                data: undefined
+                data: {
+                    properties: {
+                        transcriptID: {
+                            type: 'number',
+                            required: true
+                        }
+                    }
+                }
             }
         };
     }
@@ -71,7 +78,10 @@ export class DeliveryMediaAddCommand extends ApiCommand {
         if (validation === '') {
             const body: DeliverNewMediaRequest = req.body;
             try {
-                await DatabaseFunctions.deliverNewMedia(body);
+                const result = await DatabaseFunctions.deliverNewMedia(body);
+                answer.data = {
+                    transcriptID: result.id
+                }
                 this.checkAndSendAnswer(res, answer);
             } catch (e) {
                 console.log(e);

@@ -486,7 +486,7 @@ export class DatabaseFunctions {
         throw 'could not find user';
     }
 
-    static async deliverNewMedia(dataDeliveryRequest: DeliverNewMediaRequest): Promise<void> {
+    static async deliverNewMedia(dataDeliveryRequest: DeliverNewMediaRequest): Promise<TranscriptRow> {
         await DatabaseFunctions.dbManager.connect();
         const projectRow = await DatabaseFunctions.dbManager.query({
             text: 'select id from project where name=$1',
@@ -520,11 +520,11 @@ export class DatabaseFunctions {
             });
 
             if (transriptInsertResult.length > 0) {
-                return;
+                return transriptInsertResult[0];
             }
-            throw "Could not save transcript entry."
+            throw 'Could not save transcript entry.'
         }
-        throw "Could not save media entry."
+        throw 'Could not save media entry.'
     }
 
     static async generateAppToken(): Promise<string> {

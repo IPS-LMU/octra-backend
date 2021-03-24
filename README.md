@@ -17,7 +17,7 @@ New REST API for annotation database used by OCTRA. It  using JTW (JSON web toke
 - Security features:
     - app authentication: one app token for each app that uses the API.
     - [JSON Web Token (JWT)](https://jwt.io/) for user authentication and authorisation and session management.
-    - Validation of incoming requests with JSON schemata.
+    - Validation of incoming requests and responses by the API with JSON schemata.
 
 ## Development
 
