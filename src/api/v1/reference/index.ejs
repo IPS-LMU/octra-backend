@@ -79,7 +79,8 @@
                     <div class="card-body">
                         <p>
                             This API makes use of JWT (JSON Web Tokens). The token is an encrypted JSON object with
-                            information about a user access rights. This token is validated by the server. Only if the token is
+                            information about a user access rights. This token is validated by the server. Only if the
+                            token is
                             valid and only if the user owns rights to do an action, the server runs the action.
                         </p>
                     </div>
@@ -140,10 +141,10 @@
                                             </tr>
                                         <% } %>
                                         <tr>
-                                            <td>
-                                                Request Schema:
+                                            <td colspan="2">
+                                                Request Schema:<br/>
+                                                <textarea readonly><%= commands[i].requestStructure %></textarea>
                                             </td>
-                                            <td><textarea readonly><%= commands[i].requestStructure %></textarea></td>
                                         </tr>
                                     <% } %>
                                     <% if (commands[i].responseStructure) { %>
@@ -152,10 +153,10 @@
                                             <td><%= commands[i].responseContentType %></td>
                                         </tr>
                                         <tr>
-                                            <td>
-                                                Response Schema:
+                                            <td colspan="2">
+                                                Response Schema:<br>
+                                                <textarea readonly><%= commands[i].responseStructure %></textarea>
                                             </td>
-                                            <td><textarea readonly><%= commands[i].responseStructure %></textarea></td>
                                         </tr>
                                     <% } %>
                                 </table>

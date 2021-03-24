@@ -47,8 +47,6 @@ export class UserAssignRolesCommand extends ApiCommand {
 
     async do(req, res, settings: AppConfiguration) {
         const validation = this.validate(req.params, req.body);
-        console.log(`DECODED`);
-        console.log(req.decoded);
         // do something
         if (validation === '') {
             const userData: AssignUserRoleRequest = req.body;

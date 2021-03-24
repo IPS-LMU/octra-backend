@@ -8,8 +8,7 @@ export class TranscriptAddCommand extends ApiCommand {
     constructor() {
         super('addTranscript', RequestType.POST, '/v1/transcript/', true,
             [
-                UserRole.administrator,
-                UserRole.dataDelivery
+                UserRole.administrator
             ]);
 
         this._description = 'Adds a new empty transcript.';

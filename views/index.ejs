@@ -36,7 +36,7 @@
         <ul>
             <li>
                 <% for(var i = 0; i < activeAPIs.length; i++) { %>
-                    <a href="<%= settings.api.url + ':' + settings.api.port + '/' + activeAPIs[i].information.apiSlug + '/reference' %>">
+                    <a href="<%= settings.api.url + '/' + activeAPIs[i].information.apiSlug + '/reference' %>">
                         <%= activeAPIs[i].information.name %> <%= activeAPIs[i].information.apiSlug %>
                     </a>
                 <% } %>

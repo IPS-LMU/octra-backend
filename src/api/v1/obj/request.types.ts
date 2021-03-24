@@ -43,10 +43,10 @@ export interface AddToolRequest {
 }
 
 export interface AddTranscriptRequest {
-    pid: string;
-    orgtext: string;
-    transcript: string;
-    assessment: string;
+    pid?: string;
+    orgtext?: string;
+    transcript?: string;
+    assessment?: string;
     priority?: string;
     status?: string;
     code?: string;
@@ -65,6 +65,18 @@ export interface AddTranscriptRequest {
 export interface AssignUserRoleRequest {
     accountID: number;
     roles: UserRole[];
+}
+
+export interface DeliverNewMediaRequest {
+    projectName: string;
+    media: {
+        url: string;
+        type?: string;
+        size?: number;
+        metadata?: string;
+    },
+    orgText: string;
+    transcript: string;
 }
 
 export interface TokenData {

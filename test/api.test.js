@@ -27,7 +27,8 @@ const tempData = {
         jwtToken: ""
     },
     project: {
-        id: 0
+        id: 0,
+        name: ""
     },
     mediaItem: {
         id: 0
@@ -191,9 +192,10 @@ if (true) {
     describe('Project', () => {
         if (true) {
             describe('/POST v1/project', () => {
+                tempData.project.name = "TestProject_" + Date.now();
                 it('it should create a project', (done) => {
                     const request = {
-                        "name": "SuperDuperProjekt!",
+                        "name": tempData.project.name,
                         "admin_id": tempData.admin.id
                     }
                     chai.request(server)
@@ -284,14 +286,6 @@ if (true) {
             describe('/POST v1/transcript', () => {
                 it('it should add a new transcript', (done) => {
                     const request = {
-                        pid: "pid",
-                        orgtext: "orgtext",
-                        assessment: "assassment",
-                        priority: 12,
-                        status: "status",
-                        "code": "code",
-                        tool_id: tempData.tool.id,
-                        transcriber_id: tempData.user.id,
                         project_id: tempData.project.id,
                         mediaitem_id: tempData.mediaItem.id
                     }
@@ -306,6 +300,39 @@ if (true) {
                             log(`added ${res.body.data.id}`);
 
                             res.status.should.be.equal(200);
+                            res.body.should.be.a('object');
+                            done();
+                        });
+                });
+            });
+        }
+    });
+}
+
+if (true) {
+    describe('Data Delivery', () => {
+        if (true) {
+            describe('/POST v1/delivery/media/', () => {
+                it('it should deliver a new audio file', (done) => {
+                    const request = {
+                        projectName: tempData.project.name,
+                        media: {
+                            url: `http://localhost/${Date.now()}.wav`,
+                            type: "audio/wav",
+                            size: 2334,
+                            metadata: ""
+                        }
+                    }
+                    chai.request(server)
+                        .post('/v1/delivery/media/')
+                        .set("Authorization", `Bearer ${appToken}`)
+                        .set("Origin", "http://localhost:8080")
+                        .set("x-access-token", tempData.user.jwtToken)
+                        .send(request)
+                        .end((err, res) => {
+                            checkForErrors(err, res);
+                            res.status.should.be.equal(200);
+                            log(`delivered new media!`);
                             res.body.should.be.a('object');
                             done();
                         });

@@ -37,6 +37,8 @@ export abstract class DBManager<T> {
 
     abstract transaction(query: SQLQuery[]): Promise<any>;
 
+    abstract createSQLQueryForInsert(query: InsertQuery, idColumn: string): SQLQuery;
+
     abstract close(): Promise<void>;
 
     protected constructor(dbSettings: IDBConfiguration) {

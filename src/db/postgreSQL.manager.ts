@@ -75,22 +75,32 @@ export class PostgreSQLManager extends DBManager<Client> {
     }
 
     async insert(query: InsertQuery, idColumn = 'id') {
-        const columns = query.columns.filter(a => !(a.value === undefined || a.value === null));
+        const sqlQuery = this.createSQLQueryForInsert(query, idColumn);
 
-        if (columns.length === 0) {
-            throw 'InsertQuery error: columns length is 0.'
+        if (sqlQuery) {
+            return this.query(sqlQuery);
         }
 
-        let statement = `${query.tableName}`;
-        const variables: any[] = columns.map(a => a.value);
-        statement += '(' + columns.map(a => a.key).join(', ') + ')';
-        statement += ' values(' + columns.map((a, index) => `$${index + 1}::${a.type}`).join(', ') + ')'
+        throw 'InsertQuery error: columns length is 0.'
+    }
 
-        statement = `insert into ${statement} returning ${idColumn}`;
+    public createSQLQueryForInsert(query: InsertQuery, idColumn = 'id'): SQLQuery {
+        const columns = query.columns.filter(a => !(a.value === undefined || a.value === null));
 
-        return this.query({
-            text: statement,
-            values: variables
-        });
+        if (columns.length > 0) {
+            let statement = `${query.tableName}`;
+            const values: any[] = columns.map(a => a.value);
+            statement += '(' + columns.map(a => a.key).join(', ') + ')';
+            statement += ' values(' + columns.map(
+                (a, index) => `$${index + 1}::${a.type}`).join(', ') + ')'
+
+            statement = `insert into ${statement} returning ${idColumn}`;
+
+            return {
+                text: statement,
+                values
+            }
+        }
+        return null;
     }
 }

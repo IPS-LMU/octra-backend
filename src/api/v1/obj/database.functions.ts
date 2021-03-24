@@ -17,7 +17,8 @@ import {
     AddToolRequest,
     AddTranscriptRequest,
     AssignUserRoleRequest,
-    CreateProjectRequest
+    CreateProjectRequest,
+    DeliverNewMediaRequest
 } from './request.types';
 
 export class DatabaseFunctions {
@@ -483,6 +484,47 @@ export class DatabaseFunctions {
         }
 
         throw 'could not find user';
+    }
+
+    static async deliverNewMedia(dataDeliveryRequest: DeliverNewMediaRequest): Promise<void> {
+        await DatabaseFunctions.dbManager.connect();
+        const projectRow = await DatabaseFunctions.dbManager.query({
+            text: 'select id from project where name=$1',
+            values: [dataDeliveryRequest.projectName]
+        });
+
+        if (projectRow.rowCount < 1) {
+            throw 'Could not find a project with this name.'
+        }
+
+        const projectID = projectRow.rows[0].id;
+        console.log(`found project id ${projectID}`);
+        const media = dataDeliveryRequest.media;
+
+        // TODO better use transaction
+        const mediaInsertResult = await DatabaseFunctions.addMediaItem({
+            url: media.url,
+            type: media.type,
+            size: media.size,
+            metadata: media.metadata
+        });
+
+        if (mediaInsertResult.length > 0) {
+            const mediaID = mediaInsertResult[0].id;
+            console.log(`added media item with id ${mediaID}`);
+            const transriptInsertResult = await DatabaseFunctions.addTranscript({
+                orgtext: dataDeliveryRequest.orgText,
+                transcript: dataDeliveryRequest.transcript,
+                project_id: projectID,
+                mediaitem_id: mediaID
+            });
+
+            if (transriptInsertResult.length > 0) {
+                return;
+            }
+            throw "Could not save transcript entry."
+        }
+        throw "Could not save media entry."
     }
 
     static async generateAppToken(): Promise<string> {

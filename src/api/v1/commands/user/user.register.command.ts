@@ -76,8 +76,7 @@ export class UserRegisterCommand extends ApiCommand {
                     email: userData.email,
                     password: SHA256(userData.password).toString()
                 });
-                
-                console.log(`admin: ${SHA256('a2$7823z4h20s87%om').toString()}`);
+
                 answer.auth = true;
                 answer.token = jwt.sign({
                     id: result.id,
