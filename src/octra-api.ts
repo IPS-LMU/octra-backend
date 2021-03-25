@@ -36,7 +36,7 @@ export class OctraApi {
     private name = 'OCTRA';
     private version = '0.2.5';
     private environment: 'development' | 'production';
-    private dbManager: DBManager<any>;
+    private dbManager: DBManager;
 
     constructor() {
         this._activeAPIs = APIModule.activeAPIs;
@@ -160,7 +160,7 @@ export class OctraApi {
         }
     }
 
-    private getDBWrapper(dbConfiguration: IDBConfiguration): DBManager<any> {
+    private getDBWrapper(dbConfiguration: IDBConfiguration): DBManager {
         switch (dbConfiguration.dbType) {
             case 'PostgreSQL':
                 return new PostgreSQLManager(dbConfiguration);

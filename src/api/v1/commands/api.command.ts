@@ -73,7 +73,7 @@ export abstract class ApiCommand {
     protected _requestStructure: Schema;
     protected _responseStructure: Schema;
     protected _needsJWTAuthentication = false;
-    protected dbManager: DBManager<any>;
+    protected dbManager: DBManager;
     protected settings: AppConfiguration;
     protected _tokenData: any;
     protected _allowedUserRoles: UserRole[];
@@ -167,7 +167,7 @@ export abstract class ApiCommand {
      * registers command to server
      */
     public register(app: Express, router: Router, environment: 'production' | 'development', settings: AppConfiguration,
-                    dbManager: DBManager<any>) {
+                    dbManager: DBManager) {
         router.use(this.url, verifyAppToken);
 
         if (this._needsJWTAuthentication) {

@@ -63,7 +63,7 @@ const todoList = {
         }
     },
     media: {
-        add: false
+        add: true
     },
     tool: {
         add: true

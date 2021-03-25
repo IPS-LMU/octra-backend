@@ -38,7 +38,7 @@ export class APIV1 {
     private _appPath: string;
     private static instance: APIV1;
 
-    private dbManager: DBManager<any>;
+    private dbManager: DBManager;
 
     /***
      * initializes API
@@ -48,7 +48,7 @@ export class APIV1 {
      * @param settings
      */
     public init(app: Express, router: Router, environment: 'production' | 'development', settings: AppConfiguration,
-                dbManager: DBManager<any>) {
+                dbManager: DBManager) {
         this._appPath = process.cwd();
         this.dbManager = dbManager;
         DatabaseFunctions.init(this.dbManager, settings);

@@ -22,7 +22,7 @@ import {
 import {ProjectGetTranscriptsResult} from './response.types';
 
 export class DatabaseFunctions {
-    private static dbManager: DBManager<any>;
+    private static dbManager: DBManager;
     private static settings: AppConfiguration;
 
     private static selectAllStatements = {
@@ -37,13 +37,12 @@ export class DatabaseFunctions {
     constructor() {
     }
 
-    public static init(_dbManager: DBManager<any>, settings: AppConfiguration) {
+    public static init(_dbManager: DBManager, settings: AppConfiguration) {
         DatabaseFunctions.dbManager = _dbManager;
         DatabaseFunctions.settings = settings;
     }
 
     public static async isValidAppToken(token: string, originHost: string): Promise<void> {
-        await DatabaseFunctions.dbManager.connect();
         const selectResult = await DatabaseFunctions.dbManager.query({
             text: DatabaseFunctions.selectAllStatements.appTokens + ' where key=$1::text',
             values: [token]
@@ -70,7 +69,6 @@ export class DatabaseFunctions {
         description?: string
     }): Promise<AppTokensRow[]> {
         try {
-            await DatabaseFunctions.dbManager.connect();
             let token = await DatabaseFunctions.generateAppToken();
 
             const insertQuery = {
@@ -105,8 +103,6 @@ export class DatabaseFunctions {
 
     public static async createProject(data: CreateProjectRequest): Promise<ProjectRow[]> {
         try {
-            await DatabaseFunctions.dbManager.connect();
-
             const insertQuery = {
                 tableName: 'project',
                 columns: [
@@ -141,8 +137,6 @@ export class DatabaseFunctions {
 
     public static async addMediaItem(data: AddMediaItemRequest): Promise<MediaItemRow[]> {
         try {
-            await DatabaseFunctions.dbManager.connect();
-
             const insertQuery = {
                 tableName: 'mediaitem',
                 columns: [
@@ -174,7 +168,6 @@ export class DatabaseFunctions {
 
     public static async addTool(data: AddToolRequest): Promise<ToolRow[]> {
         try {
-            await DatabaseFunctions.dbManager.connect();
             const insertQuery = {
                 tableName: 'tool',
                 columns: [
@@ -205,8 +198,6 @@ export class DatabaseFunctions {
 
     public static async addTranscript(data: AddTranscriptRequest): Promise<TranscriptRow[]> {
         try {
-            await DatabaseFunctions.dbManager.connect();
-
             const insertQuery = {
                 tableName: 'transcript',
                 columns: [
@@ -305,8 +296,6 @@ export class DatabaseFunctions {
     }
 
     public static async removeAppToken(id: number): Promise<void> {
-        await DatabaseFunctions.dbManager.connect();
-
         const removeResult = await DatabaseFunctions.dbManager.query({
             text: 'delete from apptokens where id=$1::numeric',
             values: [id]
@@ -318,7 +307,6 @@ export class DatabaseFunctions {
     }
 
     public static async listAppTokens(): Promise<AppTokensRow[]> {
-        await DatabaseFunctions.dbManager.connect();
         const selectResult = await DatabaseFunctions.dbManager.query({
             text: DatabaseFunctions.selectAllStatements.appTokens
         });
@@ -334,7 +322,6 @@ export class DatabaseFunctions {
         id: number;
         roles: UserRole[];
     }> {
-        await DatabaseFunctions.dbManager.connect();
         const insertAccountQuery = {
             tableName: 'account',
             columns: [
@@ -375,7 +362,6 @@ export class DatabaseFunctions {
     }
 
     static async assignUserRolesToUser(data: AssignUserRoleRequest) {
-        await DatabaseFunctions.dbManager.connect();
         const rolesTable = await this.getRoles();
 
         const queries: SQLQuery[] = [];
@@ -416,7 +402,6 @@ export class DatabaseFunctions {
     }
 
     static async listUsers(): Promise<AccountRow[]> {
-        await DatabaseFunctions.dbManager.connect();
         const selectResult = await DatabaseFunctions.dbManager.query({
             text: this.selectAllStatements.account
         });
@@ -427,7 +412,6 @@ export class DatabaseFunctions {
     }
 
     static async removeUserByID(id: number): Promise<void> {
-        await DatabaseFunctions.dbManager.connect();
         const removeResult = await DatabaseFunctions.dbManager.transaction([
             {
                 text: 'update transcript set transcriber_id=null where transcriber_id=$1::integer',
@@ -454,7 +438,6 @@ export class DatabaseFunctions {
     }
 
     static async getUser(id: number): Promise<AccountRow> {
-        await DatabaseFunctions.dbManager.connect();
         const selectResult = await DatabaseFunctions.dbManager.query({
             text: this.selectAllStatements.account + ' where id=$1::numeric',
             values: [id]
@@ -473,7 +456,6 @@ export class DatabaseFunctions {
         id: number,
         roles: UserRole[]
     }> {
-        await DatabaseFunctions.dbManager.connect();
         const selectResult = await DatabaseFunctions.dbManager.query({
             text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_roles ar ON ac.id=ar.account_id full outer join roles r ON r.id=ar.roles_id where ac.username=$1::text',
             values: [name]
@@ -498,7 +480,6 @@ export class DatabaseFunctions {
         id: number,
         roles: UserRole[]
     }> {
-        await DatabaseFunctions.dbManager.connect();
         const selectResult = await DatabaseFunctions.dbManager.query({
             text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_roles ar ON ac.id=ar.account_id full outer join roles r ON r.id=ar.roles_id where ac.id=$1::integer',
             values: [id]
@@ -518,7 +499,6 @@ export class DatabaseFunctions {
     }
 
     static async deliverNewMedia(dataDeliveryRequest: DeliverNewMediaRequest): Promise<TranscriptRow> {
-        await DatabaseFunctions.dbManager.connect();
         const projectRow = await DatabaseFunctions.dbManager.query({
             text: 'select id from project where name=$1',
             values: [dataDeliveryRequest.projectName]

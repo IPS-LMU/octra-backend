@@ -20,12 +20,11 @@ export interface InsertQuery {
     }[];
 }
 
-export abstract class DBManager<T> {
+export abstract class DBManager {
     get connected(): boolean {
         return this._connected;
     }
 
-    protected client: T;
     protected _connected: boolean;
     dbSettings: IDBConfiguration;
 
