@@ -1,7 +1,7 @@
 import {ApiCommand, RequestType} from '../api.command';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
-import {AddMediaItemRequest, AddToolRequest} from '../../obj/request.types';
+import {AddToolRequest} from '../../obj/request.types';
 import {UserRole} from '../../obj/database.types';
 import {InternalServerError} from '../../../../obj/htpp-codes/server.codes';
 import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
@@ -22,17 +22,17 @@ export class ToolAddCommand extends ApiCommand {
             properties: {
                 ...this.defaultRequestSchema.properties,
                 name: {
-                    type: "string",
+                    type: 'string',
                     required: true
                 },
                 version: {
-                    type: "string"
+                    type: 'string'
                 },
                 description: {
-                    type: "string"
+                    type: 'string'
                 },
                 pid: {
-                    type: "string"
+                    type: 'string'
                 }
             }
         };
@@ -49,17 +49,17 @@ export class ToolAddCommand extends ApiCommand {
                             required: true
                         },
                         name: {
-                            type: "string",
+                            type: 'string',
                             required: true
                         },
                         version: {
-                            type: "string"
+                            type: 'string'
                         },
                         description: {
-                            type: "string"
+                            type: 'string'
                         },
                         pid: {
-                            type: "string"
+                            type: 'string'
                         }
                     }
                 }

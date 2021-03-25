@@ -22,7 +22,7 @@ export class APIV1 {
     public get information() {
         return {
             name: 'OCTRA',
-            version: '0.2.0',
+            version: '0.2.5',
             apiSlug: 'v1'
         }
     }

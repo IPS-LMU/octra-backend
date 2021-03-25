@@ -40,10 +40,46 @@ const tempData = {
         id: 0
     }
 };
+
+const todoList = {
+    user: {
+        register: true,
+        login: true,
+        assign: true,
+        getUsers: true,
+        delete: true
+    },
+    app: {
+        tokens: {
+            add: true,
+            delete: true,
+            getList: true,
+        }
+    },
+    project: {
+        create: true,
+        transcripts: {
+            get: true
+        }
+    },
+    media: {
+        add: false
+    },
+    tool: {
+        add: true
+    },
+    dataDelivery: {
+        deliver: true
+    },
+    transcripts: {
+        add: true,
+        get: true
+    }
+};
+
 const appToken = "a810c2e6e76774fadf03d8edd1fc9d1954cc27d6";
 describe('User', () => {
-
-    if (true) {
+    if (todoList.user.register) {
         describe('/POST v1/users/register', () => {
             it('it should POST a new user registration', (done) => {
                 const request = {
@@ -70,7 +106,7 @@ describe('User', () => {
         });
     }
 
-    if (true) {
+    if (todoList.user.login) {
         describe('/POST v1/login', () => {
             it('it should POST a user login', (done) => {
                 const request = {
@@ -94,7 +130,7 @@ describe('User', () => {
         });
     }
 
-    if (true) {
+    if (todoList.user.assign) {
         describe('/POST v1/users/:id/roles', () => {
             it('it should assign user roles', (done) => {
                 const request = {
@@ -116,7 +152,7 @@ describe('User', () => {
         });
     }
 
-    if (true) {
+    if (todoList.user.getUsers) {
         describe('/GET v1/users/', () => {
             it('it should retrieve a list of users', (done) => {
                 chai.request(server)
@@ -138,295 +174,279 @@ describe('User', () => {
 });
 
 
-if (true) {
-    describe('App', () => {
-        if (true) {
-            describe('/POST v1/app/tokens', () => {
-                it('it should save an app token to the database', (done) => {
-                    const request = {
-                        "name": "Julian",
-                        "domain": "localhost",
-                        "description": "Neuer Key2"
+describe('App', () => {
+    if (todoList.app.tokens.add) {
+        describe('/POST v1/app/tokens', () => {
+            it('it should save an app token to the database', (done) => {
+                const request = {
+                    "name": "Julian",
+                    "domain": "localhost",
+                    "description": "Neuer Key2"
+                }
+                chai.request(server)
+                    .post('/v1/app/tokens')
+                    .set("Authorization", `Bearer ${appToken}`)
+                    .set("Origin", "http://localhost:8080")
+                    .set("x-access-token", tempData.admin.jwtToken)
+                    .send(request)
+                    .end((err, res) => {
+                        checkForErrors(err, res);
+                        tempData.apptoken.addedID = res.body.data.id;
+                        log(`added ${res.body.data.id}`);
+
+                        res.status.should.be.equal(200);
+                        res.body.should.be.a('object');
+                        done();
+                    });
+            });
+        });
+    }
+
+    if (todoList.app.tokens.getList) {
+        describe('/GET v1/app/tokens', () => {
+            it('it should retrieve a list of app tokens', (done) => {
+                chai.request(server)
+                    .get(`/v1/app/tokens`)
+                    .set("Authorization", `Bearer ${appToken}`)
+                    .set("Origin", "http://localhost:8080")
+                    .set("x-access-token", tempData.admin.jwtToken)
+                    .end((err, res) => {
+                        checkForErrors(err, res);
+                        log(`retrieved rows: ${res.body.data.length}`);
+
+                        res.status.should.be.equal(200);
+                        res.body.data.should.be.a('array');
+                        done();
+                    });
+            });
+        });
+    }
+});
+
+
+describe('Project', () => {
+    if (todoList.project.create) {
+        describe('/POST v1/projects', () => {
+            tempData.project.name = "TestProject_" + Date.now();
+            it('it should create a project', (done) => {
+                const request = {
+                    "name": tempData.project.name,
+                    "admin_id": tempData.admin.id
+                }
+                chai.request(server)
+                    .post('/v1/projects')
+                    .set("Authorization", `Bearer ${appToken}`)
+                    .set("Origin", "http://localhost:8080")
+                    .set("x-access-token", tempData.admin.jwtToken)
+                    .send(request)
+                    .end((err, res) => {
+                        checkForErrors(err, res);
+                        tempData.project.id = res.body.data.id;
+
+                        res.status.should.be.equal(200);
+                        res.body.should.be.a('object');
+                        done();
+                    });
+            });
+        });
+    }
+});
+describe('Media', () => {
+    if (todoList.media.add) {
+        describe('/POST v1/media', () => {
+            it('it should add a new mediaitem', (done) => {
+                const request = {
+                    "url": "http://localhost/test.wav",
+                    "type": "audio/wav",
+                    "size": 12345567
+                }
+                chai.request(server)
+                    .post('/v1/media')
+                    .set("Authorization", `Bearer ${appToken}`)
+                    .set("Origin", "http://localhost:8080")
+                    .set("x-access-token", tempData.user.jwtToken)
+                    .send(request)
+                    .end((err, res) => {
+                        checkForErrors(err, res);
+                        log(`added ${res.body.data.id}`);
+                        tempData.mediaItem.id = res.body.data.id;
+                        res.status.should.be.equal(200);
+                        res.body.should.be.a('object');
+                        done();
+                    });
+            });
+        });
+    }
+});
+
+
+describe('Tool', () => {
+    if (todoList.tool.add) {
+        describe('/POST v1/tools', () => {
+            it('it should add a new tool', (done) => {
+                const request = {
+                    "name": "newSuperTool",
+                    "version": "1.0.0",
+                    "description": "some description"
+                }
+                chai.request(server)
+                    .post('/v1/tools')
+                    .set("Authorization", `Bearer ${appToken}`)
+                    .set("Origin", "http://localhost:8080")
+                    .set("x-access-token", tempData.admin.jwtToken)
+                    .send(request)
+                    .end((err, res) => {
+                        checkForErrors(err, res);
+                        log(`added ${res.body.data.id}`);
+                        tempData.tool.id = res.body.data.id;
+                        res.status.should.be.equal(200);
+                        res.body.should.be.a('object');
+                        done();
+                    });
+            });
+        });
+    }
+});
+
+describe('Data Delivery', () => {
+    if (todoList.dataDelivery.deliver) {
+        describe('/POST v1/delivery/media/', () => {
+            it('it should deliver a new audio file', (done) => {
+                const request = {
+                    projectName: tempData.project.name,
+                    media: {
+                        url: `http://localhost/${Date.now()}.wav`,
+                        type: "audio/wav",
+                        size: 2334,
+                        metadata: ""
                     }
-                    chai.request(server)
-                        .post('/v1/app/tokens')
-                        .set("Authorization", `Bearer ${appToken}`)
-                        .set("Origin", "http://localhost:8080")
-                        .set("x-access-token", tempData.admin.jwtToken)
-                        .send(request)
-                        .end((err, res) => {
-                            checkForErrors(err, res);
-                            tempData.apptoken.addedID = res.body.data.id;
-                            log(`added ${res.body.data.id}`);
-
-                            res.status.should.be.equal(200);
-                            res.body.should.be.a('object');
-                            done();
-                        });
-                });
+                }
+                chai.request(server)
+                    .post('/v1/delivery/media/')
+                    .set("Authorization", `Bearer ${appToken}`)
+                    .set("Origin", "http://localhost:8080")
+                    .set("x-access-token", tempData.user.jwtToken)
+                    .send(request)
+                    .end((err, res) => {
+                        checkForErrors(err, res);
+                        res.status.should.be.equal(200);
+                        log(`delivered new media! Transcript ID: ${res.body.data.transcriptID}`);
+                        tempData.transcript.id = res.body.data.transcriptID;
+                        res.body.should.be.a('object');
+                        done();
+                    });
             });
-        }
+        });
+    }
+});
 
-        if (true) {
-            describe('/GET v1/app/tokens', () => {
-                it('it should retrieve a list of app tokens', (done) => {
-                    chai.request(server)
-                        .get(`/v1/app/tokens`)
-                        .set("Authorization", `Bearer ${appToken}`)
-                        .set("Origin", "http://localhost:8080")
-                        .set("x-access-token", tempData.admin.jwtToken)
-                        .end((err, res) => {
-                            checkForErrors(err, res);
-                            log(`retrieved rows: ${res.body.data.length}`);
+describe('Transcripts', () => {
+    if (todoList.transcripts.add) {
+        describe('/POST v1/transcripts', () => {
+            it('it should add a new transcript', (done) => {
+                const request = {
+                    project_id: tempData.project.id,
+                    mediaitem_id: tempData.mediaItem.id
+                }
+                chai.request(server)
+                    .post('/v1/transcripts')
+                    .set("Authorization", `Bearer ${appToken}`)
+                    .set("Origin", "http://localhost:8080")
+                    .set("x-access-token", tempData.user.jwtToken)
+                    .send(request)
+                    .end((err, res) => {
+                        checkForErrors(err, res);
+                        log(`added ${res.body.data.id}`);
 
-                            res.status.should.be.equal(200);
-                            res.body.data.should.be.a('array');
-                            done();
-                        });
-                });
+                        res.status.should.be.equal(200);
+                        res.body.should.be.a('object');
+                        done();
+                    });
             });
-        }
-    });
-}
+        });
+    }
 
+    if (todoList.transcripts.get) {
+        describe('/GET v1/transcripts/:id', () => {
+            it('it should get an transcript by id', (done) => {
+                chai.request(server)
+                    .get(`/v1/transcripts/${tempData.transcript.id}`)
+                    .set("Authorization", `Bearer ${appToken}`)
+                    .set("Origin", "http://localhost:8080")
+                    .set("x-access-token", tempData.admin.jwtToken)
+                    .end((err, res) => {
+                        checkForErrors(err, res);
+                        log(`retrieved rows: ${res.body.data.length}`);
 
-if (true) {
-    describe('Project', () => {
-        if (true) {
-            describe('/POST v1/projects', () => {
-                tempData.project.name = "TestProject_" + Date.now();
-                it('it should create a project', (done) => {
-                    const request = {
-                        "name": tempData.project.name,
-                        "admin_id": tempData.admin.id
-                    }
-                    chai.request(server)
-                        .post('/v1/projects')
-                        .set("Authorization", `Bearer ${appToken}`)
-                        .set("Origin", "http://localhost:8080")
-                        .set("x-access-token", tempData.admin.jwtToken)
-                        .send(request)
-                        .end((err, res) => {
-                            checkForErrors(err, res);
-                            tempData.project.id = res.body.data.id;
-
-                            res.status.should.be.equal(200);
-                            res.body.should.be.a('object');
-                            done();
-                        });
-                });
+                        res.status.should.be.equal(200);
+                        res.body.data.should.be.a('object');
+                        done();
+                    });
             });
-        }
-    });
-}
+        });
+    }
 
+    if (todoList.project.transcripts.get) {
+        describe('/GET v1/projects/transcripts', () => {
+            it('it should list an array of transcripts for a given project', (done) => {
+                chai.request(server)
+                    .get(`/v1/projects/transcripts/?projectName=${tempData.project.name}`)
+                    .set("Authorization", `Bearer ${appToken}`)
+                    .set("Origin", "http://localhost:8080")
+                    .set("x-access-token", tempData.user.jwtToken)
+                    .end((err, res) => {
+                        checkForErrors(err, res);
+                        log(`list of ${res.body.data.length} transcripts for project ${tempData.project.name}`);
 
-if (true) {
-    describe('Media', () => {
-        if (true) {
-            describe('/POST v1/media', () => {
-                it('it should add a new mediaitem', (done) => {
-                    const request = {
-                        "url": "http://localhost/test.wav",
-                        "type": "audio/wav",
-                        "size": 12345567
-                    }
-                    chai.request(server)
-                        .post('/v1/media')
-                        .set("Authorization", `Bearer ${appToken}`)
-                        .set("Origin", "http://localhost:8080")
-                        .set("x-access-token", tempData.user.jwtToken)
-                        .send(request)
-                        .end((err, res) => {
-                            checkForErrors(err, res);
-                            log(`added ${res.body.data.id}`);
-                            tempData.mediaItem.id = res.body.data.id;
-                            res.status.should.be.equal(200);
-                            res.body.should.be.a('object');
-                            done();
-                        });
-                });
+                        res.status.should.be.equal(200);
+                        res.body.should.be.a('object');
+                        done();
+                    });
             });
-        }
-    });
-}
+        });
+    }
+});
 
 
-if (true) {
-    describe('Tool', () => {
-        if (true) {
-            describe('/POST v1/tools', () => {
-                it('it should add a new tool', (done) => {
-                    const request = {
-                        "name": "newSuperTool",
-                        "version": "1.0.0",
-                        "description": "some description"
-                    }
-                    chai.request(server)
-                        .post('/v1/tools')
-                        .set("Authorization", `Bearer ${appToken}`)
-                        .set("Origin", "http://localhost:8080")
-                        .set("x-access-token", tempData.admin.jwtToken)
-                        .send(request)
-                        .end((err, res) => {
-                            checkForErrors(err, res);
-                            log(`added ${res.body.data.id}`);
-                            tempData.tool.id = res.body.data.id;
-                            res.status.should.be.equal(200);
-                            res.body.should.be.a('object');
-                            done();
-                        });
-                });
+describe('Delete Entries', () => {
+    if (todoList.app.tokens.delete) {
+        describe('/DELETE v1/app/tokens', () => {
+            it('it should remove an app token', (done) => {
+                chai.request(server)
+                    .delete(`/v1/app/tokens/${tempData.apptoken.addedID}`)
+                    .set("Authorization", `Bearer ${appToken}`)
+                    .set("Origin", "http://localhost:8080")
+                    .set("x-access-token", tempData.admin.jwtToken)
+                    .end((err, res) => {
+                        checkForErrors(err, res);
+
+                        res.status.should.be.equal(200);
+                        res.body.should.be.a('object');
+                        done();
+                    });
             });
-        }
-    });
-}
+        });
+    }
 
-if (true) {
-    describe('Data Delivery', () => {
-        if (true) {
-            describe('/POST v1/delivery/media/', () => {
-                it('it should deliver a new audio file', (done) => {
-                    const request = {
-                        projectName: tempData.project.name,
-                        media: {
-                            url: `http://localhost/${Date.now()}.wav`,
-                            type: "audio/wav",
-                            size: 2334,
-                            metadata: ""
-                        }
-                    }
-                    chai.request(server)
-                        .post('/v1/delivery/media/')
-                        .set("Authorization", `Bearer ${appToken}`)
-                        .set("Origin", "http://localhost:8080")
-                        .set("x-access-token", tempData.user.jwtToken)
-                        .send(request)
-                        .end((err, res) => {
-                            checkForErrors(err, res);
-                            res.status.should.be.equal(200);
-                            log(`delivered new media! Transcript ID: ${res.body.data.transcriptID}`);
-                            tempData.transcript.id = res.body.data.transcriptID;
-                            res.body.should.be.a('object');
-                            done();
-                        });
-                });
+    if (todoList.user.delete) {
+        describe(`/DELETE v1/users/`, () => {
+            it('it should remove a user account', (done) => {
+                chai.request(server)
+                    .delete(`/v1/users/${tempData.user.id}`)
+                    .set("Authorization", `Bearer ${appToken}`)
+                    .set("Origin", "http://localhost:8080")
+                    .set("x-access-token", tempData.admin.jwtToken)
+                    .end((err, res) => {
+                        checkForErrors(err, res);
+                        res.status.should.be.equal(200);
+                        res.body.data.should.be.a('object');
+
+                        done();
+                    });
             });
-        }
-    });
-}
-
-if (true) {
-    describe('Transcripts', () => {
-        if (true) {
-            describe('/POST v1/transcripts', () => {
-                it('it should add a new transcript', (done) => {
-                    const request = {
-                        project_id: tempData.project.id,
-                        mediaitem_id: tempData.mediaItem.id
-                    }
-                    chai.request(server)
-                        .post('/v1/transcripts')
-                        .set("Authorization", `Bearer ${appToken}`)
-                        .set("Origin", "http://localhost:8080")
-                        .set("x-access-token", tempData.user.jwtToken)
-                        .send(request)
-                        .end((err, res) => {
-                            checkForErrors(err, res);
-                            log(`added ${res.body.data.id}`);
-
-                            res.status.should.be.equal(200);
-                            res.body.should.be.a('object');
-                            done();
-                        });
-                });
-            });
-        }
-
-        if (true) {
-            describe('/GET v1/transcripts/:id', () => {
-                it('it should retrieve a list of app tokens', (done) => {
-                    chai.request(server)
-                        .get(`/v1/transcripts/${tempData.transcript.id}`)
-                        .set("Authorization", `Bearer ${appToken}`)
-                        .set("Origin", "http://localhost:8080")
-                        .set("x-access-token", tempData.admin.jwtToken)
-                        .end((err, res) => {
-                            checkForErrors(err, res);
-                            log(`retrieved rows: ${res.body.data.length}`);
-
-                            res.status.should.be.equal(200);
-                            res.body.data.should.be.a('object');
-                            done();
-                        });
-                });
-            });
-        }
-
-        if (true) {
-            describe('/GET v1/projects/transcripts', () => {
-                it('it should list an array of transcripts for a given project', (done) => {
-                    chai.request(server)
-                        .get(`/v1/projects/transcripts/?projectName=${tempData.project.name}`)
-                        .set("Authorization", `Bearer ${appToken}`)
-                        .set("Origin", "http://localhost:8080")
-                        .set("x-access-token", tempData.user.jwtToken)
-                        .end((err, res) => {
-                            checkForErrors(err, res);
-                            log(`list of ${res.body.data.length} transcripts for project ${tempData.project.name}`);
-
-                            res.status.should.be.equal(200);
-                            res.body.should.be.a('object');
-                            done();
-                        });
-                });
-            });
-        }
-    });
-}
-
-
-if (true) {
-    describe('Delete Entries', () => {
-        if (true) {
-            describe('/DELETE v1/app/tokens', () => {
-                it('it should remove an app token', (done) => {
-                    chai.request(server)
-                        .delete(`/v1/app/tokens/${tempData.apptoken.addedID}`)
-                        .set("Authorization", `Bearer ${appToken}`)
-                        .set("Origin", "http://localhost:8080")
-                        .set("x-access-token", tempData.admin.jwtToken)
-                        .end((err, res) => {
-                            checkForErrors(err, res);
-
-                            res.status.should.be.equal(200);
-                            res.body.should.be.a('object');
-                            done();
-                        });
-                });
-            });
-        }
-
-        if (true) {
-            describe(`/DELETE v1/users/`, () => {
-                it('it should remove a user account', (done) => {
-                    chai.request(server)
-                        .delete(`/v1/users/${tempData.user.id}`)
-                        .set("Authorization", `Bearer ${appToken}`)
-                        .set("Origin", "http://localhost:8080")
-                        .set("x-access-token", tempData.admin.jwtToken)
-                        .end((err, res) => {
-                            checkForErrors(err, res);
-                            res.status.should.be.equal(200);
-                            res.body.data.should.be.a('object');
-
-                            done();
-                        });
-                });
-            });
-        }
-    });
-}
+        });
+    }
+});
 
 function log(str) {
     console.log(`\t[CHAI]: ${str}`);
@@ -441,7 +461,7 @@ function logJSON(json) {
 
 
 function checkForErrors(err, res) {
-    logJSON(res.body);
+    // logJSON(res.body);
     assert.equal(err, undefined, err);
     res.body.status.should.be.equal('success', res.body.message);
     assert.equal(res.error, false, res.error.message);

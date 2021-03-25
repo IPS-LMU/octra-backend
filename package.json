@@ -1,6 +1,6 @@
 {
   "name": "octra-api",
-  "version": "0.2.0",
+  "version": "0.2.5",
   "description": "OCTRA REST API",
   "main": "octra-api.js",
   "scripts": {

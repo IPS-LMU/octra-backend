@@ -245,7 +245,7 @@ export class DatabaseFunctions {
         } catch (e) {
             console.log(`[Error]:`);
             console.log(e);
-            throw 'Could not save a new tool.';
+            throw 'Could not save a new transcript.';
         }
     }
 
