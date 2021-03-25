@@ -4,7 +4,6 @@ import {randomBytes} from 'crypto';
 import {
     AccountRow,
     AppTokensRow,
-    DatabaseRow,
     MediaItemRow,
     ProjectRow,
     RolesRow,
@@ -20,6 +19,7 @@ import {
     CreateProjectRequest,
     DeliverNewMediaRequest
 } from './request.types';
+import {ProjectGetTranscriptsResult} from './response.types';
 
 export class DatabaseFunctions {
     private static dbManager: DBManager<any>;
@@ -262,7 +262,7 @@ export class DatabaseFunctions {
         throw 'Could not find a transcript with this ID.'
     }
 
-    public static async getTranscripstByProjectName(projectName: string): Promise<TranscriptRow[]> {
+    public static async getTranscriptsByProjectName(projectName: string): Promise<ProjectGetTranscriptsResult[]> {
         const projectSelectResult = await DatabaseFunctions.dbManager.query({
             text: 'select id from project where name=$1::text',
             values: [projectName]
@@ -275,8 +275,31 @@ export class DatabaseFunctions {
                 values: [projectID]
             });
 
-            DatabaseFunctions.prepareRows(selectResult.rows);
-            return selectResult.rows as TranscriptRow[];
+            if (selectResult.rowCount > 0) {
+                const results: ProjectGetTranscriptsResult[] = [];
+                for (const row of (selectResult.rows as TranscriptRow[])) {
+                    const mediaItem = await DatabaseFunctions.dbManager.query({
+                        text: 'select * from mediaitem where id=$1::integer',
+                        values: [row.mediaitem_id]
+                    });
+
+                    const mediaItemRows = mediaItem.rows as MediaItemRow[];
+                    const result: ProjectGetTranscriptsResult = {
+                        ...row
+                    };
+
+                    if (mediaItem.rowCount === 1) {
+                        result.mediaitem = {
+                            ...mediaItemRows[0]
+                        };
+                        DatabaseFunctions.prepareRows([result.mediaitem]);
+                    }
+
+                    results.push(result);
+                }
+                DatabaseFunctions.prepareRows(results);
+                return results;
+            }
         }
         throw 'Could not find a project with this name.';
     }
@@ -545,7 +568,7 @@ export class DatabaseFunctions {
         });
     }
 
-    static prepareRows(rows: DatabaseRow[]) {
+    static prepareRows(rows: any[]) {
         for (const row of rows) {
             for (let col in row) {
                 if (row.hasOwnProperty(col)) {

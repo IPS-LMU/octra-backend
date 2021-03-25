@@ -214,11 +214,18 @@ export abstract class ApiCommand {
      * checks if the request by the client is valid
      * @param params
      * @param body
+     * @param query
      */
-    validate(params, body) {
+    validate(params: any, body: any, query?: any) {
         let errors = [];
         const validator = new Validator();
-        const validationResult = validator.validate(body, this.requestStructure);
+        let validationResult = null;
+        if(query){
+            validationResult = validator.validate(query, this.requestStructure);
+        } else {
+            validationResult = validator.validate(body, this.requestStructure);
+        }
+
         if (!validationResult.valid) {
             for (const error of validationResult.errors) {
                 errors.push(error.stack);

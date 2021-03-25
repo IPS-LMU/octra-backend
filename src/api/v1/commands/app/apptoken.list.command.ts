@@ -17,9 +17,7 @@ export class AppTokenListCommand extends ApiCommand {
         this._responseContentType = 'application/json';
 
         // relevant for reference creation
-        this._requestStructure = {
-            properties: {}
-        };
+        this._requestStructure = {};
 
         // relevant for reference creation
         this._responseStructure = {

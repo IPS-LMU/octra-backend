@@ -106,29 +106,29 @@
                                 </div>
                             </div>
                             <div class="card-body">
-                                <table class="table table-sm">
+                                <table class="table">
                                     <% if (commands[i].allowedUserRoles.length > 0) { %>
                                         <tr>
-                                            <td>
+                                            <td class="label">
                                                 Allowed user roles:
                                             </td>
                                             <td><%= commands[i].allowedUserRoles.join(', ') %></td>
                                         </tr>
                                     <% } %>
                                     <tr>
-                                        <td>
+                                        <td class="label">
                                             URL:
                                         </td>
                                         <td><code><%= url %><%= commands[i].url %></code></td>
                                     </tr>
                                     <tr>
-                                        <td>
+                                        <td class="label">
                                             Description:
                                         </td>
                                         <td><p><%= commands[i].description %></p></td>
                                     </tr>
                                     <tr>
-                                        <td>Method:</td>
+                                        <td class="label">Method:</td>
                                         <td>
                                             <span class="badge rounded-pill bg-secondary"><%= commands[i].type %></span>
                                         </td>
@@ -136,25 +136,36 @@
                                     <% if (commands[i].requestStructure) { %>
                                         <% if (commands[i].acceptedContentType) { %>
                                             <tr>
-                                                <td>Request Content Type:</td>
+                                                <td class="label">Request Content Type:</td>
                                                 <td><%= commands[i].acceptedContentType %></td>
                                             </tr>
                                         <% } %>
+                                    <% } %>
+                                    <% if (commands[i].responseStructure) { %>
+                                        <tr>
+                                            <td class="label">Response Content Type:</td>
+                                            <td><%= commands[i].responseContentType %></td>
+                                        </tr>
+                                    <% } %>
+                                    <% if (commands[i].requestStructure) { %>
                                         <tr>
                                             <td colspan="2">
-                                                Request Schema:<br/>
+                                                <span class="label">Request Schema:
+                                                    <% if (commands[i].type === 'GET') { %>
+                                                        (GET parameters in URL)
+                                                    <% } else { %>
+                                                        (Body)
+                                                    <% } %>
+                                                    :<br/>
+                                                    </span>
                                                 <textarea readonly><%= commands[i].requestStructure %></textarea>
                                             </td>
                                         </tr>
                                     <% } %>
                                     <% if (commands[i].responseStructure) { %>
                                         <tr>
-                                            <td>Response Content Type:</td>
-                                            <td><%= commands[i].responseContentType %></td>
-                                        </tr>
-                                        <tr>
                                             <td colspan="2">
-                                                Response Schema:<br>
+                                                <span class="label">Response Schema:</span><br>
                                                 <textarea readonly><%= commands[i].responseStructure %></textarea>
                                             </td>
                                         </tr>

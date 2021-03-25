@@ -4,7 +4,6 @@ import {DatabaseFunctions} from '../../obj/database.functions';
 import {UserRole} from '../../obj/database.types';
 import {GetProjectTranscriptsRequest} from '../../obj/request.types';
 import {InternalServerError} from '../../../../obj/htpp-codes/server.codes';
-import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
 
 export class ProjectTranscriptsGetCommand extends ApiCommand {
     constructor() {
@@ -14,7 +13,7 @@ export class ProjectTranscriptsGetCommand extends ApiCommand {
                 UserRole.dataDelivery
             ]);
 
-        this._description = 'Returns all transcripts of a given project..';
+        this._description = 'Returns all transcripts of a given project.';
         this._acceptedContentType = 'application/json';
         this._responseContentType = 'application/json';
 
@@ -24,8 +23,7 @@ export class ProjectTranscriptsGetCommand extends ApiCommand {
             properties: {
                 ...this.defaultRequestSchema.properties,
                 projectName: {
-                    type: 'string',
-                    required: true
+                    type: 'string'
                 }
             }
         };
@@ -91,6 +89,28 @@ export class ProjectTranscriptsGetCommand extends ApiCommand {
                             mediaitem_id: {
                                 type: 'number'
                             },
+                            mediaitem: {
+                                type: 'object',
+                                properties: {
+                                    id: {
+                                        type: 'number',
+                                        required: true
+                                    },
+                                    url: {
+                                        type: 'string',
+                                        required: true
+                                    },
+                                    type: {
+                                        type: 'string'
+                                    },
+                                    size: {
+                                        type: 'number'
+                                    },
+                                    metadata: {
+                                        type: 'string'
+                                    }
+                                }
+                            },
                             nexttranscription_id: {
                                 type: 'number'
                             }
@@ -103,12 +123,12 @@ export class ProjectTranscriptsGetCommand extends ApiCommand {
 
     async do(req, res, settings: AppConfiguration) {
         const answer = ApiCommand.createAnswer();
-        const validation = this.validate(req.params, req.body);
-        const body = req.body as GetProjectTranscriptsRequest;
+        const validation = this.validate(req.params, req.body, req.query);
+        const payLoad = req.query as GetProjectTranscriptsRequest;
         // do something
         if (validation === '') {
             try {
-                answer.data = await DatabaseFunctions.getTranscripstByProjectName(body.projectName);
+                answer.data = await DatabaseFunctions.getTranscriptsByProjectName(payLoad.projectName);
                 this.checkAndSendAnswer(res, answer);
                 return;
             } catch (e) {
@@ -118,7 +138,6 @@ export class ProjectTranscriptsGetCommand extends ApiCommand {
         } else {
             ApiCommand.sendError(res, InternalServerError, validation);
         }
-        ApiCommand.sendError(res, InternalServerError, 'nothing happened');
         return;
     }
 }

@@ -67,7 +67,7 @@ export interface TranscriptRow extends DatabaseRow {
     pid: string;
     orgtext: string;
     transcript: string;
-    assassment: string;
+    assessment: string;
     priority: number;
     status: string;
     code: string;

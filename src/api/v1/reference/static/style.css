@@ -1,5 +1,6 @@
 body {
     font-family: Helvetica, Arial, serif;
+    font-weight:300;
     position: relative;
 }
 
@@ -56,4 +57,8 @@ textarea {
 .card-header .badge.pill {
     padding: 5px;
     font-size: 0.7em;
+}
+
+.label {
+    font-weight: 500;
 }
