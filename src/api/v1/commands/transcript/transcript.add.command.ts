@@ -148,17 +148,18 @@ export class TranscriptAddCommand extends ApiCommand {
         const validation = this.validate(req.params, req.body);
 
         // do something
-        if (validation === '') {
+        if (validation.length === 0) {
             const body: AddTranscriptRequest = req.body;
             try {
                 const result = await DatabaseFunctions.addTranscript(body);
                 if (result.length === 1) {
                     answer.data = result[0];
                     this.checkAndSendAnswer(res, answer);
+                    return;
                 }
-
                 ApiCommand.sendError(res, InternalServerError, 'Could not add tool.');
             } catch (e) {
+                console.log(e);
                 ApiCommand.sendError(res, InternalServerError, e);
             }
         } else {

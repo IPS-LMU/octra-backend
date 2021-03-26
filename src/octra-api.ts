@@ -14,6 +14,7 @@ import {APIModule} from './octra-api.module';
 import {AppConfiguration, IDBConfiguration} from './obj/app-config/app-config';
 import {DBManager} from './db/DBManager';
 import {PostgreSQLManager} from './db/postgreSQL.manager';
+import {SHA256} from 'crypto-js';
 
 export class OctraApi {
     get appPath(): string {

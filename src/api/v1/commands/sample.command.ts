@@ -49,7 +49,7 @@ export class SampleCommand extends ApiCommand {
         const validation = this.validate(req.params, req.body);
 
         // do something
-        if (validation === '') {
+        if (validation.length === 0) {
             return res.status(OK).send(answer);
         } else {
             ApiCommand.sendError(res, InternalServerError, validation);

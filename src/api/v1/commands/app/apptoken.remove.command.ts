@@ -38,16 +38,12 @@ export class AppTokenRemoveCommand extends ApiCommand {
         const validation = this.validate(req.params, req.body);
 
         // do something
-        if (validation === '') {
-            if (req.params.hasOwnProperty('id')) {
-                try {
-                    await DatabaseFunctions.removeAppToken(req.params.id);
-                    this.checkAndSendAnswer(res, answer);
-                } catch (e) {
-                    ApiCommand.sendError(res, InternalServerError, e);
-                }
-            } else {
-                ApiCommand.sendError(res, BadRequest, 'Missing id in URI.');
+        if (validation.length === 0) {
+            try {
+                await DatabaseFunctions.removeAppToken(req.params.id);
+                this.checkAndSendAnswer(res, answer);
+            } catch (e) {
+                ApiCommand.sendError(res, InternalServerError, e);
             }
         } else {
             ApiCommand.sendError(res, BadRequest, validation);

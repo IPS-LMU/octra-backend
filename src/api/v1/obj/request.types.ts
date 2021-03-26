@@ -68,15 +68,15 @@ export interface AssignUserRoleRequest {
 }
 
 export interface DeliverNewMediaRequest {
-    projectName: string;
+    project_id: number;
     media: {
         url: string;
         type?: string;
         size?: number;
         metadata?: string;
     },
-    orgText: string;
-    transcript: string;
+    orgtext?: string;
+    transcript?: string;
 }
 
 export interface GetProjectTranscriptsRequest {

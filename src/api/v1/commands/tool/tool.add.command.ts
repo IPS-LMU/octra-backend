@@ -72,7 +72,7 @@ export class ToolAddCommand extends ApiCommand {
         const validation = this.validate(req.params, req.body);
 
         // do something
-        if (validation === '') {
+        if (validation.length === 0) {
             const body: AddToolRequest = req.body;
             try {
                 const result = await DatabaseFunctions.addTool(body);

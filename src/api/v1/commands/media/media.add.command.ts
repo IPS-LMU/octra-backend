@@ -72,7 +72,7 @@ export class MediaAddCommand extends ApiCommand {
         const validation = this.validate(req.params, req.body);
 
         // do something
-        if (validation === '') {
+        if (validation.length === 0) {
             const body: AddMediaItemRequest = req.body;
             try {
                 const result = await DatabaseFunctions.addMediaItem(body);

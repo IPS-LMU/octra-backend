@@ -39,18 +39,14 @@ export class UserRemoveCommand extends ApiCommand {
         const answer = ApiCommand.createAnswer();
         const validation = this.validate(req.params, req.body);
 
-        if (validation === '') {
-            if (req.params.hasOwnProperty('id')) {
-                try {
-                    await DatabaseFunctions.removeUserByID(req.params.id);
-                    answer.data = {};
-                    this.checkAndSendAnswer(res, answer);
-                } catch (e) {
-                    console.log(e);
-                    ApiCommand.sendError(res, InternalServerError, e);
-                }
-            } else {
-                ApiCommand.sendError(res, InternalServerError, 'Missing ID in URI');
+        if (validation.length === 0) {
+            try {
+                await DatabaseFunctions.removeUserByID(req.params.id);
+                answer.data = {};
+                this.checkAndSendAnswer(res, answer);
+            } catch (e) {
+                console.log(e);
+                ApiCommand.sendError(res, InternalServerError, e);
             }
         } else {
             ApiCommand.sendError(res, BadRequest, validation);

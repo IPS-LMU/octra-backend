@@ -54,7 +54,6 @@ export const verifyUserRole = (req, res, command: ApiCommand, callback) => {
                         ApiCommand.sendError(res, 401, 'You don\'t have access right to use this function.');
                     }
                 }).catch((error) => {
-                    console.log(error);
                     ApiCommand.sendError(res, 401, 'Invalid Web Token. Please authenticate again.');
                 });
             } else {

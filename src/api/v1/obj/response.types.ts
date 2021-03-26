@@ -1,6 +1,6 @@
 import {MediaItemRow} from './database.types';
 
-export interface ProjectGetTranscriptsResult {
+export interface GetTranscriptsResult {
     pid: string;
     orgtext: string;
     transcript: string;
@@ -13,5 +13,9 @@ export interface ProjectGetTranscriptsResult {
     enddate: string;
     log: string;
     comment: string;
+    tool_id: number;
+    transcriber_id: number;
+    project_id: number;
+    mediaitem_id: number;
     mediaitem?: MediaItemRow;
 }

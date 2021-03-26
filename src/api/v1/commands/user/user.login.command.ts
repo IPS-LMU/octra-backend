@@ -5,7 +5,6 @@ import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {SHA256} from 'crypto-js';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {UserLoginRequest} from '../../obj/request.types';
-import {InternalServerError} from '../../../../obj/htpp-codes/server.codes';
 import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
 
 export class UserLoginCommand extends ApiCommand {
@@ -68,7 +67,7 @@ export class UserLoginCommand extends ApiCommand {
         const body: UserLoginRequest = req.body;
 
 
-        if (validation === '') {
+        if (validation.length === 0) {
             try {
                 const answer = ApiCommand.createAnswer();
                 const {password, id, roles} = await DatabaseFunctions.getUserInfoByUserName(body.name);

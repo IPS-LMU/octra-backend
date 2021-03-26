@@ -55,7 +55,7 @@ export class AppTokenListCommand extends ApiCommand {
         const answer = ApiCommand.createAnswer();
         const validation = this.validate(req.params, req.body);
 
-        if (validation === '') {
+        if (validation.length === 0) {
             try {
                 answer.data = await DatabaseFunctions.listAppTokens();
                 this.checkAndSendAnswer(res, answer);

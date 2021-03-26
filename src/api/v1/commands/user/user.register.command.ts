@@ -68,7 +68,7 @@ export class UserRegisterCommand extends ApiCommand {
         const validation = this.validate(req.params, req.body);
 
         // do something
-        if (validation === '') {
+        if (validation.length === 0) {
             const userData: UserRegisterRequest = req.body;
 
             try {

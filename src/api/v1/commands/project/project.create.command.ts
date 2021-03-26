@@ -96,7 +96,7 @@ export class ProjectCreateCommand extends ApiCommand {
         const validation = this.validate(req.params, req.body);
 
         // do something
-        if (validation === '') {
+        if (validation.length === 0) {
             const body: CreateProjectRequest = req.body;
             try {
                 const result = await DatabaseFunctions.createProject(body);

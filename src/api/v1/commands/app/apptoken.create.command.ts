@@ -66,7 +66,7 @@ export class AppTokenCreateCommand extends ApiCommand {
         const validation = this.validate(req.params, req.body);
 
         // do something
-        if (validation === '') {
+        if (validation.length === 0) {
             const body: CreateAppTokenRequest = req.body;
             try {
                 const result = await DatabaseFunctions.createAppToken(body);

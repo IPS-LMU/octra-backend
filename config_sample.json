@@ -7,7 +7,13 @@
     "dbPort": 54321,
     "dbName": "",
     "dbUser": "",
-    "dbPassword": ""
+    "dbPassword": "",
+    "ssl": {
+      "rejectUnauthorized": false,
+      "ca": "",
+      "key": "",
+      "cert": ""
+    }
   },
   "api": {
     "url": "http://localhost",

@@ -6,8 +6,8 @@ import {verifyAppToken, verifyUserRole, verifyWebToken} from '../obj/middlewares
 import {UserRole} from '../obj/database.types';
 import {TokenData} from '../obj/request.types';
 import {OK} from '../../../obj/htpp-codes/success.codes';
-import {InternalServerError} from '../../../obj/htpp-codes/server.codes';
 import {BadRequest} from '../../../obj/htpp-codes/client.codes';
+import {isNumber} from '../../../obj/functions';
 
 export enum RequestType {
     GET = 'GET',
@@ -125,7 +125,7 @@ export abstract class ApiCommand {
         };
     }
 
-    static sendError(res, code: number, message: string, authenticated = true) {
+    static sendError(res, code: number, message: any, authenticated = true) {
         const answer = ApiCommand.createAnswer();
         answer.status = 'error';
         answer.message = message;
@@ -216,23 +216,42 @@ export abstract class ApiCommand {
      * @param body
      * @param query
      */
-    validate(params: any, body: any, query?: any) {
+    validate(params: any, body: any, query?: any): any[] {
         let errors = [];
         const validator = new Validator();
         let validationResult = null;
-        if(query){
+        if (query) {
             validationResult = validator.validate(query, this.requestStructure);
         } else {
             validationResult = validator.validate(body, this.requestStructure);
         }
 
-        if (!validationResult.valid) {
-            for (const error of validationResult.errors) {
-                errors.push(error.stack);
+        if (params) {
+            const paramsErrors = {
+                section: 'URI params',
+                errors: []
+            };
+
+            for (let attr in params) {
+                if (params.hasOwnProperty(attr)) {
+                    if (!isNumber(params[attr])) {
+                        paramsErrors.errors.push(`${attr} is not of type number`);
+                    }
+                }
+            }
+            if (paramsErrors.errors.length > 0) {
+                errors.push(paramsErrors);
             }
         }
 
-        return errors.join(', ');
+        if (!validationResult.valid) {
+            errors.push({
+                section: (query) ? 'GET params' : 'Request payload',
+                errors: validationResult.errors.map(a => a.path.join('.') + ' ' + a.message)
+            });
+        }
+
+        return errors;
     }
 
     validateAnswer(answer) {

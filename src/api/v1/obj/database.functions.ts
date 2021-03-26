@@ -19,7 +19,7 @@ import {
     CreateProjectRequest,
     DeliverNewMediaRequest
 } from './request.types';
-import {ProjectGetTranscriptsResult} from './response.types';
+import {GetTranscriptsResult} from './response.types';
 
 export class DatabaseFunctions {
     private static dbManager: DBManager;
@@ -95,7 +95,6 @@ export class DatabaseFunctions {
             }
             throw 'insertionResult does not have id';
         } catch (e) {
-            console.log(`[Error]:`);
             console.log(e);
             throw 'could not generate and save app token';
         }
@@ -129,7 +128,6 @@ export class DatabaseFunctions {
             }
             throw 'insertionResult does not have id';
         } catch (e) {
-            console.log(`[Error]:`);
             console.log(e);
             throw 'Could not create and save a new project.';
         }
@@ -160,7 +158,6 @@ export class DatabaseFunctions {
             }
             throw 'insertionResult does not have id';
         } catch (e) {
-            console.log(`[Error]:`);
             console.log(e);
             throw 'Could not save a new media item.';
         }
@@ -190,7 +187,6 @@ export class DatabaseFunctions {
             }
             throw 'insertionResult does not have id';
         } catch (e) {
-            console.log(`[Error]:`);
             console.log(e);
             throw 'Could not save a new tool.';
         }
@@ -234,40 +230,52 @@ export class DatabaseFunctions {
             }
             throw 'insertionResult does not have id';
         } catch (e) {
-            console.log(`[Error]:`);
-            console.log(e);
             throw 'Could not save a new transcript.';
         }
     }
 
-    public static async getTranscriptByID(id: number): Promise<TranscriptRow> {
+    public static async getTranscriptByID(id: number): Promise<GetTranscriptsResult> {
         const selectResult = await DatabaseFunctions.dbManager.query({
             text: 'select * from transcript where id=$1::integer',
             values: [id]
         });
 
         if (selectResult.rowCount === 1) {
-            DatabaseFunctions.prepareRows(selectResult.rows);
-            return selectResult.rows[0] as TranscriptRow;
+            const transcriptRow = (selectResult.rows[0] as TranscriptRow);
+            let result: GetTranscriptsResult = transcriptRow;
+
+            if (transcriptRow.hasOwnProperty('mediaitem_id') && transcriptRow.mediaitem_id) {
+                const mediaItemResult = await DatabaseFunctions.dbManager.query({
+                    text: 'select * from mediaitem where id=$1::integer',
+                    values: [transcriptRow.mediaitem_id]
+                });
+
+                if (mediaItemResult.rowCount === 1) {
+                    result.mediaitem = mediaItemResult.rows[0] as MediaItemRow;
+                    DatabaseFunctions.prepareRows([result.mediaitem]);
+                }
+            }
+
+            DatabaseFunctions.prepareRows([result]);
+            return result;
         }
         throw 'Could not find a transcript with this ID.'
     }
 
-    public static async getTranscriptsByProjectName(projectName: string): Promise<ProjectGetTranscriptsResult[]> {
+    public static async getTranscriptsByProjectID(projectID: number): Promise<GetTranscriptsResult[]> {
         const projectSelectResult = await DatabaseFunctions.dbManager.query({
-            text: 'select id from project where name=$1::text',
-            values: [projectName]
+            text: 'select id from project where id=$1::integer',
+            values: [projectID]
         })
 
         if (projectSelectResult.rowCount === 1) {
-            const projectID = projectSelectResult.rows[0].id;
             const selectResult = await DatabaseFunctions.dbManager.query({
                 text: 'select * from transcript where project_id=$1::integer',
                 values: [projectID]
             });
 
             if (selectResult.rowCount > 0) {
-                const results: ProjectGetTranscriptsResult[] = [];
+                const results: GetTranscriptsResult[] = [];
                 for (const row of (selectResult.rows as TranscriptRow[])) {
                     const mediaItem = await DatabaseFunctions.dbManager.query({
                         text: 'select * from mediaitem where id=$1::integer',
@@ -275,7 +283,7 @@ export class DatabaseFunctions {
                     });
 
                     const mediaItemRows = mediaItem.rows as MediaItemRow[];
-                    const result: ProjectGetTranscriptsResult = {
+                    const result: GetTranscriptsResult = {
                         ...row
                     };
 
@@ -527,20 +535,9 @@ export class DatabaseFunctions {
         throw 'could not find user';
     }
 
-    static async deliverNewMedia(dataDeliveryRequest: DeliverNewMediaRequest): Promise<TranscriptRow> {
-        const projectRow = await DatabaseFunctions.dbManager.query({
-            text: 'select id from project where name=$1',
-            values: [dataDeliveryRequest.projectName]
-        });
-
-        if (projectRow.rowCount < 1) {
-            throw 'Could not find a project with this name.'
-        }
-
-        const projectID = projectRow.rows[0].id;
+    static async deliverNewMedia(dataDeliveryRequest: DeliverNewMediaRequest): Promise<GetTranscriptsResult> {
         const media = dataDeliveryRequest.media;
 
-        // TODO better use transaction
         const mediaInsertResult = await DatabaseFunctions.addMediaItem({
             url: media.url,
             type: media.type,
@@ -550,16 +547,28 @@ export class DatabaseFunctions {
 
         if (mediaInsertResult.length > 0) {
             const mediaID = mediaInsertResult[0].id;
-            const transriptInsertResult = await DatabaseFunctions.addTranscript({
-                orgtext: dataDeliveryRequest.orgText,
+            const transcriptResult = await DatabaseFunctions.addTranscript({
+                orgtext: dataDeliveryRequest.orgtext,
                 transcript: dataDeliveryRequest.transcript,
-                project_id: projectID,
+                project_id: dataDeliveryRequest.project_id,
                 mediaitem_id: mediaID
             });
 
-            if (transriptInsertResult.length > 0) {
-                return transriptInsertResult[0];
+            if (transcriptResult.length > 0) {
+                const result = transcriptResult[0] as GetTranscriptsResult;
+
+                const mediaItem = await DatabaseFunctions.dbManager.query({
+                    text: 'select * from mediaitem where id=$1::integer',
+                    values: [mediaID]
+                });
+
+                if (mediaItem.rowCount === 1) {
+                    result.mediaitem = mediaItem.rows[0] as MediaItemRow;
+                }
+
+                return result;
             }
+
             throw 'Could not save transcript entry.'
         }
         throw 'Could not save media entry.'

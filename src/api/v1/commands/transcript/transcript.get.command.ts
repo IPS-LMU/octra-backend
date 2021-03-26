@@ -3,6 +3,8 @@ import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {UserRole} from '../../obj/database.types';
 import {InternalServerError} from '../../../../obj/htpp-codes/server.codes';
+import {TokenData} from '../../obj/request.types';
+import {GetTranscriptsResult} from '../../obj/response.types';
 
 export class TranscriptGetCommand extends ApiCommand {
     constructor() {
@@ -91,9 +93,10 @@ export class TranscriptGetCommand extends ApiCommand {
         const answer = ApiCommand.createAnswer();
         const validation = this.validate(req.params, req.body);
         // do something
-        if (validation === '' && req.params && req.params.id) {
+        if (validation.length === 0) {
             try {
                 answer.data = await DatabaseFunctions.getTranscriptByID(req.params.id);
+                this.reduceDataForUser(req, answer)
                 this.checkAndSendAnswer(res, answer);
                 return;
             } catch (e) {
@@ -103,7 +106,20 @@ export class TranscriptGetCommand extends ApiCommand {
         } else {
             ApiCommand.sendError(res, InternalServerError, validation);
         }
-        ApiCommand.sendError(res, InternalServerError, "nothing happened");
+        ApiCommand.sendError(res, InternalServerError, 'nothing happened');
         return;
+    }
+
+    reduceDataForUser(req, answer) {
+        const tokenData = req.decoded as TokenData;
+        tokenData.roles;
+
+        if (tokenData.roles.find(a => a === 'data delivery')) {
+            // is data delivery
+            const data = answer.data as GetTranscriptsResult;
+            delete data.pid;
+            delete data.project_id;
+            delete data.mediaitem_id;
+        }
     }
 }

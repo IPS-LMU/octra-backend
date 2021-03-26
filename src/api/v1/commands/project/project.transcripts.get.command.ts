@@ -2,12 +2,11 @@ import {ApiCommand, RequestType} from '../api.command';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {UserRole} from '../../obj/database.types';
-import {GetProjectTranscriptsRequest} from '../../obj/request.types';
 import {InternalServerError} from '../../../../obj/htpp-codes/server.codes';
 
 export class ProjectTranscriptsGetCommand extends ApiCommand {
     constructor() {
-        super('getProjectTranscripts', RequestType.GET, '/v1/projects/transcripts', true,
+        super('getProjectTranscripts', RequestType.GET, '/v1/projects/:id/transcripts', true,
             [
                 UserRole.administrator,
                 UserRole.dataDelivery
@@ -18,15 +17,7 @@ export class ProjectTranscriptsGetCommand extends ApiCommand {
         this._responseContentType = 'application/json';
 
         // relevant for reference creation
-        this._requestStructure = {
-            ...this.defaultRequestSchema,
-            properties: {
-                ...this.defaultRequestSchema.properties,
-                projectName: {
-                    type: 'string'
-                }
-            }
-        };
+        this._requestStructure = {};
 
         // relevant for reference creation
         this._responseStructure = {
@@ -123,12 +114,11 @@ export class ProjectTranscriptsGetCommand extends ApiCommand {
 
     async do(req, res, settings: AppConfiguration) {
         const answer = ApiCommand.createAnswer();
-        const validation = this.validate(req.params, req.body, req.query);
-        const payLoad = req.query as GetProjectTranscriptsRequest;
+        const validation = this.validate(req.params, req.body);
         // do something
-        if (validation === '') {
+        if (validation.length === 0) {
             try {
-                answer.data = await DatabaseFunctions.getTranscriptsByProjectName(payLoad.projectName);
+                answer.data = await DatabaseFunctions.getTranscriptsByProjectID(Number(req.params.id));
                 this.checkAndSendAnswer(res, answer);
                 return;
             } catch (e) {

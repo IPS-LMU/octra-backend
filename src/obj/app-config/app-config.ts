@@ -17,6 +17,7 @@ export interface IDBConfiguration {
     dbName: string,
     dbUser: string,
     dbPassword: string,
+    ssl?: IDBSSLConfiguration
 }
 
 export interface IAPIConfiguration {
@@ -25,13 +26,21 @@ export interface IAPIConfiguration {
     port: number,
     debugging?: boolean,
     uploadPath: string,
-    secret: string,
+    secret: string
+}
+
+export interface IDBSSLConfiguration {
+    rejectUnauthorized?: boolean;
+    ca?: string;
+    key?: string;
+    cert?: string;
 }
 
 export class AppConfiguration implements IAppConfiguration {
     get version(): string {
         return this._version;
     }
+
     get validation(): ValidatorResult {
         return this._validation;
     }
