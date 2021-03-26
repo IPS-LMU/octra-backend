@@ -79,7 +79,7 @@ export class UserLoginCommand extends ApiCommand {
                     return;
                 }
 
-                answer.auth = true;
+                answer.authenticated = true;
                 answer.token = jwt.sign({
                     name: body.name,
                     id, roles

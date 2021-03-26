@@ -401,14 +401,43 @@ export class DatabaseFunctions {
         return result.rows as RolesRow[];
     }
 
+    static async getRolesByUserID(id: number): Promise<string[]> {
+        const rolesTable = await DatabaseFunctions.getRoles();
+        const accountRolesTable = await DatabaseFunctions.dbManager.query({
+            text: 'select * from account_roles where account_id=$1::integer',
+            values: [id]
+        });
+        return (accountRolesTable.rows as any).map(a => a.roles_id)
+            .map(a => {
+                const role = rolesTable.find(b => b.id === a);
+                if (role) {
+                    return role.label;
+                }
+                return null;
+            })
+            .filter(a => a !== null);
+    }
+
     static async listUsers(): Promise<AccountRow[]> {
         const selectResult = await DatabaseFunctions.dbManager.query({
             text: this.selectAllStatements.account
         });
 
-        DatabaseFunctions.prepareRows(selectResult.rows);
+        const results: any[] = [];
+        for (const row of selectResult.rows) {
+            const roles = await DatabaseFunctions.getRolesByUserID(row.id);
+            delete (row as any).hash;
 
-        return selectResult.rows as AccountRow[];
+            const result = {
+                ...row,
+                roles
+            }
+            results.push(result);
+        }
+
+        DatabaseFunctions.prepareRows(results);
+
+        return results as AccountRow[];
     }
 
     static async removeUserByID(id: number): Promise<void> {

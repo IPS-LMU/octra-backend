@@ -79,7 +79,7 @@ export class UserRegisterCommand extends ApiCommand {
                     password: SHA256(userData.password).toString()
                 });
 
-                answer.auth = true;
+                answer.authenticated = true;
                 answer.token = jwt.sign({
                     id: result.id,
                     name: userData.name,

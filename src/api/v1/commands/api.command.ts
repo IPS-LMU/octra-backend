@@ -86,7 +86,7 @@ export abstract class ApiCommand {
                 enum: ['success', 'error'],
                 description: '\'error\' or \'success\'. If error, the error message is inserted into message.'
             },
-            auth: {
+            authenticated: {
                 required: true,
                 type: 'boolean',
                 description: 'checks if user is authenticated'
@@ -115,12 +115,12 @@ export abstract class ApiCommand {
         status: 'success' | 'error',
         data: any,
         message?: string,
-        auth: boolean,
+        authenticated: boolean,
         token?: string
     } {
         return {
             status: 'success',
-            auth: true,
+            authenticated: true,
             data: undefined
         };
     }
@@ -129,7 +129,7 @@ export abstract class ApiCommand {
         const answer = ApiCommand.createAnswer();
         answer.status = 'error';
         answer.message = message;
-        answer.auth = authenticated;
+        answer.authenticated = authenticated;
 
         res.status(code).send(answer);
     }
@@ -261,7 +261,7 @@ export abstract class ApiCommand {
 
         if (answerValidation === '') {
             // a user must be authenticated to get an positive answer
-            answer.auth = true;
+            answer.authenticated = true;
             res.status(OK).send(answer);
         } else {
             ApiCommand.sendError(res, BadRequest, `Response validation failed: ${answerValidation}`, authenticated);
