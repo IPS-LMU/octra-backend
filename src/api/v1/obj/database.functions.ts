@@ -317,7 +317,8 @@ export class DatabaseFunctions {
     static async createUser(userData: {
         name?: string,
         email?: string,
-        password: string
+        password: string,
+        loginmethod: string
     }): Promise<{
         id: number;
         roles: UserRole[];
@@ -327,7 +328,8 @@ export class DatabaseFunctions {
             columns: [
                 DatabaseFunctions.getColumnDefinition('username', 'text', userData.name),
                 DatabaseFunctions.getColumnDefinition('email', 'text', userData.email),
-                DatabaseFunctions.getColumnDefinition('hash', 'text', userData.password)
+                DatabaseFunctions.getColumnDefinition('hash', 'text', userData.password),
+                DatabaseFunctions.getColumnDefinition('loginmethod', 'text', userData.loginmethod)
             ]
         };
         const insertionResult = await DatabaseFunctions.dbManager.insert(insertAccountQuery, 'id');
@@ -401,14 +403,41 @@ export class DatabaseFunctions {
         return result.rows as RolesRow[];
     }
 
+    static async getRolesByUserID(id: number): Promise<string[]> {
+        const rolesTable = await DatabaseFunctions.getRoles();
+        const accountRolesTable = await DatabaseFunctions.dbManager.query({
+            text: 'select * from account_roles where account_id=$1::integer',
+            values: [id]
+        });
+        return (accountRolesTable.rows as any).map(a => a.roles_id)
+            .map(a => {
+                const role = rolesTable.find(b => b.id === a);
+                if (role) {
+                    return role.label;
+                }
+                return null;
+            })
+            .filter(a => a !== null);
+    }
+
     static async listUsers(): Promise<AccountRow[]> {
         const selectResult = await DatabaseFunctions.dbManager.query({
             text: this.selectAllStatements.account
         });
 
-        DatabaseFunctions.prepareRows(selectResult.rows);
+        const results: any[] = [];
+        for (const row of selectResult.rows) {
+            const roles = await DatabaseFunctions.getRolesByUserID(row.id);
+            const result = {
+                ...row,
+                roles
+            }
+            results.push(result);
+        }
 
-        return selectResult.rows as AccountRow[];
+        DatabaseFunctions.prepareRows(results);
+
+        return results as AccountRow[];
     }
 
     static async removeUserByID(id: number): Promise<void> {
@@ -437,10 +466,10 @@ export class DatabaseFunctions {
         return;
     }
 
-    static async getUser(id: number): Promise<AccountRow> {
+    static async getUserByHash(hash: string): Promise<AccountRow> {
         const selectResult = await DatabaseFunctions.dbManager.query({
-            text: this.selectAllStatements.account + ' where id=$1::numeric',
-            values: [id]
+            text: this.selectAllStatements.account + ' where hash=$1::text',
+            values: [hash]
         });
 
         if (selectResult.rowCount === 1) {

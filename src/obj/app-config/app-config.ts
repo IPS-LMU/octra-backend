@@ -26,12 +26,16 @@ export interface IAPIConfiguration {
     debugging?: boolean,
     uploadPath: string,
     secret: string,
+    authenticator: {
+        appToken: string
+    }
 }
 
 export class AppConfiguration implements IAppConfiguration {
     get version(): string {
         return this._version;
     }
+
     get validation(): ValidatorResult {
         return this._validation;
     }

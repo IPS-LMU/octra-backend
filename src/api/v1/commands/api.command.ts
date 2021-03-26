@@ -6,7 +6,6 @@ import {verifyAppToken, verifyUserRole, verifyWebToken} from '../obj/middlewares
 import {UserRole} from '../obj/database.types';
 import {TokenData} from '../obj/request.types';
 import {OK} from '../../../obj/htpp-codes/success.codes';
-import {InternalServerError} from '../../../obj/htpp-codes/server.codes';
 import {BadRequest} from '../../../obj/htpp-codes/client.codes';
 
 export enum RequestType {
@@ -168,7 +167,11 @@ export abstract class ApiCommand {
      */
     public register(app: Express, router: Router, environment: 'production' | 'development', settings: AppConfiguration,
                     dbManager: DBManager) {
-        router.use(this.url, verifyAppToken);
+        router.use(this.url, (req, res, next) => {
+            verifyAppToken(req, res, next, settings, () => {
+                next();
+            });
+        });
 
         if (this._needsJWTAuthentication) {
             router.use(this.url, (req, res, next) => {
@@ -220,7 +223,7 @@ export abstract class ApiCommand {
         let errors = [];
         const validator = new Validator();
         let validationResult = null;
-        if(query){
+        if (query) {
             validationResult = validator.validate(query, this.requestStructure);
         } else {
             validationResult = validator.validate(body, this.requestStructure);

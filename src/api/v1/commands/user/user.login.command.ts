@@ -79,6 +79,13 @@ export class UserLoginCommand extends ApiCommand {
                     return;
                 }
 
+                // TODO check shibboleth cookie
+                // password = shibboleth uid
+                // check user name & hash
+
+                // TODO redirect after authentication
+                // TODO check authentication
+
                 answer.auth = true;
                 answer.token = jwt.sign({
                     name: body.name,

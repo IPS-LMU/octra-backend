@@ -47,7 +47,8 @@ const todoList = {
         login: true,
         assign: true,
         getUsers: true,
-        delete: true
+        delete: true,
+        getHash: true
     },
     app: {
         tokens: {
@@ -107,7 +108,7 @@ describe('User', () => {
     }
 
     if (todoList.user.login) {
-        describe('/POST v1/login', () => {
+        describe('/POST v1/users/login', () => {
             it('it should POST a user login', (done) => {
                 const request = {
                     "name": "Julian",
@@ -150,6 +151,25 @@ describe('User', () => {
                     });
             });
         });
+    }
+
+    if(todoList.user.getHash){
+        describe('/GET v1/hash', () => {
+            it('it should retrieve an boolean if hash exists', (done) => {
+                chai.request(server)
+                    .get(`v1/hash`)
+                    .set("Authorization", `Bearer ${appToken}`)
+                    .set("x-access-token", tempData.admin.jwtToken)
+                    .set("Origin", "http://localhost:8080")
+                    .end((err, res) => {
+                        checkForErrors(err, res);
+
+                        res.status.should.be.equal(200);
+                        res.body.data.should.be.a('boolean');
+                        done();
+                    });
+            });
+        })
     }
 
     if (todoList.user.getUsers) {
@@ -462,6 +482,7 @@ function logJSON(json) {
 
 function checkForErrors(err, res) {
     // logJSON(res.body);
+    console.log(err);
     assert.equal(err, undefined, err);
     res.body.status.should.be.equal('success', res.body.message);
     assert.equal(res.error, false, res.error.message);

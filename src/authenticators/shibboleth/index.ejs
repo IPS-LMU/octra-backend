@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>OCTRA API</title>
+    <!-- Bootstrap core CSS -->
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="bootstrap/bootstrap-icons/bootstrap-icons.css" rel="stylesheet" type="text/css">
+
+    <!-- Custom styles for this template -->
+    <link href="authenticators/shibboleth/style.css" rel="stylesheet" type="text/css">
+    <script src="bootstrap/js/vendor/jquery.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(() => {
+            $("#submit").on("click", () => {
+                $.ajax({
+                    url: 'v1/users/register',
+                    type: 'post',
+                    data: {
+                        name: $("#name").val(),
+                        password: "123456"
+                    },
+                    headers: {
+                        Authorization: 'Bearer <%= appToken %>',
+                    },
+                    dataType: 'json',
+                    success: (data) => {
+                        $("#signin").html("<p style='text-align: center;'>Your signup was successful. Please close this window.</p>")
+                    }
+                });
+            })
+        });
+    </script>
+    <style>
+        .bd-placeholder-img {
+            font-size: 1.125rem;
+            text-anchor: middle;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+        }
+
+        @media (min-width: 768px) {
+            .bd-placeholder-img-lg {
+                font-size: 3.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body class="text-center">
+
+<main class="form-signin">
+    <div id="signin">
+        <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
+
+        <div class="form-floating">
+            <input type="text" class="form-control" id="name" placeholder="Enter a user name">
+            <label for="floatingInput">User name</label>
+        </div>
+
+        <button class="w-100 btn btn-lg btn-primary" id="submit">Sign in</button>
+    </div>
+</main>
+
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="bootstrap/js/vendor/popper.min.js"></script>
+<script src="bootstrap/js/bootstrap.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('body').scrollspy({target: '#navbar-sticky'})
+    });
+</script>
+</body>
+</html>
+

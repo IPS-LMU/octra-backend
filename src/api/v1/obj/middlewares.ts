@@ -4,21 +4,28 @@ import {AppConfiguration} from '../../../obj/app-config/app-config';
 import {DatabaseFunctions} from './database.functions';
 import {TokenData} from './request.types';
 
-export const verifyAppToken = (req, res, next) => {
+export const verifyAppToken = (req, res, next, settings: AppConfiguration, callback) => {
     let appToken = req.get('Authorization');
     let originHost = req.get('origin')
 
     if (originHost) {
         originHost = originHost.replace(/:[0-9]{1,5}$/g, '');
-        appToken = appToken.replace('Bearer ', '');
 
         if (appToken) {
-            DatabaseFunctions.isValidAppToken(appToken, originHost).then(() => {
-                next();
-            }).catch((error) => {
-                console.log(error);
-                ApiCommand.sendError(res, 401, `Invalid app token.`);
-            });
+            appToken = appToken.replace('Bearer ', '');
+
+            if (appToken === settings.api.authenticator.appToken) {
+                // todo check origin header
+                // it's a request by an authenticator
+                callback();
+            } else {
+                DatabaseFunctions.isValidAppToken(appToken, originHost).then(() => {
+                    callback()
+                }).catch((error) => {
+                    console.log(error);
+                    ApiCommand.sendError(res, 401, `Invalid app token.`);
+                });
+            }
         } else {
             ApiCommand.sendError(res, 403, `Missing 'Authorization' Header.`);
         }
