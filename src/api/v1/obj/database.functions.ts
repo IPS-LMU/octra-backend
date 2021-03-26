@@ -55,7 +55,7 @@ export class DatabaseFunctions {
             ) {
                 return;
             } else if (resultRow.hasOwnProperty('domain')) {
-                throw 'Domain does not match the domain registered for this app key.';
+                throw `Origin Host ${originHost} does not match the domain registered for this app key.`;
             }
             return;
         }

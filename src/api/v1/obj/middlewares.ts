@@ -5,26 +5,23 @@ import {DatabaseFunctions} from './database.functions';
 import {TokenData} from './request.types';
 
 export const verifyAppToken = (req, res, next) => {
-    let appToken = req.get('Authorization');
     let originHost = req.get('origin')
+    let appToken = req.get('Authorization');
 
-    if (originHost) {
-        originHost = originHost.replace(/:[0-9]{1,5}$/g, '');
+    if (appToken) {
         appToken = appToken.replace('Bearer ', '');
+        originHost = (originHost) ? originHost = originHost.replace(/:[0-9]{1,5}$/g, '') : '';
 
-        if (appToken) {
-            DatabaseFunctions.isValidAppToken(appToken, originHost).then(() => {
-                next();
-            }).catch((error) => {
-                console.log(error);
-                ApiCommand.sendError(res, 401, `Invalid app token.`);
-            });
-        } else {
-            ApiCommand.sendError(res, 403, `Missing 'Authorization' Header.`);
-        }
+        DatabaseFunctions.isValidAppToken(appToken, originHost).then(() => {
+            next();
+        }).catch((error) => {
+            console.log(error);
+            ApiCommand.sendError(res, 401, `Invalid app token.`);
+        });
     } else {
-        ApiCommand.sendError(res, 403, `Missing 'Origin' Header.`);
+        ApiCommand.sendError(res, 403, `Missing 'Authorization' Header.`);
     }
+
 };
 
 export const verifyWebToken = (req, res, next, settings: AppConfiguration, callback) => {
