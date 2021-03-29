@@ -14,8 +14,11 @@ import {UserAssignRolesCommand} from './commands/user/user.assign.roles.command'
 import {DeliveryMediaAddCommand} from './commands/delivery/delivery.media.add.command';
 import {TranscriptGetCommand} from './commands/transcript/transcript.get.command';
 import {ProjectTranscriptsGetCommand} from './commands/project/project.transcripts.get.command';
+import {UserPasswordChangeCommand} from './commands/user/user.password.change.command';
 
 export class APIV1Module {
+
+    // TODO fix problem: commands request cascades
 
     public static commands: ApiCommand[] = [
         new AppTokenCreateCommand(),
@@ -23,6 +26,7 @@ export class APIV1Module {
         new AppTokenListCommand(),
         new UserRegisterCommand(),
         new UserLoginCommand(),
+        new UserPasswordChangeCommand(),
         new UserListCommand(),
         new UserRemoveCommand(),
         new MediaAddCommand(),

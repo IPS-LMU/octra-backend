@@ -76,7 +76,7 @@ export class UserRegisterCommand extends ApiCommand {
                 const result = await DatabaseFunctions.createUser({
                     name: userData.name,
                     email: userData.email,
-                    password: SHA256(userData.password).toString()
+                    password:  DatabaseFunctions.getPasswordHash(userData.password).toString()
                 });
 
                 answer.authenticated = true;

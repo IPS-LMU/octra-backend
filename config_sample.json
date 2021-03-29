@@ -21,6 +21,7 @@
     "port": 8080,
     "debugging": false,
     "uploadPath": "data",
-    "secret": ""
+    "secret": "",
+    "passwordSalt": ""
   }
 }

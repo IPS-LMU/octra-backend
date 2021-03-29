@@ -1,8 +1,8 @@
 export enum UserRole {
     administrator = 'administrator',
     transcriber = 'transcriber',
-    projectAdministrator = 'project administrator',
-    dataDelivery = 'data delivery'
+    projectAdministrator = 'project_admin',
+    dataDelivery = 'data_delivery'
 }
 
 export interface DatabaseRow {
@@ -80,5 +80,5 @@ export interface TranscriptRow extends DatabaseRow {
     transcriber_id: number;
     project_id: number;
     mediaitem_id: number;
-    nexttranscription_id: number;
+    nexttranscript_id: number;
 }

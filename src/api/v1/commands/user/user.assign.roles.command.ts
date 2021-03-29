@@ -27,7 +27,7 @@ export class UserAssignRolesCommand extends ApiCommand {
                     type: 'array',
                     items: {
                         type: 'string',
-                        enum: ['administrator', 'transcriber', 'data delivery', 'project administrator']
+                        enum: ['administrator', 'transcriber', 'data_delivery', 'project_admin']
                     },
                     required: true
                 }

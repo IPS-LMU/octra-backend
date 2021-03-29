@@ -20,6 +20,7 @@ import {
     DeliverNewMediaRequest
 } from './request.types';
 import {GetTranscriptsResult} from './response.types';
+import {SHA256} from 'crypto-js';
 
 export class DatabaseFunctions {
     private static dbManager: DBManager;
@@ -31,7 +32,7 @@ export class DatabaseFunctions {
         project: 'select id::integer, name::text, shortname::text, description::text, configuration::text, startdate::timestamp, enddate::timestamp, active::boolean, admin_id::integer from project',
         mediaitem: 'select id::integer, url::text, type::text, size::integer, metadata::text from mediaitem',
         tool: 'select id::integer, name::text, version::text, description::text, pid::text from tool',
-        transcript: 'select id::integer, pid::text, orgtext::text, transcript::text, assessment::text, priority::integer, status::text, code::text, creationdate::timestamp, startdate::timestamp, enddate::timestamp, log::text, comment::text, tool_id::integer, transcriber_id::integer, project_id::integer, mediaitem_id::integer, nexttranscription_id::integer from transcript'
+        transcript: 'select id::integer, pid::text, orgtext::text, transcript::text, assessment::text, priority::integer, status::text, code::text, creationdate::timestamp, startdate::timestamp, enddate::timestamp, log::text, comment::text, tool_id::integer, transcriber_id::integer, project_id::integer, mediaitem_id::integer, nexttranscript_id::integer from transcript'
     };
 
     constructor() {
@@ -213,7 +214,7 @@ export class DatabaseFunctions {
                     DatabaseFunctions.getColumnDefinition('transcriber_id', 'integer', data.transcriber_id),
                     DatabaseFunctions.getColumnDefinition('project_id', 'integer', data.project_id),
                     DatabaseFunctions.getColumnDefinition('mediaitem_id', 'integer', data.mediaitem_id),
-                    DatabaseFunctions.getColumnDefinition('nexttranscription_id', 'integer', data.nexttranscription_id)
+                    DatabaseFunctions.getColumnDefinition('nexttranscript_id', 'integer', data.nexttranscript_id)
                 ]
             };
 
@@ -230,7 +231,7 @@ export class DatabaseFunctions {
             }
             throw 'insertionResult does not have id';
         } catch (e) {
-            throw 'Could not save a new transcript.';
+            throw e;
         }
     }
 
@@ -266,7 +267,7 @@ export class DatabaseFunctions {
         const projectSelectResult = await DatabaseFunctions.dbManager.query({
             text: 'select id from project where id=$1::integer',
             values: [projectID]
-        })
+        });
 
         if (projectSelectResult.rowCount === 1) {
             const selectResult = await DatabaseFunctions.dbManager.query({
@@ -274,8 +275,8 @@ export class DatabaseFunctions {
                 values: [projectID]
             });
 
+            const results: GetTranscriptsResult[] = [];
             if (selectResult.rowCount > 0) {
-                const results: GetTranscriptsResult[] = [];
                 for (const row of (selectResult.rows as TranscriptRow[])) {
                     const mediaItem = await DatabaseFunctions.dbManager.query({
                         text: 'select * from mediaitem where id=$1::integer',
@@ -296,11 +297,11 @@ export class DatabaseFunctions {
 
                     results.push(result);
                 }
-                DatabaseFunctions.prepareRows(results);
-                return results;
             }
+            DatabaseFunctions.prepareRows(results);
+            return results;
         }
-        throw 'Could not find a project with this name.';
+        throw `Can not find a project with ID ${projectID}.`;
     }
 
     public static async removeAppToken(id: number): Promise<void> {
@@ -344,7 +345,7 @@ export class DatabaseFunctions {
             const id = insertionResult.rows[0].id;
 
             await DatabaseFunctions.assignUserRolesToUser({
-                roles: [UserRole.transcriber],
+                roles: [UserRole.administrator],
                 accountID: id
             });
 
@@ -512,6 +513,20 @@ export class DatabaseFunctions {
     }
 
 
+    static async changeUserPassword(id: number, hash: string): Promise<void> {
+        const updateResult = await DatabaseFunctions.dbManager.query({
+            text: 'update account set hash=$1::text where id=$2::integer returning id',
+            values: [hash, id]
+        });
+
+        if (updateResult.rowCount === 1) {
+            return;
+        }
+
+        throw 'Can not change password.';
+    }
+
+
     static async getUserInfoByUserID(id: number): Promise<{
         password: string,
         id: number,
@@ -605,6 +620,12 @@ export class DatabaseFunctions {
         return {
             key, type, value, maybeNull
         };
+    }
+
+    public static getPasswordHash(password: string): string {
+        const salt = SHA256(DatabaseFunctions.settings.api.passwordSalt).toString();
+
+        return SHA256(password + salt).toString();;
     }
 
 }

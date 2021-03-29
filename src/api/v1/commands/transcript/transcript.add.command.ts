@@ -69,7 +69,7 @@ export class TranscriptAddCommand extends ApiCommand {
                 mediaitem_id: {
                     type: 'number'
                 },
-                nexttranscription_id: {
+                nexttranscript_id: {
                     type: 'number'
                 }
             }
@@ -134,7 +134,7 @@ export class TranscriptAddCommand extends ApiCommand {
                         mediaitem_id: {
                             type: 'number'
                         },
-                        nexttranscription_id: {
+                        nexttranscript: {
                             type: 'number'
                         }
                     }

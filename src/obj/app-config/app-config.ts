@@ -26,7 +26,8 @@ export interface IAPIConfiguration {
     port: number,
     debugging?: boolean,
     uploadPath: string,
-    secret: string
+    secret: string,
+    passwordSalt: string
 }
 
 export interface IDBSSLConfiguration {

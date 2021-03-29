@@ -59,7 +59,7 @@ export interface AddTranscriptRequest {
     transcriber_id?: number;
     project_id?: number;
     mediaitem_id?: number;
-    nexttranscription_id?: number;
+    nexttranscript_id?: number;
 }
 
 export interface AssignUserRoleRequest {

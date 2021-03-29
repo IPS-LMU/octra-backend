@@ -102,7 +102,7 @@ export class TranscriptGetCommand extends ApiCommand {
                                 }
                             }
                         },
-                        nexttranscription_id: {
+                        nexttranscript: {
                             type: 'number'
                         }
                     }
@@ -136,7 +136,7 @@ export class TranscriptGetCommand extends ApiCommand {
         const tokenData = req.decoded as TokenData;
         tokenData.roles;
 
-        if (tokenData.roles.find(a => a === 'data delivery')) {
+        if (tokenData.roles.find(a => a === 'data_delivery')) {
             // is data delivery
             const data = answer.data as GetTranscriptsResult;
             delete data.pid;

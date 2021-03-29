@@ -12,6 +12,7 @@ import {isNumber} from '../../../obj/functions';
 export enum RequestType {
     GET = 'GET',
     POST = 'POST',
+    PUT = 'PUT',
     DELETE = 'DELETE'
 }
 
@@ -202,6 +203,9 @@ export abstract class ApiCommand {
                 break;
             case RequestType.POST:
                 route.post(callback);
+                break;
+            case RequestType.PUT:
+                route.put(callback);
                 break;
             case RequestType.DELETE:
                 route.delete(callback);

@@ -45,35 +45,38 @@ const todoList = {
     user: {
         register: true,
         login: true,
-        assign: true,
-        getUsers: true,
-        delete: true
+        assign: false,
+        getUsers: false,
+        delete: false,
+        password: {
+            change: false
+        }
     },
     app: {
         tokens: {
-            add: true,
-            delete: true,
-            getList: true,
+            add: false,
+            delete: false,
+            getList: false,
         }
     },
     project: {
-        create: true,
+        create: false,
         transcripts: {
-            get: true
+            get: false
         }
     },
     media: {
-        add: true
+        add: false
     },
     tool: {
-        add: true
+        add: false
     },
     dataDelivery: {
-        deliver: true
+        deliver: false
     },
     transcripts: {
-        add: true,
-        get: true
+        add: false,
+        get: false
     }
 };
 
@@ -110,7 +113,7 @@ describe('User', () => {
         describe('/POST v1/login', () => {
             it('it should POST a user login', (done) => {
                 const request = {
-                    "name": "Julian",
+                    "name": tempData.user.name,
                     "password": "Password12345"
                 }
                 chai.request(server)
@@ -166,6 +169,28 @@ describe('User', () => {
 
                         res.status.should.be.equal(200);
                         res.body.data.should.be.a('array');
+                        done();
+                    });
+            });
+        });
+    }
+
+    if (todoList.user.password.change) {
+        describe('/PUT v1/users/password', () => {
+            it('it should change the password for the user logged in', (done) => {
+                const request = {
+                    password: 'test12345'
+                }
+                chai.request(server)
+                    .put(`/v1/users/password`)
+                    .set("Authorization", `Bearer ${appToken}`)
+                    .set("x-access-token", tempData.user.jwtToken)
+                    .set("Origin", "http://localhost:8080")
+                    .send(request)
+                    .end((err, res) => {
+                        checkForErrors(err, res);
+                        res.body.status.should.be.equal("success");
+                        res.body.should.be.a('object')
                         done();
                     });
             });

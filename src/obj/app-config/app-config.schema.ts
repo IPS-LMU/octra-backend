@@ -84,6 +84,12 @@ export const AppConfigurationSchema: Schema = {
                 },
                 secret: {
                     type: 'string',
+                    pattern: ".{10}",
+                    required: true
+                },
+                passwordSalt: {
+                    type: 'string',
+                    pattern: ".{10}",
                     required: true
                 }
             },

@@ -102,7 +102,7 @@ export class ProjectTranscriptsGetCommand extends ApiCommand {
                                     }
                                 }
                             },
-                            nexttranscription_id: {
+                            nexttranscript_id: {
                                 type: 'number'
                             }
                         }
