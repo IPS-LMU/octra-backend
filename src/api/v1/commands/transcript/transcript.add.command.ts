@@ -8,7 +8,7 @@ import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
 
 export class TranscriptAddCommand extends ApiCommand {
     constructor() {
-        super('addTranscript', RequestType.POST, '/v1/transcripts/', true,
+        super('addTranscript', 'Transcripts', RequestType.POST, '/v1/transcripts/', true,
             [
                 UserRole.administrator
             ]);

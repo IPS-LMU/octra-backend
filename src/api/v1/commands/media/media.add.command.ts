@@ -8,7 +8,7 @@ import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
 
 export class MediaAddCommand extends ApiCommand {
     constructor() {
-        super('addMediaItem', RequestType.POST, '/v1/media/', true,
+        super('addMediaItem', 'Media', RequestType.POST, '/v1/media/', true,
             [
                 UserRole.administrator
             ]);

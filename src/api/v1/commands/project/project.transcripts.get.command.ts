@@ -6,7 +6,7 @@ import {InternalServerError} from '../../../../obj/htpp-codes/server.codes';
 
 export class ProjectTranscriptsGetCommand extends ApiCommand {
     constructor() {
-        super('getProjectTranscripts', RequestType.GET, '/v1/projects/:id/transcripts', true,
+        super('getProjectTranscripts', 'Projects', RequestType.GET, '/v1/projects/:id/transcripts', true,
             [
                 UserRole.administrator,
                 UserRole.dataDelivery

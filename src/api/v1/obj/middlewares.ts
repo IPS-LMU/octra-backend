@@ -16,10 +16,10 @@ export const verifyAppToken = (req, res, next) => {
             next();
         }).catch((error) => {
             console.log(error);
-            ApiCommand.sendError(res, 401, `Invalid app token.`);
+            ApiCommand.sendError(res, 401, `Invalid app token.`, false);
         });
     } else {
-        ApiCommand.sendError(res, 403, `Missing 'Authorization' Header.`);
+        ApiCommand.sendError(res, 403, `Missing 'Authorization' Header.`, false);
     }
 
 };
@@ -27,11 +27,11 @@ export const verifyAppToken = (req, res, next) => {
 export const verifyWebToken = (req, res, next, settings: AppConfiguration, callback) => {
     const token = req.get('x-access-token');
     if (!token) {
-        ApiCommand.sendError(res, 401, 'Missing token in x-access-token header.');
+        ApiCommand.sendError(res, 401, 'Missing token in x-access-token header.', false);
     } else {
         jwt.verify(token, settings.api.secret, (err, tokenBody) => {
             if (err) {
-                ApiCommand.sendError(res, 401, 'Invalid Web Token. Please authenticate again.');
+                ApiCommand.sendError(res, 401, 'Invalid Web Token. Please authenticate again.', false);
             } else {
                 callback(tokenBody);
             }
@@ -54,7 +54,7 @@ export const verifyUserRole = (req, res, command: ApiCommand, callback) => {
                         ApiCommand.sendError(res, 401, 'You don\'t have access right to use this function.');
                     }
                 }).catch((error) => {
-                    ApiCommand.sendError(res, 401, 'Invalid Web Token. Please authenticate again.');
+                    ApiCommand.sendError(res, 401, 'Invalid Web Token. Please authenticate again.', false);
                 });
             } else {
                 // this command is allowed to all users
@@ -62,6 +62,6 @@ export const verifyUserRole = (req, res, command: ApiCommand, callback) => {
             }
         }
     } else {
-        ApiCommand.sendError(res, 401, 'Invalid Web Token. Please authenticate again.');
+        ApiCommand.sendError(res, 401, 'Invalid Web Token. Please authenticate again.', false);
     }
 }

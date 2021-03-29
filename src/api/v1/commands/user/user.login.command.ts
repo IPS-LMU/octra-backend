@@ -10,7 +10,7 @@ import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
 export class UserLoginCommand extends ApiCommand {
 
     constructor() {
-        super('loginUser', RequestType.POST, '/v1/users/login', false,
+        super('loginUser', 'Users', RequestType.POST, '/v1/users/login', false,
             []);
 
         this._description = 'Login a user';

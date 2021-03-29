@@ -7,7 +7,7 @@ import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
 
 export class UserRemoveCommand extends ApiCommand {
     constructor() {
-        super('removeUser', RequestType.DELETE, '/v1/users/:id', true,
+        super('removeUser', 'Users', RequestType.DELETE, '/v1/users/:id', true,
             [
                 UserRole.administrator
             ]);

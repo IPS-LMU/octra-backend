@@ -8,7 +8,7 @@ import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
 
 export class AppTokenRemoveCommand extends ApiCommand {
     constructor() {
-        super('removeAppToken', RequestType.DELETE, '/v1/app/tokens/:id', true,
+        super('removeAppToken','Application', RequestType.DELETE, '/v1/app/tokens/:id', true,
             [
                 UserRole.administrator
             ]);

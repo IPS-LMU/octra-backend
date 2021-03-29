@@ -16,7 +16,7 @@ export class SampleCommand extends ApiCommand {
      */
 
     constructor() {
-        super('commandName', RequestType.POST, '/v1/commandURI', true, [
+        super('commandName', 'parent', RequestType.POST, '/v1/commandURI', true, [
             UserRole.administrator
         ]);
 

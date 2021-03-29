@@ -8,7 +8,7 @@ import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
 
 export class ProjectCreateCommand extends ApiCommand {
     constructor() {
-        super('createProject', RequestType.POST, '/v1/projects/', true,
+        super('createProject', 'Projects', RequestType.POST, '/v1/projects/', true,
             [
                 UserRole.administrator
             ]);

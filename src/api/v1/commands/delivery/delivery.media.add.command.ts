@@ -8,7 +8,7 @@ import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
 
 export class DeliveryMediaAddCommand extends ApiCommand {
     constructor() {
-        super('deliverMediaForTranscription', RequestType.POST, '/v1/delivery/media/', true,
+        super('deliverMediaForTranscription','Data delivery', RequestType.POST, '/v1/delivery/media/', true,
             [
                 UserRole.administrator,
                 UserRole.dataDelivery

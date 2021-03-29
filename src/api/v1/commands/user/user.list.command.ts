@@ -7,7 +7,7 @@ import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
 
 export class UserListCommand extends ApiCommand {
     constructor() {
-        super('listUsers', RequestType.GET, '/v1/users/', true,
+        super('listUsers', 'Users', RequestType.GET, '/v1/users/', true,
             [
                 UserRole.administrator
             ]);

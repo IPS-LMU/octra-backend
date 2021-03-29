@@ -1,4 +1,4 @@
-import {Express, Router} from 'express';
+import {Express, Response, Router} from 'express';
 import {Schema, Validator} from 'jsonschema';
 import {AppConfiguration} from '../../../obj/app-config/app-config';
 import {DBManager} from '../../../db/DBManager';
@@ -16,6 +16,10 @@ export enum RequestType {
 }
 
 export abstract class ApiCommand {
+    get parent(): string {
+        return this._parent;
+    }
+
     get allowedUserRoles(): UserRole[] {
         return this._allowedUserRoles;
     }
@@ -77,6 +81,7 @@ export abstract class ApiCommand {
     protected settings: AppConfiguration;
     protected _tokenData: any;
     protected _allowedUserRoles: UserRole[];
+    protected _parent: string;
 
     private readonly _defaultResponseSchema: Schema = {
         properties: {
@@ -131,13 +136,15 @@ export abstract class ApiCommand {
         answer.message = message;
         answer.authenticated = authenticated;
 
+        ApiCommand.setSecurityHeaders(res);
         res.status(code).send(answer);
     }
 
-    constructor(name: string, type: RequestType, url: string, needsJWTAuthentication: boolean, allowedAccountRoles: UserRole[]) {
+    constructor(name: string, parent: string, type: RequestType, url: string, needsJWTAuthentication: boolean, allowedAccountRoles: UserRole[]) {
         this._name = name;
         this._type = type;
         this._url = url;
+        this._parent = parent;
         this._needsJWTAuthentication = needsJWTAuthentication;
         this._allowedUserRoles = allowedAccountRoles;
 
@@ -277,7 +284,7 @@ export abstract class ApiCommand {
 
     public checkAndSendAnswer(res: any, answer: any, authenticated = true) {
         const answerValidation = this.validateAnswer(answer);
-
+        ApiCommand.setSecurityHeaders(res);
         if (answerValidation === '') {
             // a user must be authenticated to get an positive answer
             answer.authenticated = true;
@@ -286,4 +293,18 @@ export abstract class ApiCommand {
             ApiCommand.sendError(res, BadRequest, `Response validation failed: ${answerValidation}`, authenticated);
         }
     }
+
+    private static setSecurityHeaders(res: Response) {
+        res.header('Cache-Control', 'no-store')
+            .header('Content-Security-Policy', 'frame-ancestors \'none\'')
+            .header('Content-Type', 'application/json')
+            .header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+            .header('X-Content-Type-Options', 'nosniff')
+            .header('X-Frame-Options', 'DENY');
+    }
+}
+
+export interface APICommandGroup {
+    parent?: ApiCommand,
+    children: ApiCommand[]
 }

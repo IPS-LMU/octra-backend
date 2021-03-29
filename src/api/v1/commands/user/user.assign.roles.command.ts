@@ -9,7 +9,7 @@ import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
 export class UserAssignRolesCommand extends ApiCommand {
 
     constructor() {
-        super('assignUserRoles', RequestType.POST, '/v1/users/:id/roles', true,
+        super('assignUserRoles', 'Users', RequestType.POST, '/v1/users/:id/roles', true,
             [
                 UserRole.administrator
             ]);

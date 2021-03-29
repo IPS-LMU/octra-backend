@@ -18,6 +18,6 @@ fsExtra.copySync('./node_modules/bootstrap/dist', './build/static/bootstrap');
 fsExtra.copySync('./node_modules/bootstrap-icons/font', './build/static/bootstrap/bootstrap-icons');
 fsExtra.copySync('./node_modules/anchor-js/anchor.min.js', './build/static/bootstrap/js/vendor/anchor.min.js');
 fsExtra.copySync('./node_modules/clipboard/dist/clipboard.min.js', './build/static/bootstrap/js/vendor/clipboard.min.js');
-fsExtra.copySync('./node_modules/jquery/dist/jquery.slim.min.js', './build/static/bootstrap/js/vendor/jquery.slim.min.js');
+fsExtra.copySync('./node_modules/jquery/dist/jquery.min.js', './build/static/bootstrap/js/vendor/jquery.min.js');
 fsExtra.copySync('./node_modules/popper.js/dist/popper.min.js', './build/static/bootstrap/js/vendor/popper.min.js');
 fsExtra.copySync('./node_modules/holderjs/holder.min.js', './build/static/bootstrap/js/vendor/holder.min.js');

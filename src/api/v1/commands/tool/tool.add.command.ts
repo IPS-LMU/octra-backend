@@ -8,7 +8,7 @@ import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
 
 export class ToolAddCommand extends ApiCommand {
     constructor() {
-        super('addTool', RequestType.POST, '/v1/tools/', true,
+        super('addTool', 'Tools', RequestType.POST, '/v1/tools/', true,
             [
                 UserRole.administrator
             ]);

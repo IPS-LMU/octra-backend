@@ -1,5 +1,4 @@
-import * as express from 'express';
-import {Express} from 'express';
+import {Express, NextFunction, Request, Response} from 'express';
 import * as bodyParser from 'body-parser';
 import {APIV1} from './api/v1/api';
 import * as path from 'path';
@@ -14,7 +13,7 @@ import {APIModule} from './octra-api.module';
 import {AppConfiguration, IDBConfiguration} from './obj/app-config/app-config';
 import {DBManager} from './db/DBManager';
 import {PostgreSQLManager} from './db/postgreSQL.manager';
-import {SHA256} from 'crypto-js';
+import express = require('express');
 
 export class OctraApi {
     get appPath(): string {
@@ -72,9 +71,18 @@ export class OctraApi {
 
             app.set('views', path.join(this._appPath, 'views'));
 
-            const router = express.Router();
+            // use bodyParser in order to parse JSON data
+            app.use(bodyParser.urlencoded({extended: true}));
+            app.use(bodyParser.json());
+            app.use(cors())
 
+            const router = express.Router();
             this.dbManager = this.getDBWrapper(this.settings.database);
+
+            router.route('*').all((req: Request, res: Response, next: NextFunction) => {
+                res.removeHeader('x-powered-by');
+                next();
+            });
 
             for (const api of this._activeAPIs) {
                 api.init(app, router, environment, this.settings, this.dbManager);
@@ -85,10 +93,6 @@ export class OctraApi {
                 res.send('User-agent: *\nDisallow: /');
             });
 
-            // use bodyParser in order to parse JSON data
-            app.use(bodyParser.urlencoded({extended: true}));
-            app.use(bodyParser.json());
-            app.use(cors())
 
             console.log(`app path is ${Path.join(this._appPath, '/views/index.ejs')}`);
             app.get('/', (req, res) => {

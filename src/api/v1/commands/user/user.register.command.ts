@@ -10,7 +10,7 @@ import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
 export class UserRegisterCommand extends ApiCommand {
 
     constructor() {
-        super('registerUser', RequestType.POST, '/v1/users/register', false, []);
+        super('registerUser', 'Users', RequestType.POST, '/v1/users/register', false, []);
 
         this._description = 'Creates an account for a given user.';
         this._acceptedContentType = 'application/json';

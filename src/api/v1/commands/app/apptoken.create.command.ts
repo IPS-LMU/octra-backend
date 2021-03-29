@@ -8,7 +8,7 @@ import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
 
 export class AppTokenCreateCommand extends ApiCommand {
     constructor() {
-        super('createAppToken', RequestType.POST, '/v1/app/tokens/', true,
+        super('createAppToken', 'Application', RequestType.POST, '/v1/app/tokens/', true,
             [
                 UserRole.administrator
             ]

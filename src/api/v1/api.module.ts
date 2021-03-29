@@ -1,6 +1,6 @@
 import {UserRegisterCommand} from './commands/user/user.register.command';
 import {UserLoginCommand} from './commands/user/user.login.command';
-import {ApiCommand} from './commands/api.command';
+import {ApiCommand, APICommandGroup} from './commands/api.command';
 import {AppTokenCreateCommand} from './commands/app/apptoken.create.command';
 import {AppTokenRemoveCommand} from './commands/app/apptoken.remove.command';
 import {AppTokenListCommand} from './commands/app/apptoken.list.command';
@@ -16,9 +16,6 @@ import {TranscriptGetCommand} from './commands/transcript/transcript.get.command
 import {ProjectTranscriptsGetCommand} from './commands/project/project.transcripts.get.command';
 
 export class APIV1Module {
-
-    // TODO there is a problem with the order: FIFO sets the order of routing and that affects
-    // the validation of user roles. Needs to be solved asap.
 
     public static commands: ApiCommand[] = [
         new AppTokenCreateCommand(),

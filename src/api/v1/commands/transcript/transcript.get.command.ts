@@ -8,7 +8,7 @@ import {GetTranscriptsResult} from '../../obj/response.types';
 
 export class TranscriptGetCommand extends ApiCommand {
     constructor() {
-        super('getTranscript', RequestType.GET, '/v1/transcripts/:id', true,
+        super('getTranscript', 'Transcripts', RequestType.GET, '/v1/transcripts/:id', true,
             [
                 UserRole.administrator,
                 UserRole.dataDelivery
@@ -79,6 +79,28 @@ export class TranscriptGetCommand extends ApiCommand {
                         },
                         mediaitem_id: {
                             type: 'number'
+                        },
+                        mediaitem: {
+                            type: 'object',
+                            properties: {
+                                id: {
+                                    type: 'number',
+                                    required: true
+                                },
+                                url: {
+                                    type: 'string',
+                                    required: true
+                                },
+                                type: {
+                                    type: 'string'
+                                },
+                                size: {
+                                    type: 'number'
+                                },
+                                metadata: {
+                                    type: 'string'
+                                }
+                            }
                         },
                         nexttranscription_id: {
                             type: 'number'
