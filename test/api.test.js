@@ -45,38 +45,38 @@ const todoList = {
     user: {
         register: true,
         login: true,
-        assign: false,
-        getUsers: false,
-        delete: false,
+        assign: true,
+        getUsers: true,
+        delete: true,
         password: {
-            change: false
+            change: true
         }
     },
     app: {
         tokens: {
-            add: false,
-            delete: false,
-            getList: false,
+            add: true,
+            delete: true,
+            getList: true,
         }
     },
     project: {
-        create: false,
+        create: true,
         transcripts: {
-            get: false
+            get: true
         }
     },
     media: {
-        add: false
+        add: true
     },
     tool: {
-        add: false
+        add: true
     },
     dataDelivery: {
-        deliver: false
+        deliver: true
     },
     transcripts: {
         add: false,
-        get: false
+        get: true
     }
 };
 
@@ -113,8 +113,8 @@ describe('User', () => {
         describe('/POST v1/login', () => {
             it('it should POST a user login', (done) => {
                 const request = {
-                    "name": tempData.user.name,
-                    "password": "Password12345"
+                    "name": "Julian",
+                    "password": "test123"
                 }
                 chai.request(server)
                     .post('/v1/users/login')
@@ -137,7 +137,7 @@ describe('User', () => {
         describe('/POST v1/users/:id/roles', () => {
             it('it should assign user roles', (done) => {
                 const request = {
-                    roles: ["data delivery"]
+                    roles: ["data_delivery"]
                 }
                 chai.request(server)
                     .post(`/v1/users/${tempData.user.id}/roles`)

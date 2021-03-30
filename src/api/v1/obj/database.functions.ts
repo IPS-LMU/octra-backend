@@ -51,12 +51,29 @@ export class DatabaseFunctions {
 
         if (selectResult.rowCount === 1) {
             const resultRow = selectResult.rows[0] as AppTokensRow;
-            if (resultRow.hasOwnProperty('domain') &&
-                (!resultRow.domain || resultRow.domain === '' || resultRow.domain === originHost)
-            ) {
-                return;
-            } else if (resultRow.hasOwnProperty('domain')) {
-                throw `Origin Host ${originHost} does not match the domain registered for this app key.`;
+            console.log(`check ${resultRow.domain} === ${originHost}`);
+            if (resultRow.hasOwnProperty('domain') && resultRow.domain) {
+                const domainEntry = resultRow.domain.replace(/\s+/g, '');
+
+                if (domainEntry !== '') {
+                    let valid;
+                    if (resultRow.domain.indexOf(',') > -1) {
+                        // multiple domains
+                        const domains = domainEntry.split(',');
+                        valid = domains.filter(a => a !== '').findIndex(a => a === originHost) > -1;
+                        console.log(`domains are`);
+                        console.log(domains);
+                    } else {
+                        // one domain
+                        valid = resultRow.domain.trim() === originHost;
+                    }
+
+                    if (valid) {
+                        return;
+                    } else {
+                        throw `Origin Host ${originHost} does not match the domain registered for this app key.`;
+                    }
+                }
             }
             return;
         }
@@ -345,7 +362,7 @@ export class DatabaseFunctions {
             const id = insertionResult.rows[0].id;
 
             await DatabaseFunctions.assignUserRolesToUser({
-                roles: [UserRole.administrator],
+                roles: [UserRole.transcriber],
                 accountID: id
             });
 
@@ -566,7 +583,8 @@ export class DatabaseFunctions {
                 orgtext: dataDeliveryRequest.orgtext,
                 transcript: dataDeliveryRequest.transcript,
                 project_id: dataDeliveryRequest.project_id,
-                mediaitem_id: mediaID
+                mediaitem_id: mediaID,
+                status: 'FREE'
             });
 
             if (transcriptResult.length > 0) {
@@ -625,7 +643,7 @@ export class DatabaseFunctions {
     public static getPasswordHash(password: string): string {
         const salt = SHA256(DatabaseFunctions.settings.api.passwordSalt).toString();
 
-        return SHA256(password + salt).toString();;
+        return SHA256(password + salt).toString();
     }
 
 }

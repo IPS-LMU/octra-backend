@@ -613,3 +613,4 @@ FodyWeavers.xsd
 !src/api
 /doc/
 deploy.sh
+api.prod.test.js

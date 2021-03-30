@@ -31,10 +31,10 @@ export class APIV1Module {
         new UserRemoveCommand(),
         new MediaAddCommand(),
         new ToolAddCommand(),
-        new TranscriptAddCommand(),
         new UserAssignRolesCommand(),
         new DeliveryMediaAddCommand(),
         new TranscriptGetCommand(),
+        new TranscriptAddCommand(),
         new ProjectTranscriptsGetCommand(),
         new ProjectCreateCommand()
     ]
