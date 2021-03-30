@@ -8,9 +8,13 @@ import {APIV1Module} from './api.module';
 import {AppConfiguration} from '../../obj/app-config/app-config';
 import {DBManager} from '../../db/DBManager';
 import {DatabaseFunctions} from './obj/database.functions';
-import {verifyAppToken} from './obj/middlewares';
+import {CommandModule} from './commands/command.module';
 
 export class APIV1 {
+    get modules(): CommandModule[] {
+        return this._modules;
+    }
+
     get appPath(): string {
         return this._appPath;
     }
@@ -22,6 +26,8 @@ export class APIV1 {
             apiSlug: 'v1'
         }
     }
+
+    private _modules: CommandModule[] = [];
 
     public get instance(): APIV1 {
         if (APIV1.instance === undefined) {
@@ -47,11 +53,11 @@ export class APIV1 {
 
         v1Router.use(bodyParser.urlencoded({extended: false}));
         v1Router.use(bodyParser.json());
-        v1Router.use(verifyAppToken);
 
+        this._modules = APIV1Module.modules;
         // register all commands
-        for (let i = 0; i < APIV1Module.modules.length; i++) {
-            const module = APIV1Module.modules[i];
+        for (let i = 0; i < this._modules.length; i++) {
+            const module = this._modules[i];
             module.init(v1Router, environment, settings);
         }
 

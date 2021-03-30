@@ -6,8 +6,8 @@ export class TranscriptModule extends CommandModule {
     constructor() {
         super('/transcripts');
         this._commands = [
-            new TranscriptGetCommand(),
-            new TranscriptAddCommand()
+            new TranscriptAddCommand(),
+            new TranscriptGetCommand()
         ];
     }
 }

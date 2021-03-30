@@ -16,7 +16,6 @@ export class APIV1Module {
         new AppModule(),
         new MediaModule(),
         new DeliveryModule(),
-        new MediaModule(),
         new ProjectModule(),
         new ToolModule(),
         new TranscriptModule()

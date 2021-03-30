@@ -1,23 +1,42 @@
 import {ApiCommand, RequestType} from './api.command';
 import {Router} from 'express';
 import {AppConfiguration} from '../../../obj/app-config/app-config';
-import {verifyUserRole, verifyWebToken} from '../obj/middlewares';
+import {verifyAppToken, verifyUserRole, verifyWebToken} from '../obj/middlewares';
 import {TokenData} from '../obj/request.types';
 
 export class CommandModule {
+    get url(): string {
+        return this._url;
+    }
     get commands(): ApiCommand[] {
         return this._commands;
     }
 
     protected _commands: ApiCommand[] = [];
-    private url: string;
+    private _url: string;
 
     constructor(url: string) {
-        this.url = url;
+        this._url = url;
     }
 
     init(v1Router: Router, environment: 'production' | 'development', settings: AppConfiguration) {
         const router = Router();
+        router.use(verifyAppToken);
+
+        // sorting commands is important for routing! Important!
+        this._commands.sort((a, b) => {
+            if (a.root === b.root) {
+                if (a.url === b.url) {
+                    return 0;
+                } else if (a.url.length > b.url.length) {
+                    return -1;
+                }
+                return 1;
+            } else {
+                return a.root.length - b.root.length;
+            }
+        });
+
 
         for (const command of this._commands) {
             command.init(settings);
@@ -53,6 +72,6 @@ export class CommandModule {
             }
         }
 
-        v1Router.use(this.url, router);
+        v1Router.use(this._url, router);
     }
 }
