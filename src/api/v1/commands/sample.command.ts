@@ -1,6 +1,4 @@
 import {ApiCommand, RequestType} from './api.command';
-import {Express, Router} from 'express';
-import {AppConfiguration} from '../../../obj/app-config/app-config';
 import {UserRole} from '../obj/database.types';
 import {OK} from '../../../obj/htpp-codes/success.codes';
 import {InternalServerError} from '../../../obj/htpp-codes/server.codes';
@@ -39,12 +37,7 @@ export class SampleCommand extends ApiCommand {
         };
     }
 
-    register(app: Express, router: Router, environment, settings: AppConfiguration,
-             dbManager) {
-        super.register(app, router, environment, settings, dbManager);
-    };
-
-    async do(req, res, settings: AppConfiguration) {
+    async do(req, res) {
         const answer = ApiCommand.createAnswer();
         const validation = this.validate(req.params, req.body);
 

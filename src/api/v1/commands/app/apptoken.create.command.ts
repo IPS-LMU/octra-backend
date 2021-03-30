@@ -1,5 +1,4 @@
 import {ApiCommand, RequestType} from '../api.command';
-import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {CreateAppTokenRequest} from '../../obj/request.types';
 import {UserRole} from '../../obj/database.types';
@@ -8,7 +7,7 @@ import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
 
 export class AppTokenCreateCommand extends ApiCommand {
     constructor() {
-        super('createAppToken', 'Application', RequestType.POST, '/v1/app/tokens/', true,
+        super('createAppToken', '/app', RequestType.POST, '/tokens/', true,
             [
                 UserRole.administrator
             ]
@@ -67,7 +66,7 @@ export class AppTokenCreateCommand extends ApiCommand {
         };
     }
 
-    async do(req, res, settings: AppConfiguration) {
+    async do(req, res) {
         const answer = ApiCommand.createAnswer();
         const validation = this.validate(req.params, req.body);
 

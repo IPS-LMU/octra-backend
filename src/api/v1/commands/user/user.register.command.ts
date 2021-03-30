@@ -1,8 +1,6 @@
 import {ApiCommand, RequestType} from '../api.command';
 import * as jwt from 'jsonwebtoken';
-import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
-import {SHA256} from 'crypto-js';
 import {UserRegisterRequest} from '../../obj/request.types';
 import {InternalServerError} from '../../../../obj/htpp-codes/server.codes';
 import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
@@ -10,7 +8,7 @@ import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
 export class UserRegisterCommand extends ApiCommand {
 
     constructor() {
-        super('registerUser', 'Users', RequestType.POST, '/v1/users/register', false, []);
+        super('registerUser', '/users', RequestType.POST, '/register', false, []);
 
         this._description = 'Creates an account for a given user.';
         this._acceptedContentType = 'application/json';
@@ -64,7 +62,7 @@ export class UserRegisterCommand extends ApiCommand {
         };
     }
 
-    async do(req, res, settings: AppConfiguration) {
+    async do(req, res) {
         const validation = this.validate(req.params, req.body);
 
         // do something
@@ -76,7 +74,7 @@ export class UserRegisterCommand extends ApiCommand {
                 const result = await DatabaseFunctions.createUser({
                     name: userData.name,
                     email: userData.email,
-                    password:  DatabaseFunctions.getPasswordHash(userData.password).toString()
+                    password: DatabaseFunctions.getPasswordHash(userData.password).toString()
                 });
 
                 answer.authenticated = true;
@@ -84,7 +82,7 @@ export class UserRegisterCommand extends ApiCommand {
                     id: result.id,
                     name: userData.name,
                     role: result.roles
-                }, settings.api.secret, {
+                }, this.settings.api.secret, {
                     expiresIn: 86400 // expires in 24 hours
                 });
                 answer.data = {

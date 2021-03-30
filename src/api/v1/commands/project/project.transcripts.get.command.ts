@@ -6,7 +6,7 @@ import {InternalServerError} from '../../../../obj/htpp-codes/server.codes';
 
 export class ProjectTranscriptsGetCommand extends ApiCommand {
     constructor() {
-        super('getProjectTranscripts', 'Projects', RequestType.GET, '/v1/projects/:id/transcripts', true,
+        super('getProjectTranscripts', '/projects', RequestType.GET, '/:id/transcripts', true,
             [
                 UserRole.administrator,
                 UserRole.dataDelivery
@@ -112,7 +112,7 @@ export class ProjectTranscriptsGetCommand extends ApiCommand {
         };
     }
 
-    async do(req, res, settings: AppConfiguration) {
+    async do(req, res) {
         const answer = ApiCommand.createAnswer();
         const validation = this.validate(req.params, req.body);
         // do something

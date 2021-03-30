@@ -8,7 +8,7 @@ import {TokenData} from '../../obj/request.types';
 export class UserPasswordChangeCommand extends ApiCommand {
 
     constructor() {
-        super('changeMyPassword', 'Users', RequestType.PUT, '/v1/users/password', true, []);
+        super('changeMyPassword', '/users', RequestType.PUT, '/password', true, []);
 
         this._description = 'Changes the password for the person logged in.';
         this._acceptedContentType = 'application/json';
@@ -31,12 +31,7 @@ export class UserPasswordChangeCommand extends ApiCommand {
         this._responseStructure = {};
     }
 
-    register(app: Express, router: Router, environment, settings: AppConfiguration,
-             dbManager) {
-        super.register(app, router, environment, settings, dbManager);
-    };
-
-    async do(req, res, settings: AppConfiguration) {
+    async do(req, res) {
         const validation = this.validate(req.params, req.body);
         const body: {
             password: string

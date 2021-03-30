@@ -8,7 +8,7 @@ import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
 
 export class ProjectCreateCommand extends ApiCommand {
     constructor() {
-        super('createProject', 'Projects', RequestType.POST, '/v1/projects/', true,
+        super('createProject', '/projects', RequestType.POST, '/', true,
             [
                 UserRole.administrator
             ]);
@@ -91,7 +91,7 @@ export class ProjectCreateCommand extends ApiCommand {
         };
     }
 
-    async do(req, res, settings: AppConfiguration) {
+    async do(req, res) {
         const answer = ApiCommand.createAnswer();
         const validation = this.validate(req.params, req.body);
 

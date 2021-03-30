@@ -7,7 +7,7 @@ import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
 
 export class UserListCommand extends ApiCommand {
     constructor() {
-        super('listUsers', 'Users', RequestType.GET, '/v1/users/', true,
+        super('listUsers', '/users', RequestType.GET, '/', true,
             [
                 UserRole.administrator
             ]);
@@ -61,7 +61,7 @@ export class UserListCommand extends ApiCommand {
         };
     }
 
-    async do(req, res, settings: AppConfiguration) {
+    async do(req, res) {
         const answer = ApiCommand.createAnswer();
         const validation = this.validate(req.params, req.body);
 

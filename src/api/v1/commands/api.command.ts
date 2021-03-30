@@ -1,10 +1,7 @@
-import {Express, Response, Router} from 'express';
+import {Response} from 'express';
 import {Schema, Validator} from 'jsonschema';
 import {AppConfiguration} from '../../../obj/app-config/app-config';
-import {DBManager} from '../../../db/DBManager';
-import {verifyAppToken, verifyUserRole, verifyWebToken} from '../obj/middlewares';
 import {UserRole} from '../obj/database.types';
-import {TokenData} from '../obj/request.types';
 import {OK} from '../../../obj/htpp-codes/success.codes';
 import {BadRequest} from '../../../obj/htpp-codes/client.codes';
 import {isNumber} from '../../../obj/functions';
@@ -17,8 +14,8 @@ export enum RequestType {
 }
 
 export abstract class ApiCommand {
-    get parent(): string {
-        return this._parent;
+    get root(): string {
+        return this._root;
     }
 
     get allowedUserRoles(): UserRole[] {
@@ -78,11 +75,10 @@ export abstract class ApiCommand {
     protected _requestStructure: Schema;
     protected _responseStructure: Schema;
     protected _needsJWTAuthentication = false;
-    protected dbManager: DBManager;
     protected settings: AppConfiguration;
     protected _tokenData: any;
     protected _allowedUserRoles: UserRole[];
-    protected _parent: string;
+    protected _root: string;
 
     private readonly _defaultResponseSchema: Schema = {
         properties: {
@@ -141,11 +137,11 @@ export abstract class ApiCommand {
         res.status(code).send(answer);
     }
 
-    constructor(name: string, parent: string, type: RequestType, url: string, needsJWTAuthentication: boolean, allowedAccountRoles: UserRole[]) {
+    constructor(name: string, root: string, type: RequestType, url: string, needsJWTAuthentication: boolean, allowedAccountRoles: UserRole[]) {
         this._name = name;
         this._type = type;
         this._url = url;
-        this._parent = parent;
+        this._root = root;
         this._needsJWTAuthentication = needsJWTAuthentication;
         this._allowedUserRoles = allowedAccountRoles;
 
@@ -174,52 +170,16 @@ export abstract class ApiCommand {
     /***
      * registers command to server
      */
-    public register(app: Express, router: Router, environment: 'production' | 'development', settings: AppConfiguration,
-                    dbManager: DBManager) {
-        router.use(this.url, verifyAppToken);
-
-        if (this._needsJWTAuthentication) {
-            router.use(this.url, (req, res, next) => {
-                verifyWebToken(req, res, next, settings, (tokenBody: TokenData) => {
-                    (req as any).decoded = tokenBody;
-                    verifyUserRole(req, res, this, () => {
-                        // user may use this api method
-                        next();
-                    });
-                });
-            });
-        }
-        this.dbManager = dbManager;
+    public init(settings: AppConfiguration) {
         this.settings = settings;
-
-        const route = router.route(this.url);
-        const callback = (req, res) => {
-            this.do(req, res, settings);
-        };
-
-        switch (this._type) {
-            case RequestType.GET:
-                route.get(callback);
-                break;
-            case RequestType.POST:
-                route.post(callback);
-                break;
-            case RequestType.PUT:
-                route.put(callback);
-                break;
-            case RequestType.DELETE:
-                route.delete(callback);
-                break;
-        }
     }
 
     /***
      * runs a command
      * @param req
      * @param res
-     * @param settings
      */
-    abstract do(req, res, settings: any): Promise<void>;
+    abstract do(req, res): Promise<void>;
 
     /***
      * checks if the request by the client is valid

@@ -85,5 +85,5 @@ export interface GetProjectTranscriptsRequest {
 
 export interface TokenData {
     id: number;
-    roles: UserRole[]
+    role: UserRole[]
 }

@@ -11,7 +11,7 @@ export class ParentApiCommand extends ApiCommand {
         super(name, '', RequestType.GET, '', false, []);
     }
 
-    do(req, res, settings: any): Promise<void> {
+    do(req, res): Promise<void> {
         return Promise.resolve(undefined);
     }
 }

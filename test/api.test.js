@@ -396,10 +396,10 @@ describe('Transcripts', () => {
         describe('/GET v1/transcripts/:id', () => {
             it('it should get an transcript by id', (done) => {
                 chai.request(server)
-                    .get(`/v1/transcripts/${tempData.transcript.id}`)
+                    .get(`/v1/transcripts/481`)
                     .set("Authorization", `Bearer ${appToken}`)
                     .set("Origin", "http://localhost:8080")
-                    .set("x-access-token", tempData.admin.jwtToken)
+                    .set("x-access-token", tempData.user.jwtToken)
                     .end((err, res) => {
                         checkForErrors(err, res);
                         log(`retrieved rows: ${res.body.data.length}`);

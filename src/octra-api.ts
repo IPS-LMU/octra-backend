@@ -28,7 +28,7 @@ export class OctraApi {
         return this._activeAPIs;
     }
 
-    private _activeAPIs = [];
+    private _activeAPIs: APIV1[] = [];
 
     private _executionPath: string;
     private _appPath: string;
@@ -44,7 +44,6 @@ export class OctraApi {
 
     public init(environment: 'development' | 'production'): Express {
         this.environment = environment;
-        console.log(`environment is ${environment}`);
         if (environment === 'development') {
             this._executionPath = __dirname;
         } else {
@@ -81,11 +80,15 @@ export class OctraApi {
 
             router.route('*').all((req: Request, res: Response, next: NextFunction) => {
                 res.removeHeader('x-powered-by');
+                req['appSettings'] = {
+                    ...this.settings
+                };
+                delete req['appSettings'].configuration.database;
                 next();
             });
 
             for (const api of this._activeAPIs) {
-                api.init(app, router, environment, this.settings, this.dbManager);
+                api.init(app, environment, this.settings, this.dbManager);
             }
 
             app.get('/robots.txt', function (req, res) {
@@ -125,7 +128,7 @@ export class OctraApi {
             app.use('/', router);
 
             router.route('*').all((req, res) => {
-                ApiCommand.sendError(res, 400, 'This route does not exist. Please check your URL again.');
+                ApiCommand.sendError(res, 400, `This route does not exist. Please check your URL again. ${req.url}`);
             });
 
             // Start listening!

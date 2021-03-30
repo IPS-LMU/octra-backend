@@ -9,7 +9,7 @@ import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
 export class UserAssignRolesCommand extends ApiCommand {
 
     constructor() {
-        super('assignUserRoles', 'Users', RequestType.POST, '/v1/users/:id/roles', true,
+        super('assignUserRoles', '/users', RequestType.POST, '/:id/roles', true,
             [
                 UserRole.administrator
             ]);
@@ -43,7 +43,7 @@ export class UserAssignRolesCommand extends ApiCommand {
         };
     }
 
-    async do(req, res, settings: AppConfiguration) {
+    async do(req, res) {
         const validation = this.validate(req.params, req.body);
         // do something
         if (validation.length === 0) {

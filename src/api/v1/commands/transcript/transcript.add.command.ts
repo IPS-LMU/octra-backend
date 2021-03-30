@@ -8,7 +8,7 @@ import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
 
 export class TranscriptAddCommand extends ApiCommand {
     constructor() {
-        super('addTranscript', 'Transcripts', RequestType.POST, '/v1/transcripts/', true,
+        super('addTranscript', '/transcripts', RequestType.POST, '/', true,
             [
                 UserRole.administrator
             ]);
@@ -143,7 +143,7 @@ export class TranscriptAddCommand extends ApiCommand {
         };
     }
 
-    async do(req, res, settings: AppConfiguration) {
+    async do(req, res) {
         const answer = ApiCommand.createAnswer();
         const validation = this.validate(req.params, req.body);
 

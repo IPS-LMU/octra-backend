@@ -1,7 +1,5 @@
 import {ApiCommand, RequestType} from '../api.command';
 import * as jwt from 'jsonwebtoken';
-import {Express, Router} from 'express';
-import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {UserLoginRequest} from '../../obj/request.types';
 import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
@@ -9,7 +7,7 @@ import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
 export class UserLoginCommand extends ApiCommand {
 
     constructor() {
-        super('loginUser', 'Users', RequestType.POST, '/v1/users/login', false,
+        super('loginUser', '/users', RequestType.POST, '/login', false,
             []);
 
         this._description = 'Login a user';
@@ -56,15 +54,9 @@ export class UserLoginCommand extends ApiCommand {
         };
     }
 
-    register(app: Express, router: Router, environment, settings: AppConfiguration,
-             dbManager) {
-        super.register(app, router, environment, settings, dbManager);
-    };
-
-    async do(req, res, settings: AppConfiguration) {
+    async do(req, res) {
         const validation = this.validate(req.params, req.body);
         const body: UserLoginRequest = req.body;
-
 
         if (validation.length === 0) {
             try {
@@ -81,7 +73,7 @@ export class UserLoginCommand extends ApiCommand {
                 answer.token = jwt.sign({
                     name: body.name,
                     id, roles
-                }, settings.api.secret, {
+                }, this.settings.api.secret, {
                     expiresIn: 86400 // expires in 24 hours
                 });
                 answer.data = {

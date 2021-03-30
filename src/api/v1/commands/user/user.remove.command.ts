@@ -7,7 +7,7 @@ import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
 
 export class UserRemoveCommand extends ApiCommand {
     constructor() {
-        super('removeUser', 'Users', RequestType.DELETE, '/v1/users/:id', true,
+        super('removeUser', '/users', RequestType.DELETE, '/:id', true,
             [
                 UserRole.administrator
             ]);
@@ -35,7 +35,7 @@ export class UserRemoveCommand extends ApiCommand {
         };
     }
 
-    async do(req, res, settings: AppConfiguration) {
+    async do(req, res) {
         const answer = ApiCommand.createAnswer();
         const validation = this.validate(req.params, req.body);
 

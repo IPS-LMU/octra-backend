@@ -1,5 +1,4 @@
 import {ApiCommand, RequestType} from '../api.command';
-import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {UserRole} from '../../obj/database.types';
 import {InternalServerError} from '../../../../obj/htpp-codes/server.codes';
@@ -8,7 +7,7 @@ import {GetTranscriptsResult} from '../../obj/response.types';
 
 export class TranscriptGetCommand extends ApiCommand {
     constructor() {
-        super('getTranscript', 'Transcripts', RequestType.GET, '/v1/transcripts/:id', true,
+        super('getTranscript', '/transcripts', RequestType.GET, '/:id', true,
             [
                 UserRole.administrator,
                 UserRole.dataDelivery
@@ -111,7 +110,7 @@ export class TranscriptGetCommand extends ApiCommand {
         };
     }
 
-    async do(req, res, settings: AppConfiguration) {
+    async do(req, res) {
         const answer = ApiCommand.createAnswer();
         const validation = this.validate(req.params, req.body);
         // do something
@@ -134,9 +133,13 @@ export class TranscriptGetCommand extends ApiCommand {
 
     reduceDataForUser(req, answer) {
         const tokenData = req.decoded as TokenData;
-        tokenData.roles;
 
-        if (tokenData.roles.find(a => a === 'data_delivery')) {
+        if (!tokenData) {
+            console.log(`no token data!`);
+            return;
+        }
+
+        if (tokenData.role.find(a => a === 'data_delivery')) {
             // is data delivery
             const data = answer.data as GetTranscriptsResult;
             delete data.pid;
