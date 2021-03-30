@@ -36,6 +36,7 @@ export interface AppTokensRow extends DatabaseRow {
     key: string;
     domain: string;
     description: string;
+    registrations: boolean;
 }
 
 export interface MediaItemRow extends DatabaseRow {

@@ -31,6 +31,9 @@ export class AppTokenCreateCommand extends ApiCommand {
                 },
                 description: {
                     type: 'string'
+                },
+                registrations: {
+                    type: 'boolean'
                 }
             }
         };
@@ -54,6 +57,9 @@ export class AppTokenCreateCommand extends ApiCommand {
                         },
                         description: {
                             type: 'string'
+                        },
+                        registrations: {
+                            type: 'boolean'
                         }
                     }
                 }

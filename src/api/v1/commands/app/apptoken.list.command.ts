@@ -43,6 +43,9 @@ export class AppTokenListCommand extends ApiCommand {
                             },
                             description: {
                                 type: 'string'
+                            },
+                            registrations: {
+                                type: 'boolean'
                             }
                         }
                     }

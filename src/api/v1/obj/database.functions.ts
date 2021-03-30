@@ -27,7 +27,7 @@ export class DatabaseFunctions {
     private static settings: AppConfiguration;
 
     private static selectAllStatements = {
-        appTokens: 'select id::integer, name::text, key::text, domain::text, description::text from apptokens',
+        appTokens: 'select id::integer, name::text, key::text, domain::text, description::text, registrations::boolean from apptokens',
         account: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp from account ac',
         project: 'select id::integer, name::text, shortname::text, description::text, configuration::text, startdate::timestamp, enddate::timestamp, active::boolean, admin_id::integer from project',
         mediaitem: 'select id::integer, url::text, type::text, size::integer, metadata::text from mediaitem',
@@ -84,7 +84,8 @@ export class DatabaseFunctions {
     public static async createAppToken(data: {
         name: string,
         domain?: string,
-        description?: string
+        description?: string,
+        registrations?: boolean
     }): Promise<AppTokensRow[]> {
         try {
             let token = await DatabaseFunctions.generateAppToken();
@@ -95,7 +96,8 @@ export class DatabaseFunctions {
                     DatabaseFunctions.getColumnDefinition('name', 'text', data.name, false),
                     DatabaseFunctions.getColumnDefinition('key', 'text', token, false),
                     DatabaseFunctions.getColumnDefinition('domain', 'text', data.domain),
-                    DatabaseFunctions.getColumnDefinition('description', 'text', data.description)
+                    DatabaseFunctions.getColumnDefinition('description', 'text', data.description),
+                    DatabaseFunctions.getColumnDefinition('registrations', 'boolean', data.registrations)
                 ]
             };
             const insertionResult = await DatabaseFunctions.dbManager.insert(insertQuery, 'id');
