@@ -8,9 +8,6 @@ import {ToolModule} from './commands/tool/tool.module';
 import {TranscriptModule} from './commands/transcript/transcript.module';
 
 export class APIV1Module {
-
-    // TODO fix problem: commands request cascades
-
     public static modules: CommandModule[] = [
         new UserModule(),
         new AppModule(),

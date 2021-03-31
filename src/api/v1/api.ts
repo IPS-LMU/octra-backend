@@ -71,6 +71,14 @@ export class APIV1 {
                 _url: `/${this.information.apiSlug}${a.root}${a.url}`
             }
         });
+        commandsArray.sort((a, b) => {
+            if ((a as any)._name > (b as any)._name) {
+                return 1;
+            } else if ((a as any)._name < (b as any)._name) {
+                return -1;
+            }
+            return 0;
+        });
 
         v1Router.route(`/reference`).get((req, res) => {
             // const fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
