@@ -13,6 +13,7 @@ export const verifyAppToken = (req, res, next) => {
         originHost = (originHost) ? originHost = originHost.replace(/:[0-9]{1,5}$/g, '') : '';
 
         DatabaseFunctions.isValidAppToken(appToken, originHost).then(() => {
+            req.AppToken = appToken;
             next();
         }).catch((error) => {
             console.log(error);
