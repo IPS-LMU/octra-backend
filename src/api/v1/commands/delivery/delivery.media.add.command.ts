@@ -1,14 +1,13 @@
 import {ApiCommand, RequestType} from '../api.command';
-import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {DeliverNewMediaRequest} from '../../obj/request.types';
 import {UserRole} from '../../obj/database.types';
-import {InternalServerError} from '../../../../obj/htpp-codes/server.codes';
-import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
+import {InternalServerError} from '../../../../obj/http-codes/server.codes';
+import {BadRequest} from '../../../../obj/http-codes/client.codes';
 
 export class DeliveryMediaAddCommand extends ApiCommand {
     constructor() {
-        super('deliverMediaForTranscription','/delivery', RequestType.POST, '/media/', true,
+        super('deliverMediaForTranscription', '/delivery', RequestType.POST, '/media/', true,
             [
                 UserRole.administrator,
                 UserRole.dataDelivery

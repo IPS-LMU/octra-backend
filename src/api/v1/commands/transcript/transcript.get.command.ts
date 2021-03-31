@@ -1,9 +1,9 @@
 import {ApiCommand, RequestType} from '../api.command';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {UserRole} from '../../obj/database.types';
-import {InternalServerError} from '../../../../obj/htpp-codes/server.codes';
 import {TokenData} from '../../obj/request.types';
 import {GetTranscriptsResult} from '../../obj/response.types';
+import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 
 export class TranscriptGetCommand extends ApiCommand {
     constructor() {

@@ -1,8 +1,7 @@
 import {ApiCommand, RequestType} from '../api.command';
-import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {UserRole} from '../../obj/database.types';
-import {InternalServerError} from '../../../../obj/htpp-codes/server.codes';
+import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 
 export class ProjectTranscriptsGetCommand extends ApiCommand {
     constructor() {

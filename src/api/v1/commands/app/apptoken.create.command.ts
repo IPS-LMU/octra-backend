@@ -2,8 +2,8 @@ import {ApiCommand, RequestType} from '../api.command';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {CreateAppTokenRequest} from '../../obj/request.types';
 import {UserRole} from '../../obj/database.types';
-import {InternalServerError} from '../../../../obj/htpp-codes/server.codes';
-import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
+import {InternalServerError} from '../../../../obj/http-codes/server.codes';
+import {BadRequest} from '../../../../obj/http-codes/client.codes';
 
 export class AppTokenCreateCommand extends ApiCommand {
     constructor() {

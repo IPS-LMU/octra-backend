@@ -2,9 +2,9 @@ import {Response} from 'express';
 import {Schema, Validator} from 'jsonschema';
 import {AppConfiguration} from '../../../obj/app-config/app-config';
 import {UserRole} from '../obj/database.types';
-import {OK} from '../../../obj/htpp-codes/success.codes';
-import {BadRequest} from '../../../obj/htpp-codes/client.codes';
 import {isNumber} from '../../../obj/functions';
+import {OK} from '../../../obj/http-codes/success.codes';
+import {BadRequest} from '../../../obj/http-codes/client.codes';
 
 export enum RequestType {
     GET = 'GET',
@@ -127,7 +127,7 @@ export abstract class ApiCommand {
         };
     }
 
-    static sendError(res, code: number, message: any, authenticated = true) {
+    static sendError(res: any, code: number, message: any, authenticated: boolean = true) {
         const answer = ApiCommand.createAnswer();
         answer.status = 'error';
         answer.message = message;

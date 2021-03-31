@@ -2,7 +2,7 @@ import {ApiCommand, RequestType} from '../api.command';
 import * as jwt from 'jsonwebtoken';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {UserLoginRequest} from '../../obj/request.types';
-import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
+import {BadRequest} from '../../../../obj/http-codes/client.codes';
 
 export class UserLoginCommand extends ApiCommand {
 
