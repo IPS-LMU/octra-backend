@@ -179,6 +179,7 @@ describe('User', () => {
         describe('/PUT v1/users/password', () => {
             it('it should change the password for the user logged in', (done) => {
                 const request = {
+                    oldPassword: 'Password12345',
                     password: 'test12345'
                 }
                 chai.request(server)

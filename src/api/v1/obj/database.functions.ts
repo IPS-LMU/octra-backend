@@ -81,6 +81,20 @@ export class DatabaseFunctions {
         throw 'Could not find app token';
     }
 
+    public static async areRegistrationsAllowed(appToken: string): Promise<boolean> {
+        const selectResult = await DatabaseFunctions.dbManager.query({
+            text: DatabaseFunctions.selectAllStatements.appTokens + ' where key=$1::text',
+            values: [appToken]
+        });
+
+        if (selectResult.rowCount === 1) {
+            const resultRow = selectResult.rows[0] as AppTokensRow;
+            return resultRow.registrations;
+        }
+
+        throw 'Could not check if registrations are allowed';
+    }
+
     public static async createAppToken(data: {
         name: string,
         domain?: string,

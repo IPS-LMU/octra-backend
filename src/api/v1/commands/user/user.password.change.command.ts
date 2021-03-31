@@ -1,9 +1,7 @@
 import {ApiCommand, RequestType} from '../api.command';
-import {Express, Router} from 'express';
-import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
-import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
 import {TokenData} from '../../obj/request.types';
+import {BadRequest} from '../../../../obj/http-codes/client.codes';
 
 export class UserPasswordChangeCommand extends ApiCommand {
 
@@ -20,6 +18,10 @@ export class UserPasswordChangeCommand extends ApiCommand {
             type: 'object',
             properties: {
                 ...this.defaultRequestSchema.properties,
+                oldPassword: {
+                    required: true,
+                    type: 'string'
+                },
                 password: {
                     required: true,
                     type: 'string'
@@ -34,6 +36,7 @@ export class UserPasswordChangeCommand extends ApiCommand {
     async do(req, res) {
         const validation = this.validate(req.params, req.body);
         const body: {
+            oldPassword: string,
             password: string
         } = req.body;
 
@@ -43,12 +46,18 @@ export class UserPasswordChangeCommand extends ApiCommand {
                 const tokenBody: TokenData = req.decoded as TokenData;
                 if (tokenBody) {
                     const answer = ApiCommand.createAnswer();
-                    await DatabaseFunctions.changeUserPassword(tokenBody.id, DatabaseFunctions.getPasswordHash(body.password));
-
-                    this.checkAndSendAnswer(res, answer, true);
-                } else {
-                    throw 'Changing password failed.';
+                    const userInfo = await DatabaseFunctions.getUserInfoByUserID(tokenBody.id);
+                    if (userInfo) {
+                        if (userInfo.password === DatabaseFunctions.getPasswordHash(body.oldPassword)) {
+                            await DatabaseFunctions.changeUserPassword(tokenBody.id, DatabaseFunctions.getPasswordHash(body.password));
+                            this.checkAndSendAnswer(res, answer, true);
+                            return;
+                        } else {
+                            throw 'Old password is wrong.'
+                        }
+                    }
                 }
+                throw 'Changing password failed.';
             } catch (e) {
                 console.log(e);
                 ApiCommand.sendError(res, 500, e, false);
