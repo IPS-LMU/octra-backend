@@ -1,7 +1,7 @@
 import {ApiCommand, RequestType} from '../api.command';
 import * as jwt from 'jsonwebtoken';
 import {DatabaseFunctions} from '../../obj/database.functions';
-import {UserLoginRequest} from '../../obj/request.types';
+import {TokenData, UserLoginRequest} from '../../obj/request.types';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
 
 export class UserLoginCommand extends ApiCommand {
@@ -70,10 +70,10 @@ export class UserLoginCommand extends ApiCommand {
                 }
 
                 answer.authenticated = true;
-                answer.token = jwt.sign({
-                    name: body.name,
-                    id, roles
-                }, this.settings.api.secret, {
+                const tokenData: TokenData = {
+                    id, role: roles
+                };
+                answer.token = jwt.sign(tokenData, this.settings.api.secret, {
                     expiresIn: 86400 // expires in 24 hours
                 });
                 answer.data = {

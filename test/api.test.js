@@ -155,6 +155,30 @@ describe('User', () => {
         });
     }
 
+    if (todoList.user.login) {
+        describe('/POST v1/login', () => {
+            it('it should POST a normal user login', (done) => {
+                const request = {
+                    "name": tempData.user.name,
+                    "password": "Password12345"
+                }
+                chai.request(server)
+                    .post('/v1/users/login')
+                    .set("Authorization", `Bearer ${appToken}`)
+                    .set("Origin", "http://localhost:8080")
+                    .send(request)
+                    .end((err, res) => {
+                        checkForErrors(err, res);
+                        res.body.status.should.be.equal("success");
+                        res.body.should.be.a('object')
+                        tempData.user.id = res.body.data.id;
+                        tempData.user.jwtToken = res.body.token;
+                        done();
+                    });
+            });
+        });
+    }
+
     if (todoList.user.getUsers) {
         describe('/GET v1/users/', () => {
             it('it should retrieve a list of users', (done) => {

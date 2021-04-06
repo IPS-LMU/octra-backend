@@ -1,7 +1,7 @@
 import {ApiCommand, RequestType} from '../api.command';
 import * as jwt from 'jsonwebtoken';
 import {DatabaseFunctions} from '../../obj/database.functions';
-import {UserRegisterRequest} from '../../obj/request.types';
+import {TokenData, UserRegisterRequest} from '../../obj/request.types';
 import {BadRequest, Forbidden} from '../../../../obj/http-codes/client.codes';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 
@@ -83,11 +83,11 @@ export class UserRegisterCommand extends ApiCommand {
                         });
 
                         answer.authenticated = true;
-                        answer.token = jwt.sign({
+                        const tokenData: TokenData = {
                             id: result.id,
-                            name: userData.name,
                             role: result.roles
-                        }, this.settings.api.secret, {
+                        };
+                        answer.token = jwt.sign(tokenData, this.settings.api.secret, {
                             expiresIn: 86400 // expires in 24 hours
                         });
                         answer.data = {

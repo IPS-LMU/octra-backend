@@ -139,11 +139,15 @@ export class TranscriptGetCommand extends ApiCommand {
             return;
         }
 
-        if (tokenData.role.find(a => a === 'data_delivery')) {
+        if (!tokenData.role) {
+            console.log(`no roles in token data!`);
+            return;
+        }
+
+        if (tokenData.role.find(a => a === UserRole.dataDelivery)) {
             // is data delivery
             const data = answer.data as GetTranscriptsResult;
             delete data.pid;
-            delete data.project_id;
             delete data.mediaitem_id;
         }
     }
