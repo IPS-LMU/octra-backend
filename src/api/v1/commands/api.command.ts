@@ -228,14 +228,16 @@ export abstract class ApiCommand {
     validateAnswer(answer) {
         let errors = [];
         const validator = new Validator();
-        const validationResult = validator.validate(answer, this.responseStructure);
+        const validationResult = validator.validate(answer, this._responseStructure);
+
         if (!validationResult.valid) {
-            for (const error of validationResult.errors) {
-                errors.push(error.stack);
-            }
+            errors.push({
+                section: 'Response payload',
+                errors: validationResult.errors.map(a => a.path.join('.') + ' ' + a.message)
+            });
         }
 
-        return errors.join(', ');
+        return errors;
     }
 
     public getUserDataFromTokenObj(req): {
@@ -249,12 +251,12 @@ export abstract class ApiCommand {
     public checkAndSendAnswer(res: any, answer: any, authenticated = true) {
         const answerValidation = this.validateAnswer(answer);
         ApiCommand.setSecurityHeaders(res);
-        if (answerValidation === '') {
+        if (answerValidation.length === 0) {
             // a user must be authenticated to get an positive answer
             answer.authenticated = true;
             res.status(OK).send(answer);
         } else {
-            ApiCommand.sendError(res, BadRequest, `Response validation failed: ${answerValidation}`, authenticated);
+            ApiCommand.sendError(res, BadRequest, answerValidation, authenticated);
         }
     }
 

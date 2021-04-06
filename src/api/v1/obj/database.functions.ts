@@ -607,14 +607,16 @@ export class DatabaseFunctions {
                 const result = transcriptResult[0] as GetTranscriptsResult;
 
                 const mediaItem = await DatabaseFunctions.dbManager.query({
-                    text: 'select * from mediaitem where id=$1::integer',
+                    text: this.selectAllStatements.mediaitem + ' where id=$1::integer',
                     values: [mediaID]
                 });
 
                 if (mediaItem.rowCount === 1) {
                     result.mediaitem = mediaItem.rows[0] as MediaItemRow;
+                    DatabaseFunctions.prepareRows([result.mediaitem]);
                 }
 
+                DatabaseFunctions.prepareRows([result]);
                 return result;
             }
 
@@ -642,7 +644,8 @@ export class DatabaseFunctions {
                     if (row[col] === null || row[col] === undefined) {
                         delete row[col];
                     } else if (row.hasOwnProperty(col) && col.indexOf('date') > -1
-                        && !(row[col] === undefined || row[col] === null)) {
+                        && !(row[col] === undefined || row[col] === null) &&
+                        row[col].toISOString !== undefined && row[col].toISOString !== null) {
                         row[col] = row[col].toISOString();
                     }
                 }

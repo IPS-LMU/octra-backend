@@ -147,7 +147,7 @@ export class DeliveryMediaAddCommand extends ApiCommand {
                 ApiCommand.sendError(res, InternalServerError, e);
             }
         } else {
-            ApiCommand.sendError(res, BadRequest, 'Validation Error of request: ' + validation);
+            ApiCommand.sendError(res, BadRequest, validation);
         }
 
         return;
