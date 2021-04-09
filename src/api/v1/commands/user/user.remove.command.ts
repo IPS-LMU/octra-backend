@@ -1,13 +1,12 @@
 import {ApiCommand, RequestType} from '../api.command';
-import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {UserRole} from '../../obj/database.types';
-import {InternalServerError} from '../../../../obj/htpp-codes/server.codes';
-import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
+import {InternalServerError} from '../../../../obj/http-codes/server.codes';
+import {BadRequest} from '../../../../obj/http-codes/client.codes';
 
 export class UserRemoveCommand extends ApiCommand {
     constructor() {
-        super('removeUser', RequestType.DELETE, '/v1/users/:id', true,
+        super('removeUser', '/users', RequestType.DELETE, '/:id', true,
             [
                 UserRole.administrator
             ]);
@@ -35,22 +34,18 @@ export class UserRemoveCommand extends ApiCommand {
         };
     }
 
-    async do(req, res, settings: AppConfiguration) {
+    async do(req, res) {
         const answer = ApiCommand.createAnswer();
         const validation = this.validate(req.params, req.body);
 
-        if (validation === '') {
-            if (req.params.hasOwnProperty('id')) {
-                try {
-                    await DatabaseFunctions.removeUserByID(req.params.id);
-                    answer.data = {};
-                    this.checkAndSendAnswer(res, answer);
-                } catch (e) {
-                    console.log(e);
-                    ApiCommand.sendError(res, InternalServerError, e);
-                }
-            } else {
-                ApiCommand.sendError(res, InternalServerError, 'Missing ID in URI');
+        if (validation.length === 0) {
+            try {
+                await DatabaseFunctions.removeUserByID(req.params.id);
+                answer.data = {};
+                this.checkAndSendAnswer(res, answer);
+            } catch (e) {
+                console.log(e);
+                ApiCommand.sendError(res, InternalServerError, e);
             }
         } else {
             ApiCommand.sendError(res, BadRequest, validation);

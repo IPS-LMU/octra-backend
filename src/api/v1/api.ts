@@ -3,20 +3,20 @@
  */
 import {Express, Router} from 'express';
 import * as bodyParser from 'body-parser';
-import {ApiCommand} from './commands/api.command';
 import {SampleCommand} from './commands/sample.command';
 import {APIV1Module} from './api.module';
 import {AppConfiguration} from '../../obj/app-config/app-config';
 import {DBManager} from '../../db/DBManager';
 import {DatabaseFunctions} from './obj/database.functions';
+import {CommandModule} from './commands/command.module';
 
 export class APIV1 {
-    get appPath(): string {
-        return this._appPath;
+    get modules(): CommandModule[] {
+        return this._modules;
     }
 
-    get commands(): any[] {
-        return this._commands;
+    get appPath(): string {
+        return this._appPath;
     }
 
     public get information() {
@@ -27,6 +27,8 @@ export class APIV1 {
         }
     }
 
+    private _modules: CommandModule[] = [];
+
     public get instance(): APIV1 {
         if (APIV1.instance === undefined) {
             return new APIV1();
@@ -34,45 +36,51 @@ export class APIV1 {
         return APIV1.instance;
     }
 
-    private _commands: ApiCommand[] = [];
     private _appPath: string;
     private static instance: APIV1;
-
-    private dbManager: DBManager;
 
     /***
      * initializes API
      * @param app Express server
-     * @param router Express router
      * @param environment 'production' or 'development'
      * @param settings
+     * @param dbManager
      */
-    public init(app: Express, router: Router, environment: 'production' | 'development', settings: AppConfiguration,
-                dbManager: DBManager) {
+    public init(app: Express, environment: 'production' | 'development', settings: AppConfiguration, dbManager: DBManager) {
+        DatabaseFunctions.init(dbManager, settings);
         this._appPath = process.cwd();
-        this.dbManager = dbManager;
-        DatabaseFunctions.init(this.dbManager, settings);
+        const v1Router = Router();
 
-        router.use(bodyParser.urlencoded({extended: false}));
-        router.use(bodyParser.json());
+        v1Router.use(bodyParser.urlencoded({extended: false}));
+        v1Router.use(bodyParser.json());
 
-        // list of supported commands
-        this._commands = APIV1Module.commands;
-
+        this._modules = APIV1Module.modules;
         // register all commands
-        for (let i = 0; i < this._commands.length; i++) {
-            const command = this._commands[i];
-            command.register(app, router, environment, settings, dbManager);
+        for (let i = 0; i < this._modules.length; i++) {
+            const module = this._modules[i];
+            module.init(v1Router, environment, settings);
         }
 
-        const commandsArray = [];
+        const commandsArray = APIV1Module.modules.map(a => a.commands).reduce((acc, x) => {
+            return acc.concat(x, []);
+        }).map((a) => {
+            return {
+                ...a,
+                _requestStructure: JSON.stringify(a.requestStructure, null, 2),
+                _responseStructure: JSON.stringify(a.responseStructure, null, 2),
+                _url: `/${this.information.apiSlug}${a.root}${a.url}`
+            }
+        });
+        commandsArray.sort((a, b) => {
+            if ((a as any)._name > (b as any)._name) {
+                return 1;
+            } else if ((a as any)._name < (b as any)._name) {
+                return -1;
+            }
+            return 0;
+        });
 
-        for (let i = 0; i < this.commands.length; i++) {
-            const command = this.commands[i];
-            commandsArray.push(command.getInformation());
-        }
-
-        app.get(`/${this.information.apiSlug}/reference`, (req, res) => {
+        v1Router.route(`/reference`).get((req, res) => {
             // const fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
             res.render(`api/${this.information.apiSlug}/index.ejs`, {
                 commands: commandsArray,
@@ -83,5 +91,6 @@ export class APIV1 {
             });
         });
 
+        app.use(`/${this.information.apiSlug}`, v1Router);
     }
 }

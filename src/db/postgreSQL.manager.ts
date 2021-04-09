@@ -1,6 +1,7 @@
 import {DBManager, InsertQuery, SQLQuery} from './DBManager';
 import {Pool, QueryResult} from 'pg';
-import {IDBConfiguration} from '../obj/app-config/app-config';
+import {IDBConfiguration, IDBSSLConfiguration} from '../obj/app-config/app-config';
+import * as fs from 'fs';
 
 /**
  * See https://node-postgres.com/
@@ -10,13 +11,31 @@ export class PostgreSQLManager extends DBManager {
 
     constructor(dbSettings: IDBConfiguration) {
         super(dbSettings);
+        const ssl = this.loadSSLFileContents(dbSettings.ssl);
+
         this.pool = new Pool({
             user: this.dbSettings.dbUser,
             host: this.dbSettings.dbHost,
             database: this.dbSettings.dbName,
             password: this.dbSettings.dbPassword,
-            port: this.dbSettings.dbPort
+            port: this.dbSettings.dbPort,
+            ssl
         });
+    }
+
+    private loadSSLFileContents(sslConfig: IDBSSLConfiguration) {
+        let result: IDBSSLConfiguration;
+        if (sslConfig) {
+            result = {}
+            for (let attr in sslConfig) {
+                if (sslConfig.hasOwnProperty(attr) && sslConfig[attr] && sslConfig[attr] !== '') {
+                    if (fs.existsSync(sslConfig[attr])) {
+                        result[attr] = fs.readFileSync(sslConfig[attr], {encoding: 'utf-8'});
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     connect(): Promise<any> {

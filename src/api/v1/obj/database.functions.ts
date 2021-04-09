@@ -19,19 +19,20 @@ import {
     CreateProjectRequest,
     DeliverNewMediaRequest
 } from './request.types';
-import {ProjectGetTranscriptsResult} from './response.types';
+import {GetTranscriptsResult} from './response.types';
+import {SHA256} from 'crypto-js';
 
 export class DatabaseFunctions {
     private static dbManager: DBManager;
     private static settings: AppConfiguration;
 
     private static selectAllStatements = {
-        appTokens: 'select id::integer, name::text, key::text, domain::text, description::text from apptokens',
+        appToken: 'select id::integer, name::text, key::text, domain::text, description::text, registrations::boolean from apptoken',
         account: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp from account ac',
         project: 'select id::integer, name::text, shortname::text, description::text, configuration::text, startdate::timestamp, enddate::timestamp, active::boolean, admin_id::integer from project',
         mediaitem: 'select id::integer, url::text, type::text, size::integer, metadata::text from mediaitem',
         tool: 'select id::integer, name::text, version::text, description::text, pid::text from tool',
-        transcript: 'select id::integer, pid::text, orgtext::text, transcript::text, assessment::text, priority::integer, status::text, code::text, creationdate::timestamp, startdate::timestamp, enddate::timestamp, log::text, comment::text, tool_id::integer, transcriber_id::integer, project_id::integer, mediaitem_id::integer, nexttranscription_id::integer from transcript'
+        transcript: 'select id::integer, pid::text, orgtext::text, transcript::text, assessment::text, priority::integer, status::text, code::text, creationdate::timestamp, startdate::timestamp, enddate::timestamp, log::text, comment::text, tool_id::integer, transcriber_id::integer, project_id::integer, mediaitem_id::integer, nexttranscript_id::integer from transcript'
     };
 
     constructor() {
@@ -44,18 +45,33 @@ export class DatabaseFunctions {
 
     public static async isValidAppToken(token: string, originHost: string): Promise<void> {
         const selectResult = await DatabaseFunctions.dbManager.query({
-            text: DatabaseFunctions.selectAllStatements.appTokens + ' where key=$1::text',
+            text: DatabaseFunctions.selectAllStatements.appToken + ' where key=$1::text',
             values: [token]
         });
 
         if (selectResult.rowCount === 1) {
             const resultRow = selectResult.rows[0] as AppTokensRow;
-            if (resultRow.hasOwnProperty('domain') &&
-                (!resultRow.domain || resultRow.domain === '' || resultRow.domain === originHost)
-            ) {
-                return;
-            } else if (resultRow.hasOwnProperty('domain')) {
-                throw 'Domain does not match the domain registered for this app key.';
+            console.log(`check ${resultRow.domain} === ${originHost}`);
+            if (resultRow.hasOwnProperty('domain') && resultRow.domain) {
+                const domainEntry = resultRow.domain.replace(/\s+/g, '');
+
+                if (domainEntry !== '') {
+                    let valid;
+                    if (resultRow.domain.indexOf(',') > -1) {
+                        // multiple domains
+                        const domains = domainEntry.split(',');
+                        valid = domains.filter(a => a !== '').findIndex(a => a === originHost) > -1;
+                    } else {
+                        // one domain
+                        valid = resultRow.domain.trim() === originHost;
+                    }
+
+                    if (valid) {
+                        return;
+                    } else {
+                        throw `Origin Host ${originHost} does not match the domain registered for this app key.`;
+                    }
+                }
             }
             return;
         }
@@ -63,21 +79,37 @@ export class DatabaseFunctions {
         throw 'Could not find app token';
     }
 
+    public static async areRegistrationsAllowed(appToken: string): Promise<boolean> {
+        const selectResult = await DatabaseFunctions.dbManager.query({
+            text: DatabaseFunctions.selectAllStatements.appToken + ' where key=$1::text',
+            values: [appToken]
+        });
+
+        if (selectResult.rowCount === 1) {
+            const resultRow = selectResult.rows[0] as AppTokensRow;
+            return resultRow.registrations;
+        }
+
+        throw 'Could not check if registrations are allowed';
+    }
+
     public static async createAppToken(data: {
         name: string,
         domain?: string,
-        description?: string
+        description?: string,
+        registrations?: boolean
     }): Promise<AppTokensRow[]> {
         try {
             let token = await DatabaseFunctions.generateAppToken();
 
             const insertQuery = {
-                tableName: 'apptokens',
+                tableName: 'apptoken',
                 columns: [
                     DatabaseFunctions.getColumnDefinition('name', 'text', data.name, false),
                     DatabaseFunctions.getColumnDefinition('key', 'text', token, false),
                     DatabaseFunctions.getColumnDefinition('domain', 'text', data.domain),
-                    DatabaseFunctions.getColumnDefinition('description', 'text', data.description)
+                    DatabaseFunctions.getColumnDefinition('description', 'text', data.description),
+                    DatabaseFunctions.getColumnDefinition('registrations', 'boolean', data.registrations)
                 ]
             };
             const insertionResult = await DatabaseFunctions.dbManager.insert(insertQuery, 'id');
@@ -85,7 +117,7 @@ export class DatabaseFunctions {
             if (insertionResult.rowCount === 1 && insertionResult.rows[0].hasOwnProperty('id')) {
                 const id = insertionResult.rows[0].id;
                 const selectResult = await DatabaseFunctions.dbManager.query({
-                    text: DatabaseFunctions.selectAllStatements.appTokens + ' where id=$1',
+                    text: DatabaseFunctions.selectAllStatements.appToken + ' where id=$1',
                     values: [id]
                 });
 
@@ -95,7 +127,6 @@ export class DatabaseFunctions {
             }
             throw 'insertionResult does not have id';
         } catch (e) {
-            console.log(`[Error]:`);
             console.log(e);
             throw 'could not generate and save app token';
         }
@@ -129,7 +160,6 @@ export class DatabaseFunctions {
             }
             throw 'insertionResult does not have id';
         } catch (e) {
-            console.log(`[Error]:`);
             console.log(e);
             throw 'Could not create and save a new project.';
         }
@@ -160,7 +190,6 @@ export class DatabaseFunctions {
             }
             throw 'insertionResult does not have id';
         } catch (e) {
-            console.log(`[Error]:`);
             console.log(e);
             throw 'Could not save a new media item.';
         }
@@ -190,7 +219,6 @@ export class DatabaseFunctions {
             }
             throw 'insertionResult does not have id';
         } catch (e) {
-            console.log(`[Error]:`);
             console.log(e);
             throw 'Could not save a new tool.';
         }
@@ -217,7 +245,7 @@ export class DatabaseFunctions {
                     DatabaseFunctions.getColumnDefinition('transcriber_id', 'integer', data.transcriber_id),
                     DatabaseFunctions.getColumnDefinition('project_id', 'integer', data.project_id),
                     DatabaseFunctions.getColumnDefinition('mediaitem_id', 'integer', data.mediaitem_id),
-                    DatabaseFunctions.getColumnDefinition('nexttranscription_id', 'integer', data.nexttranscription_id)
+                    DatabaseFunctions.getColumnDefinition('nexttranscript_id', 'integer', data.nexttranscript_id)
                 ]
             };
 
@@ -234,40 +262,52 @@ export class DatabaseFunctions {
             }
             throw 'insertionResult does not have id';
         } catch (e) {
-            console.log(`[Error]:`);
-            console.log(e);
-            throw 'Could not save a new transcript.';
+            throw e;
         }
     }
 
-    public static async getTranscriptByID(id: number): Promise<TranscriptRow> {
+    public static async getTranscriptByID(id: number): Promise<GetTranscriptsResult> {
         const selectResult = await DatabaseFunctions.dbManager.query({
             text: 'select * from transcript where id=$1::integer',
             values: [id]
         });
 
         if (selectResult.rowCount === 1) {
-            DatabaseFunctions.prepareRows(selectResult.rows);
-            return selectResult.rows[0] as TranscriptRow;
+            const transcriptRow = (selectResult.rows[0] as TranscriptRow);
+            let result: GetTranscriptsResult = transcriptRow;
+
+            if (transcriptRow.hasOwnProperty('mediaitem_id') && transcriptRow.mediaitem_id) {
+                const mediaItemResult = await DatabaseFunctions.dbManager.query({
+                    text: 'select * from mediaitem where id=$1::integer',
+                    values: [transcriptRow.mediaitem_id]
+                });
+
+                if (mediaItemResult.rowCount === 1) {
+                    result.mediaitem = mediaItemResult.rows[0] as MediaItemRow;
+                    DatabaseFunctions.prepareRows([result.mediaitem]);
+                }
+            }
+
+            DatabaseFunctions.prepareRows([result]);
+            return result;
         }
         throw 'Could not find a transcript with this ID.'
     }
 
-    public static async getTranscriptsByProjectName(projectName: string): Promise<ProjectGetTranscriptsResult[]> {
+    public static async getTranscriptsByProjectID(projectID: number): Promise<GetTranscriptsResult[]> {
         const projectSelectResult = await DatabaseFunctions.dbManager.query({
-            text: 'select id from project where name=$1::text',
-            values: [projectName]
-        })
+            text: 'select id from project where id=$1::integer',
+            values: [projectID]
+        });
 
         if (projectSelectResult.rowCount === 1) {
-            const projectID = projectSelectResult.rows[0].id;
             const selectResult = await DatabaseFunctions.dbManager.query({
                 text: 'select * from transcript where project_id=$1::integer',
                 values: [projectID]
             });
 
+            const results: GetTranscriptsResult[] = [];
             if (selectResult.rowCount > 0) {
-                const results: ProjectGetTranscriptsResult[] = [];
                 for (const row of (selectResult.rows as TranscriptRow[])) {
                     const mediaItem = await DatabaseFunctions.dbManager.query({
                         text: 'select * from mediaitem where id=$1::integer',
@@ -275,7 +315,7 @@ export class DatabaseFunctions {
                     });
 
                     const mediaItemRows = mediaItem.rows as MediaItemRow[];
-                    const result: ProjectGetTranscriptsResult = {
+                    const result: GetTranscriptsResult = {
                         ...row
                     };
 
@@ -288,16 +328,16 @@ export class DatabaseFunctions {
 
                     results.push(result);
                 }
-                DatabaseFunctions.prepareRows(results);
-                return results;
             }
+            DatabaseFunctions.prepareRows(results);
+            return results;
         }
-        throw 'Could not find a project with this name.';
+        throw `Can not find a project with ID ${projectID}.`;
     }
 
     public static async removeAppToken(id: number): Promise<void> {
         const removeResult = await DatabaseFunctions.dbManager.query({
-            text: 'delete from apptokens where id=$1::numeric',
+            text: 'delete from apptoken where id=$1::numeric',
             values: [id]
         });
         if (removeResult.rowCount < 1) {
@@ -308,7 +348,7 @@ export class DatabaseFunctions {
 
     public static async listAppTokens(): Promise<AppTokensRow[]> {
         const selectResult = await DatabaseFunctions.dbManager.query({
-            text: DatabaseFunctions.selectAllStatements.appTokens
+            text: DatabaseFunctions.selectAllStatements.appToken
         });
         DatabaseFunctions.prepareRows(selectResult.rows);
         return selectResult.rows as AppTokensRow[];
@@ -317,8 +357,7 @@ export class DatabaseFunctions {
     static async createUser(userData: {
         name?: string,
         email?: string,
-        password: string,
-        loginmethod: string
+        password: string
     }): Promise<{
         id: number;
         roles: UserRole[];
@@ -328,8 +367,7 @@ export class DatabaseFunctions {
             columns: [
                 DatabaseFunctions.getColumnDefinition('username', 'text', userData.name),
                 DatabaseFunctions.getColumnDefinition('email', 'text', userData.email),
-                DatabaseFunctions.getColumnDefinition('hash', 'text', userData.password),
-                DatabaseFunctions.getColumnDefinition('loginmethod', 'text', userData.loginmethod)
+                DatabaseFunctions.getColumnDefinition('hash', 'text', userData.password)
             ]
         };
         const insertionResult = await DatabaseFunctions.dbManager.insert(insertAccountQuery, 'id');
@@ -343,7 +381,7 @@ export class DatabaseFunctions {
             });
 
             const selectResult = await DatabaseFunctions.dbManager.query({
-                text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_roles ar ON ac.id=ar.account_id full outer join roles r ON r.id=ar.roles_id where ac.id=$1::integer',
+                text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_role ar ON ac.id=ar.account_id full outer join role r ON r.id=ar.roles_id where ac.id=$1::integer',
                 values: [
                     id
                 ]
@@ -370,7 +408,7 @@ export class DatabaseFunctions {
 
         // remove all roles from this account at first
         queries.push({
-            text: 'delete from account_roles where account_id=$1::integer',
+            text: 'delete from account_role where account_id=$1::integer',
             values: [data.accountID]
         });
 
@@ -380,7 +418,7 @@ export class DatabaseFunctions {
             if (roleEntry) {
                 const roleID = roleEntry.id;
                 queries.push({
-                    text: 'insert into account_roles(account_id, roles_id) values($1::integer, $2::integer)',
+                    text: 'insert into account_role(account_id, roles_id) values($1::integer, $2::integer)',
                     values: [data.accountID, roleID]
                 });
             } else {
@@ -398,7 +436,7 @@ export class DatabaseFunctions {
 
     static async getRoles() {
         const result = await DatabaseFunctions.dbManager.query({
-            text: 'select * FROM roles'
+            text: 'select * FROM role'
         });
         return result.rows as RolesRow[];
     }
@@ -406,7 +444,7 @@ export class DatabaseFunctions {
     static async getRolesByUserID(id: number): Promise<string[]> {
         const rolesTable = await DatabaseFunctions.getRoles();
         const accountRolesTable = await DatabaseFunctions.dbManager.query({
-            text: 'select * from account_roles where account_id=$1::integer',
+            text: 'select * from account_role where account_id=$1::integer',
             values: [id]
         });
         return (accountRolesTable.rows as any).map(a => a.roles_id)
@@ -428,6 +466,8 @@ export class DatabaseFunctions {
         const results: any[] = [];
         for (const row of selectResult.rows) {
             const roles = await DatabaseFunctions.getRolesByUserID(row.id);
+            delete (row as any).hash;
+
             const result = {
                 ...row,
                 roles
@@ -451,7 +491,7 @@ export class DatabaseFunctions {
                 values: [id]
             },
             {
-                text: 'delete from account_roles where account_id=$1::integer',
+                text: 'delete from account_role where account_id=$1::integer',
                 values: [id]
             },
             {
@@ -466,10 +506,10 @@ export class DatabaseFunctions {
         return;
     }
 
-    static async getUserByHash(hash: string): Promise<AccountRow> {
+    static async getUser(id: number): Promise<AccountRow> {
         const selectResult = await DatabaseFunctions.dbManager.query({
-            text: this.selectAllStatements.account + ' where hash=$1::text',
-            values: [hash]
+            text: this.selectAllStatements.account + ' where id=$1::numeric',
+            values: [id]
         });
 
         if (selectResult.rowCount === 1) {
@@ -486,7 +526,7 @@ export class DatabaseFunctions {
         roles: UserRole[]
     }> {
         const selectResult = await DatabaseFunctions.dbManager.query({
-            text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_roles ar ON ac.id=ar.account_id full outer join roles r ON r.id=ar.roles_id where ac.username=$1::text',
+            text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_role ar ON ac.id=ar.account_id full outer join role r ON r.id=ar.roles_id where ac.username=$1::text',
             values: [name]
         });
 
@@ -504,13 +544,27 @@ export class DatabaseFunctions {
     }
 
 
+    static async changeUserPassword(id: number, hash: string): Promise<void> {
+        const updateResult = await DatabaseFunctions.dbManager.query({
+            text: 'update account set hash=$1::text where id=$2::integer returning id',
+            values: [hash, id]
+        });
+
+        if (updateResult.rowCount === 1) {
+            return;
+        }
+
+        throw 'Can not change password.';
+    }
+
+
     static async getUserInfoByUserID(id: number): Promise<{
         password: string,
         id: number,
         roles: UserRole[]
     }> {
         const selectResult = await DatabaseFunctions.dbManager.query({
-            text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_roles ar ON ac.id=ar.account_id full outer join roles r ON r.id=ar.roles_id where ac.id=$1::integer',
+            text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_role ar ON ac.id=ar.account_id full outer join role r ON r.id=ar.roles_id where ac.id=$1::integer',
             values: [id]
         });
 
@@ -527,20 +581,9 @@ export class DatabaseFunctions {
         throw 'could not find user';
     }
 
-    static async deliverNewMedia(dataDeliveryRequest: DeliverNewMediaRequest): Promise<TranscriptRow> {
-        const projectRow = await DatabaseFunctions.dbManager.query({
-            text: 'select id from project where name=$1',
-            values: [dataDeliveryRequest.projectName]
-        });
-
-        if (projectRow.rowCount < 1) {
-            throw 'Could not find a project with this name.'
-        }
-
-        const projectID = projectRow.rows[0].id;
+    static async deliverNewMedia(dataDeliveryRequest: DeliverNewMediaRequest): Promise<GetTranscriptsResult> {
         const media = dataDeliveryRequest.media;
 
-        // TODO better use transaction
         const mediaInsertResult = await DatabaseFunctions.addMediaItem({
             url: media.url,
             type: media.type,
@@ -550,16 +593,31 @@ export class DatabaseFunctions {
 
         if (mediaInsertResult.length > 0) {
             const mediaID = mediaInsertResult[0].id;
-            const transriptInsertResult = await DatabaseFunctions.addTranscript({
-                orgtext: dataDeliveryRequest.orgText,
+            const transcriptResult = await DatabaseFunctions.addTranscript({
+                orgtext: dataDeliveryRequest.orgtext,
                 transcript: dataDeliveryRequest.transcript,
-                project_id: projectID,
-                mediaitem_id: mediaID
+                project_id: dataDeliveryRequest.project_id,
+                mediaitem_id: mediaID,
+                status: 'FREE'
             });
 
-            if (transriptInsertResult.length > 0) {
-                return transriptInsertResult[0];
+            if (transcriptResult.length > 0) {
+                const result = transcriptResult[0] as GetTranscriptsResult;
+
+                const mediaItem = await DatabaseFunctions.dbManager.query({
+                    text: this.selectAllStatements.mediaitem + ' where id=$1::integer',
+                    values: [mediaID]
+                });
+
+                if (mediaItem.rowCount === 1) {
+                    result.mediaitem = mediaItem.rows[0] as MediaItemRow;
+                    DatabaseFunctions.prepareRows([result.mediaitem]);
+                }
+
+                DatabaseFunctions.prepareRows([result]);
+                return result;
             }
+
             throw 'Could not save transcript entry.'
         }
         throw 'Could not save media entry.'
@@ -584,7 +642,8 @@ export class DatabaseFunctions {
                     if (row[col] === null || row[col] === undefined) {
                         delete row[col];
                     } else if (row.hasOwnProperty(col) && col.indexOf('date') > -1
-                        && !(row[col] === undefined || row[col] === null)) {
+                        && !(row[col] === undefined || row[col] === null) &&
+                        row[col].toISOString !== undefined && row[col].toISOString !== null) {
                         row[col] = row[col].toISOString();
                     }
                 }
@@ -596,6 +655,12 @@ export class DatabaseFunctions {
         return {
             key, type, value, maybeNull
         };
+    }
+
+    public static getPasswordHash(password: string): string {
+        const salt = SHA256(DatabaseFunctions.settings.api.passwordSalt).toString();
+
+        return SHA256(password + salt).toString();
     }
 
 }

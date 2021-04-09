@@ -1,14 +1,13 @@
 import {ApiCommand, RequestType} from '../api.command';
-import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {AddMediaItemRequest} from '../../obj/request.types';
 import {UserRole} from '../../obj/database.types';
-import {InternalServerError} from '../../../../obj/htpp-codes/server.codes';
-import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
+import {InternalServerError} from '../../../../obj/http-codes/server.codes';
+import {BadRequest} from '../../../../obj/http-codes/client.codes';
 
 export class MediaAddCommand extends ApiCommand {
     constructor() {
-        super('addMediaItem', RequestType.POST, '/v1/media/', true,
+        super('addMediaItem', '/media', RequestType.POST, '/', true,
             [
                 UserRole.administrator
             ]);
@@ -67,12 +66,12 @@ export class MediaAddCommand extends ApiCommand {
         };
     }
 
-    async do(req, res, settings: AppConfiguration) {
+    async do(req, res) {
         const answer = ApiCommand.createAnswer();
         const validation = this.validate(req.params, req.body);
 
         // do something
-        if (validation === '') {
+        if (validation.length === 0) {
             const body: AddMediaItemRequest = req.body;
             try {
                 const result = await DatabaseFunctions.addMediaItem(body);

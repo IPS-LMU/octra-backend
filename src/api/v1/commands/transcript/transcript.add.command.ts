@@ -1,14 +1,13 @@
 import {ApiCommand, RequestType} from '../api.command';
-import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {AddTranscriptRequest} from '../../obj/request.types';
 import {UserRole} from '../../obj/database.types';
-import {InternalServerError} from '../../../../obj/htpp-codes/server.codes';
-import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
+import {InternalServerError} from '../../../../obj/http-codes/server.codes';
+import {BadRequest} from '../../../../obj/http-codes/client.codes';
 
 export class TranscriptAddCommand extends ApiCommand {
     constructor() {
-        super('addTranscript', RequestType.POST, '/v1/transcripts/', true,
+        super('addTranscript', '/transcripts', RequestType.POST, '/', true,
             [
                 UserRole.administrator
             ]);
@@ -69,7 +68,7 @@ export class TranscriptAddCommand extends ApiCommand {
                 mediaitem_id: {
                     type: 'number'
                 },
-                nexttranscription_id: {
+                nexttranscript_id: {
                     type: 'number'
                 }
             }
@@ -134,7 +133,7 @@ export class TranscriptAddCommand extends ApiCommand {
                         mediaitem_id: {
                             type: 'number'
                         },
-                        nexttranscription_id: {
+                        nexttranscript: {
                             type: 'number'
                         }
                     }
@@ -143,22 +142,23 @@ export class TranscriptAddCommand extends ApiCommand {
         };
     }
 
-    async do(req, res, settings: AppConfiguration) {
+    async do(req, res) {
         const answer = ApiCommand.createAnswer();
         const validation = this.validate(req.params, req.body);
 
         // do something
-        if (validation === '') {
+        if (validation.length === 0) {
             const body: AddTranscriptRequest = req.body;
             try {
                 const result = await DatabaseFunctions.addTranscript(body);
                 if (result.length === 1) {
                     answer.data = result[0];
                     this.checkAndSendAnswer(res, answer);
+                    return;
                 }
-
                 ApiCommand.sendError(res, InternalServerError, 'Could not add tool.');
             } catch (e) {
+                console.log(e);
                 ApiCommand.sendError(res, InternalServerError, e);
             }
         } else {

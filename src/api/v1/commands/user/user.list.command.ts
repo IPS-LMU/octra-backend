@@ -1,13 +1,12 @@
 import {ApiCommand, RequestType} from '../api.command';
-import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {UserRole} from '../../obj/database.types';
-import {InternalServerError} from '../../../../obj/htpp-codes/server.codes';
-import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
+import {InternalServerError} from '../../../../obj/http-codes/server.codes';
+import {BadRequest} from '../../../../obj/http-codes/client.codes';
 
 export class UserListCommand extends ApiCommand {
     constructor() {
-        super('listUsers', RequestType.GET, '/v1/users/', true,
+        super('listUsers', '/users', RequestType.GET, '/', true,
             [
                 UserRole.administrator
             ]);
@@ -61,11 +60,11 @@ export class UserListCommand extends ApiCommand {
         };
     }
 
-    async do(req, res, settings: AppConfiguration) {
+    async do(req, res) {
         const answer = ApiCommand.createAnswer();
         const validation = this.validate(req.params, req.body);
 
-        if (validation === '') {
+        if (validation.length === 0) {
             try {
                 answer.data = await DatabaseFunctions.listUsers();
                 this.checkAndSendAnswer(res, answer);

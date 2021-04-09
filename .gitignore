@@ -612,3 +612,5 @@ FodyWeavers.xsd
 /static/bootstrap/
 !src/api
 /doc/
+deploy.sh
+api.prod.test.js

@@ -1,9 +1,7 @@
 import {ApiCommand, RequestType} from './api.command';
-import {Express, Router} from 'express';
-import {AppConfiguration} from '../../../obj/app-config/app-config';
 import {UserRole} from '../obj/database.types';
-import {OK} from '../../../obj/htpp-codes/success.codes';
-import {InternalServerError} from '../../../obj/htpp-codes/server.codes';
+import {InternalServerError} from '../../../obj/http-codes/server.codes';
+import {OK} from '../../../obj/http-codes/success.codes';
 
 export class SampleCommand extends ApiCommand {
     /*
@@ -16,7 +14,7 @@ export class SampleCommand extends ApiCommand {
      */
 
     constructor() {
-        super('commandName', RequestType.POST, '/v1/commandURI', true, [
+        super('commandName', 'parent', RequestType.POST, '/v1/commandURI', true, [
             UserRole.administrator
         ]);
 
@@ -39,17 +37,12 @@ export class SampleCommand extends ApiCommand {
         };
     }
 
-    register(app: Express, router: Router, environment, settings: AppConfiguration,
-             dbManager) {
-        super.register(app, router, environment, settings, dbManager);
-    };
-
-    async do(req, res, settings: AppConfiguration) {
+    async do(req, res) {
         const answer = ApiCommand.createAnswer();
         const validation = this.validate(req.params, req.body);
 
         // do something
-        if (validation === '') {
+        if (validation.length === 0) {
             return res.status(OK).send(answer);
         } else {
             ApiCommand.sendError(res, InternalServerError, validation);

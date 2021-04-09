@@ -1,13 +1,12 @@
 import {ApiCommand, RequestType} from '../api.command';
-import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {UserRole} from '../../obj/database.types';
-import {InternalServerError} from '../../../../obj/htpp-codes/server.codes';
-import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
+import {BadRequest} from '../../../../obj/http-codes/client.codes';
+import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 
 export class AppTokenListCommand extends ApiCommand {
     constructor() {
-        super('listAppTokens', RequestType.GET, '/v1/app/tokens/', true,
+        super('listAppTokens', '/app', RequestType.GET, '/tokens/', true,
             [
                 UserRole.administrator
             ]);
@@ -43,6 +42,9 @@ export class AppTokenListCommand extends ApiCommand {
                             },
                             description: {
                                 type: 'string'
+                            },
+                            registrations: {
+                                type: 'boolean'
                             }
                         }
                     }
@@ -51,11 +53,11 @@ export class AppTokenListCommand extends ApiCommand {
         };
     }
 
-    async do(req, res, settings: AppConfiguration) {
+    async do(req, res) {
         const answer = ApiCommand.createAnswer();
         const validation = this.validate(req.params, req.body);
 
-        if (validation === '') {
+        if (validation.length === 0) {
             try {
                 answer.data = await DatabaseFunctions.listAppTokens();
                 this.checkAndSendAnswer(res, answer);

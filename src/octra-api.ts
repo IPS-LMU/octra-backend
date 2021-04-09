@@ -1,5 +1,4 @@
-import * as express from 'express';
-import {Express} from 'express';
+import {Express, NextFunction, Request, Response} from 'express';
 import * as bodyParser from 'body-parser';
 import {APIV1} from './api/v1/api';
 import * as path from 'path';
@@ -14,8 +13,7 @@ import {APIModule} from './octra-api.module';
 import {AppConfiguration, IDBConfiguration} from './obj/app-config/app-config';
 import {DBManager} from './db/DBManager';
 import {PostgreSQLManager} from './db/postgreSQL.manager';
-import * as cookieParser from 'cookie-parser';
-import {SHA256} from 'crypto-js';
+import express = require('express');
 
 export class OctraApi {
     get appPath(): string {
@@ -30,7 +28,7 @@ export class OctraApi {
         return this._activeAPIs;
     }
 
-    private _activeAPIs = [];
+    private _activeAPIs: APIV1[] = [];
 
     private _executionPath: string;
     private _appPath: string;
@@ -46,7 +44,6 @@ export class OctraApi {
 
     public init(environment: 'development' | 'production'): Express {
         this.environment = environment;
-        console.log(`environment is ${environment}`);
         if (environment === 'development') {
             this._executionPath = __dirname;
         } else {
@@ -65,9 +62,6 @@ export class OctraApi {
         this.settings = appConfiguration;
         this.settings.appPath = this._appPath;
         this.settings.executionPath = this._executionPath;
-        this.settings.api.authenticator = {
-            appToken: SHA256(Date.now() + '2634872h3gr692seß0d').toString()
-        }
 
         if (this.settings.validation.valid) {
             const app = express();
@@ -76,12 +70,25 @@ export class OctraApi {
 
             app.set('views', path.join(this._appPath, 'views'));
 
-            const router = express.Router();
+            // use bodyParser in order to parse JSON data
+            app.use(bodyParser.urlencoded({extended: true}));
+            app.use(bodyParser.json());
+            app.use(cors())
 
+            const router = express.Router();
             this.dbManager = this.getDBWrapper(this.settings.database);
 
+            router.route('*').all((req: Request, res: Response, next: NextFunction) => {
+                res.removeHeader('x-powered-by');
+                req['appSettings'] = {
+                    ...this.settings
+                };
+                delete req['appSettings'].configuration.database;
+                next();
+            });
+
             for (const api of this._activeAPIs) {
-                api.init(app, router, environment, this.settings, this.dbManager);
+                api.init(app, environment, this.settings, this.dbManager);
             }
 
             app.get('/robots.txt', function (req, res) {
@@ -89,11 +96,6 @@ export class OctraApi {
                 res.send('User-agent: *\nDisallow: /');
             });
 
-            // use bodyParser in order to parse JSON data
-            app.use(bodyParser.urlencoded({extended: true}));
-            app.use(bodyParser.json());
-            app.use(cors())
-            app.use(cookieParser());
 
             console.log(`app path is ${Path.join(this._appPath, '/views/index.ejs')}`);
             app.get('/', (req, res) => {
@@ -125,16 +127,8 @@ export class OctraApi {
             app.use(express.static(path.join(this._appPath, 'static')));
             app.use('/', router);
 
-
-            router.route(`/authShibboleth`).get((req, res) => {
-                res.render(`authenticators/shibboleth/index.ejs`, {
-                    appToken: this.settings.api.authenticator.appToken
-                });
-            });
-
             router.route('*').all((req, res) => {
-                const requestedUrl = req.protocol + '://' + req.get('Host') + req.url;
-                ApiCommand.sendError(res, 400, 'This route does not exist. Please check your URL again. Requested URL: ' + requestedUrl);
+                ApiCommand.sendError(res, 400, `This route does not exist. Please check your URL again. ${req.url}`);
             });
 
             // Start listening!
@@ -143,7 +137,15 @@ export class OctraApi {
                 console.log(`Active APIs:`);
                 for (const api of this._activeAPIs) {
                     console.log(`|- ${api.information.apiSlug}`);
-                    console.log(`|-- Reference: http://localhost:${this.settings.api.port}/${api.information.apiSlug}/reference\n\n`);
+                    console.log(`\t|- Reference: http://localhost:${this.settings.api.port}/${api.information.apiSlug}/reference`);
+
+                    console.log(`\t|- API methods (order is equal to routing order)`);
+                    for (const module of api.modules) {
+                        console.log(`\t\t[Module] ${module.url}`);
+                        for (const command of module.commands) {
+                            console.log(`\t\t\t- ${command.root}${command.url} => ${command.name}`);
+                        }
+                    }
                 }
             });
 

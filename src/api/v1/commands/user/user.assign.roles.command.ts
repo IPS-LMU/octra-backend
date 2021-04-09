@@ -1,15 +1,14 @@
 import {ApiCommand, RequestType} from '../api.command';
-import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {AssignUserRoleRequest} from '../../obj/request.types';
 import {UserRole} from '../../obj/database.types';
-import {InternalServerError} from '../../../../obj/htpp-codes/server.codes';
-import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
+import {InternalServerError} from '../../../../obj/http-codes/server.codes';
+import {BadRequest} from '../../../../obj/http-codes/client.codes';
 
 export class UserAssignRolesCommand extends ApiCommand {
 
     constructor() {
-        super('assignUserRoles', RequestType.POST, '/v1/users/:id/roles', true,
+        super('assignUserRoles', '/users', RequestType.POST, '/:id/roles', true,
             [
                 UserRole.administrator
             ]);
@@ -27,7 +26,7 @@ export class UserAssignRolesCommand extends ApiCommand {
                     type: 'array',
                     items: {
                         type: 'string',
-                        enum: ['administrator', 'transcriber', 'data delivery', 'project administrator']
+                        enum: ['administrator', 'transcriber', 'data_delivery', 'project_admin']
                     },
                     required: true
                 }
@@ -43,10 +42,10 @@ export class UserAssignRolesCommand extends ApiCommand {
         };
     }
 
-    async do(req, res, settings: AppConfiguration) {
+    async do(req, res) {
         const validation = this.validate(req.params, req.body);
         // do something
-        if (validation === '' && req.params && req.params.id) {
+        if (validation.length === 0) {
             const userData: AssignUserRoleRequest = req.body;
             userData.accountID = req.params.id;
             try {

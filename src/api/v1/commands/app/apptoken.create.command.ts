@@ -1,14 +1,13 @@
 import {ApiCommand, RequestType} from '../api.command';
-import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {CreateAppTokenRequest} from '../../obj/request.types';
 import {UserRole} from '../../obj/database.types';
-import {InternalServerError} from '../../../../obj/htpp-codes/server.codes';
-import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
+import {InternalServerError} from '../../../../obj/http-codes/server.codes';
+import {BadRequest} from '../../../../obj/http-codes/client.codes';
 
 export class AppTokenCreateCommand extends ApiCommand {
     constructor() {
-        super('createAppToken', RequestType.POST, '/v1/app/tokens/', true,
+        super('createAppToken', '/app', RequestType.POST, '/tokens/', true,
             [
                 UserRole.administrator
             ]
@@ -31,6 +30,9 @@ export class AppTokenCreateCommand extends ApiCommand {
                 },
                 description: {
                     type: 'string'
+                },
+                registrations: {
+                    type: 'boolean'
                 }
             }
         };
@@ -54,6 +56,9 @@ export class AppTokenCreateCommand extends ApiCommand {
                         },
                         description: {
                             type: 'string'
+                        },
+                        registrations: {
+                            type: 'boolean'
                         }
                     }
                 }
@@ -61,12 +66,12 @@ export class AppTokenCreateCommand extends ApiCommand {
         };
     }
 
-    async do(req, res, settings: AppConfiguration) {
+    async do(req, res) {
         const answer = ApiCommand.createAnswer();
         const validation = this.validate(req.params, req.body);
 
         // do something
-        if (validation === '') {
+        if (validation.length === 0) {
             const body: CreateAppTokenRequest = req.body;
             try {
                 const result = await DatabaseFunctions.createAppToken(body);

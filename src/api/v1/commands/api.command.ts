@@ -1,20 +1,23 @@
-import {Express, Router} from 'express';
+import {Response} from 'express';
 import {Schema, Validator} from 'jsonschema';
 import {AppConfiguration} from '../../../obj/app-config/app-config';
-import {DBManager} from '../../../db/DBManager';
-import {verifyAppToken, verifyUserRole, verifyWebToken} from '../obj/middlewares';
 import {UserRole} from '../obj/database.types';
-import {TokenData} from '../obj/request.types';
-import {OK} from '../../../obj/htpp-codes/success.codes';
-import {BadRequest} from '../../../obj/htpp-codes/client.codes';
+import {isNumber} from '../../../obj/functions';
+import {OK} from '../../../obj/http-codes/success.codes';
+import {BadRequest} from '../../../obj/http-codes/client.codes';
 
 export enum RequestType {
     GET = 'GET',
     POST = 'POST',
+    PUT = 'PUT',
     DELETE = 'DELETE'
 }
 
 export abstract class ApiCommand {
+    get root(): string {
+        return this._root;
+    }
+
     get allowedUserRoles(): UserRole[] {
         return this._allowedUserRoles;
     }
@@ -72,10 +75,10 @@ export abstract class ApiCommand {
     protected _requestStructure: Schema;
     protected _responseStructure: Schema;
     protected _needsJWTAuthentication = false;
-    protected dbManager: DBManager;
     protected settings: AppConfiguration;
     protected _tokenData: any;
     protected _allowedUserRoles: UserRole[];
+    protected _root: string;
 
     private readonly _defaultResponseSchema: Schema = {
         properties: {
@@ -85,7 +88,7 @@ export abstract class ApiCommand {
                 enum: ['success', 'error'],
                 description: '\'error\' or \'success\'. If error, the error message is inserted into message.'
             },
-            auth: {
+            authenticated: {
                 required: true,
                 type: 'boolean',
                 description: 'checks if user is authenticated'
@@ -114,29 +117,31 @@ export abstract class ApiCommand {
         status: 'success' | 'error',
         data: any,
         message?: string,
-        auth: boolean,
+        authenticated: boolean,
         token?: string
     } {
         return {
             status: 'success',
-            auth: true,
+            authenticated: true,
             data: undefined
         };
     }
 
-    static sendError(res, code: number, message: string, authenticated = true) {
+    static sendError(res: any, code: number, message: any, authenticated: boolean = true) {
         const answer = ApiCommand.createAnswer();
         answer.status = 'error';
         answer.message = message;
-        answer.auth = authenticated;
+        answer.authenticated = authenticated;
 
+        ApiCommand.setSecurityHeaders(res);
         res.status(code).send(answer);
     }
 
-    constructor(name: string, type: RequestType, url: string, needsJWTAuthentication: boolean, allowedAccountRoles: UserRole[]) {
+    constructor(name: string, root: string, type: RequestType, url: string, needsJWTAuthentication: boolean, allowedAccountRoles: UserRole[]) {
         this._name = name;
         this._type = type;
         this._url = url;
+        this._root = root;
         this._needsJWTAuthentication = needsJWTAuthentication;
         this._allowedUserRoles = allowedAccountRoles;
 
@@ -165,53 +170,16 @@ export abstract class ApiCommand {
     /***
      * registers command to server
      */
-    public register(app: Express, router: Router, environment: 'production' | 'development', settings: AppConfiguration,
-                    dbManager: DBManager) {
-        router.use(this.url, (req, res, next) => {
-            verifyAppToken(req, res, next, settings, () => {
-                next();
-            });
-        });
-
-        if (this._needsJWTAuthentication) {
-            router.use(this.url, (req, res, next) => {
-                verifyWebToken(req, res, next, settings, (tokenBody: TokenData) => {
-                    (req as any).decoded = tokenBody;
-                    verifyUserRole(req, res, this, () => {
-                        // user may use this api method
-                        next();
-                    });
-                });
-            });
-        }
-        this.dbManager = dbManager;
+    public init(settings: AppConfiguration) {
         this.settings = settings;
-
-        const route = router.route(this.url);
-        const callback = (req, res) => {
-            this.do(req, res, settings);
-        };
-
-        switch (this._type) {
-            case RequestType.GET:
-                route.get(callback);
-                break;
-            case RequestType.POST:
-                route.post(callback);
-                break;
-            case RequestType.DELETE:
-                route.delete(callback);
-                break;
-        }
     }
 
     /***
      * runs a command
      * @param req
      * @param res
-     * @param settings
      */
-    abstract do(req, res, settings: any): Promise<void>;
+    abstract do(req, res): Promise<void>;
 
     /***
      * checks if the request by the client is valid
@@ -219,7 +187,7 @@ export abstract class ApiCommand {
      * @param body
      * @param query
      */
-    validate(params: any, body: any, query?: any) {
+    validate(params: any, body: any, query?: any): any[] {
         let errors = [];
         const validator = new Validator();
         let validationResult = null;
@@ -229,26 +197,47 @@ export abstract class ApiCommand {
             validationResult = validator.validate(body, this.requestStructure);
         }
 
-        if (!validationResult.valid) {
-            for (const error of validationResult.errors) {
-                errors.push(error.stack);
+        if (params) {
+            const paramsErrors = {
+                section: 'URI params',
+                errors: []
+            };
+
+            for (let attr in params) {
+                if (params.hasOwnProperty(attr)) {
+                    if (!isNumber(params[attr])) {
+                        paramsErrors.errors.push(`${attr} is not of type number`);
+                    }
+                }
+            }
+            if (paramsErrors.errors.length > 0) {
+                errors.push(paramsErrors);
             }
         }
 
-        return errors.join(', ');
+        if (!validationResult.valid) {
+            errors.push({
+                section: (query) ? 'GET params' : 'Request payload',
+                errors: validationResult.errors.map(a => a.path.join('.') + ' ' + a.message)
+            });
+        }
+
+        return errors;
     }
 
     validateAnswer(answer) {
         let errors = [];
         const validator = new Validator();
-        const validationResult = validator.validate(answer, this.responseStructure);
+        const validationResult = validator.validate(answer, this._responseStructure);
+
         if (!validationResult.valid) {
-            for (const error of validationResult.errors) {
-                errors.push(error.stack);
-            }
+            errors.push({
+                section: 'Response payload',
+                errors: validationResult.errors.map(a => a.path.join('.') + ' ' + a.message)
+            });
         }
 
-        return errors.join(', ');
+        return errors;
     }
 
     public getUserDataFromTokenObj(req): {
@@ -261,13 +250,27 @@ export abstract class ApiCommand {
 
     public checkAndSendAnswer(res: any, answer: any, authenticated = true) {
         const answerValidation = this.validateAnswer(answer);
-
-        if (answerValidation === '') {
+        ApiCommand.setSecurityHeaders(res);
+        if (answerValidation.length === 0) {
             // a user must be authenticated to get an positive answer
-            answer.auth = true;
+            answer.authenticated = true;
             res.status(OK).send(answer);
         } else {
-            ApiCommand.sendError(res, BadRequest, `Response validation failed: ${answerValidation}`, authenticated);
+            ApiCommand.sendError(res, BadRequest, answerValidation, authenticated);
         }
     }
+
+    private static setSecurityHeaders(res: Response) {
+        res.header('Cache-Control', 'no-store')
+            .header('Content-Security-Policy', 'frame-ancestors \'none\'')
+            .header('Content-Type', 'application/json')
+            .header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+            .header('X-Content-Type-Options', 'nosniff')
+            .header('X-Frame-Options', 'DENY');
+    }
+}
+
+export interface APICommandGroup {
+    parent?: ApiCommand,
+    children: ApiCommand[]
 }

@@ -13,7 +13,6 @@ export class FileSystemHandler {
 
   static mkDir(path) {
     try {
-      console.log(`make folder in ${path}`);
       fs.mkdirSync(path);
       return true;
     } catch (e) {

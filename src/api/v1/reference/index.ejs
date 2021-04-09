@@ -1,53 +1,137 @@
-<!doctype html>
+<!doc_type html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
+    <meta name="_description" content="">
     <meta name="author" content="">
 
     <title>OCTRA API</title>
     <!-- Bootstrap core CSS -->
-    <link href="../bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css">
-    <link href="../bootstrap/bootstrap-icons/bootstrap-icons.css" rel="stylesheet" type="text/css">
+    <link href="../bootstrap/css/bootstrap.min.css" rel="stylesheet" _type="text/css">
+    <link href="../bootstrap/bootstrap-icons/bootstrap-icons.css" rel="stylesheet" _type="text/css">
 
     <!-- Custom styles for this template -->
-    <link href="../v1/style.css" rel="stylesheet" type="text/css">
+    <link href="../v1/style.css" rel="stylesheet" _type="text/css">
 </head>
 
 <body>
+<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top" aria-label="Fourth navbar example">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">OCTRA API v<%= apiInformation.version %></a>
+        <button class="navbar-toggler" _type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExample04"
+                aria-controls="navbarsExample04" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-<nav class="navbar navbar-expand-md navbar-dark bg-dark">
-    <a class="navbar-brand" href="#">OCTRA API</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault"
-            aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
+        <div class="collapse navbar-collapse" id="navbarsExample04">
+            <ul class="navbar-nav me-auto mb-2 mb-md-0 d-md-none">
+                <li class="nav-item">
+                    <a class="nav-link" data-hash="_responseStructure"
+                       aria-expanded="true" data-bs-toggle="collapse" data-bs-target="#navbarsExample04"
+                       data-bcup-haslogintext="no" href="#_responseStructure">
+                        Response structure
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-hash="AppAuthorisation"
+                       aria-expanded="true" data-bs-toggle="collapse" data-bs-target="#navbarsExample04"
+                       data-bcup-haslogintext="no" href="#AppAuthorisation">
+                        App Authorisation
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-hash="UserAuthentication"
+                       aria-expanded="true" data-bs-toggle="collapse" data-bs-target="#navbarsExample04"
+                       data-bcup-haslogintext="no" href="#UserAuthentication">
+                        User Authentication
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-hash="UserAuthorisation"
+                       aria-expanded="true" data-bs-toggle="collapse" data-bs-target="#navbarsExample04"
+                       data-bcup-haslogintext="no" href="#UserAuthorisation">
+                        User Authorisation
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" id="dropdown03"
+                       aria-expanded="false">
+                        API Methods
+                    </a>
+                    <ul class="dropdown-menu bg-dark" aria-labelledby="dropdown03">
+                        <% for(var i = 0; i < commands.length; i++) { %>
+                            <li class="nav-item">
+                                <a class="dropdown-item" data-hash="<%= commands[i]._name %>"
+                                   data-bs-toggle="collapse" data-bs-target="#navbarsExample04"
+                                   href="#<%= commands[i]._name %>"><%= commands[i]._name %>
+                                    (<%= commands[i]._type %>)</a>
+                            </li>
+                        <% } %>
+                    </ul>
+                </li>
+                <li class="nav-item">
 
-    <div class="collapse navbar-collapse" id="navbarsExampleDefault">
-        <ul class="navbar-nav mr-auto">
-            <li class="nav-item active">
-                <a class="nav-link" href="#">API Reference <span class="sr-only">(current)</span></a>
-            </li>
-        </ul>
+                    <ul class="navbar-nav">
+
+                    </ul>
+                </li>
+            </ul>
+        </div>
     </div>
 </nav>
+<div class="row" style="margin-top:80px;">
+    <nav id="navbar-sticky"
+         class="navbar navbar-light bg-light col-md-4 col-lg-4 col-xl-3 px-1 bh-light position-fixed overflow-auto vh-100 d-none d-md-block">
+        <nav class="nav flex-column">
+            <a class="nav-link align-items-center rounded collapsed" data-hash="_responseStructure" aria-expanded="true"
+               data-bcup-haslogintext="no" href="#_responseStructure">
+                Response structure
+            </a>
+            <a class="nav-link align-items-center rounded collapsed" data-hash="AppAuthorisation" aria-expanded="true"
+               data-bcup-haslogintext="no" href="#AppAuthorisation">
+                App Authorisation
+            </a>
+            <a class="nav-link align-items-center rounded collapsed" data-hash="UserAuthentication" aria-expanded="true"
+               data-bcup-haslogintext="no" href="#UserAuthentication">
+                User Authentication
+            </a>
+            <a class="nav-link align-items-center rounded collapsed" data-hash="UserAuthorisation" aria-expanded="true"
+               data-bcup-haslogintext="no" href="#UserAuthorisation">
+                User Authorisation
+            </a>
+            <a class="nav-link btn-toggle align-items-center rounded collapsed" data-hash="APIMethods"
+               data-bs-toggle="collapse"
+               data-bs-target="#api-methods" aria-expanded="true" data-bcup-haslogintext="no" href="#APIMethods">
+                API Methods
+            </a>
+            <div class="collapse show" id="api-methods">
+                <nav class="nav btn-toggle-nav list-unstyled fw-normal pb-1 small flex-column">
+                    <% for(var i = 0; i < commands.length; i++){ %>
+                        <a class="nav-link" data-hash="<%= commands[i]._name %>"
+                           href="#<%= commands[i]._name %>"><%= commands[i]._name %></a>
+                    <% } %>
+                </nav>
+            </div>
+        </nav>
+    </nav>
 
-<main role="main" class="container">
-    <div class="row">
-        <div class="col-lg-9">
-            <div id="main-inner">
+
+    <main class="col-12 col-sm-12 col-md-8 col-lg-8 col-xl-9 offset-md-4 offset-lg-4 offset-xl-3">
+        <div id="main-inner" class="overflow-auto">
+            <div id="main-content">
                 <h1><%= apiInformation.name %> REST API Reference v<%= apiInformation.version %></h1>
                 <br/>
 
-                <h2 id="ResponseStructure">Response Structure</h2>
+                <h2 id="_responseStructure">Response Structure</h2>
                 <div class="card command">
                     <div class="card-body">
                         <p>Each response makes use of the same JSON schema:</p>
-                        <textarea style="min-height:200px;" readonly><%= apiDefaultResponseSchema %></textarea>
+                        <textarea style="min-height:200px;"
+                                  readonly><%= apiDefaultResponseSchema %></textarea>
                         <div class="alert alert-info">
-                            "message" contains an error message if "status" is "error". Otherwise it contains messages
-                            for developer only.
+                            "message" contains an error message if "status" is "error". Otherwise it
+                            contains messages for developer only.
                         </div>
                     </div>
                 </div>
@@ -56,10 +140,13 @@
                 <div class="card command">
                     <div class="card-body">
                         <p>
-                            Each application, that uses this API needs an API key. The application has to send this API
-                            key via Authorization Header. Developers have to ask the API owner to register the
+                            Each application, that uses this API needs an API key. The application has to
+                            send
+                            this API
+                            key via Authorization Header. Developers have to ask the API owner to register
+                            the
                             application.<br/><br/>
-                            Example: <code> Authentication: Bearer 65423gzu123f647t123892r3j01r732h</code>
+                            Example: <code>Authorization: Bearer 65423gzu123f647t123892r3j01r732h</code>
                         </p>
                     </div>
                 </div>
@@ -68,8 +155,12 @@
                 <div class="card command">
                     <div class="card-body">
                         <p>
-                            This API makes use of JWT (JSON Web Tokens). On successful signup/signin a token is returned
-                            to the client application. The client application must add this token to each API request.
+                            This API makes use of JWT (JSON Web Tokens). On successful signup/signin a token
+                            is
+                            returned
+                            to the client application. The client application must add this token to each
+                            API
+                            request.
                         </p>
                     </div>
                 </div>
@@ -78,10 +169,14 @@
                 <div class="card command">
                     <div class="card-body">
                         <p>
-                            This API makes use of JWT (JSON Web Tokens). The token is an encrypted JSON object with
-                            information about a user access rights. This token is validated by the server. Only if the
-                            token is
-                            valid and only if the user owns rights to do an action, the server runs the action.
+                            This API makes use of JWT (JSON Web Tokens). On successful signup/signin a token
+                            is
+                            returned
+                            to the client application. The client application must add this token to each
+                            API
+                            request<br/><br/>
+
+                            Append the JWT as <code>x-access-token</code> header to your request.
                         </p>
                     </div>
                 </div>
@@ -89,17 +184,19 @@
                 <h2 style="margin-top: 40px;" id="APIMethods">API Methods</h2>
                 <hr style="margin-bottom: 10px;"/>
 
-                <div class="commands" data-spy="scroll" data-target="#navbar-example2" data-offset="0">
+                <div class="commands">
                     <% for(var i = 0; i < commands.length; i++) { %>
-                        <div class="card command">
+                        <div class="card command" id="<%= commands[i]._name %>">
                             <div class="card-header">
-                                <span class="title" id="<%= commands[i].name %>">
-                                    <%= commands[i].name %>
+                                <span class="title">
+                                    <%= commands[i]._name %> <a href="#<%= commands[i]._name %>"
+                                                               data-hash="<%= commands[i]._name %>"><i
+                                                class="bi bi-link-45deg"></i></a>
                                 </span>
                                 <div class="info">
                                     <span class="badge pill bg-info"><i
                                                 class="bi bi-shield-lock-fill"></i> App Token</span>
-                                    <% if (commands[i].needsJWT) { %>
+                                    <% if (commands[i]._needsJWTAuthentication) { %>
                                         <span class="badge pill bg-info"><i
                                                     class="bi bi-shield-lock-fill"></i> JWT</span>
                                     <% } %>
@@ -107,66 +204,68 @@
                             </div>
                             <div class="card-body">
                                 <table class="table">
-                                    <% if (commands[i].allowedUserRoles.length > 0) { %>
+                                    <% if (commands[i]._allowedUserRoles.length > 0) { %>
                                         <tr>
                                             <td class="label">
                                                 Allowed user roles:
                                             </td>
-                                            <td><%= commands[i].allowedUserRoles.join(', ') %></td>
+                                            <td><%= commands[i]._allowedUserRoles.join(', ') %></td>
                                         </tr>
                                     <% } %>
                                     <tr>
                                         <td class="label">
                                             URL:
                                         </td>
-                                        <td><code><%= url %><%= commands[i].url %></code></td>
+                                        <td><code><%= url %><%= commands[i]._url %></code></td>
                                     </tr>
                                     <tr>
                                         <td class="label">
                                             Description:
                                         </td>
-                                        <td><p><%= commands[i].description %></p></td>
+                                        <td><p><%= commands[i]._description %></p></td>
                                     </tr>
                                     <tr>
                                         <td class="label">Method:</td>
                                         <td>
-                                            <span class="badge rounded-pill bg-secondary"><%= commands[i].type %></span>
+                                            <span class="badge rounded-pill bg-secondary"><%= commands[i]._type %></span>
                                         </td>
                                     </tr>
-                                    <% if (commands[i].requestStructure) { %>
-                                        <% if (commands[i].acceptedContentType) { %>
+                                    <% if (commands[i]._requestStructure && commands[i]._requestStructure !== '{}') { %>
+                                        <% if (commands[i]._acceptedContentType) { %>
                                             <tr>
                                                 <td class="label">Request Content Type:</td>
-                                                <td><%= commands[i].acceptedContentType %></td>
+                                                <td><%= commands[i]._acceptedContentType %></td>
                                             </tr>
                                         <% } %>
                                     <% } %>
-                                    <% if (commands[i].responseStructure) { %>
+                                    <% if (commands[i]._responseStructure) { %>
                                         <tr>
                                             <td class="label">Response Content Type:</td>
-                                            <td><%= commands[i].responseContentType %></td>
+                                            <td><%= commands[i]._responseContentType %></td>
                                         </tr>
                                     <% } %>
-                                    <% if (commands[i].requestStructure) { %>
+                                    <% if (commands[i]._requestStructure && commands[i]._requestStructure !== '{}') { %>
                                         <tr>
                                             <td colspan="2">
                                                 <span class="label">Request Schema:
-                                                    <% if (commands[i].type === 'GET') { %>
+                                                    <% if (commands[i]._type === 'GET') { %>
                                                         (GET parameters in URL)
                                                     <% } else { %>
                                                         (Body)
                                                     <% } %>
                                                     :<br/>
                                                     </span>
-                                                <textarea readonly><%= commands[i].requestStructure %></textarea>
+                                                <textarea
+                                                        readonly><%= commands[i]._requestStructure %></textarea>
                                             </td>
                                         </tr>
                                     <% } %>
-                                    <% if (commands[i].responseStructure) { %>
+                                    <% if (commands[i]._responseStructure) { %>
                                         <tr>
                                             <td colspan="2">
                                                 <span class="label">Response Schema:</span><br>
-                                                <textarea readonly><%= commands[i].responseStructure %></textarea>
+                                                <textarea
+                                                        readonly><%= commands[i]._responseStructure %></textarea>
                                             </td>
                                         </tr>
                                     <% } %>
@@ -178,43 +277,46 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 d-none d-lg-block">
-            <div class="sticky-top">
-                <nav id="navbar-sticky" class="navbar navbar-light bg-light">
-                    <nav class="nav nav-pills flex-column">
-                        <a class="nav-link" href="#ResponseStructure">ResponseStructure</a>
-                        <a class="nav-link" href="#AppAuthorisation">App Authorisation</a>
-                        <a class="nav-link" href="#UserAuthentication">User Authentication</a>
-                        <a class="nav-link" href="#APIMethods">API Methods</a>
-                        <nav class="nav nav-pills flex-column">
-                            <% for(var i = 0; i < commands.length; i++) { %>
-                                <a class="nav-link ml-3 my-1" href="#<%= commands[i].name %>"><%= commands[i].name %>
-                                    <span class="badge rounded-pill bg-secondary"><%= commands[i].type %></span></a>
-                            <% } %>
-                        </nav>
-                    </nav>
-                </nav>
-            </div>
-            <!--
-      <ul class="nav nav-pills nav-stacked" style="position: sticky;" >
-        <% for(var i = 0; i < commands.length; i++) { %>
-        <li><a class="btn btn-secondary" href="#<%= commands[i].name %>"><%= commands[i].name %> (<%= commands[i].type %>)</a></li>
-        <% } %>
-      </ul>-->
-        </div>
-    </div>
-</main><!-- /.container -->
+    </main>
+</div>
 
 <!-- Bootstrap core JavaScript
 ================================================== -->
 <!-- Placed at the end of the document so the pages load faster -->
 <script src="../bootstrap/js/vendor/jquery.min.js"></script>
-<script src="../bootstrap/js/vendor/popper.min.js"></script>
-<script src="../bootstrap/js/bootstrap.min.js"></script>
+<!-- <script src="../bootstrap/js/vendor/popper.min.js"></script> -->
+<script src="../bootstrap/js/bootstrap.bundle.js"></script>
 <script>
     $(document).ready(function () {
-        $('body').scrollspy({target: '#navbar-sticky'})
+        new bootstrap.ScrollSpy(document.getElementById("main-inner"), {
+            target: '#navbar-sticky',
+            method: "position",
+            offset: 80
+        })
+        if (document.location.hash) {
+            jumpTo(20);
+        }
+
+        $("a[data-hash]").on("click", function (event) {
+            event.preventDefault();
+            location.hash = $(this).attr("data-hash");
+            jumpTo(20);
+        })
     });
+
+    function jumpTo(offset) {
+        const elem = $(document.location.hash);
+        const main = $("#main-inner");
+        if (main) {
+            if (elem) {
+                main.scrollTop(elem[0].offsetTop - offset);
+            } else {
+                console.log(`could not find elem!`);
+            }
+        } else {
+            console.log(`could not find main!`);
+        }
+    }
 </script>
 </body>
 </html>

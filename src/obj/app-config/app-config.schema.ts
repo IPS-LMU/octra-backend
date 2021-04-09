@@ -39,6 +39,24 @@ export const AppConfigurationSchema: Schema = {
                 dbPassword: {
                     type: 'string',
                     required: true
+                },
+                ssl: {
+                    type: 'object',
+                    properties: {
+                        rejectUnauthorized: {
+                            type: 'boolean',
+                            required: true
+                        },
+                        ca: {
+                            type: 'string'
+                        },
+                        key: {
+                            type: 'string'
+                        },
+                        cert: {
+                            type: 'string'
+                        }
+                    }
                 }
             }
         },
@@ -66,15 +84,13 @@ export const AppConfigurationSchema: Schema = {
                 },
                 secret: {
                     type: 'string',
+                    pattern: ".{10}",
                     required: true
                 },
-                authenticator: {
-                    type: 'object',
-                    properties: {
-                        appToken: {
-                            type: 'string'
-                        }
-                    }
+                passwordSalt: {
+                    type: 'string',
+                    pattern: ".{10}",
+                    required: true
                 }
             },
             required: true

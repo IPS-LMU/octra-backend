@@ -59,7 +59,7 @@ export interface AddTranscriptRequest {
     transcriber_id?: number;
     project_id?: number;
     mediaitem_id?: number;
-    nexttranscription_id?: number;
+    nexttranscript_id?: number;
 }
 
 export interface AssignUserRoleRequest {
@@ -68,15 +68,15 @@ export interface AssignUserRoleRequest {
 }
 
 export interface DeliverNewMediaRequest {
-    projectName: string;
+    project_id: number;
     media: {
         url: string;
         type?: string;
         size?: number;
         metadata?: string;
     },
-    orgText: string;
-    transcript: string;
+    orgtext?: string;
+    transcript?: string;
 }
 
 export interface GetProjectTranscriptsRequest {
@@ -85,5 +85,5 @@ export interface GetProjectTranscriptsRequest {
 
 export interface TokenData {
     id: number;
-    roles: UserRole[]
+    role: UserRole[]
 }

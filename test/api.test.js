@@ -48,7 +48,9 @@ const todoList = {
         assign: true,
         getUsers: true,
         delete: true,
-        getHash: true
+        password: {
+            change: true
+        }
     },
     app: {
         tokens: {
@@ -73,7 +75,7 @@ const todoList = {
         deliver: true
     },
     transcripts: {
-        add: true,
+        add: false,
         get: true
     }
 };
@@ -108,11 +110,11 @@ describe('User', () => {
     }
 
     if (todoList.user.login) {
-        describe('/POST v1/users/login', () => {
+        describe('/POST v1/login', () => {
             it('it should POST a user login', (done) => {
                 const request = {
                     "name": "Julian",
-                    "password": "Password12345"
+                    "password": "test123"
                 }
                 chai.request(server)
                     .post('/v1/users/login')
@@ -135,7 +137,7 @@ describe('User', () => {
         describe('/POST v1/users/:id/roles', () => {
             it('it should assign user roles', (done) => {
                 const request = {
-                    roles: ["administrator"]
+                    roles: ["data_delivery"]
                 }
                 chai.request(server)
                     .post(`/v1/users/${tempData.user.id}/roles`)
@@ -153,23 +155,28 @@ describe('User', () => {
         });
     }
 
-    if(todoList.user.getHash){
-        describe('/GET v1/hash', () => {
-            it('it should retrieve an boolean if hash exists', (done) => {
+    if (todoList.user.login) {
+        describe('/POST v1/login', () => {
+            it('it should POST a normal user login', (done) => {
+                const request = {
+                    "name": tempData.user.name,
+                    "password": "Password12345"
+                }
                 chai.request(server)
-                    .get(`v1/hash`)
+                    .post('/v1/users/login')
                     .set("Authorization", `Bearer ${appToken}`)
-                    .set("x-access-token", tempData.admin.jwtToken)
                     .set("Origin", "http://localhost:8080")
+                    .send(request)
                     .end((err, res) => {
                         checkForErrors(err, res);
-
-                        res.status.should.be.equal(200);
-                        res.body.data.should.be.a('boolean');
+                        res.body.status.should.be.equal("success");
+                        res.body.should.be.a('object')
+                        tempData.user.id = res.body.data.id;
+                        tempData.user.jwtToken = res.body.token;
                         done();
                     });
             });
-        })
+        });
     }
 
     if (todoList.user.getUsers) {
@@ -186,6 +193,29 @@ describe('User', () => {
 
                         res.status.should.be.equal(200);
                         res.body.data.should.be.a('array');
+                        done();
+                    });
+            });
+        });
+    }
+
+    if (todoList.user.password.change) {
+        describe('/PUT v1/users/password', () => {
+            it('it should change the password for the user logged in', (done) => {
+                const request = {
+                    oldPassword: 'Password12345',
+                    password: 'test12345'
+                }
+                chai.request(server)
+                    .put(`/v1/users/password`)
+                    .set("Authorization", `Bearer ${appToken}`)
+                    .set("x-access-token", tempData.user.jwtToken)
+                    .set("Origin", "http://localhost:8080")
+                    .send(request)
+                    .end((err, res) => {
+                        checkForErrors(err, res);
+                        res.body.status.should.be.equal("success");
+                        res.body.should.be.a('object')
                         done();
                     });
             });
@@ -284,7 +314,7 @@ describe('Media', () => {
                     .post('/v1/media')
                     .set("Authorization", `Bearer ${appToken}`)
                     .set("Origin", "http://localhost:8080")
-                    .set("x-access-token", tempData.user.jwtToken)
+                    .set("x-access-token", tempData.admin.jwtToken)
                     .send(request)
                     .end((err, res) => {
                         checkForErrors(err, res);
@@ -332,8 +362,9 @@ describe('Data Delivery', () => {
     if (todoList.dataDelivery.deliver) {
         describe('/POST v1/delivery/media/', () => {
             it('it should deliver a new audio file', (done) => {
+                console.log(`PROJECT ID FOR TEST ${tempData.project.id}`);
                 const request = {
-                    projectName: tempData.project.name,
+                    project_id: tempData.project.id,
                     media: {
                         url: `http://localhost/${Date.now()}.wav`,
                         type: "audio/wav",
@@ -342,7 +373,7 @@ describe('Data Delivery', () => {
                     }
                 }
                 chai.request(server)
-                    .post('/v1/delivery/media/')
+                    .post('/v1/delivery/media')
                     .set("Authorization", `Bearer ${appToken}`)
                     .set("Origin", "http://localhost:8080")
                     .set("x-access-token", tempData.user.jwtToken)
@@ -372,12 +403,12 @@ describe('Transcripts', () => {
                     .post('/v1/transcripts')
                     .set("Authorization", `Bearer ${appToken}`)
                     .set("Origin", "http://localhost:8080")
-                    .set("x-access-token", tempData.user.jwtToken)
+                    .set("x-access-token", tempData.admin.jwtToken)
                     .send(request)
                     .end((err, res) => {
                         checkForErrors(err, res);
                         log(`added ${res.body.data.id}`);
-
+                        tempData.transcript.id = res.body.data.id;
                         res.status.should.be.equal(200);
                         res.body.should.be.a('object');
                         done();
@@ -390,10 +421,10 @@ describe('Transcripts', () => {
         describe('/GET v1/transcripts/:id', () => {
             it('it should get an transcript by id', (done) => {
                 chai.request(server)
-                    .get(`/v1/transcripts/${tempData.transcript.id}`)
+                    .get(`/v1/transcripts/481`)
                     .set("Authorization", `Bearer ${appToken}`)
                     .set("Origin", "http://localhost:8080")
-                    .set("x-access-token", tempData.admin.jwtToken)
+                    .set("x-access-token", tempData.user.jwtToken)
                     .end((err, res) => {
                         checkForErrors(err, res);
                         log(`retrieved rows: ${res.body.data.length}`);
@@ -407,10 +438,10 @@ describe('Transcripts', () => {
     }
 
     if (todoList.project.transcripts.get) {
-        describe('/GET v1/projects/transcripts', () => {
+        describe('/GET v1/projects/:id/transcripts', () => {
             it('it should list an array of transcripts for a given project', (done) => {
                 chai.request(server)
-                    .get(`/v1/projects/transcripts/?projectName=${tempData.project.name}`)
+                    .get(`/v1/projects/${tempData.project.id}/transcripts`)
                     .set("Authorization", `Bearer ${appToken}`)
                     .set("Origin", "http://localhost:8080")
                     .set("x-access-token", tempData.user.jwtToken)
@@ -481,9 +512,9 @@ function logJSON(json) {
 
 
 function checkForErrors(err, res) {
-    // logJSON(res.body);
-    console.log(err);
+    //logJSON(res.body);
+    //console.log(res.headers);
     assert.equal(err, undefined, err);
-    res.body.status.should.be.equal('success', res.body.message);
+    res.body.status.should.be.equal('success', JSON.stringify(res.body.message, null, 2));
     assert.equal(res.error, false, res.error.message);
 }
