@@ -54,8 +54,10 @@ export class CommandModule {
             }
             const route = router.route(command.url);
             const callback = (req, res) => {
+                console.log(`called command ${command.name} (${command.type}): ${command.url}`);
                 command.do(req, res);
             }
+
             switch (command.type) {
                 case RequestType.GET:
                     route.get(callback);

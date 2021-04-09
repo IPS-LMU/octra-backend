@@ -27,7 +27,7 @@ export class DatabaseFunctions {
     private static settings: AppConfiguration;
 
     private static selectAllStatements = {
-        appTokens: 'select id::integer, name::text, key::text, domain::text, description::text, registrations::boolean from apptokens',
+        appToken: 'select id::integer, name::text, key::text, domain::text, description::text, registrations::boolean from apptoken',
         account: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp from account ac',
         project: 'select id::integer, name::text, shortname::text, description::text, configuration::text, startdate::timestamp, enddate::timestamp, active::boolean, admin_id::integer from project',
         mediaitem: 'select id::integer, url::text, type::text, size::integer, metadata::text from mediaitem',
@@ -45,7 +45,7 @@ export class DatabaseFunctions {
 
     public static async isValidAppToken(token: string, originHost: string): Promise<void> {
         const selectResult = await DatabaseFunctions.dbManager.query({
-            text: DatabaseFunctions.selectAllStatements.appTokens + ' where key=$1::text',
+            text: DatabaseFunctions.selectAllStatements.appToken + ' where key=$1::text',
             values: [token]
         });
 
@@ -61,8 +61,6 @@ export class DatabaseFunctions {
                         // multiple domains
                         const domains = domainEntry.split(',');
                         valid = domains.filter(a => a !== '').findIndex(a => a === originHost) > -1;
-                        console.log(`domains are`);
-                        console.log(domains);
                     } else {
                         // one domain
                         valid = resultRow.domain.trim() === originHost;
@@ -83,7 +81,7 @@ export class DatabaseFunctions {
 
     public static async areRegistrationsAllowed(appToken: string): Promise<boolean> {
         const selectResult = await DatabaseFunctions.dbManager.query({
-            text: DatabaseFunctions.selectAllStatements.appTokens + ' where key=$1::text',
+            text: DatabaseFunctions.selectAllStatements.appToken + ' where key=$1::text',
             values: [appToken]
         });
 
@@ -105,7 +103,7 @@ export class DatabaseFunctions {
             let token = await DatabaseFunctions.generateAppToken();
 
             const insertQuery = {
-                tableName: 'apptokens',
+                tableName: 'apptoken',
                 columns: [
                     DatabaseFunctions.getColumnDefinition('name', 'text', data.name, false),
                     DatabaseFunctions.getColumnDefinition('key', 'text', token, false),
@@ -119,7 +117,7 @@ export class DatabaseFunctions {
             if (insertionResult.rowCount === 1 && insertionResult.rows[0].hasOwnProperty('id')) {
                 const id = insertionResult.rows[0].id;
                 const selectResult = await DatabaseFunctions.dbManager.query({
-                    text: DatabaseFunctions.selectAllStatements.appTokens + ' where id=$1',
+                    text: DatabaseFunctions.selectAllStatements.appToken + ' where id=$1',
                     values: [id]
                 });
 
@@ -339,7 +337,7 @@ export class DatabaseFunctions {
 
     public static async removeAppToken(id: number): Promise<void> {
         const removeResult = await DatabaseFunctions.dbManager.query({
-            text: 'delete from apptokens where id=$1::numeric',
+            text: 'delete from apptoken where id=$1::numeric',
             values: [id]
         });
         if (removeResult.rowCount < 1) {
@@ -350,7 +348,7 @@ export class DatabaseFunctions {
 
     public static async listAppTokens(): Promise<AppTokensRow[]> {
         const selectResult = await DatabaseFunctions.dbManager.query({
-            text: DatabaseFunctions.selectAllStatements.appTokens
+            text: DatabaseFunctions.selectAllStatements.appToken
         });
         DatabaseFunctions.prepareRows(selectResult.rows);
         return selectResult.rows as AppTokensRow[];
@@ -383,7 +381,7 @@ export class DatabaseFunctions {
             });
 
             const selectResult = await DatabaseFunctions.dbManager.query({
-                text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_roles ar ON ac.id=ar.account_id full outer join roles r ON r.id=ar.roles_id where ac.id=$1::integer',
+                text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_role ar ON ac.id=ar.account_id full outer join role r ON r.id=ar.roles_id where ac.id=$1::integer',
                 values: [
                     id
                 ]
@@ -410,7 +408,7 @@ export class DatabaseFunctions {
 
         // remove all roles from this account at first
         queries.push({
-            text: 'delete from account_roles where account_id=$1::integer',
+            text: 'delete from account_role where account_id=$1::integer',
             values: [data.accountID]
         });
 
@@ -420,7 +418,7 @@ export class DatabaseFunctions {
             if (roleEntry) {
                 const roleID = roleEntry.id;
                 queries.push({
-                    text: 'insert into account_roles(account_id, roles_id) values($1::integer, $2::integer)',
+                    text: 'insert into account_role(account_id, roles_id) values($1::integer, $2::integer)',
                     values: [data.accountID, roleID]
                 });
             } else {
@@ -438,7 +436,7 @@ export class DatabaseFunctions {
 
     static async getRoles() {
         const result = await DatabaseFunctions.dbManager.query({
-            text: 'select * FROM roles'
+            text: 'select * FROM role'
         });
         return result.rows as RolesRow[];
     }
@@ -446,7 +444,7 @@ export class DatabaseFunctions {
     static async getRolesByUserID(id: number): Promise<string[]> {
         const rolesTable = await DatabaseFunctions.getRoles();
         const accountRolesTable = await DatabaseFunctions.dbManager.query({
-            text: 'select * from account_roles where account_id=$1::integer',
+            text: 'select * from account_role where account_id=$1::integer',
             values: [id]
         });
         return (accountRolesTable.rows as any).map(a => a.roles_id)
@@ -493,7 +491,7 @@ export class DatabaseFunctions {
                 values: [id]
             },
             {
-                text: 'delete from account_roles where account_id=$1::integer',
+                text: 'delete from account_role where account_id=$1::integer',
                 values: [id]
             },
             {
@@ -528,7 +526,7 @@ export class DatabaseFunctions {
         roles: UserRole[]
     }> {
         const selectResult = await DatabaseFunctions.dbManager.query({
-            text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_roles ar ON ac.id=ar.account_id full outer join roles r ON r.id=ar.roles_id where ac.username=$1::text',
+            text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_role ar ON ac.id=ar.account_id full outer join role r ON r.id=ar.roles_id where ac.username=$1::text',
             values: [name]
         });
 
@@ -566,7 +564,7 @@ export class DatabaseFunctions {
         roles: UserRole[]
     }> {
         const selectResult = await DatabaseFunctions.dbManager.query({
-            text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_roles ar ON ac.id=ar.account_id full outer join roles r ON r.id=ar.roles_id where ac.id=$1::integer',
+            text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_role ar ON ac.id=ar.account_id full outer join role r ON r.id=ar.roles_id where ac.id=$1::integer',
             values: [id]
         });
 

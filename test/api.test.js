@@ -512,7 +512,7 @@ function logJSON(json) {
 
 
 function checkForErrors(err, res) {
-    logJSON(res.body);
+    //logJSON(res.body);
     //console.log(res.headers);
     assert.equal(err, undefined, err);
     res.body.status.should.be.equal('success', JSON.stringify(res.body.message, null, 2));
