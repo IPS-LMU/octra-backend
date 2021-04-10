@@ -1,12 +1,12 @@
 import {ApiCommand, RequestType} from '../api.command';
 import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
-import {InternalServerError} from '../../../../obj/htpp-codes/server.codes';
-import {BadRequest} from '../../../../obj/htpp-codes/client.codes';
+import {InternalServerError} from '../../../../obj/http-codes/server.codes';
+import {BadRequest} from '../../../../obj/http-codes/client.codes';
 
 export class UserExistsHashCommand extends ApiCommand {
     constructor() {
-        super('existsWithHash', RequestType.GET, '/v1/hash', false,
+        super('existsWithHash', '/users', RequestType.GET, '/v1/hash', false,
             []);
 
         this._description = 'Returns a boolean if user with the hash exists.';
@@ -40,11 +40,11 @@ export class UserExistsHashCommand extends ApiCommand {
         };
     }
 
-    async do(req, res, settings: AppConfiguration) {
+    async do(req, res) {
         const answer = ApiCommand.createAnswer();
         const validation = this.validate(req.params, req.body, req.query);
 
-        if (validation === '') {
+        if (validation.length === 0) {
             try {
                 answer.data = await DatabaseFunctions.getUserByHash(req.query.hash);
                 this.checkAndSendAnswer(res, answer, false);

@@ -357,7 +357,8 @@ export class DatabaseFunctions {
     static async createUser(userData: {
         name?: string,
         email?: string,
-        password: string
+        password: string,
+        loginmethod: string
     }): Promise<{
         id: number;
         roles: UserRole[];
@@ -367,7 +368,8 @@ export class DatabaseFunctions {
             columns: [
                 DatabaseFunctions.getColumnDefinition('username', 'text', userData.name),
                 DatabaseFunctions.getColumnDefinition('email', 'text', userData.email),
-                DatabaseFunctions.getColumnDefinition('hash', 'text', userData.password)
+                DatabaseFunctions.getColumnDefinition('hash', 'text', userData.password),
+                DatabaseFunctions.getColumnDefinition('loginmethod', 'text', userData.loginmethod)
             ]
         };
         const insertionResult = await DatabaseFunctions.dbManager.insert(insertAccountQuery, 'id');
@@ -381,7 +383,7 @@ export class DatabaseFunctions {
             });
 
             const selectResult = await DatabaseFunctions.dbManager.query({
-                text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_role ar ON ac.id=ar.account_id full outer join role r ON r.id=ar.roles_id where ac.id=$1::integer',
+                text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_role ar ON ac.id=ar.account_id full outer join role r ON r.id=ar.role_id where ac.id=$1::integer',
                 values: [
                     id
                 ]
@@ -418,7 +420,7 @@ export class DatabaseFunctions {
             if (roleEntry) {
                 const roleID = roleEntry.id;
                 queries.push({
-                    text: 'insert into account_role(account_id, roles_id) values($1::integer, $2::integer)',
+                    text: 'insert into account_role(account_id, role_id) values($1::integer, $2::integer)',
                     values: [data.accountID, roleID]
                 });
             } else {
@@ -447,7 +449,7 @@ export class DatabaseFunctions {
             text: 'select * from account_role where account_id=$1::integer',
             values: [id]
         });
-        return (accountRolesTable.rows as any).map(a => a.roles_id)
+        return (accountRolesTable.rows as any).map(a => a.role_id)
             .map(a => {
                 const role = rolesTable.find(b => b.id === a);
                 if (role) {
@@ -506,10 +508,10 @@ export class DatabaseFunctions {
         return;
     }
 
-    static async getUser(id: number): Promise<AccountRow> {
+    static async getUserByHash(hash: string): Promise<AccountRow> {
         const selectResult = await DatabaseFunctions.dbManager.query({
-            text: this.selectAllStatements.account + ' where id=$1::numeric',
-            values: [id]
+            text: this.selectAllStatements.account + ' where hash=$1::text',
+            values: [hash]
         });
 
         if (selectResult.rowCount === 1) {
@@ -526,7 +528,7 @@ export class DatabaseFunctions {
         roles: UserRole[]
     }> {
         const selectResult = await DatabaseFunctions.dbManager.query({
-            text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_role ar ON ac.id=ar.account_id full outer join role r ON r.id=ar.roles_id where ac.username=$1::text',
+            text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_role ar ON ac.id=ar.account_id full outer join role r ON r.id=ar.role_id where ac.username=$1::text',
             values: [name]
         });
 
@@ -564,7 +566,7 @@ export class DatabaseFunctions {
         roles: UserRole[]
     }> {
         const selectResult = await DatabaseFunctions.dbManager.query({
-            text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_role ar ON ac.id=ar.account_id full outer join role r ON r.id=ar.roles_id where ac.id=$1::integer',
+            text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_role ar ON ac.id=ar.account_id full outer join role r ON r.id=ar.role_id where ac.id=$1::integer',
             values: [id]
         });
 

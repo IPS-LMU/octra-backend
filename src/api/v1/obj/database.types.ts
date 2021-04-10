@@ -23,7 +23,7 @@ export interface AccountRow extends DatabaseRow {
 
 export interface AccountRolesRow {
     account_id: number;
-    roles_id: number;
+    role_id: number;
 }
 
 export interface RolesRow extends DatabaseRow {

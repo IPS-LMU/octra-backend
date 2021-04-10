@@ -27,7 +27,10 @@ export interface IAPIConfiguration {
     debugging?: boolean,
     uploadPath: string,
     secret: string,
-    passwordSalt: string
+    passwordSalt: string,
+    authenticator: {
+        appToken: string
+    }
 }
 
 export interface IDBSSLConfiguration {

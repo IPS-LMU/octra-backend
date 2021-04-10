@@ -8,6 +8,7 @@ export class CommandModule {
     get url(): string {
         return this._url;
     }
+
     get commands(): ApiCommand[] {
         return this._commands;
     }
@@ -21,7 +22,11 @@ export class CommandModule {
 
     init(v1Router: Router, environment: 'production' | 'development', settings: AppConfiguration) {
         const router = Router();
-        router.use(verifyAppToken);
+        router.use((req, res, next) => {
+            verifyAppToken(req, res, next, settings, () => {
+                next();
+            });
+        });
 
         // sorting commands is important for routing! Important!
         this._commands.sort((a, b) => {

@@ -69,6 +69,13 @@ export class UserLoginCommand extends ApiCommand {
                     return;
                 }
 
+                // TODO check shibboleth cookie
+                // password = shibboleth uid
+                // check user name & hash
+
+                // TODO redirect after authentication
+                // TODO check authentication
+
                 answer.authenticated = true;
                 const tokenData: TokenData = {
                     id, role: roles

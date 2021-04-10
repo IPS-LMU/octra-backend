@@ -14,6 +14,8 @@ import {AppConfiguration, IDBConfiguration} from './obj/app-config/app-config';
 import {DBManager} from './db/DBManager';
 import {PostgreSQLManager} from './db/postgreSQL.manager';
 import express = require('express');
+import * as cookieParser from 'cookie-parser';
+import {SHA256} from 'crypto-js';
 
 export class OctraApi {
     get appPath(): string {
@@ -62,6 +64,9 @@ export class OctraApi {
         this.settings = appConfiguration;
         this.settings.appPath = this._appPath;
         this.settings.executionPath = this._executionPath;
+        this.settings.api.authenticator = {
+            appToken: SHA256(Date.now() + '2634872h3gr692seß0d').toString()
+        }
 
         if (this.settings.validation.valid) {
             const app = express();
@@ -73,7 +78,8 @@ export class OctraApi {
             // use bodyParser in order to parse JSON data
             app.use(bodyParser.urlencoded({extended: true}));
             app.use(bodyParser.json());
-            app.use(cors())
+            app.use(cors());
+            app.use(cookieParser());
 
             const router = express.Router();
             this.dbManager = this.getDBWrapper(this.settings.database);
@@ -126,6 +132,12 @@ export class OctraApi {
             console.log(`static is ${path.join(this._appPath, 'static')}`);
             app.use(express.static(path.join(this._appPath, 'static')));
             app.use('/', router);
+
+            router.route(`/authShibboleth`).get((req, res) => {
+                res.render(`authenticators/shibboleth/index.ejs`, {
+                    appToken: this.settings.api.authenticator.appToken
+                });
+            });
 
             router.route('*').all((req, res) => {
                 ApiCommand.sendError(res, 400, `This route does not exist. Please check your URL again. ${req.url}`);

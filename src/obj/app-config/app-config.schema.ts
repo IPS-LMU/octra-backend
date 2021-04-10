@@ -87,6 +87,14 @@ export const AppConfigurationSchema: Schema = {
                     pattern: ".{10}",
                     required: true
                 },
+                authenticator: {
+                    type: 'object',
+                    properties: {
+                        appToken: {
+                            type: 'string'
+                        }
+                    }
+                },
                 passwordSalt: {
                     type: 'string',
                     pattern: ".{10}",

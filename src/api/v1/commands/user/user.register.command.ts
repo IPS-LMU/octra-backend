@@ -4,6 +4,8 @@ import {DatabaseFunctions} from '../../obj/database.functions';
 import {TokenData, UserRegisterRequest} from '../../obj/request.types';
 import {BadRequest, Forbidden} from '../../../../obj/http-codes/client.codes';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
+import * as https from 'https';
+import * as http from 'http';
 
 export class UserRegisterCommand extends ApiCommand {
 
@@ -71,15 +73,107 @@ export class UserRegisterCommand extends ApiCommand {
 
             try {
                 const answer = ApiCommand.createAnswer();
+                const authenticator = {
+                    uid: '',
+                    type: '',
+                    cookie: {
+                        key: '',
+                        value: ''
+                    },
+                    authenticated: true
+                }
+
+                /* req.cookies = {
+                    '_shibsession_234234234234234': '783z284u82u340i234ß'
+                };
+                 */
+
+                if (req.cookies) {
+                    console.log(`REQ COOKIES`);
+                    console.log(req.cookies);
+                    for (let attr in req.cookies) {
+                        if (req.cookies.hasOwnProperty(attr)) {
+                            if (attr.indexOf('_shibsession_') > -1) {
+                                authenticator.type = 'Shibboleth';
+                                authenticator.cookie.key = attr;
+                                authenticator.cookie.value = req.cookies[attr];
+                                authenticator.uid = attr.replace('_shibsession_', '');
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (authenticator.uid !== '') {
+                    const checkAuthentication = () => {
+                        return new Promise<boolean>((resolve, reject) => {
+                            let ended = false;
+                            setTimeout(() => {
+                                if (!ended) {
+                                    ended = true;
+                                    reject('timeout');
+                                }
+                            }, 3000);
+
+                            console.log(`set cookie!`);
+                            console.log(`${authenticator.cookie.key}=${authenticator.cookie.value}`);
+                            const httpClient = (this.settings.api.url.indexOf('https') > -1) ? https : http;
+                            const request = httpClient.get(`${this.settings.api.url}/authShibboleth`, {
+                                headers: {
+                                    Cookie: `${authenticator.cookie.key}=${authenticator.cookie.value}`
+                                }
+                            }, (response) => {
+                                console.log(`RESPONSE SHIBBOLETH CHECK: ${response.statusCode}, ${response.statusMessage}, ${response.url}`);
+                                console.log(response.headers);
+                                if (!ended) {
+                                    ended = true;
+                                    resolve(response.statusCode === 200);
+                                }
+                            });
+                            req.on('error', error => {
+                                reject(error)
+                            });
+
+                            console.log(`request headers`);
+                            console.log(request.getHeaders());
+                        });
+                    };
+
+                    try {
+                        authenticator.authenticated = await checkAuthentication();
+                        if (authenticator.authenticated) {
+                            authenticator.authenticated = true;
+                        } else {
+                            UserRegisterCommand.sendError(res, Forbidden, `User not authenticated with ${authenticator.type}`, false);
+                            return;
+                        }
+                    } catch (e) {
+                        console.log(`error occurred: `);
+                        console.log(e);
+
+                        ApiCommand.sendError(res, InternalServerError, e, false);
+                        return;
+                    }
+                }
+
+                console.log(authenticator);
 
                 if (req.AppToken) {
-                    const areRegistrationsAllowed = await DatabaseFunctions.areRegistrationsAllowed(req.AppToken);
+                    console.log(`check registrations`);
+                    let areRegistrationsAllowed;
+                    if (this.settings.api.authenticator.appToken === req.AppToken) {
+                        areRegistrationsAllowed = true;
+                    } else {
+                        areRegistrationsAllowed = await DatabaseFunctions.areRegistrationsAllowed(req.AppToken);
+                    }
+                    const hash = (authenticator.uid === '') ? DatabaseFunctions.getPasswordHash(userData.password).toString() : authenticator.uid;
 
                     if (areRegistrationsAllowed) {
                         const result = await DatabaseFunctions.createUser({
                             name: userData.name,
                             email: userData.email,
-                            password: DatabaseFunctions.getPasswordHash(userData.password).toString()
+                            password: hash,
+                            loginmethod: (authenticator.uid === '') ? 'local' : 'shibboleth'
                         });
 
                         answer.authenticated = true;
@@ -91,11 +185,14 @@ export class UserRegisterCommand extends ApiCommand {
                             expiresIn: 86400 // expires in 24 hours
                         });
                         answer.data = {
-                            id: result.id
+                            id: result.id,
+                            shibID: authenticator.uid
                         };
                         this.checkAndSendAnswer(res, answer, false);
+                        return;
                     }
                     ApiCommand.sendError(res, Forbidden, 'Registrations are not allowed.', false);
+                    return;
                 }
                 ApiCommand.sendError(res, Forbidden, 'AppToken not found', false);
             } catch (e) {
