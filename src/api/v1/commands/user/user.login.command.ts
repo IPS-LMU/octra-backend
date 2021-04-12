@@ -3,6 +3,8 @@ import * as jwt from 'jsonwebtoken';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {TokenData, UserLoginRequest} from '../../obj/request.types';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
+import {ShibbolethAuthenticator} from '../../../../authenticators/shibboleth/shibboleth.authenticator';
+import {OK} from '../../../../obj/http-codes/success.codes';
 
 export class UserLoginCommand extends ApiCommand {
 
@@ -20,12 +22,13 @@ export class UserLoginCommand extends ApiCommand {
             type: 'object',
             properties: {
                 ...this.defaultRequestSchema.properties,
+                type: {
+                    enum: ['shibboleth', 'local']
+                },
                 name: {
-                    required: true,
                     type: 'string'
                 },
                 password: {
-                    required: true,
                     type: 'string'
                 }
             }
@@ -35,9 +38,8 @@ export class UserLoginCommand extends ApiCommand {
         this._responseStructure = {
             properties: {
                 token: {
-                    required: true,
                     type: 'string',
-                    description: 'JSON Web Token.'
+                    description: 'JSON Web Token. If type is not "local" and openURL is set, the token can be empty. Otherwise it\'s set.'
                 },
                 ...this.defaultResponseSchema.properties,
                 data: {
@@ -45,8 +47,13 @@ export class UserLoginCommand extends ApiCommand {
                     properties: {
                         ...this.defaultResponseSchema.properties.data.properties,
                         id: {
-                            type: 'number',
-                            required: true
+                            type: 'number'
+                        },
+                        name: {
+                            type: 'string'
+                        },
+                        openURL: {
+                            type: 'string'
                         }
                     }
                 }
@@ -61,22 +68,41 @@ export class UserLoginCommand extends ApiCommand {
         if (validation.length === 0) {
             try {
                 const answer = ApiCommand.createAnswer();
-                const {password, id, roles} = await DatabaseFunctions.getUserInfoByUserName(body.name);
-                const passwordIsValid = DatabaseFunctions.getPasswordHash(body.password) === password;
 
-                if (!passwordIsValid) {
-                    ApiCommand.sendError(res, 401, 'Invalid password.', false);
-                    return;
+                let authenticated = false;
+                const authenticator = new ShibbolethAuthenticator(this.settings.api.url, req.cookies);
+                const userData = await DatabaseFunctions.getUserInfo({
+                    name: body.name,
+                    hash: authenticator.uid
+                });
+
+                if (authenticator.isActive || body.type === 'shibboleth') {
+                    authenticated = await authenticator.isAuthenticated();
+                    if (userData === null || !authenticated) {
+                        answer.data = {
+                            openURL: authenticator.authURL
+                        };
+                        answer.status = 'success';
+                        answer.message = 'Open URL in new window for authentication';
+                        answer.authenticated = false;
+                        res.status(OK).send(answer);
+                        return;
+                    }
+                } else {
+                    if (userData === null) {
+                        ApiCommand.sendError(res, 401, 'Can not find user.', false);
+                    }
+                    const {hash} = userData;
+                    const passwordIsValid = DatabaseFunctions.getPasswordHash(body.password) === hash;
+                    if (!passwordIsValid) {
+                        ApiCommand.sendError(res, 401, 'Invalid password.', false);
+                        return;
+                    }
+                    authenticated = true;
                 }
 
-                // TODO check shibboleth cookie
-                // password = shibboleth uid
-                // check user name & hash
-
-                // TODO redirect after authentication
-                // TODO check authentication
-
-                answer.authenticated = true;
+                const {id, name, roles} = userData;
+                answer.authenticated = authenticated;
                 const tokenData: TokenData = {
                     id, role: roles
                 };
@@ -84,7 +110,7 @@ export class UserLoginCommand extends ApiCommand {
                     expiresIn: 86400 // expires in 24 hours
                 });
                 answer.data = {
-                    id: id
+                    id, name
                 };
                 this.checkAndSendAnswer(res, answer, false);
             } catch (e) {

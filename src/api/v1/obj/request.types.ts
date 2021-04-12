@@ -18,8 +18,9 @@ export interface CreateAppTokenRequest {
 }
 
 export interface UserLoginRequest {
-    name: string;
-    password: string;
+    type: 'shibboleth' | 'local',
+    name?: string;
+    password?: string;
 }
 
 export interface UserRegisterRequest {

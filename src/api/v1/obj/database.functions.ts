@@ -508,41 +508,57 @@ export class DatabaseFunctions {
         return;
     }
 
-    static async getUserByHash(hash: string): Promise<AccountRow> {
+    static async getUserByHash(loginmethod: 'shibboleth' | 'local', hash: string): Promise<boolean> {
         const selectResult = await DatabaseFunctions.dbManager.query({
-            text: this.selectAllStatements.account + ' where hash=$1::text',
-            values: [hash]
+            text: this.selectAllStatements.account + ' where hash=$1::text and loginmethod=$2::text',
+            values: [hash, loginmethod]
         });
 
         if (selectResult.rowCount === 1) {
             DatabaseFunctions.prepareRows(selectResult.rows);
-            return selectResult.rows[0] as AccountRow;
+            return true;
         }
 
-        throw 'could not find user';
+        return false;
     }
 
-    static async getUserInfoByUserName(name: string): Promise<{
-        password: string,
+    static async getUserInfo(data: {
+        name: string;
+        hash: string;
+    }): Promise<{
+        hash: string,
         id: number,
+        name: string,
         roles: UserRole[]
     }> {
-        const selectResult = await DatabaseFunctions.dbManager.query({
-            text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_role ar ON ac.id=ar.account_id full outer join role r ON r.id=ar.role_id where ac.username=$1::text',
-            values: [name]
-        });
+        let selectResult = null;
 
-        const roles = (selectResult.rows as AccountRow[]).map(a => a.role).filter(a => !(a === undefined || a === null));
-        const row = selectResult.rows[0] as AccountRow;
-        if (selectResult.rowCount > 0) {
-            return {
-                password: row.hash,
-                id: row.id,
-                roles
-            };
+        if (data.name && data.name.trim() !== '') {
+            selectResult = await DatabaseFunctions.dbManager.query({
+                text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_role ar ON ac.id=ar.account_id full outer join role r ON r.id=ar.role_id where ac.username=$1::text',
+                values: [data.name]
+            });
+        } else if (data.hash && data.hash.trim() !== '') {
+            selectResult = await DatabaseFunctions.dbManager.query({
+                text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_role ar ON ac.id=ar.account_id full outer join role r ON r.id=ar.role_id where ac.hash=$1::text',
+                values: [data.hash]
+            });
         }
 
-        throw 'could not find user';
+        if (selectResult) {
+            const roles = (selectResult.rows as AccountRow[]).map(a => a.role).filter(a => !(a === undefined || a === null));
+            const row = selectResult.rows[0] as AccountRow;
+            if (selectResult.rowCount > 0) {
+                return {
+                    hash: row.hash,
+                    name: row.username,
+                    id: row.id,
+                    roles
+                };
+            }
+        }
+
+        return null;
     }
 
 

@@ -135,7 +135,8 @@ export class OctraApi {
 
             router.route(`/authShibboleth`).get((req, res) => {
                 res.render(`authenticators/shibboleth/index.ejs`, {
-                    appToken: this.settings.api.authenticator.appToken
+                    appToken: this.settings.api.authenticator.appToken,
+                    cookies: req.cookies
                 });
             });
 

@@ -1,12 +1,11 @@
 import {ApiCommand, RequestType} from '../api.command';
-import {AppConfiguration} from '../../../../obj/app-config/app-config';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
 
 export class UserExistsHashCommand extends ApiCommand {
     constructor() {
-        super('existsWithHash', '/users', RequestType.GET, '/v1/hash', false,
+        super('existsWithHash', '/users', RequestType.GET, '/hash', false,
             []);
 
         this._description = 'Returns a boolean if user with the hash exists.';
@@ -17,6 +16,10 @@ export class UserExistsHashCommand extends ApiCommand {
         this._requestStructure = {
             type: 'object',
             properties: {
+                loginmethod: {
+                    enum: ['shibboleth', 'local'],
+                    required: true
+                },
                 hash: {
                     type: 'string',
                     required: true
@@ -30,11 +33,7 @@ export class UserExistsHashCommand extends ApiCommand {
             properties: {
                 ...this.defaultResponseSchema.properties,
                 data: {
-                    type: 'array',
-                    items: {
-                        type: 'boolean',
-                        required: true
-                    }
+                    type: 'boolean'
                 }
             }
         };
@@ -46,7 +45,7 @@ export class UserExistsHashCommand extends ApiCommand {
 
         if (validation.length === 0) {
             try {
-                answer.data = await DatabaseFunctions.getUserByHash(req.query.hash);
+                answer.data = await DatabaseFunctions.getUserByHash(req.query.loginmethod, req.query.hash);
                 this.checkAndSendAnswer(res, answer, false);
             } catch (e) {
                 console.log(e);

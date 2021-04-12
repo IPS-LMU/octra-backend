@@ -45,6 +45,7 @@ const todoList = {
     user: {
         register: true,
         login: true,
+        hash: true,
         assign: true,
         getUsers: true,
         delete: true,
@@ -133,6 +134,45 @@ describe('User', () => {
         });
     }
 
+    if (todoList.user.login) {
+        describe('/POST v1/login', () => {
+            it('it should POST a user login via Shibboleth', (done) => {
+                const request = {
+                    "type": "shibboleth"
+                }
+                chai.request(server)
+                    .post('/v1/users/login')
+                    .set("Authorization", `Bearer ${appToken}`)
+                    .set("Origin", "http://localhost:8080")
+                    .send(request)
+                    .end((err, res) => {
+                        checkForErrors(err, res);
+                        res.body.status.should.be.equal("success");
+                        res.body.should.be.a('object')
+                        done();
+                    });
+            });
+        });
+    }
+
+    if (todoList.user.hash) {
+        describe('/GET v1/users/hash', () => {
+            it('it should GET if user exists by hash', (done) => {
+                chai.request(server)
+                    .get('/v1/users/hash?hash=d541f5d102b749b9f91dfe5e46ed9de85c66cf8ecbaf70155352c2cc38e73e19&loginmethod=shibboleth')
+                    .set("Authorization", `Bearer ${appToken}`)
+                    .set("Origin", "http://localhost:8080")
+                    .end((err, res) => {
+                        checkForErrors(err, res);
+                        log("found?:" + res.body.data);
+                        res.body.status.should.be.equal("success");
+                        res.body.should.be.a('object')
+                        done();
+                    });
+            });
+        });
+    }
+
     if (todoList.user.assign) {
         describe('/POST v1/users/:id/roles', () => {
             it('it should assign user roles', (done) => {
@@ -159,6 +199,7 @@ describe('User', () => {
         describe('/POST v1/login', () => {
             it('it should POST a normal user login', (done) => {
                 const request = {
+                    "type": "local",
                     "name": tempData.user.name,
                     "password": "Password12345"
                 }
