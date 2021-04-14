@@ -48,7 +48,7 @@ export class UserPasswordChangeCommand extends ApiCommand {
                     const answer = ApiCommand.createAnswer();
                     const userInfo = await DatabaseFunctions.getUserInfoByUserID(tokenBody.id);
                     if (userInfo) {
-                        if (userInfo.password === DatabaseFunctions.getPasswordHash(body.oldPassword)) {
+                        if (userInfo.hash === DatabaseFunctions.getPasswordHash(body.oldPassword)) {
                             await DatabaseFunctions.changeUserPassword(tokenBody.id, DatabaseFunctions.getPasswordHash(body.password));
                             this.checkAndSendAnswer(res, answer, true);
                             return;

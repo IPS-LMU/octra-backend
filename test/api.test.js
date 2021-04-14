@@ -47,6 +47,8 @@ const todoList = {
         login: true,
         hash: true,
         assign: true,
+        getUserInfo: true,
+        getCurrentInfo: true,
         getUsers: true,
         delete: true,
         password: {
@@ -234,6 +236,45 @@ describe('User', () => {
 
                         res.status.should.be.equal(200);
                         res.body.data.should.be.a('array');
+                        done();
+                    });
+            });
+        });
+    }
+
+    if (todoList.user.getUserInfo) {
+        describe('/GET v1/users/:id', () => {
+            it('it should retrieve information about a user by id', (done) => {
+                chai.request(server)
+                    .get(`/v1/users/${tempData.user.id}`)
+                    .set("Authorization", `Bearer ${appToken}`)
+                    .set("Origin", "http://localhost:8080")
+                    .set("x-access-token", tempData.admin.jwtToken)
+                    .end((err, res) => {
+                        checkForErrors(err, res);
+
+                        res.status.should.be.equal(200);
+                        res.body.data.should.be.a('object');
+                        done();
+                    });
+            });
+        });
+    }
+
+
+    if (todoList.user.getCurrentInfo) {
+        describe('/GET v1/users/current', () => {
+            it('it should retrieve information about the current user.', (done) => {
+                chai.request(server)
+                    .get(`/v1/users/current`)
+                    .set("Authorization", `Bearer ${appToken}`)
+                    .set("Origin", "http://localhost:8080")
+                    .set("x-access-token", tempData.admin.jwtToken)
+                    .end((err, res) => {
+                        checkForErrors(err, res);
+
+                        res.status.should.be.equal(200);
+                        res.body.data.should.be.a('object');
                         done();
                     });
             });

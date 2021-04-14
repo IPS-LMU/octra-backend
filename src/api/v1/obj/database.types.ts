@@ -18,7 +18,7 @@ export interface AccountRow extends DatabaseRow {
     hash: string;
     training: string;
     comment: string;
-    role: UserRole;
+    role: UserRole[];
 }
 
 export interface AccountRolesRow {

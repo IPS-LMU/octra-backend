@@ -391,7 +391,7 @@ export class DatabaseFunctions {
 
             if (selectResult.rowCount > 0) {
                 DatabaseFunctions.prepareRows(selectResult.rows);
-                const roles = (selectResult.rows as AccountRow[]).map(a => a.role).filter(a => !(a === undefined || a === null));
+                const roles: UserRole[] = (selectResult.rows as any).map(a => a.role).filter(a => !(a === undefined || a === null));
 
                 return {
                     id: selectResult.rows[0].id,
@@ -525,12 +525,7 @@ export class DatabaseFunctions {
     static async getUserInfo(data: {
         name: string;
         hash: string;
-    }): Promise<{
-        hash: string,
-        id: number,
-        name: string,
-        roles: UserRole[]
-    }> {
+    }): Promise<AccountRow> {
         let selectResult = null;
 
         if (data.name && data.name.trim() !== '') {
@@ -546,14 +541,12 @@ export class DatabaseFunctions {
         }
 
         if (selectResult) {
-            const roles = (selectResult.rows as AccountRow[]).map(a => a.role).filter(a => !(a === undefined || a === null));
+            const roles: UserRole[] = (selectResult.rows as any[]).map(a => a.role).filter(a => !(a === undefined || a === null));
             const row = selectResult.rows[0] as AccountRow;
             if (selectResult.rowCount > 0) {
                 return {
-                    hash: row.hash,
-                    name: row.username,
-                    id: row.id,
-                    roles
+                    ...row,
+                    role: roles
                 };
             }
         }
@@ -576,23 +569,19 @@ export class DatabaseFunctions {
     }
 
 
-    static async getUserInfoByUserID(id: number): Promise<{
-        password: string,
-        id: number,
-        roles: UserRole[]
-    }> {
+    static async getUserInfoByUserID(id: number): Promise<AccountRow> {
         const selectResult = await DatabaseFunctions.dbManager.query({
             text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_role ar ON ac.id=ar.account_id full outer join role r ON r.id=ar.role_id where ac.id=$1::integer',
             values: [id]
         });
 
-        const roles = (selectResult.rows as AccountRow[]).map(a => a.role).filter(a => !(a === undefined || a === null));
-        const row = selectResult.rows[0] as AccountRow;
+        const role: UserRole[] = (selectResult.rows as any[]).map(a => a.role).filter(a => !(a === undefined || a === null));
         if (selectResult.rowCount > 0) {
+            const row = selectResult.rows[0] as AccountRow;
+            DatabaseFunctions.prepareRows([row]);
             return {
-                password: row.hash,
-                id,
-                roles
+                ...row,
+                role
             };
         }
 

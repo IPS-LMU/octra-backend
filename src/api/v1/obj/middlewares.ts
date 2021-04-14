@@ -10,7 +10,10 @@ export const verifyAppToken = (req, res, next, settings: AppConfiguration, callb
 
     if (appToken) {
         appToken = appToken.replace('Bearer ', '');
-        originHost = (originHost) ? originHost = originHost.replace(/:[0-9]{1,5}$/g, '') : '';
+        originHost = (originHost) ? originHost = originHost.replace(/:[0-9]{1,5}$/g, '').replace(/^https?:\/\//g, '') : '';
+        if (originHost === '') {
+            originHost = req.get('host');
+        }
         req.AppToken = appToken;
 
         if (appToken === settings.api.authenticator.appToken) {
@@ -22,7 +25,7 @@ export const verifyAppToken = (req, res, next, settings: AppConfiguration, callb
                 callback();
             }).catch((error) => {
                 console.log(error);
-                ApiCommand.sendError(res, 401, `Invalid app token.`, false);
+                ApiCommand.sendError(res, 401, `Invalid app token or origin.`, false);
             });
         }
     } else {
@@ -53,7 +56,7 @@ export const verifyUserRole = (req, res, command: ApiCommand, callback) => {
             if (command.allowedUserRoles.length > 0) {
                 // verify roles
                 DatabaseFunctions.getUserInfoByUserID(tokenData.id).then((info) => {
-                    const foundOne = info.roles.find(a => command.allowedUserRoles.findIndex(b => b === a) > -1);
+                    const foundOne = info.role.find(a => command.allowedUserRoles.findIndex(b => b === a) > -1);
 
                     if (foundOne) {
                         callback();
