@@ -117,7 +117,7 @@ describe('User', () => {
             it('it should POST a user login', (done) => {
                 const request = {
                     "name": "Julian",
-                    "password": "test123"
+                    "password": "Test123"
                 }
                 chai.request(server)
                     .post('/v1/users/login')

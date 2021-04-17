@@ -302,7 +302,7 @@ export class DatabaseFunctions {
 
         if (projectSelectResult.rowCount === 1) {
             const selectResult = await DatabaseFunctions.dbManager.query({
-                text: 'select * from transcript where project_id=$1::integer',
+                text: 'select * from transcript where project_id=$1::integer order by id',
                 values: [projectID]
             });
 
@@ -348,7 +348,7 @@ export class DatabaseFunctions {
 
     public static async listAppTokens(): Promise<AppTokensRow[]> {
         const selectResult = await DatabaseFunctions.dbManager.query({
-            text: DatabaseFunctions.selectAllStatements.appToken
+            text: DatabaseFunctions.selectAllStatements.appToken + " order by id"
         });
         DatabaseFunctions.prepareRows(selectResult.rows);
         return selectResult.rows as AppTokensRow[];
@@ -462,7 +462,7 @@ export class DatabaseFunctions {
 
     static async listUsers(): Promise<AccountRow[]> {
         const selectResult = await DatabaseFunctions.dbManager.query({
-            text: this.selectAllStatements.account
+            text: this.selectAllStatements.account + " order by id"
         });
 
         const results: any[] = [];
