@@ -58,6 +58,8 @@ const todoList = {
     app: {
         tokens: {
             add: true,
+            change: true,
+            refresh: true,
             delete: true,
             getList: true,
         }
@@ -325,6 +327,54 @@ describe('App', () => {
                         checkForErrors(err, res);
                         tempData.apptoken.addedID = res.body.data.id;
                         log(`added ${res.body.data.id}`);
+
+                        res.status.should.be.equal(200);
+                        res.body.should.be.a('object');
+                        done();
+                    });
+            });
+        });
+    }
+
+    if (todoList.app.tokens.change) {
+        describe('/POST v1/app/tokens', () => {
+            it('it should change an app token', (done) => {
+                const request = {
+                    "name": "Test Token",
+                    "domain": "localhost",
+                    "description": "Changed Key3"
+                }
+                chai.request(server)
+                    .put(`/v1/app/tokens/${tempData.apptoken.addedID}`)
+                    .set("Authorization", `Bearer ${appToken}`)
+                    .set("Origin", "http://localhost:8080")
+                    .set("x-access-token", tempData.admin.jwtToken)
+                    .send(request)
+                    .end((err, res) => {
+                        checkForErrors(err, res);
+                        log(`changed app token ${tempData.apptoken.addedID}`);
+
+                        res.status.should.be.equal(200);
+                        res.body.should.be.a('object');
+                        done();
+                    });
+            });
+        });
+    }
+
+    if (todoList.app.tokens.refresh) {
+        describe('/POST v1/app/tokens', () => {
+            it('it should refresh an app token', (done) => {
+                const request = {}
+                chai.request(server)
+                    .put(`/v1/app/tokens/${tempData.apptoken.addedID}/refresh`)
+                    .set("Authorization", `Bearer ${appToken}`)
+                    .set("Origin", "http://localhost:8080")
+                    .set("x-access-token", tempData.admin.jwtToken)
+                    .send(request)
+                    .end((err, res) => {
+                        checkForErrors(err, res);
+                        log(`refreshed app token ${tempData.apptoken.addedID}`);
 
                         res.status.should.be.equal(200);
                         res.body.should.be.a('object');

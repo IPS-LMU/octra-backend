@@ -11,7 +11,7 @@ export interface QueryResult {
     rowCount: number;
 }
 
-export interface InsertQuery {
+export interface ParamterizedQuery {
     tableName: string;
     columns: {
         key: string;
@@ -32,11 +32,13 @@ export abstract class DBManager {
 
     abstract query(query: SQLQuery): Promise<QueryResult>
 
-    abstract insert(query: InsertQuery, idColumn: string): Promise<QueryResult>
+    abstract insert(query: ParamterizedQuery, idColumn: string): Promise<QueryResult>
+
+    abstract update(query: ParamterizedQuery, where: string): Promise<QueryResult>
 
     abstract transaction(query: SQLQuery[]): Promise<any>;
 
-    abstract createSQLQueryForInsert(query: InsertQuery, idColumn: string): SQLQuery;
+    abstract createSQLQueryForInsert(query: ParamterizedQuery, idColumn: string): SQLQuery;
 
     abstract close(): Promise<void>;
 

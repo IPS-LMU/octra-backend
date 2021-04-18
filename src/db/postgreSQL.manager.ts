@@ -1,4 +1,4 @@
-import {DBManager, InsertQuery, SQLQuery} from './DBManager';
+import {DBManager, ParamterizedQuery, SQLQuery} from './DBManager';
 import {Pool, QueryResult} from 'pg';
 import {IDBConfiguration, IDBSSLConfiguration} from '../obj/app-config/app-config';
 import * as fs from 'fs';
@@ -79,7 +79,7 @@ export class PostgreSQLManager extends DBManager {
         return this.pool.end();
     }
 
-    async insert(query: InsertQuery, idColumn = 'id') {
+    async insert(query: ParamterizedQuery, idColumn = 'id') {
         const sqlQuery = this.createSQLQueryForInsert(query, idColumn);
 
         if (sqlQuery) {
@@ -89,7 +89,17 @@ export class PostgreSQLManager extends DBManager {
         throw 'InsertQuery error: columns length is 0.'
     }
 
-    public createSQLQueryForInsert(query: InsertQuery, idColumn = 'id'): SQLQuery {
+    async update(query: ParamterizedQuery, where: string) {
+        const sqlQuery = this.createSQLQueryForUpdate(query, where);
+
+        if (sqlQuery) {
+            return this.query(sqlQuery);
+        }
+
+        throw 'UpdateQuery error: columns length is 0.'
+    }
+
+    public createSQLQueryForInsert(query: ParamterizedQuery, idColumn = 'id'): SQLQuery {
         const columns = query.columns.filter(a => !(a.value === undefined || a.value === null));
 
         if (columns.length > 0) {
@@ -99,7 +109,28 @@ export class PostgreSQLManager extends DBManager {
             statement += ' values(' + columns.map(
                 (a, index) => `$${index + 1}::${a.type}`).join(', ') + ')'
 
-            statement = `insert into ${statement} returning ${idColumn}`;
+            statement = `insert into ${statement}
+                         returning ${idColumn}`;
+
+            return {
+                text: statement,
+                values
+            }
+        }
+        return null;
+    }
+
+    public createSQLQueryForUpdate(query: ParamterizedQuery, where: string): SQLQuery {
+        const columns = query.columns.filter(a => !(a.value === undefined || a.value === null));
+
+        if (columns.length > 0) {
+            let statement = '';
+            const values: any[] = columns.map(a => a.value);
+            statement += columns.map((a, i) => `${a.key}=$${i + 1}::${a.type}`).join(', ');
+
+            statement = `update ${query.tableName}
+                         set ${statement}
+                         where ${where}`;
 
             return {
                 text: statement,

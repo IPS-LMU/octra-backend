@@ -1,19 +1,18 @@
 import {ApiCommand, RequestType} from '../api.command';
 import {DatabaseFunctions} from '../../obj/database.functions';
-import {CreateAppTokenRequest} from '../../obj/request.types';
 import {UserRole} from '../../obj/database.types';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
+import {CreateAppTokenRequest} from '../../obj/request.types';
 
-export class AppTokenCreateCommand extends ApiCommand {
+export class AppTokenChangeCommand extends ApiCommand {
     constructor() {
-        super('createAppToken', '/app', RequestType.POST, '/tokens/', true,
+        super('changeAppToken', '/app', RequestType.PUT, '/tokens/:id', true,
             [
                 UserRole.administrator
-            ]
-        );
+            ]);
 
-        this._description = 'Registers an app and returns a new App Token.';
+        this._description = 'Changes an app token.';
         this._acceptedContentType = 'application/json';
         this._responseContentType = 'application/json';
 
@@ -69,21 +68,21 @@ export class AppTokenCreateCommand extends ApiCommand {
     async do(req, res) {
         const answer = ApiCommand.createAnswer();
         const validation = this.validate(req.params, req.body);
-
+        const data: CreateAppTokenRequest = req.body;
         // do something
         if (validation.length === 0) {
-            const body: CreateAppTokenRequest = req.body;
-            try {
-                const result = await DatabaseFunctions.createAppToken(body);
-                if (result.length === 1) {
-                    answer.data = result[0];
-
+            if (req.params && req.params.id) {
+                try {
+                    answer.data = await DatabaseFunctions.changeAppToken({
+                        ...data,
+                        id: req.params.id
+                    });
                     this.checkAndSendAnswer(res, answer);
-                    return;
+                } catch (e) {
+                    ApiCommand.sendError(res, InternalServerError, e);
                 }
-                ApiCommand.sendError(res, InternalServerError, 'Could not create app token.');
-            } catch (e) {
-                ApiCommand.sendError(res, InternalServerError, e);
+            } else {
+                ApiCommand.sendError(res, BadRequest, 'Missing app token id.');
             }
         } else {
             ApiCommand.sendError(res, BadRequest, validation);

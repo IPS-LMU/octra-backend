@@ -132,6 +132,73 @@ export class DatabaseFunctions {
         }
     }
 
+    public static async changeAppToken(data: {
+        id: number,
+        name: string,
+        domain?: string,
+        description?: string,
+        registrations?: boolean
+    }): Promise<AppTokensRow> {
+        try {
+            const updateQuery = {
+                tableName: 'apptoken',
+                columns: [
+                    DatabaseFunctions.getColumnDefinition('name', 'text', data.name, false),
+                    DatabaseFunctions.getColumnDefinition('domain', 'text', data.domain),
+                    DatabaseFunctions.getColumnDefinition('description', 'text', data.description),
+                    DatabaseFunctions.getColumnDefinition('registrations', 'boolean', data.registrations)
+                ]
+            };
+            const updateResult = await DatabaseFunctions.dbManager.update(updateQuery, `id=${data.id}::integer`);
+
+            if (updateResult.rowCount === 1) {
+                const selectResult = await DatabaseFunctions.dbManager.query({
+                    text: DatabaseFunctions.selectAllStatements.appToken + ' where id=$1::integer',
+                    values: [data.id]
+                });
+
+                DatabaseFunctions.prepareRows(selectResult.rows)
+
+                return selectResult.rows[0] as AppTokensRow;
+            } else {
+                throw 'update app token failed';
+            }
+        } catch (e) {
+            console.log(e);
+            throw 'could not generate and save app token';
+        }
+    }
+
+
+    public static async refreshAppToken(id: number): Promise<AppTokensRow> {
+        try {
+            const token = await this.generateAppToken();
+            const updateQuery = {
+                tableName: 'apptoken',
+                columns: [
+                    DatabaseFunctions.getColumnDefinition('key', 'text', token, false)
+                ]
+            };
+            const updateResult = await DatabaseFunctions.dbManager.update(updateQuery, `id=${id}::integer`);
+
+            if (updateResult.rowCount === 1) {
+                const selectResult = await DatabaseFunctions.dbManager.query({
+                    text: DatabaseFunctions.selectAllStatements.appToken + ' where id=$1::integer',
+                    values: [id]
+                });
+
+                DatabaseFunctions.prepareRows(selectResult.rows)
+
+                return selectResult.rows[0] as AppTokensRow;
+            } else {
+                throw 'refresh app token failed';
+            }
+        } catch (e) {
+            console.log(e);
+            throw 'could not generate and save app token';
+        }
+    }
+
     public static async createProject(data: CreateProjectRequest): Promise<ProjectRow[]> {
         try {
             const insertQuery = {
@@ -348,7 +415,7 @@ export class DatabaseFunctions {
 
     public static async listAppTokens(): Promise<AppTokensRow[]> {
         const selectResult = await DatabaseFunctions.dbManager.query({
-            text: DatabaseFunctions.selectAllStatements.appToken + " order by id"
+            text: DatabaseFunctions.selectAllStatements.appToken + ' order by id'
         });
         DatabaseFunctions.prepareRows(selectResult.rows);
         return selectResult.rows as AppTokensRow[];
@@ -462,7 +529,7 @@ export class DatabaseFunctions {
 
     static async listUsers(): Promise<AccountRow[]> {
         const selectResult = await DatabaseFunctions.dbManager.query({
-            text: this.selectAllStatements.account + " order by id"
+            text: this.selectAllStatements.account + ' order by id'
         });
 
         const results: any[] = [];
