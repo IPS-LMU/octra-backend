@@ -37,7 +37,7 @@ export class OctraApi {
     private _appPath: string;
     private settings: AppConfiguration;
     private name = 'OCTRA';
-    private version = '0.2.5';
+    private version = '0.2.7';
     private environment: 'development' | 'production';
     private dbManager: DBManager;
 
