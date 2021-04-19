@@ -2,7 +2,7 @@ import {ApiCommand, RequestType} from '../api.command';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
-import {TokenData} from '../../obj/request.types';
+import {TokenData} from '@octra/db';
 
 export class UserCurrentInfoCommand extends ApiCommand {
     constructor() {

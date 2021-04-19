@@ -1,8 +1,8 @@
 import {ApiCommand, RequestType} from '../api.command';
 import {DatabaseFunctions} from '../../obj/database.functions';
-import {UserRole} from '../../obj/database.types';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
+import {UserRole} from '@octra/db';
 
 export class AppTokenListCommand extends ApiCommand {
     constructor() {

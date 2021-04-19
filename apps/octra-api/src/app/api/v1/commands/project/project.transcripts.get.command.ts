@@ -1,7 +1,7 @@
 import {ApiCommand, RequestType} from '../api.command';
 import {DatabaseFunctions} from '../../obj/database.functions';
-import {UserRole} from '../../obj/database.types';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
+import {UserRole} from '@octra/db';
 
 export class ProjectTranscriptsGetCommand extends ApiCommand {
     constructor() {

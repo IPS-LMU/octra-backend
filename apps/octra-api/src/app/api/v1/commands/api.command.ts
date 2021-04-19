@@ -1,10 +1,10 @@
 import {Response} from 'express';
 import {Schema, Validator} from 'jsonschema';
 import {AppConfiguration} from '../../../obj/app-config/app-config';
-import {UserRole} from '../obj/database.types';
 import {isNumber} from '../../../obj/functions';
 import {OK} from '../../../obj/http-codes/success.codes';
 import {BadRequest} from '../../../obj/http-codes/client.codes';
+import {UserRole} from '@octra/db';
 
 export enum RequestType {
     GET = 'GET',

@@ -233,6 +233,42 @@
           }
         }
       }
+    },
+    "octra-db": {
+      "root": "libs/octra-db",
+      "sourceRoot": "libs/octra-db/src",
+      "projectType": "library",
+      "architect": {
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "libs/octra-db/tsconfig.lib.json",
+              "libs/octra-db/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**", "!libs/octra-db/**/*"]
+          }
+        },
+        "test": {
+          "builder": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/octra-db"],
+          "options": {
+            "jestConfig": "libs/octra-db/jest.config.js",
+            "passWithNoTests": true
+          }
+        },
+        "build": {
+          "builder": "@nrwl/node:package",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/libs/octra-db",
+            "tsConfig": "libs/octra-db/tsconfig.lib.json",
+            "packageJson": "libs/octra-db/package.json",
+            "main": "libs/octra-db/src/index.ts",
+            "assets": ["libs/octra-db/*.md"]
+          }
+        }
+      }
     }
   }
 }

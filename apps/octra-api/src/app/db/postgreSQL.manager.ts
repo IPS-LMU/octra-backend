@@ -1,4 +1,4 @@
-import {DBManager, ParamterizedQuery, SQLQuery} from './DBManager';
+import {DBManager, ParamterizedQuery, SQLQuery} from './db.manager';
 import {Pool, QueryResult} from 'pg';
 import {IDBConfiguration, IDBSSLConfiguration} from '../obj/app-config/app-config';
 import * as fs from 'fs';

@@ -1,9 +1,8 @@
 import {ApiCommand, RequestType} from '../api.command';
 import {DatabaseFunctions} from '../../obj/database.functions';
-import {AssignUserRoleRequest} from '../../obj/request.types';
-import {UserRole} from '../../obj/database.types';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
+import {AssignUserRoleRequest, UserRole} from '@octra/db';
 
 export class UserAssignRolesCommand extends ApiCommand {
 

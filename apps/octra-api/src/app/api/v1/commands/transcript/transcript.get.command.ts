@@ -1,9 +1,7 @@
 import {ApiCommand, RequestType} from '../api.command';
 import {DatabaseFunctions} from '../../obj/database.functions';
-import {UserRole} from '../../obj/database.types';
-import {TokenData} from '../../obj/request.types';
-import {GetTranscriptsResult} from '../../obj/response.types';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
+import {GetTranscriptsResult, TokenData, UserRole} from '@octra/db';
 
 export class TranscriptGetCommand extends ApiCommand {
     constructor() {

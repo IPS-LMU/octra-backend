@@ -17,6 +17,7 @@
       "tags": [],
       "implicitDependencies": ["octra-backend"]
     },
-    "octra-api": { "tags": [] }
+    "octra-api": { "tags": [] },
+    "octra-db": { "tags": [] }
   }
 }

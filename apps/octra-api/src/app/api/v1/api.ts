@@ -6,9 +6,9 @@ import * as bodyParser from 'body-parser';
 import {SampleCommand} from './commands/sample.command';
 import {APIV1Module} from './api.module';
 import {AppConfiguration} from '../../obj/app-config/app-config';
-import {DBManager} from '../../db/DBManager';
 import {DatabaseFunctions} from './obj/database.functions';
 import {CommandModule} from './commands/command.module';
+import {DBManager} from '../../db/db.manager';
 
 export class APIV1 {
     get modules(): CommandModule[] {

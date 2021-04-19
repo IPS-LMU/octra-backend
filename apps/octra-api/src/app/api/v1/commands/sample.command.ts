@@ -1,7 +1,7 @@
 import {ApiCommand, RequestType} from './api.command';
-import {UserRole} from '../obj/database.types';
 import {InternalServerError} from '../../../obj/http-codes/server.codes';
 import {OK} from '../../../obj/http-codes/success.codes';
+import {UserRole} from '@octra/db';
 
 export class SampleCommand extends ApiCommand {
     /*

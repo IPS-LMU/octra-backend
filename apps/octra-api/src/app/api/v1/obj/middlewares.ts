@@ -2,7 +2,7 @@ import {ApiCommand} from '../commands/api.command';
 import * as jwt from 'jsonwebtoken';
 import {AppConfiguration} from '../../../obj/app-config/app-config';
 import {DatabaseFunctions} from './database.functions';
-import {TokenData} from './request.types';
+import {TokenData} from '@octra/db';
 
 export const verifyAppToken = (req, res, next, settings: AppConfiguration, callback) => {
     let originHost = req.get('origin')

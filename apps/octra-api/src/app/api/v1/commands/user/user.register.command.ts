@@ -1,10 +1,10 @@
 import {ApiCommand, RequestType} from '../api.command';
 import * as jwt from 'jsonwebtoken';
 import {DatabaseFunctions} from '../../obj/database.functions';
-import {TokenData, UserRegisterRequest} from '../../obj/request.types';
 import {BadRequest, Forbidden} from '../../../../obj/http-codes/client.codes';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 import {ShibbolethAuthenticator} from '../../../../authenticators/shibboleth/shibboleth.authenticator';
+import {TokenData, UserRegisterRequest} from '@octra/db';
 
 export class UserRegisterCommand extends ApiCommand {
 

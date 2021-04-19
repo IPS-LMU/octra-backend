@@ -2,7 +2,7 @@ import {ApiCommand, RequestType} from './api.command';
 import {Router} from 'express';
 import {AppConfiguration} from '../../../obj/app-config/app-config';
 import {verifyAppToken, verifyUserRole, verifyWebToken} from '../obj/middlewares';
-import {TokenData} from '../obj/request.types';
+import {TokenData} from '@octra/db';
 
 export class CommandModule {
     get url(): string {

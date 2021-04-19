@@ -1,14 +1,14 @@
 import {ApiCommand, RequestType} from '../api.command';
 import {DatabaseFunctions} from '../../obj/database.functions';
-import {UserRole} from '../../obj/database.types';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
+import {UserRole} from '@octra/db';
 
 export class UserRemoveCommand extends ApiCommand {
     constructor() {
         super('removeUser', '/users', RequestType.DELETE, '/:id', true,
             [
-                UserRole.administrator
+              UserRole.administrator
             ]);
 
         this._description = 'Removes a user by id.';

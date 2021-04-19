@@ -5,18 +5,17 @@ import * as path from 'path';
 import * as Path from 'path';
 import {ApiCommand} from './api/v1/commands/api.command';
 import {createTerminus} from '@godaddy/terminus';
-import * as fsExtra from 'fs-extra';
 import * as ejs from 'ejs';
 import * as fs from 'fs';
 import * as cors from 'cors';
 import {APIModule} from './octra-api.module';
 import {AppConfiguration, IDBConfiguration} from './obj/app-config/app-config';
-import {DBManager} from './db/DBManager';
+import {DBManager} from './db/db.manager';
 import {PostgreSQLManager} from './db/postgreSQL.manager';
-import express = require('express');
 import * as cookieParser from 'cookie-parser';
 import {SHA256} from 'crypto-js';
 import {ShibbolethAuthenticator} from './authenticators/shibboleth/shibboleth.authenticator';
+import express = require('express');
 
 export class OctraApi {
   get appPath(): string {
