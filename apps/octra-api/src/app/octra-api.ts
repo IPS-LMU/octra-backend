@@ -44,7 +44,7 @@ export class OctraApi {
     this._activeAPIs = APIModule.activeAPIs;
   }
 
-  public init(environment: 'development' | 'production'): Express {
+  public init(environment: 'development' | 'production', configPath = ''): Express {
     this.environment = environment;
     if (environment === 'development') {
       this._executionPath = __dirname;
@@ -52,9 +52,11 @@ export class OctraApi {
       this._executionPath = path.dirname(process.execPath);
     }
     this._appPath = __dirname;
-
     // loadSettings
-    const settingsJSON = fs.readFileSync(path.join(this._executionPath, 'config.json'),
+    if (configPath === '') {
+      configPath = path.join(this._executionPath, 'config.json');
+    }
+    const settingsJSON = fs.readFileSync(configPath,
       {
         encoding: 'utf-8'
       }

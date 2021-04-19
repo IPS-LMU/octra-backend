@@ -101,6 +101,7 @@ export class ProjectCreateCommand extends ApiCommand {
                 if (result.length === 1) {
                     answer.data = result[0];
                     this.checkAndSendAnswer(res, answer);
+                    return;
                 }
 
                 ApiCommand.sendError(res, InternalServerError, 'Could not create project.');

@@ -77,6 +77,7 @@ export class MediaAddCommand extends ApiCommand {
                 if (result.length === 1) {
                     answer.data = result[0];
                     this.checkAndSendAnswer(res, answer);
+                    return;
                 }
 
                 ApiCommand.sendError(res, InternalServerError, 'Could not add media item.');
