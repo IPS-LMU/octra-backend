@@ -1,0 +1,238 @@
+{
+  "version": 1,
+  "cli": {
+    "defaultCollection": "@nrwl/angular"
+  },
+  "defaultProject": "octra-backend",
+  "schematics": {
+    "@nrwl/workspace": {
+      "library": {
+        "linter": "tslint"
+      }
+    },
+    "@nrwl/cypress": {
+      "cypress-project": {
+        "linter": "tslint"
+      }
+    },
+    "@nrwl/node": {
+      "application": {
+        "linter": "tslint"
+      },
+      "library": {
+        "linter": "tslint"
+      }
+    },
+    "@nrwl/nest": {
+      "application": {
+        "linter": "tslint"
+      },
+      "library": {
+        "linter": "tslint"
+      }
+    },
+    "@nrwl/express": {
+      "application": {
+        "linter": "tslint"
+      },
+      "library": {
+        "linter": "tslint"
+      }
+    },
+    "@nrwl/angular:application": {
+      "style": "css",
+      "linter": "tslint",
+      "unitTestRunner": "jest",
+      "e2eTestRunner": "cypress"
+    },
+    "@nrwl/angular:library": {
+      "style": "css",
+      "linter": "tslint",
+      "unitTestRunner": "jest"
+    },
+    "@nrwl/angular:component": {
+      "style": "css"
+    }
+  },
+  "projects": {
+    "octra-backend": {
+      "projectType": "application",
+      "root": "apps/octra-backend",
+      "sourceRoot": "apps/octra-backend/src",
+      "prefix": "ocb",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "dist/apps/octra-backend",
+            "index": "apps/octra-backend/src/index.html",
+            "main": "apps/octra-backend/src/main.ts",
+            "polyfills": "apps/octra-backend/src/polyfills.ts",
+            "tsConfig": "apps/octra-backend/tsconfig.app.json",
+            "aot": true,
+            "assets": [
+              "apps/octra-backend/src/favicon.ico",
+              "apps/octra-backend/src/assets",
+              "apps/octra-backend/src/config"
+            ],
+            "styles": [
+              "node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "apps/octra-backend/src/styles.css"
+            ],
+            "scripts": []
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "apps/octra-backend/src/environments/environment.ts",
+                  "with": "apps/octra-backend/src/environments/environment.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb",
+                  "maximumError": "10kb"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "browserTarget": "octra-backend:build"
+          },
+          "configurations": {
+            "production": {
+              "browserTarget": "octra-backend:build:production"
+            }
+          }
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "browserTarget": "octra-backend:build"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "apps/octra-backend/tsconfig.app.json",
+              "apps/octra-backend/tsconfig.spec.json",
+              "apps/octra-backend/tsconfig.editor.json"
+            ],
+            "exclude": ["**/node_modules/**", "!apps/octra-backend/**/*"]
+          }
+        },
+        "test": {
+          "builder": "@nrwl/jest:jest",
+          "outputs": ["coverage/apps/octra-backend"],
+          "options": {
+            "jestConfig": "apps/octra-backend/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
+    "octra-backend-e2e": {
+      "root": "apps/octra-backend-e2e",
+      "sourceRoot": "apps/octra-backend-e2e/src",
+      "projectType": "application",
+      "architect": {
+        "e2e": {
+          "builder": "@nrwl/cypress:cypress",
+          "options": {
+            "cypressConfig": "apps/octra-backend-e2e/cypress.json",
+            "tsConfig": "apps/octra-backend-e2e/tsconfig.e2e.json",
+            "devServerTarget": "octra-backend:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "octra-backend:serve:production"
+            }
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": ["apps/octra-backend-e2e/tsconfig.e2e.json"],
+            "exclude": ["**/node_modules/**", "!apps/octra-backend-e2e/**/*"]
+          }
+        }
+      }
+    },
+    "octra-api": {
+      "root": "apps/octra-api",
+      "sourceRoot": "apps/octra-api/src",
+      "projectType": "application",
+      "architect": {
+        "build": {
+          "builder": "@nrwl/node:build",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/apps/octra-api",
+            "main": "apps/octra-api/src/main.ts",
+            "tsConfig": "apps/octra-api/tsconfig.app.json",
+            "assets": [
+              "apps/octra-api/src/views",
+              "apps/octra-api/src/static",
+              "apps/octra-api/src/config.json"
+            ]
+          },
+          "configurations": {
+            "production": {
+              "optimization": true,
+              "extractLicenses": true,
+              "inspect": false,
+              "fileReplacements": [
+                {
+                  "replace": "apps/octra-api/src/environments/environment.ts",
+                  "with": "apps/octra-api/src/environments/environment.prod.ts"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "builder": "@nrwl/node:execute",
+          "options": {
+            "buildTarget": "octra-api:build"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "apps/octra-api/tsconfig.app.json",
+              "apps/octra-api/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**", "!apps/octra-api/**/*"]
+          }
+        },
+        "test": {
+          "builder": "@nrwl/jest:jest",
+          "outputs": ["coverage/apps/octra-api"],
+          "options": {
+            "jestConfig": "apps/octra-api/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    }
+  }
+}

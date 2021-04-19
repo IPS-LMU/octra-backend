@@ -1,0 +1,41 @@
+
+  <h2><span *ngIf="!isEditPage; else isEditPageTemplate">Add new</span> app token</h2>
+  <ng-template #isEditPageTemplate>
+    Edit
+  </ng-template>
+  <form (ngSubmit)="onSubmit()" #form="ngForm">
+    <div class="row">
+      <div class="col-12">
+        <div class="form-group">
+          <label for="tokenName">Name</label>
+          <input type="text" class="form-control" id="tokenName" placeholder="Enter a name" name="name"
+                 [(ngModel)]="formData.name" required="required">
+        </div>
+      </div>
+      <div class="col-12">
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea class="form-control" id="description" placeholder="Enter a description" name="description"
+                    [(ngModel)]="formData.description"></textarea>
+        </div>
+      </div>
+      <div class="col-12">
+        <div class="form-group">
+          <label for="domains">Domains (separated by comma)</label>
+          <textarea class="form-control" id="domains" placeholder="Enter domains" name="domains"
+                    [(ngModel)]="formData.domain"></textarea>
+        </div>
+      </div>
+      <div class="col-12">
+        <div class="form-group">
+          <div class="custom-control custom-switch">
+            <input type="checkbox" class="custom-control-input" id="userRegistrations" name="registrations" [(ngModel)]="formData.registrations">
+            <label class="custom-control-label" for="userRegistrations">Allow user registrations</label>
+          </div>
+        </div>
+      </div>
+      <div class="col-12" style="text-align: right;">
+        <button class="btn btn-primary" type="submit" [disabled]="!form.valid">Save</button>
+      </div>
+    </div>
+  </form>

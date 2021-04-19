@@ -1,0 +1,41 @@
+<h1>App tokens</h1>
+<div id="actions-bar">
+  <a class="btn btn-primary" [routerLink]="['/members/apptokens/add']">
+    <fa-icon icon="plus"></fa-icon>
+    Add app token</a>
+</div>
+<table class="table table-striped w-100">
+  <thead>
+  <tr>
+    <th>ID</th>
+    <th>Name</th>
+    <th>Description</th>
+    <th>Domain</th>
+    <th>Key</th>
+    <th style="text-align: center;">Registrations</th>
+    <th>Actions</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr *ngFor="let apptoken of apptokens">
+    <td>{{apptoken.id}}</td>
+    <td>{{apptoken.name}}</td>
+    <td style="max-width:200px;clip: auto; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">{{apptoken.description}}</td>
+    <td>{{apptoken.domain}}</td>
+    <td>{{apptoken.key}}</td>
+    <td style="text-align: center;">
+      <fa-icon [icon]="(apptoken.registrations) ? ['fas','check-circle']: ['fas','minus-circle']"
+               [ngStyle]="{
+      color: (apptoken.registrations) ? 'darkgreen' : 'red'
+    }"></fa-icon>
+    </td>
+    <td>
+      <fa-icon icon="edit" class="action-icon" title="Edit app token" (click)="onAppTokenEdit(apptoken.id)"></fa-icon>
+      <fa-icon *ngIf="apptoken.key !== settingsService.settings.api.token" icon="redo" class="action-icon"
+               title="Refresh app token" (click)="onAppTokenRefresh(apptoken.id)"></fa-icon>
+      <fa-icon *ngIf="apptoken.key !== settingsService.settings.api.token" icon="trash" class="action-icon"
+               title="Remove app token" (click)="onAppTokenRemove(apptoken.id)"></fa-icon>
+    </td>
+  </tr>
+  </tbody>
+</table>

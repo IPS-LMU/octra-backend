@@ -1,0 +1,25 @@
+<div class="modal-header">
+  <table style="width: 100%;">
+    <tbody>
+    <tr>
+      <td style="width:40px;">
+        <fa-icon icon="check-circle" size="2x"></fa-icon>
+      </td>
+      <td>
+        <h4 class="modal-title pull-left">{{title}}</h4>
+      </td>
+      <td style="text-align: right;">
+        <button type="button" class="close pull-right" aria-label="Close" (click)="bsModalRef.hide()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+<div class="modal-body">
+  {{message}}
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" (click)="bsModalRef.hide()">Close</button>
+</div>

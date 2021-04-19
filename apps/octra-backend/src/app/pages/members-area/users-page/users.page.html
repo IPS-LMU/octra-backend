@@ -1,0 +1,35 @@
+<h1>Users</h1>
+<table class="table table-striped" *ngIf="transcripts.length > 0">
+  <thead>
+  <tr>
+    <th>
+      ID
+    </th>
+    <th>
+      username
+    </th>
+    <th>
+      email
+    </th>
+    <th>
+      training
+    </th>
+    <th>
+      roles
+    </th>
+    <th>
+      description
+    </th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr *ngFor="let transcript of transcripts">
+    <td>{{transcript.id}}</td>
+    <td>{{transcript.username}}</td>
+    <td>{{transcript.email}}</td>
+    <td>{{transcript.training}}</td>
+    <td>{{transcript.roles.join(', ') }}</td>
+    <td>{{transcript.comment}}</td>
+  </tr>
+  </tbody>
+</table>
