@@ -2,7 +2,7 @@ import {ApiCommand, RequestType} from '../api.command';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
-import {DeliverNewMediaRequest, UserRole} from '@octra/db';
+import {DeliverNewMediaRequest, DeliveryMediaAddResponse, UserRole} from '@octra/db';
 
 export class DeliveryMediaAddCommand extends ApiCommand {
     constructor() {
@@ -132,7 +132,7 @@ export class DeliveryMediaAddCommand extends ApiCommand {
     }
 
     async do(req, res) {
-        const answer = ApiCommand.createAnswer();
+        const answer = ApiCommand.createAnswer() as DeliveryMediaAddResponse;
         const validation = this.validate(req.params, req.body);
 
         // do something

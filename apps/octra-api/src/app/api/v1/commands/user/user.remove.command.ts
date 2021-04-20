@@ -2,7 +2,7 @@ import {ApiCommand, RequestType} from '../api.command';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
-import {UserRole} from '@octra/db';
+import {UserRemoveResponse, UserRole} from '@octra/db';
 
 export class UserRemoveCommand extends ApiCommand {
     constructor() {
@@ -19,29 +19,16 @@ export class UserRemoveCommand extends ApiCommand {
         this._requestStructure = {};
 
         // relevant for reference creation
-        this._responseStructure = {
-            properties: {
-                ...this.defaultResponseSchema.properties,
-                data: {
-                    type: 'object',
-                    properties: {
-                        removedRows: {
-                            type: 'number'
-                        }
-                    }
-                }
-            }
-        };
+        this._responseStructure = {};
     }
 
     async do(req, res) {
-        const answer = ApiCommand.createAnswer();
+        const answer = ApiCommand.createAnswer() as UserRemoveResponse;
         const validation = this.validate(req.params, req.body);
 
         if (validation.length === 0) {
             try {
                 await DatabaseFunctions.removeUserByID(req.params.id);
-                answer.data = {};
                 this.checkAndSendAnswer(res, answer);
             } catch (e) {
                 console.log(e);

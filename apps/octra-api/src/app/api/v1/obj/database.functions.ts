@@ -9,7 +9,7 @@ import {
   AssignUserRoleRequest,
   CreateProjectRequest,
   DeliverNewMediaRequest,
-  GetTranscriptsResult,
+  ProjectTranscriptsGetResult,
   MediaItemRow,
   ProjectRow,
   RolesRow,
@@ -331,7 +331,7 @@ export class DatabaseFunctions {
     }
   }
 
-  public static async getTranscriptByID(id: number): Promise<GetTranscriptsResult> {
+  public static async getTranscriptByID(id: number): Promise<ProjectTranscriptsGetResult> {
     const selectResult = await DatabaseFunctions.dbManager.query({
       text: 'select * from transcript where id=$1::integer',
       values: [id]
@@ -339,7 +339,7 @@ export class DatabaseFunctions {
 
     if (selectResult.rowCount === 1) {
       const transcriptRow = (selectResult.rows[0] as TranscriptRow);
-      let result: GetTranscriptsResult = transcriptRow;
+      let result: ProjectTranscriptsGetResult = transcriptRow;
 
       if (transcriptRow.hasOwnProperty('mediaitem_id') && transcriptRow.mediaitem_id) {
         const mediaItemResult = await DatabaseFunctions.dbManager.query({
@@ -359,7 +359,7 @@ export class DatabaseFunctions {
     throw 'Could not find a transcript with this ID.'
   }
 
-  public static async getTranscriptsByProjectID(projectID: number): Promise<GetTranscriptsResult[]> {
+  public static async getTranscriptsByProjectID(projectID: number): Promise<ProjectTranscriptsGetResult[]> {
     const projectSelectResult = await DatabaseFunctions.dbManager.query({
       text: 'select id from project where id=$1::integer',
       values: [projectID]
@@ -371,7 +371,7 @@ export class DatabaseFunctions {
         values: [projectID]
       });
 
-      const results: GetTranscriptsResult[] = [];
+      const results: ProjectTranscriptsGetResult[] = [];
       if (selectResult.rowCount > 0) {
         for (const row of (selectResult.rows as TranscriptRow[])) {
           const mediaItem = await DatabaseFunctions.dbManager.query({
@@ -380,7 +380,7 @@ export class DatabaseFunctions {
           });
 
           const mediaItemRows = mediaItem.rows as MediaItemRow[];
-          const result: GetTranscriptsResult = {
+          const result: ProjectTranscriptsGetResult = {
             ...row
           };
 
@@ -653,7 +653,7 @@ export class DatabaseFunctions {
     throw 'could not find user';
   }
 
-  static async deliverNewMedia(dataDeliveryRequest: DeliverNewMediaRequest): Promise<GetTranscriptsResult> {
+  static async deliverNewMedia(dataDeliveryRequest: DeliverNewMediaRequest): Promise<ProjectTranscriptsGetResult> {
     const media = dataDeliveryRequest.media;
 
     const mediaInsertResult = await DatabaseFunctions.addMediaItem({
@@ -674,7 +674,7 @@ export class DatabaseFunctions {
       });
 
       if (transcriptResult.length > 0) {
-        const result = transcriptResult[0] as GetTranscriptsResult;
+        const result = transcriptResult[0] as ProjectTranscriptsGetResult;
 
         const mediaItem = await DatabaseFunctions.dbManager.query({
           text: this.selectAllStatements.mediaitem + ' where id=$1::integer',

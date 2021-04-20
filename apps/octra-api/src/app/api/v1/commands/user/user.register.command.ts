@@ -4,7 +4,7 @@ import {DatabaseFunctions} from '../../obj/database.functions';
 import {BadRequest, Forbidden} from '../../../../obj/http-codes/client.codes';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 import {ShibbolethAuthenticator} from '../../../../authenticators/shibboleth/shibboleth.authenticator';
-import {TokenData, UserRegisterRequest} from '@octra/db';
+import {TokenData, UserRegisterRequest, UserRegisterResponse} from '@octra/db';
 
 export class UserRegisterCommand extends ApiCommand {
 
@@ -38,11 +38,6 @@ export class UserRegisterCommand extends ApiCommand {
         // relevant for reference creation
         this._responseStructure = {
             properties: {
-                auth: {
-                    required: false,
-                    type: 'boolean',
-                    description: 'checks if user is authenticated'
-                },
                 token: {
                     required: true,
                     type: 'string',
@@ -71,7 +66,7 @@ export class UserRegisterCommand extends ApiCommand {
             const userData: UserRegisterRequest = req.body;
 
             try {
-                const answer = ApiCommand.createAnswer();
+                const answer = ApiCommand.createAnswer() as UserRegisterResponse;
 
                 const authenticator = new ShibbolethAuthenticator(this.settings.api.url, req.cookies);
 

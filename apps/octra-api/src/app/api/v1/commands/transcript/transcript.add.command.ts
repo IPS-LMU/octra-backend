@@ -2,7 +2,7 @@ import {ApiCommand, RequestType} from '../api.command';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
-import {AddTranscriptRequest, UserRole} from '@octra/db';
+import {AddTranscriptRequest, TranscriptAddResponse, UserRole} from '@octra/db';
 
 export class TranscriptAddCommand extends ApiCommand {
     constructor() {
@@ -142,7 +142,7 @@ export class TranscriptAddCommand extends ApiCommand {
     }
 
     async do(req, res) {
-        const answer = ApiCommand.createAnswer();
+        const answer = ApiCommand.createAnswer() as TranscriptAddResponse;
         const validation = this.validate(req.params, req.body);
 
         // do something

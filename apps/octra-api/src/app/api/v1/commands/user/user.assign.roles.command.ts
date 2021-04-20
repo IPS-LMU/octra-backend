@@ -2,7 +2,7 @@ import {ApiCommand, RequestType} from '../api.command';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
-import {AssignUserRoleRequest, UserRole} from '@octra/db';
+import {AssignUserRoleRequest, UserAssignRolesResponse, UserRole} from '@octra/db';
 
 export class UserAssignRolesCommand extends ApiCommand {
 
@@ -48,7 +48,7 @@ export class UserAssignRolesCommand extends ApiCommand {
             const userData: AssignUserRoleRequest = req.body;
             userData.accountID = req.params.id;
             try {
-                const answer = ApiCommand.createAnswer();
+                const answer = ApiCommand.createAnswer() as UserAssignRolesResponse;
                 await DatabaseFunctions.assignUserRolesToUser(userData);
                 this.checkAndSendAnswer(res, answer, false);
             } catch (e) {

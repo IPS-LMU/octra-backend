@@ -1,7 +1,7 @@
 import {ApiCommand, RequestType} from '../api.command';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
-import {GetTranscriptsResult, TokenData, UserRole} from '@octra/db';
+import {ProjectTranscriptsGetResult, TokenData, TranscriptGetResponse, UserRole} from '@octra/db';
 
 export class TranscriptGetCommand extends ApiCommand {
     constructor() {
@@ -109,7 +109,7 @@ export class TranscriptGetCommand extends ApiCommand {
     }
 
     async do(req, res) {
-        const answer = ApiCommand.createAnswer();
+        const answer = ApiCommand.createAnswer() as TranscriptGetResponse;
         const validation = this.validate(req.params, req.body);
         // do something
         if (validation.length === 0) {
@@ -144,7 +144,7 @@ export class TranscriptGetCommand extends ApiCommand {
 
         if (tokenData.role.find(a => a === UserRole.dataDelivery)) {
             // is data delivery
-            const data = answer.data as GetTranscriptsResult;
+            const data = answer.data as ProjectTranscriptsGetResult;
             delete data.pid;
             delete data.mediaitem_id;
         }

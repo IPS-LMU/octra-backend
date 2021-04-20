@@ -1,7 +1,7 @@
 import {ApiCommand, RequestType} from '../api.command';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
-import {TokenData} from '@octra/db';
+import {TokenData, UserPasswordChangeResponse} from '@octra/db';
 
 export class UserPasswordChangeCommand extends ApiCommand {
 
@@ -45,7 +45,7 @@ export class UserPasswordChangeCommand extends ApiCommand {
             try {
                 const tokenBody: TokenData = req.decoded as TokenData;
                 if (tokenBody) {
-                    const answer = ApiCommand.createAnswer();
+                    const answer = ApiCommand.createAnswer() as UserPasswordChangeResponse;
                     const userInfo = await DatabaseFunctions.getUserInfoByUserID(tokenBody.id);
                     if (userInfo) {
                         if (userInfo.hash === DatabaseFunctions.getPasswordHash(body.oldPassword)) {

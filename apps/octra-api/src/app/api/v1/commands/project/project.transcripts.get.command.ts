@@ -1,7 +1,7 @@
 import {ApiCommand, RequestType} from '../api.command';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
-import {UserRole} from '@octra/db';
+import {ProjectTranscriptsGetResponse, UserRole} from '@octra/db';
 
 export class ProjectTranscriptsGetCommand extends ApiCommand {
     constructor() {
@@ -112,7 +112,7 @@ export class ProjectTranscriptsGetCommand extends ApiCommand {
     }
 
     async do(req, res) {
-        const answer = ApiCommand.createAnswer();
+        const answer = ApiCommand.createAnswer() as ProjectTranscriptsGetResponse;
         const validation = this.validate(req.params, req.body);
         // do something
         if (validation.length === 0) {

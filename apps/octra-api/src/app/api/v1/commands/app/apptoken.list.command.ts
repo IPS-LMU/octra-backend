@@ -2,7 +2,7 @@ import {ApiCommand, RequestType} from '../api.command';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
-import {UserRole} from '@octra/db';
+import {AppTokenListResponse, UserRole} from '@octra/db';
 
 export class AppTokenListCommand extends ApiCommand {
     constructor() {
@@ -54,7 +54,7 @@ export class AppTokenListCommand extends ApiCommand {
     }
 
     async do(req, res) {
-        const answer = ApiCommand.createAnswer();
+        const answer = ApiCommand.createAnswer() as AppTokenListResponse;
         const validation = this.validate(req.params, req.body);
 
         if (validation.length === 0) {

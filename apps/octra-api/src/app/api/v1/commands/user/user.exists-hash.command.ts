@@ -2,6 +2,7 @@ import {ApiCommand, RequestType} from '../api.command';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
+import {UserExistsHashResponse} from '@octra/db';
 
 export class UserExistsHashCommand extends ApiCommand {
     constructor() {
@@ -40,7 +41,7 @@ export class UserExistsHashCommand extends ApiCommand {
     }
 
     async do(req, res) {
-        const answer = ApiCommand.createAnswer();
+        const answer = ApiCommand.createAnswer() as UserExistsHashResponse;
         const validation = this.validate(req.params, req.body, req.query);
 
         if (validation.length === 0) {

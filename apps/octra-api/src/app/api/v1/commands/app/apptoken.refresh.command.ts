@@ -2,7 +2,7 @@ import {ApiCommand, RequestType} from '../api.command';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
-import {UserRole} from '@octra/db';
+import {AppTokenRefreshResponse, UserRole} from '@octra/db';
 
 export class AppTokenRefreshCommand extends ApiCommand {
     constructor() {
@@ -48,7 +48,7 @@ export class AppTokenRefreshCommand extends ApiCommand {
     }
 
     async do(req, res) {
-        const answer = ApiCommand.createAnswer();
+        const answer = ApiCommand.createAnswer() as AppTokenRefreshResponse;
         const validation = this.validate(req.params, req.body);
 
         // do something

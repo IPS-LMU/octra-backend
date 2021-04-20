@@ -2,7 +2,7 @@ import {ApiCommand, RequestType} from '../api.command';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
-import {CreateProjectRequest, UserRole} from '@octra/db';
+import {CreateProjectRequest, ProjectCreateResponse, UserRole} from '@octra/db';
 
 export class ProjectCreateCommand extends ApiCommand {
     constructor() {
@@ -90,7 +90,7 @@ export class ProjectCreateCommand extends ApiCommand {
     }
 
     async do(req, res) {
-        const answer = ApiCommand.createAnswer();
+        const answer = ApiCommand.createAnswer() as ProjectCreateResponse;
         const validation = this.validate(req.params, req.body);
 
         // do something
