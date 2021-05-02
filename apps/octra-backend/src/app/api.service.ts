@@ -3,6 +3,7 @@ import {HttpClient} from '@angular/common/http';
 import {Router} from '@angular/router';
 import {SessionStorage} from 'ngx-webstorage';
 import {SettingsService} from './settings.service';
+import {AppTokenListResponse, AppTokenRemoveResponse, UserLoginResponse} from '@octra/db';
 
 @Injectable({
   providedIn: 'root'
@@ -54,7 +55,7 @@ export class APIService {
           Authorization: `Bearer ${this.settingsService.settings.api.token}`
         },
         responseType: 'json'
-      }).subscribe((result: any) => {
+      }).subscribe((result: UserLoginResponse) => {
         this._authenticated = result.authenticated;
         if (result.authenticated) {
           this._webToken = result.token;
@@ -84,7 +85,7 @@ export class APIService {
           'x-access-token': this._webToken
         },
         responseType: 'json'
-      }).subscribe((result: any) => {
+      }).subscribe((result: AppTokenListResponse) => {
         resolve(result.data);
       }, (e) => {
         reject(e.error.message);
@@ -100,7 +101,7 @@ export class APIService {
           'x-access-token': this._webToken
         },
         responseType: 'json'
-      }).subscribe((result: any) => {
+      }).subscribe((result: AppTokenRemoveResponse) => {
         console.log(result);
         if (result.status === 'success') {
           resolve(true);

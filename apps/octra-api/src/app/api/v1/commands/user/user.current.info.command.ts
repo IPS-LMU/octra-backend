@@ -46,7 +46,7 @@ export class UserCurrentInfoCommand extends ApiCommand {
               type: 'string'
             },
             loginmethod: {
-              type: 'boolean'
+              type: 'string'
             },
             comment: {
               type: 'string'

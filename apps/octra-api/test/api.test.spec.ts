@@ -42,7 +42,6 @@ const todoList = {
   user: {
     register: true,
     login: true,
-    loginShibboleth: true,
     loginNormal: true,
     hash: true,
     assign: true,
@@ -126,25 +125,6 @@ if (todoList.user.login) {
         expect(typeof res.body.data).toBe('object');
         tempData.admin.id = res.body.data.id;
         tempData.admin.jwtToken = res.body.token;
-        done();
-      });
-  });
-}
-
-if (todoList.user.loginShibboleth) {
-  it('it should POST a user login via Shibboleth', (done) => {
-    const requestData = {
-      'type': 'shibboleth'
-    }
-    request
-      .post('/v1/users/login')
-      .set('Authorization', `Bearer ${appToken}`)
-      .set('Origin', 'http://localhost:8080')
-      .send(requestData)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        expect(res.body.status).toBe('success');
-        expect(typeof res.body.data).toBe('object');
         done();
       });
   });

@@ -3,7 +3,6 @@ import * as jwt from 'jsonwebtoken';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {BadRequest, Forbidden} from '../../../../obj/http-codes/client.codes';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
-import {ShibbolethAuthenticator} from '../../../../authenticators/shibboleth/shibboleth.authenticator';
 import {TokenData, UserRegisterRequest, UserRegisterResponse} from '@octra/db';
 
 export class UserRegisterCommand extends ApiCommand {
@@ -68,26 +67,6 @@ export class UserRegisterCommand extends ApiCommand {
             try {
                 const answer = ApiCommand.createAnswer() as UserRegisterResponse;
 
-                const authenticator = new ShibbolethAuthenticator(this.settings.api.url, req.cookies);
-
-                if (authenticator.isActive) {
-                    try {
-                        const authenticated = await authenticator.isAuthenticated();
-                        if (!authenticated) {
-                            UserRegisterCommand.sendError(res, Forbidden, `User not authenticated with ${authenticator.name}`, false);
-                            return;
-                        }
-                    } catch (e) {
-                        console.log(`error occurred: `);
-                        console.log(e);
-
-                        ApiCommand.sendError(res, InternalServerError, e, false);
-                        return;
-                    }
-                }
-
-                console.log(authenticator);
-
                 if (req.AppToken) {
                     console.log(`check registrations`);
                     let areRegistrationsAllowed;
@@ -96,14 +75,14 @@ export class UserRegisterCommand extends ApiCommand {
                     } else {
                         areRegistrationsAllowed = await DatabaseFunctions.areRegistrationsAllowed(req.AppToken);
                     }
-                    const hash = (authenticator.uid === '') ? DatabaseFunctions.getPasswordHash(userData.password).toString() : authenticator.uid;
+                    const hash = DatabaseFunctions.getPasswordHash(userData.password).toString();
 
                     if (areRegistrationsAllowed) {
                         const result = await DatabaseFunctions.createUser({
                             name: userData.name,
                             email: userData.email,
                             password: hash,
-                            loginmethod: (authenticator.uid === '') ? 'local' : 'shibboleth'
+                            loginmethod: 'local'
                         });
 
                         answer.authenticated = true;

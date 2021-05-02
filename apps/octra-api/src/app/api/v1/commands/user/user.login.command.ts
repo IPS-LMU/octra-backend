@@ -2,7 +2,6 @@ import {ApiCommand, RequestType} from '../api.command';
 import * as jwt from 'jsonwebtoken';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
-import {ShibbolethAuthenticator} from '../../../../authenticators/shibboleth/shibboleth.authenticator';
 import {OK} from '../../../../obj/http-codes/success.codes';
 import {TokenData, UserLoginRequest, UserLoginResponse} from '@octra/db';
 
@@ -71,37 +70,22 @@ export class UserLoginCommand extends ApiCommand {
         const answer = ApiCommand.createAnswer() as UserLoginResponse;
 
         let authenticated = false;
-        const authenticator = new ShibbolethAuthenticator(this.settings.api.url, req.cookies);
         const userData = await DatabaseFunctions.getUserInfo({
           name: body.name,
-          hash: authenticator.uid
+          hash: ''
         });
 
-        if (authenticator.isActive || body.type === 'shibboleth') {
-          authenticated = await authenticator.isAuthenticated();
-          if (userData === null || !authenticated) {
-            answer.data = {
-              openURL: authenticator.authURL
-            };
-            answer.status = 'success';
-            answer.message = 'Open URL in new window for authentication';
-            answer.authenticated = false;
-            res.status(OK).send(answer);
-            return;
-          }
-        } else {
-          if (userData === null || userData === undefined) {
-            ApiCommand.sendError(res, 401, 'Can not find user.', false);
-            return;
-          }
-          const {hash} = userData;
-          const passwordIsValid = DatabaseFunctions.getPasswordHash(body.password) === hash;
-          if (!passwordIsValid) {
-            ApiCommand.sendError(res, 401, 'Invalid password.', false);
-            return;
-          }
-          authenticated = true;
+        if (userData === null || userData === undefined) {
+          ApiCommand.sendError(res, 401, 'Can not find user.', false);
+          return;
         }
+        const {hash} = userData;
+        const passwordIsValid = DatabaseFunctions.getPasswordHash(body.password) === hash;
+        if (!passwordIsValid) {
+          ApiCommand.sendError(res, 401, 'Invalid password.', false);
+          return;
+        }
+        authenticated = true;
 
         const {id, username, role} = userData;
         answer.authenticated = authenticated;

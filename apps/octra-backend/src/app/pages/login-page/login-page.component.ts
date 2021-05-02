@@ -15,8 +15,6 @@ export class LoginPageComponent implements OnInit {
     password: ''
   };
 
-  shibbolethStatus = 'initialized';
-  shibbolethLabel = 'Sign in with Shibboleth';
   windowChecker = null;
 
   constructor(public api: APIService, private router: Router, private modalsService: ModalsService) {
@@ -33,7 +31,6 @@ export class LoginPageComponent implements OnInit {
       } else {
         console.log(`open window!`);
         const authWindow = window.open('https://clarin.phonetik.uni-muenchen.de/webapps/octra-api/authShibboleth', '_blank', `top:${(window.outerHeight - 400) / 2},width=600,height=400,titlebar=no,status=no,location=no`);
-        this.shibbolethLabel = 'Confirm Shibboleth Authentication';
         authWindow.addEventListener('beforeunload', () => {
           console.log(`window closed`);
         });

@@ -211,7 +211,8 @@
         "serve": {
           "builder": "@nrwl/node:execute",
           "options": {
-            "buildTarget": "octra-api:build"
+            "buildTarget": "octra-api:build",
+            "inspect": true
           }
         },
         "lint": {

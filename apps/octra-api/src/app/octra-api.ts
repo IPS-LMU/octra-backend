@@ -14,7 +14,6 @@ import {DBManager} from './db/db.manager';
 import {PostgreSQLManager} from './db/postgreSQL.manager';
 import * as cookieParser from 'cookie-parser';
 import {SHA256} from 'crypto-js';
-import {ShibbolethAuthenticator} from './authenticators/shibboleth/shibboleth.authenticator';
 import express = require('express');
 
 export class OctraApi {
@@ -137,10 +136,8 @@ export class OctraApi {
 
       // TODO add this to the ShibbolethAuthenticator class
       router.route(`/authShibboleth`).get((req, res) => {
-        const authenticator = new ShibbolethAuthenticator(this.settings.api.url, req.cookies);
         res.render(`authenticators/shibboleth/index.ejs`, {
-          appToken: this.settings.api.authenticator.appToken,
-          shibbolethUID: authenticator.uid
+          appToken: this.settings.api.authenticator.appToken
         });
       });
 
