@@ -13,7 +13,10 @@ import {AppConfiguration, IDBConfiguration} from './obj/app-config/app-config';
 import {DBManager} from './db/db.manager';
 import {PostgreSQLManager} from './db/postgreSQL.manager';
 import * as cookieParser from 'cookie-parser';
+import * as jwt from 'jsonwebtoken';
+import {TokenData, UserRole} from '@octra/db';
 import {SHA256} from 'crypto-js';
+import {DatabaseFunctions} from './api/v1/obj/database.functions';
 import express = require('express');
 
 export class OctraApi {
@@ -65,9 +68,6 @@ export class OctraApi {
     this.settings = appConfiguration;
     this.settings.appPath = this._appPath;
     this.settings.executionPath = this._executionPath;
-    this.settings.api.authenticator = {
-      appToken: SHA256(Date.now() + '2634872h3gr692seß0d').toString()
-    }
 
     if (this.settings.validation.valid) {
       const app = express();
@@ -126,7 +126,7 @@ export class OctraApi {
           // do logging
           console.log(`Got new request`);
           console.log(JSON.stringify(req.headers));
-          next(); // make sure we go to the next routes and don't stop here
+          next(); // make sure we go to the next routes and don't stop here-
         });
       }
 
@@ -134,15 +134,105 @@ export class OctraApi {
       app.use(express.static(path.join(this._appPath, 'static')));
       app.use('/', router);
 
-      // TODO add this to the ShibbolethAuthenticator class
-      router.route(`/authShibboleth`).get((req, res) => {
-        res.render(`authenticators/shibboleth/index.ejs`, {
-          appToken: this.settings.api.authenticator.appToken
+      router.route(`/confirmShibboleth`).post((req, res) => {
+        jwt.verify(req.body.shibToken, this.settings.api.shibboleth.secret, (err, tokenBody) => {
+          console.log(tokenBody);
+          if (err) {
+            ApiCommand.sendError(res, 401, 'Invalid Web Token. Please authenticate again.', false);
+          } else {
+            if (!((tokenBody.userInformation.mail && tokenBody.userInformation.mail.trim() !== '') ||
+              (tokenBody.userInformation.oidEduPersonPrincipalName || tokenBody.userInformation.oidEduPersonPrincipalName.trim() !== ''))) {
+              ApiCommand.sendError(res, 401, 'Shibboleth response does not contain eduPrincipalName or mail attributes.', false);
+              return;
+            }
+
+            // generate UUID
+            let UUID = '';
+            if (tokenBody.userInformation.oidEduPersonPrincipalName && tokenBody.userInformation.oidEduPersonPrincipalName !== '') {
+              UUID = tokenBody.userInformation.oidEduPersonPrincipalName;
+            } else if (tokenBody.userInformation.mail && tokenBody.userInformation.mail !== '') {
+              UUID = tokenBody.userInformation.mail;
+            }
+
+            if (UUID !== '') {
+              // save user
+              UUID = SHA256(UUID).toString();
+              console.log(`UUID is ${UUID}`);
+              // check if user exists
+              DatabaseFunctions.getUserInfo({
+                name: '',
+                email: '',
+                hash: UUID
+              }).then((user) => {
+                const redirectWithToken = (id: number, roles: UserRole[]) => {
+                  const tokenData: TokenData = {
+                    id,
+                    role: roles
+                  };
+                  const token = jwt.sign(tokenData, this.settings.api.secret, {
+                    expiresIn: 86400 // expires in 24 hours
+                  });
+
+                  res.render(`authenticators/confirmShibboleth.ejs`, {
+                    userName: '',
+                    email: '',
+                    token: token,
+                    windowURL: req.query.windowURL
+                  });
+                }
+
+                if (user) {
+                  console.log(`user exists`);
+                  redirectWithToken(user.id, user.role);
+                } else {
+                  console.log(`user does not exist`);
+
+                  if (req.body) {
+                    const userName = (tokenBody.userInformation.displayName && tokenBody.userInformation.displayName.trim() !== '')
+                      ? tokenBody.userInformation.displayName : req.body.userName;
+
+                    const email = (tokenBody.userInformation.mail && tokenBody.userInformation.mail.trim() !== '')
+                      ? tokenBody.userInformation.mail : req.body.email;
+
+                    console.log(`userName: ${userName}, email: ${email}`);
+                    if (userName && userName.trim() !== '' && email && email.trim() !== '') {
+                      // save user
+                      DatabaseFunctions.createUser({
+                        name: userName,
+                        email: email,
+                        password: UUID,
+                        loginmethod: 'shibboleth'
+                      }).then((newUser) => {
+                        console.log(`user created with id ${newUser.id}`);
+                        redirectWithToken(newUser.id, newUser.roles);
+                      }).catch((error) => {
+                        ApiCommand.sendError(res, 401, error, false);
+                      });
+                    } else {
+                      res.render(`authenticators/confirmShibboleth.ejs`, {
+                        userName: tokenBody.userInformation.displayName,
+                        email: tokenBody.userInformation.mail,
+                        shibToken: req.body.shibToken,
+                        token: '',
+                        windowURL: ''
+                      });
+                    }
+                  }
+                }
+              }).catch((e) => {
+                console.error(e);
+                ApiCommand.sendError(res, 500, 'Can not create User.', false);
+              })
+            } else {
+              ApiCommand.sendError(res, 500, 'Can not generate UUID.', false);
+              return;
+            }
+          }
         });
       });
 
       router.route('*').all((req, res) => {
-        ApiCommand.sendError(res, 400, `This route does not exist. Please check your URL again. ${req.url}`);
+        ApiCommand.sendError(res, 400, `This route does not exist. Please check your URL again. ${req.url}`, false);
       });
 
       // Start listening!
@@ -157,7 +247,7 @@ export class OctraApi {
           for (const module of api.modules) {
             console.log(`\t\t[Module] ${module.url}`);
             for (const command of module.commands) {
-              console.log(`\t\t\t- ${command.root}${command.url} => ${command.name}`);
+              console.log(`\t\t\t- ${command.root}${command.url} => ${command.name} (${command.type})`);
             }
           }
         }

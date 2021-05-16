@@ -1,6 +1,15 @@
 <main class="form-signin">
   <form>
     <h1 class="h3 mb-3 fw-normal" style="text-align: center;">Please sign in</h1>
+
+    <button class="w-100 btn btn-lg btn-secondary" type="submit" (click)="onSubmit('shibboleth')">
+      <fa-icon icon="university"></fa-icon>
+      Sign in with Shibboleth
+    </button>
+    <hr/>
+    <div style="text-align: center;">
+      or
+    </div>
     <label for="inputEmail" class="visually-hidden">Email address</label>
     <input type="text" id="inputEmail" class="form-control" placeholder="Name" name="name" [(ngModel)]="user.name"
            required

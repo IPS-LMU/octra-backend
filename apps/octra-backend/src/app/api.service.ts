@@ -69,6 +69,21 @@ export class APIService {
     });
   }
 
+  public retrieveTokenFromWindow(windowURL: string): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      this.http.get(windowURL).subscribe((result: any) => {
+        console.log(result);
+        if (result.token) {
+          this._webToken = result.token;
+          resolve();
+        } else {
+          reject('No web token.')
+        }
+      }, (e) => {
+        reject('HTTP request failed.')
+      });
+    });
+  }
 
   public logout() {
     this._webToken = '';

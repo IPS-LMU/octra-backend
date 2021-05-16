@@ -1,0 +1,93 @@
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="_description" content="">
+    <meta name="author" content="">
+
+    <title>Shibboleth Confirmation</title>
+    <!-- Bootstrap core CSS -->
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+
+    <!-- Custom styles for this template -->
+    <link href="authenticators/shibboleth/style.css" rel="stylesheet" type="text/css">
+</head>
+<body class="text-center">
+<%
+var tokenBody = {
+    userInformation: {
+        mail: "",
+        displayName: ""
+    }
+}
+%>
+<% if(windowURL.trim() === "" && token.trim() === ""){ %>
+    <form class="form-signin" id="signinForm" method="post">
+        <h1 class="h3 mb-3 font-weight-normal" style="text-align: center;">Please register</h1>
+        <% if(!userName || userName.trim() === ""){ %>
+            <div class="form-group">
+                <label for="inputUserName">First Name and Last Name</label>
+                <input type="text" id="inputUserName" class="form-control" name="userName"
+                       placeholder="First & Last Name"
+                       required="required" autofocus="">
+            </div>
+        <% } %>
+        <% if(!email || email.trim() === ""){ %>
+            <div class="form-group">
+                <label for="inputEmail">Email Address</label>
+                <input type="email" id="inputEmail" class="form-control" name="email" placeholder="Email address"
+                       required="required"
+                       autofocus="">
+            </div>
+        <% } %>
+        <div class="form-group" style="display: none;">
+            <input type="hidden" name="shibToken" value="<%= shibToken %>"/>
+        </div>
+        <button class="btn btn-lg btn-primary btn-block" id="submitButton" disabled="disabled" type="submit">Sign in
+        </button>
+    </form>
+<% } else { %>
+    <form id="redirectForm" action="<%= windowURL %>" method="post" style="display: none;">
+        <input type="text" name="token" value="<%= token %>"/>
+    </form>
+<% } %>
+<script type="application/javascript">
+    var signInForm = document.getElementById("signinForm");
+    var inputUserName = document.getElementById("inputUserName");
+    var inputEmail = document.getElementById("inputEmail");
+    var submitButton = document.getElementById("submitButton");
+    var windowURL = "<%= windowURL %>";
+    var jwtToken = "<%= token %>";
+
+    function redirect() {
+        if (windowURL && windowURL !== "") {
+            console.log("redirect");
+            document.getElementById("redirectForm").submit();
+        }
+    }
+
+    function checkInputs() {
+        if ((inputUserName && inputUserName.value.trim() === "") || (inputEmail && inputEmail.value.trim() === "")) {
+            submitButton.setAttribute("disabled", "disabled");
+        } else {
+            submitButton.removeAttribute("disabled");
+        }
+    }
+
+    if (windowURL.trim() !== "" && jwtToken.trim() !== "") {
+        redirect();
+    }
+
+    if (inputUserName || inputEmail) {
+        if (inputUserName) {
+            inputUserName.addEventListener("keyup", checkInputs);
+        }
+
+        if (inputEmail) {
+            inputEmail.addEventListener("keyup", checkInputs);
+        }
+        checkInputs();
+    }
+</script>
+</body>
+</html>
