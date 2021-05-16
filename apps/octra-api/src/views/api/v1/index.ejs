@@ -53,26 +53,35 @@
                 </a>
             </li>
             <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
+                <a class="nav-link dropdown-toggle" href="#" role="button" id="api-methods-nav" data-toggle="dropdown"
                    aria-haspopup="true" aria-expanded="false">
                     API Methods
                 </a>
-                <div class="dropdown-menu navbar-dark bg-dark" aria-labelledby="navbarDropdown">
+
+                <ul class="dropdown-menu navbar-dark bg-dark" aria-labelledby="api-methods-nav">
                     <% for(var i = 0; i < commands.length; i++) { %>
-                        <a class="dropdown-item" data-hash="<%= commands[i]._name %>"
-                           data-bs-toggle="collapse" data-bs-target="#navbarsExample04"
-                           href="#<%= commands[i]._name %>"><%= commands[i]._name %>
-                            (<%= commands[i]._type %>)</a>
+                        <li class="dropdown-submenu">
+                            <a class="dropdown-item dropdown-toggle" href="#"
+                               data-bs-target="#<%= commands[i].title.toLowerCase().trim() %>-methods"><%= commands[i].title %></a>
+                            <ul class="dropdown-menu navbar-dark bg-dark">
+                                <% for(var j = 0; j < commands[i].commands.length; j++) { %>
+                                    <li>
+                                        <a class="dropdown-item" href="#<%= commands[i].commands[j].name %>"
+                                           data-hash="<%= commands[i].commands[j]._name %>">
+                                            <%= commands[i].commands[j]._name %>(<%= commands[i].commands[j].type %>)
+                                        </a>
+                                    </li>
+                                <% } %>
+                            </ul>
+                        </li>
                     <% } %>
-                </div>
-            </li>
-            <li class="nav-item">
+                    <li class="nav-item">
 
-                <ul class="navbar-nav">
+                        <ul class="navbar-nav">
 
+                        </ul>
+                    </li>
                 </ul>
-            </li>
-        </ul>
     </div>
 </nav>
 
@@ -97,16 +106,28 @@
                data-bcup-haslogintext="no" href="#UserAuthorisation">
                 User Authorisation
             </a>
-            <a class="nav-link btn-toggle align-items-center rounded collapsed" data-hash="APIMethods"
-               data-bs-toggle="collapse"
-               data-bs-target="#api-methods" aria-expanded="true" data-bcup-haslogintext="no" href="#APIMethods">
+            <a class="nav-link btn-toggle align-items-center rounded collapsed" data-toggle="collapse"
+               data-target="#api-methods %>" aria-expanded="true" aria-controls="collapseOne" href="#APIMethods">
                 API Methods
             </a>
             <div class="collapse show" id="api-methods">
-                <nav class="nav btn-toggle-nav list-unstyled fw-normal pb-1 small flex-column">
+                <nav class="nav btn-toggle-nav list-unstyled fw-normal pb-1 flex-column">
                     <% for(var i = 0; i < commands.length; i++){ %>
-                        <a class="nav-link" data-hash="<%= commands[i]._name %>"
-                           href="#<%= commands[i]._name %>"><%= commands[i]._name %></a>
+                        <a class="nav-link btn-toggle align-items-center rounded" data-toggle="collapse"
+                           data-target="#<%= commands[i].title.toLowerCase().trim() %>-methods %>" aria-expanded="true"
+                           style="cursor:pointer"
+                           aria-controls="collapseOne">
+                            <%= commands[i].title %>
+                        </a>
+                        <div class="collapse show" id="<%= commands[i].title.toLowerCase().trim() %>-methods"
+                             style="padding-left:20px;">
+                            <nav class="nav btn-toggle-nav list-unstyled fw-normal pb-1 flex-column">
+                                <% for(var j = 0; j < commands[i].commands.length; j++){ %>
+                                    <a class="nav-link" data-hash="<%= commands[i].commands[j]._name %>"
+                                       href="#<%= commands[i].commands[j]._name %>"><%= commands[i].commands[j]._name %></a>
+                                <% } %>
+                            </nav>
+                        </div>
                     <% } %>
                 </nav>
             </div>
@@ -182,94 +203,99 @@
                 <hr style="margin-bottom: 10px;"/>
 
                 <div class="commands">
+
                     <% for(var i = 0; i < commands.length; i++) { %>
-                        <div class="card command" id="<%= commands[i]._name %>">
-                            <div class="card-header">
+                        <h3 id="<%= commands[i].title %>"><%= commands[i].title %></h3>
+
+                        <% for(var j = 0; j < commands[i].commands.length; j++) { %>
+                            <div class="card command" id="<%= commands[i].commands[j]._name %>">
+                                <div class="card-header">
                                 <span class="title">
-                                    <%= commands[i]._name %> <a href="#<%= commands[i]._name %>"
-                                                                data-hash="<%= commands[i]._name %>"><i
+                                    <%= commands[i].commands[j]._name %> <a href="#<%= commands[i].commands[j]._name %>"
+                                                                            data-hash="<%= commands[i].commands[j]._name %>"><i
                                                 class="bi bi-link-45deg"></i></a>
                                 </span>
-                                <div class="info">
+                                    <div class="info">
                                     <span class="badge pill bg-info"><i
                                                 class="bi bi-shield-lock-fill"></i> App Token</span>
-                                    <% if (commands[i]._needsJWTAuthentication) { %>
-                                        <span class="badge pill bg-info"><i
-                                                    class="bi bi-shield-lock-fill"></i> JWT</span>
-                                    <% } %>
+                                        <% if (commands[i].commands[j]._needsJWTAuthentication) { %>
+                                            <span class="badge pill bg-info"><i
+                                                        class="bi bi-shield-lock-fill"></i> JWT</span>
+                                        <% } %>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="card-body">
-                                <table class="table">
-                                    <% if (commands[i]._allowedUserRoles.length > 0) { %>
-                                        <tr>
-                                            <td class="label">
-                                                Allowed user roles:
-                                            </td>
-                                            <td><%= commands[i]._allowedUserRoles.join(', ') %></td>
-                                        </tr>
-                                    <% } %>
-                                    <tr>
-                                        <td class="label">
-                                            URL:
-                                        </td>
-                                        <td><code><%= url %><%= commands[i]._url %></code></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="label">
-                                            Description:
-                                        </td>
-                                        <td><p><%= commands[i]._description %></p></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="label">Method:</td>
-                                        <td>
-                                            <span class="badge rounded-pill bg-secondary"><%= commands[i]._type %></span>
-                                        </td>
-                                    </tr>
-                                    <% if (commands[i]._requestStructure && commands[i]._requestStructure !== '{}') { %>
-                                        <% if (commands[i]._acceptedContentType) { %>
+                                <div class="card-body">
+                                    <table class="table">
+                                        <% if (commands[i].commands[j]._allowedUserRoles.length > 0) { %>
                                             <tr>
-                                                <td class="label">Request Content Type:</td>
-                                                <td><%= commands[i]._acceptedContentType %></td>
+                                                <td class="label">
+                                                    Allowed user roles:
+                                                </td>
+                                                <td><%= commands[i].commands[j]._allowedUserRoles.join(', ') %></td>
                                             </tr>
                                         <% } %>
-                                    <% } %>
-                                    <% if (commands[i]._responseStructure) { %>
                                         <tr>
-                                            <td class="label">Response Content Type:</td>
-                                            <td><%= commands[i]._responseContentType %></td>
+                                            <td class="label">
+                                                URL:
+                                            </td>
+                                            <td><code><%= url %><%= commands[i].commands[j]._url %></code></td>
                                         </tr>
-                                    <% } %>
-                                    <% if (commands[i]._requestStructure && commands[i]._requestStructure !== '{}') { %>
                                         <tr>
-                                            <td colspan="2">
+                                            <td class="label">
+                                                Description:
+                                            </td>
+                                            <td><p><%= commands[i].commands[j]._description %></p></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="label">Method:</td>
+                                            <td>
+                                                <span class="badge rounded-pill bg-secondary"><%= commands[i].commands[j]._type %></span>
+                                            </td>
+                                        </tr>
+                                        <% if (commands[i].commands[j]._requestStructure && commands[i].commands[j]._requestStructure !== '{}') { %>
+                                            <% if (commands[i].commands[j]._acceptedContentType) { %>
+                                                <tr>
+                                                    <td class="label">Request Content Type:</td>
+                                                    <td><%= commands[i].commands[j]._acceptedContentType %></td>
+                                                </tr>
+                                            <% } %>
+                                        <% } %>
+                                        <% if (commands[i].commands[j]._responseStructure && commands[i].commands[j]._responseStructure !== "{}") { %>
+                                            <tr>
+                                                <td class="label">Response Content Type:</td>
+                                                <td><%= commands[i].commands[j]._responseContentType %></td>
+                                            </tr>
+                                        <% } %>
+                                        <% if (commands[i].commands[j]._requestStructure && commands[i].commands[j]._requestStructure !== '{}') { %>
+                                            <tr>
+                                                <td colspan="2">
                                                 <span class="label">Request Schema:
-                                                    <% if (commands[i]._type === 'GET') { %>
+                                                    <% if (commands[i].commands[j]._type === 'GET') { %>
                                                         (GET parameters in URL)
                                                     <% } else { %>
                                                         (Body)
                                                     <% } %>
                                                     :<br/>
                                                     </span>
-                                                <textarea
-                                                        readonly><%= commands[i]._requestStructure %></textarea>
-                                            </td>
-                                        </tr>
-                                    <% } %>
-                                    <% if (commands[i]._responseStructure) { %>
-                                        <tr>
-                                            <td colspan="2">
-                                                <span class="label">Response Schema:</span><br>
-                                                <textarea
-                                                        readonly><%= commands[i]._responseStructure %></textarea>
-                                            </td>
-                                        </tr>
-                                    <% } %>
-                                </table>
+                                                    <textarea
+                                                            readonly><%= commands[i].commands[j]._requestStructure %></textarea>
+                                                </td>
+                                            </tr>
+                                        <% } %>
+                                        <% if (commands[i].commands[j]._responseStructure && commands[i].commands[j]._responseStructure !== '{}') { %>
+                                            <tr>
+                                                <td colspan="2">
+                                                    <span class="label">Response Schema:</span><br>
+                                                    <textarea
+                                                            readonly><%= commands[i].commands[j]._responseStructure %></textarea>
+                                                </td>
+                                            </tr>
+                                        <% } %>
+                                    </table>
+                                </div>
                             </div>
-                        </div>
-                        <hr/>
+                            <hr/>
+                        <% } %>
                     <% } %>
                 </div>
             </div>
@@ -285,7 +311,6 @@
 <script src="../bootstrap/js/bootstrap.bundle.js"></script>
 <script>
     $(document).ready(function () {
-
         $("#main-inner").scrollspy({
             target: '#navbar-sticky',
             method: "position",
@@ -300,7 +325,23 @@
             event.preventDefault();
             location.hash = $(this).attr("data-hash");
             jumpTo(60);
-        })
+        });
+
+        $('.dropdown-menu a.dropdown-toggle').on('click', function (e) {
+            if (!$(this).next().hasClass('show')) {
+                $(this).parents('.dropdown-menu').first().find('.show').removeClass('show');
+            }
+            var $subMenu = $(this).next('.dropdown-menu');
+            $subMenu.toggleClass('show');
+
+
+            $(this).parents('li.nav-item.dropdown.show').on('hidden.bs.dropdown', function (e) {
+                $('.dropdown-submenu .show').removeClass('show');
+            });
+
+
+            return false;
+        });
     });
 
     function jumpTo(offset) {

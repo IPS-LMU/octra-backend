@@ -2,8 +2,8 @@ import {ApiCommand, RequestType} from '../api.command';
 import * as jwt from 'jsonwebtoken';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
-import {OK} from '../../../../obj/http-codes/success.codes';
 import {TokenData, UserLoginRequest, UserLoginResponse} from '@octra/db';
+import {OK} from '../../../../obj/http-codes/success.codes';
 
 export class UserLoginCommand extends ApiCommand {
 
@@ -27,6 +27,9 @@ export class UserLoginCommand extends ApiCommand {
         name: {
           type: 'string'
         },
+        email: {
+          type: 'string'
+        },
         password: {
           type: 'string'
         }
@@ -45,9 +48,9 @@ export class UserLoginCommand extends ApiCommand {
           ...this.defaultResponseSchema.properties.data,
           properties: {
             ...this.defaultResponseSchema.properties.data.properties,
+            // TODO why is id needed?
             id: {
-              type: 'number',
-              required: true
+              type: 'number'
             },
             name: {
               type: 'string'
@@ -62,16 +65,28 @@ export class UserLoginCommand extends ApiCommand {
   }
 
   async do(req, res) {
+    console.log(`IN LOGIN`);
     const validation = this.validate(req.params, req.body);
     const body: UserLoginRequest = req.body;
+    console.log(`body is`);
+    console.log(req.body);
 
     if (validation.length === 0) {
+      console.log(`validation ok`);
       try {
         const answer = ApiCommand.createAnswer() as UserLoginResponse;
-
         let authenticated = false;
+
+        if (body.type === 'shibboleth') {
+          answer.data = {openURL: this.settings.api.shibboleth.windowURL};
+          answer.authenticated = false;
+          res.status(OK).send(answer);
+          return;
+        }
+
         const userData = await DatabaseFunctions.getUserInfo({
           name: body.name,
+          email: body.email,
           hash: ''
         });
 

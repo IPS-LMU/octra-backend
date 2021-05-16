@@ -22,6 +22,10 @@
     "debugging": false,
     "uploadPath": "data",
     "secret": "",
-    "passwordSalt": ""
+    "passwordSalt": "",
+    "shibboleth": {
+      "secret": "",
+      "windowURL": ""
+    }
   }
 }

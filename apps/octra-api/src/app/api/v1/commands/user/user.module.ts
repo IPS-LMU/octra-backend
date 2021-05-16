@@ -10,18 +10,18 @@ import {UserInfoCommand} from './user.info.command';
 import {UserCurrentInfoCommand} from './user.current.info.command';
 
 export class UserModule extends CommandModule {
-    constructor() {
-        super('/users');
-        this._commands = [
-            new UserLoginCommand(),
-            new UserRegisterCommand(),
-            new UserExistsHashCommand(),
-            new UserCurrentInfoCommand(),
-            new UserPasswordChangeCommand(),
-            new UserListCommand(),
-            new UserInfoCommand(),
-            new UserAssignRolesCommand(),
-            new UserRemoveCommand()
-        ];
-    }
+  constructor() {
+    super('/users', 'Users');
+    this._commands = [
+      new UserLoginCommand(),
+      new UserRegisterCommand(),
+      new UserExistsHashCommand(),
+      new UserCurrentInfoCommand(),
+      new UserPasswordChangeCommand(),
+      new UserListCommand(),
+      new UserInfoCommand(),
+      new UserAssignRolesCommand(),
+      new UserRemoveCommand()
+    ];
+  }
 }

@@ -5,6 +5,9 @@ import {verifyAppToken, verifyUserRole, verifyWebToken} from '../obj/middlewares
 import {TokenData} from '@octra/db';
 
 export class CommandModule {
+  get title(): string {
+    return this._title;
+  }
     get url(): string {
         return this._url;
     }
@@ -15,15 +18,18 @@ export class CommandModule {
 
     protected _commands: ApiCommand[] = [];
     private _url: string;
+    private _title: string;
 
-    constructor(url: string) {
+    constructor(url: string, title: string) {
         this._url = url;
+        this._title = title;
     }
 
     init(v1Router: Router, environment: 'production' | 'development', settings: AppConfiguration) {
         const router = Router();
         router.use((req, res, next) => {
             verifyAppToken(req, res, next, settings, () => {
+              console.log(`verify app token next`);
                 next();
             });
         });
@@ -41,7 +47,6 @@ export class CommandModule {
                 return a.root.length - b.root.length;
             }
         });
-
 
         for (const command of this._commands) {
             command.init(settings);
@@ -76,6 +81,8 @@ export class CommandModule {
                 case RequestType.DELETE:
                     route.delete(callback);
                     break;
+              default:
+                console.error(`unrecognized type ${command.type}`);
             }
         }
 

@@ -8,13 +8,13 @@ import {ToolModule} from './commands/tool/tool.module';
 import {TranscriptModule} from './commands/transcript/transcript.module';
 
 export class APIV1Module {
-    public static modules: CommandModule[] = [
-        new UserModule(),
-        new AppModule(),
-        new MediaModule(),
-        new DeliveryModule(),
-        new ProjectModule(),
-        new ToolModule(),
-        new TranscriptModule()
-    ];
+  public static modules: CommandModule[] = [
+    new UserModule(),
+    new AppModule(),
+    new MediaModule(),
+    new DeliveryModule(),
+    new ProjectModule(),
+    new ToolModule(),
+    new TranscriptModule()
+  ];
 }

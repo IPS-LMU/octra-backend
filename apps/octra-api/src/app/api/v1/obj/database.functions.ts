@@ -9,10 +9,13 @@ import {
   AssignUserRoleRequest,
   CreateProjectRequest,
   DeliverNewMediaRequest,
-  ProjectTranscriptsGetResult,
   MediaItemRow,
   ProjectRow,
+  ProjectTranscriptsGetResult,
   RolesRow,
+  SaveAnnotationRequest,
+  StartAnnotationRequest,
+  TokenData,
   ToolRow,
   TranscriptRow,
   UserRole
@@ -67,14 +70,14 @@ export class DatabaseFunctions {
           if (valid) {
             return;
           } else {
-            throw `Origin Host ${originHost} does not match the domain registered for this app key.`;
+            throw new Error(`Origin Host ${originHost} does not match the domain registered for this app key.`);
           }
         }
       }
       return;
     }
 
-    throw 'Could not find app token';
+    throw new Error('Could not find app token');
   }
 
   public static async areRegistrationsAllowed(appToken: string): Promise<boolean> {
@@ -88,7 +91,7 @@ export class DatabaseFunctions {
       return resultRow.registrations;
     }
 
-    throw 'Could not check if registrations are allowed';
+    throw new Error('Could not check if registrations are allowed');
   }
 
   public static async createAppToken(data: {
@@ -98,7 +101,7 @@ export class DatabaseFunctions {
     registrations?: boolean
   }): Promise<AppTokensRow[]> {
     try {
-      let token = await DatabaseFunctions.generateAppToken();
+      const token = await DatabaseFunctions.generateAppToken();
 
       const insertQuery = {
         tableName: 'apptoken',
@@ -123,10 +126,10 @@ export class DatabaseFunctions {
 
         return selectResult.rows as AppTokensRow[];
       }
-      throw 'insertionResult does not have id';
+      throw new Error('insertionResult does not have id');
     } catch (e) {
       console.log(e);
-      throw 'could not generate and save app token';
+      throw new Error('could not generate and save app token');
     }
   }
 
@@ -159,11 +162,11 @@ export class DatabaseFunctions {
 
         return selectResult.rows[0] as AppTokensRow;
       } else {
-        throw 'update app token failed';
+        throw new Error('update app token failed');
       }
     } catch (e) {
       console.log(e);
-      throw 'could not generate and save app token';
+      throw new Error('could not generate and save app token');
     }
   }
 
@@ -189,11 +192,11 @@ export class DatabaseFunctions {
 
         return selectResult.rows[0] as AppTokensRow;
       } else {
-        throw 'refresh app token failed';
+        throw new Error('refresh app token failed');
       }
     } catch (e) {
       console.log(e);
-      throw 'could not generate and save app token';
+      throw new Error('could not generate and save app token');
     }
   }
 
@@ -223,10 +226,10 @@ export class DatabaseFunctions {
         this.prepareRows(selectResult.rows);
         return selectResult.rows as ProjectRow[];
       }
-      throw 'insertionResult does not have id';
+      throw new Error('insertionResult does not have id');
     } catch (e) {
       console.log(e);
-      throw 'Could not create and save a new project.';
+      throw new Error('Could not create and save a new project.');
     }
   }
 
@@ -253,10 +256,10 @@ export class DatabaseFunctions {
         this.prepareRows(selectResult.rows);
         return selectResult.rows as MediaItemRow[];
       }
-      throw 'insertionResult does not have id';
+      throw new Error('insertionResult does not have id');
     } catch (e) {
       console.log(e);
-      throw 'Could not save a new media item.';
+      throw new Error('Could not save a new media item.');
     }
   }
 
@@ -282,10 +285,10 @@ export class DatabaseFunctions {
         this.prepareRows(selectResult.rows);
         return selectResult.rows as ToolRow[];
       }
-      throw 'insertionResult does not have id';
+      throw new Error('insertionResult does not have id');
     } catch (e) {
       console.log(e);
-      throw 'Could not save a new tool.';
+      throw new Error('Could not save a new tool.');
     }
   }
 
@@ -325,7 +328,227 @@ export class DatabaseFunctions {
         this.prepareRows(selectResult.rows);
         return selectResult.rows as TranscriptRow[];
       }
-      throw 'insertionResult does not have id';
+      throw new Error('insertionResult does not have id');
+    } catch (e) {
+      throw e;
+    }
+  }
+
+
+  public static async freeAnnotation(projectID: number, transcriptID: number, tokenData: TokenData): Promise<ProjectTranscriptsGetResult> {
+    try {
+      const selectQuery: SQLQuery = {
+        'text': DatabaseFunctions.selectAllStatements.transcript + ` where project_id=$1::integer and transcriptID=$2::integer and status='BUSY'`,
+        values: [projectID, transcriptID]
+      };
+
+      let selectResult = await DatabaseFunctions.dbManager.query(selectQuery);
+
+      if (selectResult.rowCount < 1) {
+        throw new Error(`Can not free annotation ${transcriptID} because it either not busy or not found.`);
+      }
+
+      const transcriptRow = selectResult.rows[0] as ProjectTranscriptsGetResult;
+
+      // Set transcript status to BUSY and set transcriber_id, set start date, tool_id
+      const updateResult = await DatabaseFunctions.dbManager.query({
+        text: `update transcript
+               set status='FREE',
+                   transcriber_id=''
+               where id = ${transcriptRow.id}:: integer`
+      });
+
+      if (updateResult.rowCount !== 1) {
+        throw new Error(`Can not free annotation ${transcriptID}: update failed.`);
+      }
+      // status set to BUSY
+
+      if (transcriptRow.mediaitem_id) {
+        selectResult = await DatabaseFunctions.dbManager.query({
+          text: DatabaseFunctions.selectAllStatements.mediaitem + ' where id=$1::integer',
+          values: [
+            transcriptRow.mediaitem_id
+          ]
+        });
+
+        if (selectResult.rowCount > 0) {
+          // Mediaitem found, add
+          const mediaRow = selectResult.rows[0] as MediaItemRow;
+          delete mediaRow.id;
+
+          transcriptRow.mediaitem = mediaRow;
+          delete transcriptRow.mediaitem_id;
+        }
+      }
+
+      this.prepareRows([transcriptRow]);
+
+      return transcriptRow;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  public static async startAnnotation(data: StartAnnotationRequest, projectID: number, tokenData: TokenData): Promise<ProjectTranscriptsGetResult> {
+    try {
+      // TODO check next transcript!
+      const insertQuery: SQLQuery = {
+        'text': DatabaseFunctions.selectAllStatements.transcript + ` where project_id=$1::integer and status='FREE' order by priority desc`,
+        values: [projectID]
+      };
+
+      let selectResult = await DatabaseFunctions.dbManager.query(insertQuery);
+
+      if (selectResult.rowCount < 1) {
+        return null;
+      }
+
+      const transcriptRow = selectResult.rows[0] as ProjectTranscriptsGetResult;
+
+      // Set transcript status to BUSY and set transcriber_id, set start date, tool_id
+      const updateResult = await DatabaseFunctions.dbManager.query({
+        text: `update transcript
+               set status='BUSY',
+                   transcriber_id=${tokenData.id}::integer, startdate=(to_timestamp(${Date.now()} / 1000.0)), tool_id=${data.tool_id}:: integer
+               where id=${transcriptRow.id}:: integer`
+      });
+
+      if (updateResult.rowCount !== 1) {
+        throw new Error(`Can not set status to BUSY of transcript with id ${transcriptRow.id}.`);
+      }
+      // status set to BUSY
+
+      if (transcriptRow.mediaitem_id) {
+        selectResult = await DatabaseFunctions.dbManager.query({
+          text: DatabaseFunctions.selectAllStatements.mediaitem + ' where id=$1::integer',
+          values: [
+            transcriptRow.mediaitem_id
+          ]
+        });
+
+        if (selectResult.rowCount > 0) {
+          // Mediaitem found, add
+          const mediaRow = selectResult.rows[0] as MediaItemRow;
+          delete mediaRow.id;
+
+          transcriptRow.mediaitem = mediaRow;
+          delete transcriptRow.mediaitem_id;
+        }
+      }
+
+      this.prepareRows([transcriptRow]);
+
+      return transcriptRow;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+
+  public static async saveAnnotation(data: SaveAnnotationRequest, projectID: number, transcriptID, tokenData: TokenData): Promise<ProjectTranscriptsGetResult> {
+    try {
+      const insertQuery: SQLQuery = {
+        'text': DatabaseFunctions.selectAllStatements.transcript + ` where project_id=$1::integer and id=$2::integer and status='BUSY'`,
+        values: [projectID, transcriptID]
+      };
+
+      let selectResult = await DatabaseFunctions.dbManager.query(insertQuery);
+
+      if (selectResult.rowCount < 1) {
+        throw new Error(`Can not find proper annotation to overwrite.`);
+      }
+
+      const transcriptRow = selectResult.rows[0] as ProjectTranscriptsGetResult;
+
+      // Set transcript status to BUSY and set transcriber_id, set start date, tool_id
+      const updateResult = await DatabaseFunctions.dbManager.update({
+        tableName: 'transcript',
+        columns: [
+          DatabaseFunctions.getColumnDefinition('transcriber_id', 'integer', tokenData.id, false),
+          DatabaseFunctions.getColumnDefinition('enddate', '', `(to_timestamp(${Date.now()} / 1000.0))`, false),
+          DatabaseFunctions.getColumnDefinition('tool_id', 'integer', data.tool_id, false),
+          DatabaseFunctions.getColumnDefinition('transcript', 'text', data.transcript, false),
+          DatabaseFunctions.getColumnDefinition('status', 'text', 'ANNOTATED'),
+          DatabaseFunctions.getColumnDefinition('comment', 'text', data.comment),
+          DatabaseFunctions.getColumnDefinition('assessment', 'text', data.assessment),
+          DatabaseFunctions.getColumnDefinition('log', 'text', data.log)
+        ]
+      }, `id=${transcriptRow.id}:: integer`);
+
+      if (updateResult.rowCount !== 1) {
+        throw new Error(`Can not save annotation with id ${transcriptRow.id}.`);
+      }
+      // saved
+
+      if (transcriptRow.mediaitem_id) {
+        selectResult = await DatabaseFunctions.dbManager.query({
+          text: DatabaseFunctions.selectAllStatements.mediaitem + ' where id=$1::integer',
+          values: [
+            transcriptRow.mediaitem_id
+          ]
+        });
+
+        if (selectResult.rowCount > 0) {
+          // Mediaitem found, add
+          const mediaRow = selectResult.rows[0] as MediaItemRow;
+          delete mediaRow.id;
+
+          transcriptRow.mediaitem = mediaRow;
+          delete transcriptRow.mediaitem_id;
+        }
+      }
+
+      this.prepareRows([transcriptRow]);
+
+      return transcriptRow;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  public static async continueAnnotation(projectID: number, transcriptID: number, tokenData: TokenData): Promise<ProjectTranscriptsGetResult> {
+    try {
+      const selectQuery: SQLQuery = {
+        'text': DatabaseFunctions.selectAllStatements.transcript + ` where project_id=$1::integer and id=$2::integer`,
+        values: [projectID, transcriptID]
+      };
+
+      let selectResult = await DatabaseFunctions.dbManager.query(selectQuery);
+
+      if (selectResult.rowCount < 1) {
+        return null;
+      }
+
+      const transcriptRow = selectResult.rows[0] as ProjectTranscriptsGetResult;
+
+      if (transcriptRow.transcriber_id !== tokenData.id) {
+        throw new Error(`Can not continue transcript with id ${transcriptRow.id} because the transcriber IDs are not equal.`);
+      }
+
+      if (transcriptRow.status !== 'BUSY') {
+        throw new Error(`Can not continue transcript with id ${transcriptRow.id} because its status is not equal 'BUSY'`);
+      }
+
+      if (transcriptRow.mediaitem_id) {
+        selectResult = await DatabaseFunctions.dbManager.query({
+          text: DatabaseFunctions.selectAllStatements.mediaitem + ' where id=$1::integer',
+          values: [
+            transcriptRow.mediaitem_id
+          ]
+        });
+
+        if (selectResult.rowCount > 0) {
+          // Mediaitem found, add
+          const mediaRow = selectResult.rows[0] as MediaItemRow;
+          delete mediaRow.id;
+
+          transcriptRow.mediaitem = mediaRow;
+          delete transcriptRow.mediaitem_id;
+        }
+      }
+      this.prepareRows([transcriptRow]);
+
+      return transcriptRow;
     } catch (e) {
       throw e;
     }
@@ -339,7 +562,7 @@ export class DatabaseFunctions {
 
     if (selectResult.rowCount === 1) {
       const transcriptRow = (selectResult.rows[0] as TranscriptRow);
-      let result: ProjectTranscriptsGetResult = transcriptRow;
+      const result: ProjectTranscriptsGetResult = transcriptRow;
 
       if (transcriptRow.hasOwnProperty('mediaitem_id') && transcriptRow.mediaitem_id) {
         const mediaItemResult = await DatabaseFunctions.dbManager.query({
@@ -356,7 +579,7 @@ export class DatabaseFunctions {
       DatabaseFunctions.prepareRows([result]);
       return result;
     }
-    throw 'Could not find a transcript with this ID.'
+    throw new Error('Could not find a transcript with this ID.')
   }
 
   public static async getTranscriptsByProjectID(projectID: number): Promise<ProjectTranscriptsGetResult[]> {
@@ -397,7 +620,7 @@ export class DatabaseFunctions {
       DatabaseFunctions.prepareRows(results);
       return results;
     }
-    throw `Can not find a project with ID ${projectID}.`;
+    throw new Error(`Can not find a project with ID ${projectID}.`);
   }
 
   public static async removeAppToken(id: number): Promise<void> {
@@ -406,7 +629,7 @@ export class DatabaseFunctions {
       values: [id]
     });
     if (removeResult.rowCount < 1) {
-      throw 'could not remove app token';
+      throw new Error('could not remove app token');
     }
     return;
   }
@@ -465,7 +688,7 @@ export class DatabaseFunctions {
       }
     }
 
-    throw 'Could not create user.';
+    throw new Error('Could not create user.');
   }
 
   static async assignUserRolesToUser(data: AssignUserRoleRequest) {
@@ -480,7 +703,7 @@ export class DatabaseFunctions {
     });
 
     for (const role of data.roles) {
-      let roleEntry = rolesTable.find(a => a.label === role);
+      const roleEntry = rolesTable.find(a => a.label === role);
 
       if (roleEntry) {
         const roleID = roleEntry.id;
@@ -489,7 +712,7 @@ export class DatabaseFunctions {
           values: [data.accountID, roleID]
         });
       } else {
-        throw `Could not find role '${role}'`;
+        throw new Error(`Could not find role '${role}'`);
       }
     }
 
@@ -498,7 +721,7 @@ export class DatabaseFunctions {
     if (transactionResult.command === 'COMMIT') {
       return;
     }
-    throw 'Could not assign role';
+    throw new Error('Could not assign role');
   }
 
   static async getRoles() {
@@ -568,7 +791,7 @@ export class DatabaseFunctions {
     ]);
 
     if (removeResult.command !== 'COMMIT') {
-      throw `Could not remove user account.}.`;
+      throw new Error(`Could not remove user account.}.`);
     }
     return;
   }
@@ -589,6 +812,7 @@ export class DatabaseFunctions {
 
   static async getUserInfo(data: {
     name: string;
+    email: string;
     hash: string;
   }): Promise<AccountRow> {
     let selectResult = null;
@@ -599,9 +823,15 @@ export class DatabaseFunctions {
         values: [data.name]
       });
     } else if (data.hash && data.hash.trim() !== '') {
+      console.log(`get by hash ${data.hash}`);
       selectResult = await DatabaseFunctions.dbManager.query({
         text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_role ar ON ac.id=ar.account_id full outer join role r ON r.id=ar.role_id where ac.hash=$1::text',
         values: [data.hash]
+      });
+    } else if (data.email && data.email.trim() !== '') {
+      selectResult = await DatabaseFunctions.dbManager.query({
+        text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_role ar ON ac.id=ar.account_id full outer join role r ON r.id=ar.role_id where ac.email=$1::text',
+        values: [data.email]
       });
     }
 
@@ -630,7 +860,7 @@ export class DatabaseFunctions {
       return;
     }
 
-    throw 'Can not change password.';
+    throw new Error('Can not change password.');
   }
 
 
@@ -650,7 +880,7 @@ export class DatabaseFunctions {
       };
     }
 
-    throw 'could not find user';
+    throw new Error('could not find user');
   }
 
   static async deliverNewMedia(dataDeliveryRequest: DeliverNewMediaRequest): Promise<ProjectTranscriptsGetResult> {
@@ -690,9 +920,9 @@ export class DatabaseFunctions {
         return result;
       }
 
-      throw 'Could not save transcript entry.'
+      throw new Error('Could not save transcript entry.')
     }
-    throw 'Could not save media entry.'
+    throw new Error('Could not save media entry.')
   }
 
   static async generateAppToken(): Promise<string> {
@@ -709,7 +939,7 @@ export class DatabaseFunctions {
 
   static prepareRows(rows: any[]) {
     for (const row of rows) {
-      for (let col in row) {
+      for (const col in row) {
         if (row.hasOwnProperty(col)) {
           if (row[col] === null || row[col] === undefined) {
             delete row[col];

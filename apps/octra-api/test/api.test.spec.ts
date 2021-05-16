@@ -80,6 +80,11 @@ const todoList = {
   transcripts: {
     add: true,
     get: true
+  },
+  annotation: {
+    start: true,
+    continue: true,
+    save: true
   }
 };
 
@@ -100,6 +105,7 @@ if (todoList.user.register) {
       .end((err, res) => {
         checkForErrors(err, res);
         tempData.user.jwtToken = res.body.token;
+        console.log(res.body.token);
         tempData.user.id = res.body.data.id;
         expect(res.body.status).toBe('success');
         expect(typeof res.body.data).toBe('object');
@@ -125,22 +131,6 @@ if (todoList.user.login) {
         expect(typeof res.body.data).toBe('object');
         tempData.admin.id = res.body.data.id;
         tempData.admin.jwtToken = res.body.token;
-        done();
-      });
-  });
-}
-
-if (todoList.user.hash) {
-  it('it should GET if user exists by hash', (done) => {
-    request
-      .get('/v1/users/hash?hash=d541f5d102b749b9f91dfe5e46ed9de85c66cf8ecbaf70155352c2cc38e73e19&loginmethod=shibboleth')
-      .set('Authorization', `Bearer ${appToken}`)
-      .set('Origin', 'http://localhost:8080')
-      .end((err, res) => {
-        checkForErrors(err, res);
-        log('found?:' + res.body.data);
-        expect(res.body.status).toBe('success');
-        expect(typeof res.body.data).toBe('boolean');
         done();
       });
   });
@@ -196,7 +186,6 @@ if (todoList.user.getUsers) {
       .set('Origin', 'http://localhost:8080')
       .set('x-access-token', tempData.admin.jwtToken)
       .end((err, res) => {
-        console.log(`aiojdajsdkopajsdoapisodkkasodaiodkkaispdokaopdkaopsdiokasd`);
         checkForErrors(err, res);
         log(`retrieved rows: ${res.body.data.length}`);
 
@@ -435,7 +424,7 @@ if (todoList.dataDelivery.deliver) {
         url: `http://localhost/${Date.now()}.wav`,
         type: 'audio/wav',
         size: 2334,
-        metadata: ''
+        metadata: 'data delivery'
       }
     }
     request
@@ -497,6 +486,82 @@ if (todoList.transcripts.get) {
   });
 }
 
+
+if (todoList.annotation.start) {
+  it('it should start a new annotation session', (done) => {
+    const requestData = {
+      project_id: tempData.project.id,
+      tool_id: tempData.tool.id
+    }
+
+    request
+      .post(`/v1/projects/${tempData.project.id}/annotations/start`)
+      .set('Authorization', `Bearer ${appToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .set('x-access-token', tempData.admin.jwtToken)
+      .send(requestData)
+      .end((err, res) => {
+        checkForErrors(err, res);
+        console.log(res.body);
+        tempData.transcript.id = res.body.data.id;
+
+        expect(res.status).toBe(200);
+        expect(typeof res.body.data).toBe('object');
+        done();
+      });
+  });
+}
+
+if (todoList.annotation.continue) {
+  it('it should continue an old annotation session', (done) => {
+    const requestData = {
+      project_id: tempData.project.id
+    }
+
+    request
+      .post(`/v1/projects/${tempData.project.id}/annotations/${tempData.transcript.id}/continue`)
+      .set('Authorization', `Bearer ${appToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .set('x-access-token', tempData.admin.jwtToken)
+      .send(requestData)
+      .end((err, res) => {
+        checkForErrors(err, res);
+        console.log(res.body);
+
+        expect(res.status).toBe(200);
+        expect(typeof res.body.data).toBe('object');
+        done();
+      });
+  });
+}
+
+if (todoList.annotation.save) {
+  it('it should save an annotation', (done) => {
+    const requestData = {
+      transcript: "Transcasijdioasjdioa sdjioajs dioajsid ajsiodj aisodiasj oaisd ioasd",
+      comment: "Some comment",
+      assessment: "OK",
+      log: "LOG",
+      tool_id: 44
+    }
+
+    request
+      .post(`/v1/projects/${tempData.project.id}/annotations/${tempData.transcript.id}/save`)
+      .set('Authorization', `Bearer ${appToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .set('x-access-token', tempData.admin.jwtToken)
+      .send(requestData)
+      .end((err, res) => {
+        checkForErrors(err, res);
+        console.log(res.body);
+
+        expect(res.status).toBe(200);
+        expect(typeof res.body.data).toBe('object');
+        done();
+      });
+  });
+}
+
 if (todoList.project.transcripts.get) {
   it('it should list an array of transcripts for a given project', (done) => {
     request
@@ -541,8 +606,8 @@ if (todoList.user.delete) {
       .set('x-access-token', tempData.admin.jwtToken)
       .end((err, res) => {
         checkForErrors(err, res);
+        console.log(res.body);
         expect(res.status).toBe(200);
-        expect(typeof res.body.data).toBe('object');
 
         done();
       });
@@ -565,13 +630,16 @@ function checkForErrors(err, res) {
   //console.log(res.headers);
   // expect(err).toBeUndefined();
   if (err) {
+    console.log('ERROR: ');
     console.error(err);
   }
   if (res && res.body) {
     if (res.body.status === 'error') {
-      console.error(JSON.stringify(res.body.message, null, 2));
+      console.log(`ERROR`);
+      console.error('ResponseError:\n' + JSON.stringify(res.body.message, null, 2));
+    } else {
+      expect(res.body.status).toBe('success');
     }
-    expect(res.body.status).toBe('success');
   }
 
   // assert.equal(res.error, false, res.error.message);

@@ -6,14 +6,14 @@ import {AppTokenChangeCommand} from './apptoken.change.command';
 import {AppTokenRefreshCommand} from './apptoken.refresh.command';
 
 export class AppModule extends CommandModule {
-    constructor() {
-        super('/app');
-        this._commands = [
-            new AppTokenCreateCommand(),
-            new AppTokenRemoveCommand(),
-            new AppTokenChangeCommand(),
-            new AppTokenRefreshCommand(),
-            new AppTokenListCommand()
-        ];
-    }
+  constructor() {
+    super('/app', 'App');
+    this._commands = [
+      new AppTokenCreateCommand(),
+      new AppTokenRemoveCommand(),
+      new AppTokenChangeCommand(),
+      new AppTokenRefreshCommand(),
+      new AppTokenListCommand()
+    ];
+  }
 }
