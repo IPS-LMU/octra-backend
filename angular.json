@@ -69,7 +69,6 @@
             "main": "apps/octra-backend/src/main.ts",
             "polyfills": "apps/octra-backend/src/polyfills.ts",
             "tsConfig": "apps/octra-backend/tsconfig.app.json",
-            "aot": true,
             "assets": [
               "apps/octra-backend/src/favicon.ico",
               "apps/octra-backend/src/assets",
@@ -79,7 +78,13 @@
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "apps/octra-backend/src/styles.css"
             ],
-            "scripts": []
+            "scripts": [],
+            "vendorChunk": true,
+            "extractLicenses": false,
+            "buildOptimizer": false,
+            "sourceMap": true,
+            "optimization": false,
+            "namedChunks": true
           },
           "configurations": {
             "production": {
@@ -136,12 +141,17 @@
               "apps/octra-backend/tsconfig.spec.json",
               "apps/octra-backend/tsconfig.editor.json"
             ],
-            "exclude": ["**/node_modules/**", "!apps/octra-backend/**/*"]
+            "exclude": [
+              "**/node_modules/**",
+              "!apps/octra-backend/**/*"
+            ]
           }
         },
         "test": {
           "builder": "@nrwl/jest:jest",
-          "outputs": ["coverage/apps/octra-backend"],
+          "outputs": [
+            "coverage/apps/octra-backend"
+          ],
           "options": {
             "jestConfig": "apps/octra-backend/jest.config.js",
             "passWithNoTests": true
@@ -170,8 +180,13 @@
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "tsConfig": ["apps/octra-backend-e2e/tsconfig.e2e.json"],
-            "exclude": ["**/node_modules/**", "!apps/octra-backend-e2e/**/*"]
+            "tsConfig": [
+              "apps/octra-backend-e2e/tsconfig.e2e.json"
+            ],
+            "exclude": [
+              "**/node_modules/**",
+              "!apps/octra-backend-e2e/**/*"
+            ]
           }
         }
       }
@@ -183,7 +198,9 @@
       "architect": {
         "build": {
           "builder": "@nrwl/node:build",
-          "outputs": ["{options.outputPath}"],
+          "outputs": [
+            "{options.outputPath}"
+          ],
           "options": {
             "outputPath": "dist/apps/octra-api",
             "main": "apps/octra-api/src/main.ts",
@@ -222,12 +239,17 @@
               "apps/octra-api/tsconfig.app.json",
               "apps/octra-api/tsconfig.spec.json"
             ],
-            "exclude": ["**/node_modules/**", "!apps/octra-api/**/*"]
+            "exclude": [
+              "**/node_modules/**",
+              "!apps/octra-api/**/*"
+            ]
           }
         },
         "test": {
           "builder": "@nrwl/jest:jest",
-          "outputs": ["coverage/apps/octra-api"],
+          "outputs": [
+            "coverage/apps/octra-api"
+          ],
           "options": {
             "jestConfig": "apps/octra-api/jest.config.js",
             "passWithNoTests": true
@@ -247,12 +269,17 @@
               "libs/octra-db/tsconfig.lib.json",
               "libs/octra-db/tsconfig.spec.json"
             ],
-            "exclude": ["**/node_modules/**", "!libs/octra-db/**/*"]
+            "exclude": [
+              "**/node_modules/**",
+              "!libs/octra-db/**/*"
+            ]
           }
         },
         "test": {
           "builder": "@nrwl/jest:jest",
-          "outputs": ["coverage/libs/octra-db"],
+          "outputs": [
+            "coverage/libs/octra-db"
+          ],
           "options": {
             "jestConfig": "libs/octra-db/jest.config.js",
             "passWithNoTests": true
@@ -260,13 +287,17 @@
         },
         "build": {
           "builder": "@nrwl/node:package",
-          "outputs": ["{options.outputPath}"],
+          "outputs": [
+            "{options.outputPath}"
+          ],
           "options": {
             "outputPath": "dist/libs/octra-db",
             "tsConfig": "libs/octra-db/tsconfig.lib.json",
             "packageJson": "libs/octra-db/package.json",
             "main": "libs/octra-db/src/index.ts",
-            "assets": ["libs/octra-db/*.md"]
+            "assets": [
+              "libs/octra-db/*.md"
+            ]
           }
         }
       }

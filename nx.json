@@ -1,23 +1,36 @@
 {
   "implicitDependencies": {
-    "package.json": { "dependencies": "*", "devDependencies": "*" },
+    "package.json": {
+      "dependencies": "*",
+      "devDependencies": "*"
+    },
     ".eslintrc.json": "*"
   },
-  "affected": { "defaultBase": "master" },
+  "affected": {
+    "defaultBase": "master"
+  },
   "npmScope": "octra",
   "tasksRunnerOptions": {
     "default": {
       "runner": "@nrwl/workspace/tasks-runners/default",
-      "options": { "cacheableOperations": ["build", "lint", "test", "e2e"] }
+      "options": {
+        "cacheableOperations": ["build", "lint", "test", "e2e"]
+      }
     }
   },
   "projects": {
-    "octra-backend": { "tags": [] },
+    "octra-backend": {
+      "tags": []
+    },
     "octra-backend-e2e": {
       "tags": [],
       "implicitDependencies": ["octra-backend"]
     },
-    "octra-api": { "tags": [] },
-    "octra-db": { "tags": [] }
+    "octra-api": {
+      "tags": []
+    },
+    "octra-db": {
+      "tags": []
+    }
   }
 }
