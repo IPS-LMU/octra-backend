@@ -1,0 +1,63 @@
+<h1>Projects</h1>
+<ng-container *ngIf="projects !== undefined">
+  <div id="actions-bar">
+    <a class="btn btn-primary" [routerLink]="['/members/projects/add']">
+      <fa-icon icon="plus"></fa-icon>
+      Add new project</a>
+  </div>
+
+  <table class="table table-striped table-sm">
+    <thead>
+    <tr>
+      <th>
+        ID
+      </th>
+      <th>
+        Short name
+      </th>
+      <th>
+        Name
+      </th>
+      <th>
+        Description
+      </th>
+      <th>
+        Start date
+      </th>
+      <th>
+        End date
+      </th>
+      <th>
+        Active
+      </th>
+      <th>
+        Administrator
+      </th>
+      <th>
+        Actions
+      </th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let project of projects">
+      <td>{{project.id}}</td>
+      <td>{{project.shortname}}</td>
+      <td>{{project.name}}</td>
+      <td>{{project.description}}</td>
+      <td>{{project.startdate}}</td>
+      <td>{{project.enddate}}</td>
+      <td style="text-align: center;">
+        <fa-icon [icon]="(project.active) ? ['fas','check-circle']: ['fas','minus-circle']"
+                 [ngStyle]="{
+      color: (project.active) ? 'darkgreen' : 'red'
+    }"></fa-icon>
+      </td>
+      <td>{{project.administrator}}</td>
+      <td>
+        <fa-icon icon="edit" class="action-icon" title="Edit project"></fa-icon>
+        <fa-icon icon="trash" class="action-icon" title="Remove project" (click)="onProjectRemove(project)"></fa-icon>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</ng-container>

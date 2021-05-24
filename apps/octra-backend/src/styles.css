@@ -10,3 +10,21 @@ body {
 h1 {
   margin-bottom: 1em;
 }
+
+.action-icon {
+  margin: 0 3px;
+  cursor: pointer;
+}
+
+fa-icon[icon='edit'] {
+  color: cornflowerblue;
+}
+
+fa-icon[icon='redo'] {
+  color: purple;
+}
+
+#actions-bar {
+  text-align: right;
+  margin: 10px;
+}

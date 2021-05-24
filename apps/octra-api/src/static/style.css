@@ -3,10 +3,10 @@ This stylesheet is for the entry point only! To change a stylesheet of an refere
  */
 
 body {
-    font-family: Helvetica, Arial, serif;
-    position: relative;
+  font-family: Helvetica, Arial, serif;
+  position: relative;
 }
 
 #main-inner {
-    padding: 20px;
+  padding: 20px;
 }

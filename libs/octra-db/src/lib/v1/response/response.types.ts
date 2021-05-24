@@ -117,6 +117,20 @@ export interface ProjectCreateResponse extends APIResponse {
   }
 }
 
+export interface ProjectListResponse extends APIResponse {
+  data: {
+    id: number;
+    name: string;
+    shortname?: string;
+    description?: string;
+    configuration?: string;
+    startdate?: string;
+    enddate?: string;
+    active?: boolean;
+    admin_id?: number
+  }[];
+}
+
 export interface ProjectTranscriptsGetResponse extends APIResponse {
   data: ProjectTranscriptsGetResult[]
 }

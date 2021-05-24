@@ -97,7 +97,7 @@ export interface SaveAnnotationRequest {
   tool_id?: string
 }
 
-export interface TokenData {
-  id: number;
-  role: UserRole[]
+export interface RemoveProjectRequest {
+  removeAllReferences?: boolean;
+  cutAllReferences?: boolean;
 }

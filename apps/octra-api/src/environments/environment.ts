@@ -1,5 +1,5 @@
 export const environment = {
-  production: false,
+  production: false
 };
 
 console.log(`\x1b[33m

@@ -14,9 +14,10 @@ import {DBManager} from './db/db.manager';
 import {PostgreSQLManager} from './db/postgreSQL.manager';
 import * as cookieParser from 'cookie-parser';
 import * as jwt from 'jsonwebtoken';
-import {TokenData, UserRole} from '@octra/db';
+import {UserRole} from '@octra/db';
 import {SHA256} from 'crypto-js';
 import {DatabaseFunctions} from './api/v1/obj/database.functions';
+import {TokenData} from './api/v1/obj/types';
 import express = require('express');
 
 export class OctraApi {
@@ -38,7 +39,7 @@ export class OctraApi {
   private _appPath: string;
   private settings: AppConfiguration;
   private name = 'OCTRA';
-  private version = '0.2.7';
+  private version = '0.3.0';
   private environment: 'development' | 'production';
   private dbManager: DBManager;
 

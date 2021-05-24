@@ -257,6 +257,83 @@ export class APIService {
     });
   }
 
+
+  public retrieveProjects(): Promise<any[]> {
+    return new Promise<any[]>((resolve, reject) => {
+      console.log(this.settingsService.settings.api.url + '/projects/');
+      this.http.get(this.settingsService.settings.api.url + '/projects/', {
+        headers: {
+          Authorization: `Bearer ${this.settingsService.settings.api.token}`,
+          'x-access-token': this._webToken
+        },
+        responseType: 'json'
+      }).subscribe((result: any) => {
+        console.log(`data`);
+        resolve(result.data);
+      }, (e) => {
+        reject(e.error.message);
+      });
+    });
+  }
+
+  public createProject(projectData: {
+    name: string;
+    shortname: string;
+    description: string;
+    active: boolean;
+    startdate: string;
+    enddate: string;
+    admin_id: number;
+    configuration: string;
+  }): Promise<boolean> {
+    return new Promise<boolean>((resolve, reject) => {
+      this.http.post(`${this.settingsService.settings.api.url}/projects`, projectData, {
+        headers: {
+          Authorization: `Bearer ${this.settingsService.settings.api.token}`,
+          'x-access-token': this._webToken
+        },
+        responseType: 'json'
+      }).subscribe((result: any) => {
+        console.log(result);
+        if (result.status === 'success') {
+          resolve(true);
+        } else {
+          reject(result.message);
+        }
+      }, (e) => {
+        reject(e.error.message);
+      });
+    });
+  }
+
+  public removeProject(id: number, reqData): Promise<boolean> {
+    return new Promise<boolean>((resolve, reject) => {
+      let options = '';
+      if (reqData.cutAllReferences) {
+        options = '?cutAllReferences=true';
+      } else if (reqData.removeAllReferences) {
+        options = '?removeAllReferences=true';
+      }
+
+      this.http.delete(`${this.settingsService.settings.api.url}/projects/${id}/${options}`, {
+        headers: {
+          Authorization: `Bearer ${this.settingsService.settings.api.token}`,
+          'x-access-token': this._webToken
+        },
+        responseType: 'json'
+      }).subscribe((result: any) => {
+        console.log(result);
+        if (result.status === 'success') {
+          resolve(true);
+        } else {
+          reject(result.message);
+        }
+      }, (e) => {
+        reject(e.error.message);
+      });
+    });
+  }
+
   public changePassword(oldPassword: string, password: string): Promise<any> {
     return new Promise<any>((resolve, reject) => {
       this.http.put(this.settingsService.settings.api.url + '/users/password', {

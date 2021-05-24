@@ -1,0 +1,12 @@
+<div class="btn-group" dropdown>
+  <button id="button-basic" dropdownToggle type="button" class="btn btn-primary dropdown-toggle"
+          aria-controls="dropdown-basic">
+    {{label}} <span class="caret"></span>
+  </button>
+  <ul id="dropdown-basic" *dropdownMenu class="dropdown-menu"
+      role="menu" aria-labelledby="button-basic">
+    <li role="menuitem" *ngFor="let user of users">
+      <a class="dropdown-item" (click)="selectUser(user)">{{user.username}}</a>
+    </li>
+  </ul>
+</div>

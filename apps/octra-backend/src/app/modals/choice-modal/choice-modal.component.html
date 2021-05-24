@@ -1,0 +1,16 @@
+<div class="modal-header">
+  <h4 class="modal-title pull-left">{{title}}</h4>
+  <button type="button" class="close pull-right" aria-label="Close" (click)="bsModalRef.hide()">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<div class="modal-body">
+  {{message}}
+</div>
+<div class="modal-footer">
+  <div class="row btn-group btn-group-sm w-100" role="group">
+    <button *ngFor="let choice of choices" type="button" [attr.class]="choice.class"
+            (click)="bsModalRef.hide(); callback(choice.value);">{{choice.label}}
+    </button>
+  </div>
+</div>

@@ -1,6 +1,8 @@
 import {BrowserModule} from '@angular/platform-browser';
 import {NgModule} from '@angular/core';
-import { ModalModule } from 'ngx-bootstrap/modal';
+import {ModalModule} from 'ngx-bootstrap/modal';
+import {BsDatepickerModule} from 'ngx-bootstrap/datepicker';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 
 import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
@@ -20,13 +22,19 @@ import {DashboardComponent} from './pages/members-area/dashboard-page/dashboard.
 import {ApptokensComponent} from './pages/members-area/apptokens/apptokens.component';
 import {UsersPage} from './pages/members-area/users-page/users.page';
 import {SettingsComponent} from './pages/members-area/settings/settings.component';
-import { ModalsComponent } from './modals/modals.component';
+import {ModalsComponent} from './modals/modals.component';
 import {ModalsService} from './modals/modals.service';
-import { ErrorModalComponent } from './modals/error/error-modal.component';
-import { AddAppTokenComponent } from './pages/members-area/apptokens/add-app-token/add-app-token.component';
-import { NotFoundPageComponent } from './pages/not-found-page/not-found-page.component';
+import {ErrorModalComponent} from './modals/error/error-modal.component';
+import {AddAppTokenComponent} from './pages/members-area/apptokens/add-app-token/add-app-token.component';
+import {NotFoundPageComponent} from './pages/not-found-page/not-found-page.component';
 import {SuccessModalComponent} from './modals/success/success-modal.component';
-import { ProfileComponent } from './pages/members-area/profile/profile.component';
+import {ProfileComponent} from './pages/members-area/profile/profile.component';
+import {ProjectsComponent} from './pages/members-area/projects/projects.component';
+import {AddProjectComponent} from './pages/members-area/projects/add-project/add-project.component';
+import {UserDropdownComponent} from './components/user-dropdown/user-dropdown.component';
+import {BsDropdownModule} from 'ngx-bootstrap/dropdown';
+import {TimepickerModule} from 'ngx-bootstrap/timepicker';
+import {ChoiceModalComponent} from './modals/choice-modal/choice-modal.component';
 
 @NgModule({
   declarations: [
@@ -42,9 +50,13 @@ import { ProfileComponent } from './pages/members-area/profile/profile.component
     ModalsComponent,
     ErrorModalComponent,
     SuccessModalComponent,
+    ChoiceModalComponent,
     AddAppTokenComponent,
     NotFoundPageComponent,
-    ProfileComponent
+    ProfileComponent,
+    ProjectsComponent,
+    AddProjectComponent,
+    UserDropdownComponent
   ],
   imports: [
     BrowserModule,
@@ -53,7 +65,11 @@ import { ProfileComponent } from './pages/members-area/profile/profile.component
     HttpClientModule,
     NgxWebstorageModule.forRoot(),
     FontAwesomeModule,
-    ModalModule.forRoot()
+    ModalModule.forRoot(),
+    BrowserAnimationsModule,
+    BsDatepickerModule.forRoot(),
+    BsDropdownModule.forRoot(),
+    TimepickerModule.forRoot()
   ],
   providers: [SettingsService, APIService, ModalsService],
   bootstrap: [AppComponent]

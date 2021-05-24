@@ -8,6 +8,8 @@ import {ApptokensComponent} from './apptokens/apptokens.component';
 import {AddAppTokenComponent} from './apptokens/add-app-token/add-app-token.component';
 import {NotFoundPageComponent} from '../not-found-page/not-found-page.component';
 import {ProfileComponent} from './profile/profile.component';
+import {ProjectsComponent} from './projects/projects.component';
+import {AddProjectComponent} from './projects/add-project/add-project.component';
 
 export const MEMBERSAREA_ROUTES: Route[] = [
   {
@@ -15,6 +17,12 @@ export const MEMBERSAREA_ROUTES: Route[] = [
   },
   {
     path: 'apptokens', component: ApptokensComponent, canActivate: [APIInitializeGuard, AdministratorOnlyGuard]
+  },
+  {
+    path: 'projects', component: ProjectsComponent, canActivate: [APIInitializeGuard, AdministratorOnlyGuard]
+  },
+  {
+    path: 'projects/add', component: AddProjectComponent, canActivate: [APIInitializeGuard, AdministratorOnlyGuard]
   },
   {
     path: 'apptokens/add', component: AddAppTokenComponent, canActivate: [APIInitializeGuard, AdministratorOnlyGuard]

@@ -1,5 +1,5 @@
 import {DBManager, ParameterizedQuery, SQLQuery} from './db.manager';
-import {Pool, QueryResult} from 'pg';
+import {Pool, QueryResult, types} from 'pg';
 import {IDBConfiguration, IDBSSLConfiguration} from '../obj/app-config/app-config';
 import * as fs from 'fs';
 
@@ -21,13 +21,14 @@ export class PostgreSQLManager extends DBManager {
       port: this.dbSettings.dbPort,
       ssl
     });
+    types.setTypeParser(1114, str => str);
   }
 
   private loadSSLFileContents(sslConfig: IDBSSLConfiguration) {
     let result: IDBSSLConfiguration;
     if (sslConfig) {
       result = {}
-      for (let attr in sslConfig) {
+      for (const attr in sslConfig) {
         if (sslConfig.hasOwnProperty(attr) && sslConfig[attr] && sslConfig[attr] !== '') {
           if (fs.existsSync(sslConfig[attr])) {
             result[attr] = fs.readFileSync(sslConfig[attr], {encoding: 'utf-8'});
@@ -86,7 +87,7 @@ export class PostgreSQLManager extends DBManager {
       return this.query(sqlQuery);
     }
 
-    throw 'InsertQuery error: columns length is 0.'
+    throw new Error('InsertQuery error: columns length is 0.')
   }
 
   async update(query: ParameterizedQuery, where: string) {
@@ -97,7 +98,7 @@ export class PostgreSQLManager extends DBManager {
       return this.query(sqlQuery);
     }
 
-    throw 'UpdateQuery error: columns length is 0.'
+    throw new Error('UpdateQuery error: columns length is 0.')
   }
 
   public createSQLQueryForInsert(query: ParameterizedQuery, idColumn = 'id'): SQLQuery {

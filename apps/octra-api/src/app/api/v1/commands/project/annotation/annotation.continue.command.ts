@@ -1,8 +1,10 @@
-import {TokenData, TranscriptAddResponse, UserRole} from '@octra/db';
+import {TranscriptAddResponse, UserRole} from '@octra/db';
 import {ApiCommand, RequestType} from '../../api.command';
 import {DatabaseFunctions} from '../../../obj/database.functions';
 import {InternalServerError} from '../../../../../obj/http-codes/server.codes';
 import {BadRequest} from '../../../../../obj/http-codes/client.codes';
+import {InternRequest} from '../../../obj/types';
+import {Response} from 'express';
 
 export class AnnotationContinueCommand extends ApiCommand {
   constructor() {
@@ -48,13 +50,13 @@ export class AnnotationContinueCommand extends ApiCommand {
               type: 'string'
             },
             creationdate: {
-              type: 'string'
+              type: 'date-time'
             },
             startdate: {
-              type: 'string'
+              type: 'date-time'
             },
             enddate: {
-              type: 'string'
+              type: 'date-time'
             },
             log: {
               type: 'string'
@@ -92,10 +94,10 @@ export class AnnotationContinueCommand extends ApiCommand {
     };
   }
 
-  async do(req, res) {
+  async do(req: InternRequest, res: Response) {
     const answer = ApiCommand.createAnswer() as TranscriptAddResponse;
     const validation = this.validate(req.params, req.body);
-    const tokenData = req.decoded as TokenData;
+    const tokenData = req.decoded;
 
     if (!req.params.project_id) {
       ApiCommand.sendError(res, BadRequest, 'Missing project_id in URI.');
@@ -109,7 +111,7 @@ export class AnnotationContinueCommand extends ApiCommand {
     // do something
     if (validation.length === 0) {
       try {
-        const result = await DatabaseFunctions.continueAnnotation(req.params.project_id, req.params.id, tokenData);
+        const result = await DatabaseFunctions.continueAnnotation(Number(req.params.project_id), Number(req.params.id), tokenData);
         if (result) {
           answer.data = result;
           this.checkAndSendAnswer(res, answer);

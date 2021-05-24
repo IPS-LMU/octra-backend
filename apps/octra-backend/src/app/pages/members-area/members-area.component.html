@@ -37,6 +37,13 @@
           </li>
           <li class="nav-item" *ngIf="api.isAdministrator()">
             <a class="nav-link" [routerLinkActive]="['active']" aria-current="page"
+               [routerLink]="['/members/projects']">
+              <fa-icon icon="tags"></fa-icon>
+              Projects
+            </a>
+          </li>
+          <li class="nav-item" *ngIf="api.isAdministrator()">
+            <a class="nav-link" [routerLinkActive]="['active']" aria-current="page"
                [routerLink]="['/members/users']">
               <fa-icon icon="users"></fa-icon>
               Users
@@ -61,7 +68,7 @@
     </nav>
 
     <main class="col-md-9 ml-sm-auto col-lg-10">
-      <div style="background-color:white;max-width:1200px;padding:1.5em; padding-top:90px;height:100%;">
+      <div style="background-color:white;padding:1.5em; padding-top:90px;height:100%;">
         <router-outlet></router-outlet>
       </div>
     </main>

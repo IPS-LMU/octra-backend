@@ -12,16 +12,18 @@ import {
   MediaItemRow,
   ProjectRow,
   ProjectTranscriptsGetResult,
+  RemoveProjectRequest,
   RolesRow,
   SaveAnnotationRequest,
   StartAnnotationRequest,
-  TokenData,
   ToolRow,
   TranscriptRow,
   UserRole
 } from '@octra/db';
 import {SHA256} from 'crypto-js';
 import {DBManager, SQLQuery} from '../../../db/db.manager';
+import {TokenData} from './types';
+import {DateTime} from 'luxon';
 
 export class DatabaseFunctions {
   private static dbManager: DBManager;
@@ -202,6 +204,9 @@ export class DatabaseFunctions {
 
   public static async createProject(data: CreateProjectRequest): Promise<ProjectRow[]> {
     try {
+      const startdate = DatabaseFunctions.convertJSONDateTime(data.startdate);
+      const enddate = DatabaseFunctions.convertJSONDateTime(data.enddate);
+
       const insertQuery = {
         tableName: 'project',
         columns: [
@@ -209,8 +214,8 @@ export class DatabaseFunctions {
           DatabaseFunctions.getColumnDefinition('shortname', 'text', data.shortname),
           DatabaseFunctions.getColumnDefinition('description', 'text', data.description),
           DatabaseFunctions.getColumnDefinition('configuration', 'text', data.configuration),
-          DatabaseFunctions.getColumnDefinition('startdate', 'timestamp', data.startdate),
-          DatabaseFunctions.getColumnDefinition('enddate', 'timestamp', data.enddate),
+          DatabaseFunctions.getColumnDefinition('startdate', 'timestamp', startdate),
+          DatabaseFunctions.getColumnDefinition('enddate', 'timestamp', enddate),
           DatabaseFunctions.getColumnDefinition('active', 'boolean', data.active),
           DatabaseFunctions.getColumnDefinition('admin_id', 'integer', data.admin_id)
         ]
@@ -224,6 +229,54 @@ export class DatabaseFunctions {
           values: [id]
         });
         this.prepareRows(selectResult.rows);
+        return selectResult.rows as ProjectRow[];
+      }
+      throw new Error('insertionResult does not have id');
+    } catch (e) {
+      console.log(e);
+      throw new Error('Could not create and save a new project.');
+    }
+  }
+
+  public static async removeProject(id: number, requestBody: RemoveProjectRequest): Promise<void> {
+    const sqlQueries: SQLQuery[] = [];
+
+    if (requestBody.cutAllReferences) {
+      sqlQueries.push({
+        text: 'update transcript set project_id=null where project_id=$1::integer',
+        values: [id]
+      });
+    } else if (requestBody.removeAllReferences) {
+      sqlQueries.push({
+        text: 'delete from transcript where project_id=$1::integer',
+        values: [id]
+      });
+    }
+
+    // remove project
+    sqlQueries.push({
+      text: 'delete from project where id=$1::numeric',
+      values: [id]
+    });
+
+    const removeResult = await DatabaseFunctions.dbManager.transaction(sqlQueries);
+    if (removeResult.command === 'COMMIT') {
+      return;
+    }
+    return;
+  }
+
+  public static async listProjects(): Promise<ProjectRow[]> {
+    try {
+      const selectQuery = {
+        text: DatabaseFunctions.selectAllStatements.project + ' order by id asc'
+      };
+      const selectResult = await DatabaseFunctions.dbManager.query(selectQuery);
+
+      if (selectResult.rowCount > 0) {
+        this.prepareRows(selectResult.rows);
+        console.log(`last row`);
+        console.log(selectResult.rows[selectResult.rowCount - 1]);
         return selectResult.rows as ProjectRow[];
       }
       throw new Error('insertionResult does not have id');
@@ -271,7 +324,7 @@ export class DatabaseFunctions {
           DatabaseFunctions.getColumnDefinition('name', 'text', data.name, false),
           DatabaseFunctions.getColumnDefinition('version', 'text', data.version),
           DatabaseFunctions.getColumnDefinition('description', 'text', data.description),
-          DatabaseFunctions.getColumnDefinition('pid', 'text', data.description)
+          DatabaseFunctions.getColumnDefinition('pid', 'text', data.pid)
         ]
       };
       const insertionResult = await DatabaseFunctions.dbManager.insert(insertQuery, 'id');
@@ -293,6 +346,8 @@ export class DatabaseFunctions {
   }
 
   public static async addTranscript(data: AddTranscriptRequest): Promise<TranscriptRow[]> {
+    const startdate = DatabaseFunctions.convertJSONDateTime(data.startdate);
+    const enddate = DatabaseFunctions.convertJSONDateTime(data.enddate);
     try {
       const insertQuery = {
         tableName: 'transcript',
@@ -304,9 +359,8 @@ export class DatabaseFunctions {
           DatabaseFunctions.getColumnDefinition('priority', 'integer', data.priority),
           DatabaseFunctions.getColumnDefinition('status', 'text', data.status),
           DatabaseFunctions.getColumnDefinition('code', 'text', data.code),
-          DatabaseFunctions.getColumnDefinition('creationdate', 'timestamp', data.creationdate),
-          DatabaseFunctions.getColumnDefinition('startdate', 'timestamp', data.startdate),
-          DatabaseFunctions.getColumnDefinition('enddate', 'timestamp', data.enddate),
+          DatabaseFunctions.getColumnDefinition('startdate', 'timestamp', startdate),
+          DatabaseFunctions.getColumnDefinition('enddate', 'timestamp', enddate),
           DatabaseFunctions.getColumnDefinition('log', 'text', data.log),
           DatabaseFunctions.getColumnDefinition('comment', 'text', data.comment),
           DatabaseFunctions.getColumnDefinition('tool_id', 'integer', data.tool_id),
@@ -944,9 +998,8 @@ export class DatabaseFunctions {
           if (row[col] === null || row[col] === undefined) {
             delete row[col];
           } else if (row.hasOwnProperty(col) && col.indexOf('date') > -1
-            && !(row[col] === undefined || row[col] === null) &&
-            row[col].toISOString !== undefined && row[col].toISOString !== null) {
-            row[col] = row[col].toISOString();
+            && !(row[col] === undefined || row[col] === null)) {
+            row[col] = DateTime.fromSQL(row[col]).toJSON();
           }
         }
       }
@@ -963,6 +1016,12 @@ export class DatabaseFunctions {
     const salt = SHA256(DatabaseFunctions.settings.api.passwordSalt).toString();
 
     return SHA256(password + salt).toString();
+  }
+
+  static convertJSONDateTime(datetime: string) {
+    return (datetime) ? DateTime.fromISO(datetime).toSQL({
+      includeOffset: true
+    }) : undefined;
   }
 
 }

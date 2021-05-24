@@ -64,6 +64,8 @@ const todoList = {
   },
   project: {
     create: true,
+    list: true,
+    remove: true,
     transcripts: {
       get: true
     }
@@ -345,7 +347,8 @@ if (todoList.project.create) {
   it('it should create a project', (done) => {
     const requestData = {
       'name': tempData.project.name,
-      'admin_id': tempData.admin.id
+      'admin_id': tempData.admin.id,
+      'description': 'aiosdjp askdopasdk oakdspoakdopaküpd akdspkapsdükapüds'
     }
     request
       .post('/v1/projects')
@@ -364,6 +367,24 @@ if (todoList.project.create) {
   });
 }
 
+
+if (todoList.project.list) {
+  it('it should list projects in public', (done) => {
+    request
+      .get('/v1/projects')
+      .set('Authorization', `Bearer ${appToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .end((err, res) => {
+        console.log(`listed:`);
+        checkForErrors(err, res);
+        console.log((res.body.data as any[])[res.body.data.length - 1]);
+
+        expect(res.status).toBe(200);
+        expect(typeof res.body.data).toBe('object');
+        done();
+      });
+  });
+}
 
 if (todoList.media.add) {
   it('it should add a new mediaitem', (done) => {
@@ -471,7 +492,7 @@ if (todoList.transcripts.add) {
 if (todoList.transcripts.get) {
   it('it should get an transcript by id', (done) => {
     request
-      .get(`/v1/transcripts/481`)
+      .get(`/v1/transcripts/${tempData.transcript.id}`)
       .set('Authorization', `Bearer ${appToken}`)
       .set('Origin', 'http://localhost:8080')
       .set('x-access-token', tempData.user.jwtToken)
@@ -614,6 +635,22 @@ if (todoList.user.delete) {
   });
 }
 
+
+if (todoList.project.remove) {
+  it('it should remove a project', (done) => {
+    request
+      .delete(`/v1/projects/${tempData.project.id}/?removeAllReferences=true`)
+      .set('Authorization', `Bearer ${appToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .set('x-access-token', tempData.admin.jwtToken)
+      .end((err, res) => {
+        checkForErrors(err, res);
+        expect(res.status).toBe(200);
+        done();
+      });
+  });
+}
+
 function log(str) {
   console.log(`\t[CHAI]: ${str}`);
 }
@@ -627,7 +664,7 @@ function logJSON(json) {
 
 
 function checkForErrors(err, res) {
-  //console.log(res.headers);
+  console.log(res.body);
   // expect(err).toBeUndefined();
   if (err) {
     console.log('ERROR: ');
@@ -635,9 +672,10 @@ function checkForErrors(err, res) {
   }
   if (res && res.body) {
     if (res.body.status === 'error') {
-      console.log(`ERROR`);
+      console.error(`ERROR`);
       console.error('ResponseError:\n' + JSON.stringify(res.body.message, null, 2));
     } else {
+      expect(res.body.message).toBe(undefined);
       expect(res.body.status).toBe('success');
     }
   }

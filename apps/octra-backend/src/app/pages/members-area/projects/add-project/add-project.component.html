@@ -1,0 +1,104 @@
+<h2><span *ngIf="!isEditPage; else isEditPageTemplate">Add new</span> project</h2>
+<ng-template #isEditPageTemplate>
+  Edit
+</ng-template>
+<form (ngSubmit)="onSubmit()" #form="ngForm">
+  <div class="row">
+    <div class="col-12">
+      <div class="form-group">
+        <label for="projectName">Name</label>
+        <input type="text" class="form-control" id="projectName" placeholder="Enter a name" name="projectName"
+               [(ngModel)]="formData.name" required="required">
+      </div>
+    </div>
+    <div class="col-12">
+      <div class="form-group">
+        <label for="shortName">Short name</label>
+        <input type="text" class="form-control" id="shortName" placeholder="Enter a short name" name="shortName"
+               [(ngModel)]="formData.shortname" required="required">
+      </div>
+    </div>
+    <div class="col-12">
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea class="form-control" id="description" placeholder="Enter a description" name="description"
+                  [(ngModel)]="formData.description"></textarea>
+      </div>
+    </div>
+    <div class="col-12">
+      <div class="form-group">
+        <label for="configuration">Configuration</label>
+        <textarea class="form-control" id="configuration" placeholder="Enter a configuration" name="configuration"
+                  required="required"
+                  [(ngModel)]="formData.configuration"></textarea>
+      </div>
+    </div>
+    <div class="col-12">
+      <div class="row">
+        <div class="col-sm-12 col-md-12 col-lg-6">
+          <div class="row">
+            <div class="col-12">
+              <label for="configuration">Start date</label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-7 form-group my-auto">
+              <input type="text" [bsConfig]="{
+                    containerClass: 'theme-dark-blue'
+                 }"
+                     (bsValueChange)="onScheduleChange($event, 'start')"
+                     [bsValue]="projectSchedule.start"
+                     placeholder="Datepicker"
+                     class="form-control"
+                     bsDatepicker>
+            </div>
+            <div class="col-5 form-group my-auto">
+              <timepicker [(ngModel)]="projectSchedule.start" name="starttime"></timepicker>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-sm-12 col-md-12 col-lg-6">
+          <div class="row">
+            <div class="col-12">
+              <label for="configuration">End date</label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-7 form-group my-auto">
+              <input type="text" [bsConfig]="{
+                    containerClass: 'theme-dark-blue'
+                 }"
+                     (bsValueChange)="onScheduleChange($event, 'end')"
+                     [minDate]="projectSchedule.start"
+                     [bsValue]="projectSchedule.end"
+                     placeholder="Datepicker"
+                     class="form-control"
+                     bsDatepicker>
+            </div>
+            <div class="col-5 form-group my-auto">
+              <timepicker [(ngModel)]="projectSchedule.end" name="endtime"></timepicker>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12">
+      <div class="form-group">
+        <ocb-user-dropdown [label]="adminSelectionLabel" (selectionChange)="userSelectionChanged($event)">
+        </ocb-user-dropdown>
+      </div>
+    </div>
+    <div class="col-12">
+      <div class="form-group">
+        <div class="custom-control custom-switch">
+          <input type="checkbox" class="custom-control-input" id="active" name="active" [(ngModel)]="formData.active">
+          <label class="custom-control-label" for="active">is active</label>
+        </div>
+      </div>
+    </div>
+    <div class="col-12" style="text-align: right;">
+      <button class="btn btn-primary" type="submit" [disabled]="!form.valid">Save</button>
+    </div>
+  </div>
+</form>

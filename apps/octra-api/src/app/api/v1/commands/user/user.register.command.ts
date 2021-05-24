@@ -3,7 +3,8 @@ import * as jwt from 'jsonwebtoken';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {BadRequest, Forbidden} from '../../../../obj/http-codes/client.codes';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
-import {TokenData, UserRegisterRequest, UserRegisterResponse} from '@octra/db';
+import {UserRegisterRequest, UserRegisterResponse} from '@octra/db';
+import {TokenData} from '../../obj/types';
 
 export class UserRegisterCommand extends ApiCommand {
 

@@ -2,8 +2,9 @@ import {ApiCommand, RequestType} from '../api.command';
 import * as jwt from 'jsonwebtoken';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
-import {TokenData, UserLoginRequest, UserLoginResponse} from '@octra/db';
+import {UserLoginRequest, UserLoginResponse} from '@octra/db';
 import {OK} from '../../../../obj/http-codes/success.codes';
+import {TokenData} from '../../obj/types';
 
 export class UserLoginCommand extends ApiCommand {
 
