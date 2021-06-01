@@ -6,12 +6,14 @@
       <fa-icon icon="university"></fa-icon>
       Sign in with Shibboleth
     </button>
-    <hr/>
-    <div style="text-align: center;">
-      or
-    </div>
-    <label for="inputEmail" class="visually-hidden">Email address</label>
-    <input type="text" id="inputEmail" class="form-control" placeholder="Name" name="name" [(ngModel)]="user.name"
+  </form>
+  <hr/>
+  <div style="text-align: center;">
+    or
+  </div>
+  <form>
+    <label for="inputName" class="visually-hidden">Username</label>
+    <input type="text" id="inputName" class="form-control" placeholder="Name" name="name" [(ngModel)]="user.name"
            required
            autofocus>
 

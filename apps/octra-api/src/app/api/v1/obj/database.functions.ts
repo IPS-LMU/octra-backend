@@ -266,6 +266,60 @@ export class DatabaseFunctions {
     return;
   }
 
+  public static async getProject(id: number): Promise<ProjectRow> {
+    try {
+      const selectQuery = {
+        text: DatabaseFunctions.selectAllStatements.project + ' where id=$1::integer order by id asc',
+        values: [id]
+      };
+      const selectResult = await DatabaseFunctions.dbManager.query(selectQuery);
+
+      if (selectResult.rowCount === 1) {
+        this.prepareRows(selectResult.rows);
+        return selectResult.rows[0] as ProjectRow;
+      }
+      throw new Error('insertionResult does not have id');
+    } catch (e) {
+      console.log(e);
+      throw new Error('Could not create and save a new project.');
+    }
+  }
+
+  public static async changeProject(id: number, data: CreateProjectRequest): Promise<ProjectRow> {
+    try {
+      const updateQuery = {
+        tableName: 'project',
+        columns: [
+          DatabaseFunctions.getColumnDefinition('name', 'text', data.name),
+          DatabaseFunctions.getColumnDefinition('shortname', 'text', data.shortname),
+          DatabaseFunctions.getColumnDefinition('description', 'text', data.description),
+          DatabaseFunctions.getColumnDefinition('configuration', 'text', data.configuration),
+          DatabaseFunctions.getColumnDefinition('startdate', 'timestamp', data.startdate),
+          DatabaseFunctions.getColumnDefinition('enddate', 'timestamp', data.enddate),
+          DatabaseFunctions.getColumnDefinition('active', 'boolean', data.active),
+          DatabaseFunctions.getColumnDefinition('admin_id', 'integer', data.admin_id)
+        ]
+      };
+      const updateResult = await DatabaseFunctions.dbManager.update(updateQuery, `id=${id}::integer`);
+
+      if (updateResult.rowCount === 1) {
+        const selectResult = await DatabaseFunctions.dbManager.query({
+          text: DatabaseFunctions.selectAllStatements.project + ' where id=$1::integer',
+          values: [id]
+        });
+
+        DatabaseFunctions.prepareRows(selectResult.rows)
+
+        return selectResult.rows[0] as ProjectRow;
+      } else {
+        throw new Error('Update project failed');
+      }
+    } catch (e) {
+      console.log(e);
+      throw new Error('Can\'t update project');
+    }
+  }
+
   public static async listProjects(): Promise<ProjectRow[]> {
     try {
       const selectQuery = {

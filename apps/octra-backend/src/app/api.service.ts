@@ -3,7 +3,7 @@ import {HttpClient} from '@angular/common/http';
 import {Router} from '@angular/router';
 import {SessionStorage} from 'ngx-webstorage';
 import {SettingsService} from './settings.service';
-import {AppTokenListResponse, AppTokenRemoveResponse, UserLoginResponse} from '@octra/db';
+import {AppTokenListResponse, AppTokenRemoveResponse, CreateProjectRequest, UserLoginResponse} from '@octra/db';
 
 @Injectable({
   providedIn: 'root'
@@ -257,6 +257,22 @@ export class APIService {
     });
   }
 
+  public getProject(id: number): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+      this.http.get(`${this.settingsService.settings.api.url}/projects/${id}`, {
+        headers: {
+          Authorization: `Bearer ${this.settingsService.settings.api.token}`,
+          'x-access-token': this._webToken
+        },
+        responseType: 'json'
+      }).subscribe((result: any) => {
+        console.log(`data`);
+        resolve(result.data);
+      }, (e) => {
+        reject(e.error.message);
+      });
+    });
+  }
 
   public retrieveProjects(): Promise<any[]> {
     return new Promise<any[]>((resolve, reject) => {
@@ -276,18 +292,30 @@ export class APIService {
     });
   }
 
-  public createProject(projectData: {
-    name: string;
-    shortname: string;
-    description: string;
-    active: boolean;
-    startdate: string;
-    enddate: string;
-    admin_id: number;
-    configuration: string;
-  }): Promise<boolean> {
+  public createProject(projectData: CreateProjectRequest): Promise<boolean> {
     return new Promise<boolean>((resolve, reject) => {
       this.http.post(`${this.settingsService.settings.api.url}/projects`, projectData, {
+        headers: {
+          Authorization: `Bearer ${this.settingsService.settings.api.token}`,
+          'x-access-token': this._webToken
+        },
+        responseType: 'json'
+      }).subscribe((result: any) => {
+        console.log(result);
+        if (result.status === 'success') {
+          resolve(true);
+        } else {
+          reject(result.message);
+        }
+      }, (e) => {
+        reject(e.error.message);
+      });
+    });
+  }
+
+  public changeProject(id: number, requestData: CreateProjectRequest): Promise<boolean> {
+    return new Promise<boolean>((resolve, reject) => {
+      this.http.put(`${this.settingsService.settings.api.url}/projects/${id}`, requestData, {
         headers: {
           Authorization: `Bearer ${this.settingsService.settings.api.token}`,
           'x-access-token': this._webToken

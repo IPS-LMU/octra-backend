@@ -64,7 +64,9 @@ const todoList = {
   },
   project: {
     create: true,
+    get: true,
     list: true,
+    change: true,
     remove: true,
     transcripts: {
       get: true
@@ -358,6 +360,7 @@ if (todoList.project.create) {
       .send(requestData)
       .end((err, res) => {
         checkForErrors(err, res);
+        console.log(`SET PROJECT ID!`);
         tempData.project.id = res.body.data.id;
 
         expect(res.status).toBe(200);
@@ -367,6 +370,25 @@ if (todoList.project.create) {
   });
 }
 
+if (todoList.project.get) {
+  it('it should get a project by id', (done) => {
+    request
+      .get(`/v1/projects/${tempData.project.id}`)
+      .set('Authorization', `Bearer ${appToken}`)
+      .set('x-access-token', tempData.admin.jwtToken)
+      .set('Origin', 'http://localhost:8080')
+      .end((err, res) => {
+        checkForErrors(err, res);
+        console.log(`get project id`);
+        console.log(`${tempData.project.id}`);
+        console.log((res.body.data as any));
+
+        expect(res.status).toBe(200);
+        expect(typeof res.body.data).toBe('object');
+        done();
+      });
+  });
+}
 
 if (todoList.project.list) {
   it('it should list projects in public', (done) => {
@@ -378,6 +400,31 @@ if (todoList.project.list) {
         console.log(`listed:`);
         checkForErrors(err, res);
         console.log((res.body.data as any[])[res.body.data.length - 1]);
+
+        expect(res.status).toBe(200);
+        expect(typeof res.body.data).toBe('object');
+        done();
+      });
+  });
+}
+
+if (todoList.project.change) {
+  it('it should change a project by id', (done) => {
+    const requestData = {
+      name: 'OtherProjectName'
+    };
+
+    request
+      .put(`/v1/projects/${tempData.project.id}`)
+      .set('Authorization', `Bearer ${appToken}`)
+      .set('x-access-token', tempData.admin.jwtToken)
+      .set('Origin', 'http://localhost:8080')
+      .send(requestData)
+      .end((err, res) => {
+        checkForErrors(err, res);
+        console.log(`change project id`);
+        console.log(`${tempData.project.id}`);
+        console.log((res.body.data as any));
 
         expect(res.status).toBe(200);
         expect(typeof res.body.data).toBe('object');

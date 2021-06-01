@@ -58,8 +58,8 @@ export class CommandModule {
         verifyAppToken(req, res, next, settings, () => {
           console.log(`verify app token ok`);
           const validCommand = this._commands.find(a => a.url === sameRoute && a.type === req.method);
-          console.log(`test route ${validCommand.name}`);
           if (validCommand) {
+            console.log(`test route ${validCommand.name}`);
             if (validCommand.needsJWTAuthentication) {
               console.log(`NEEDSJWT`);
               verifyWebToken(req, res, next, settings, validCommand, (tokenBody: TokenData) => {

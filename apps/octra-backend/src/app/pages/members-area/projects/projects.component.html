@@ -54,7 +54,7 @@
       </td>
       <td>{{project.administrator}}</td>
       <td>
-        <fa-icon icon="edit" class="action-icon" title="Edit project"></fa-icon>
+        <fa-icon icon="edit" class="action-icon" title="Edit project" (click)="onProjectEdit(project)"></fa-icon>
         <fa-icon icon="trash" class="action-icon" title="Remove project" (click)="onProjectRemove(project)"></fa-icon>
       </td>
     </tr>

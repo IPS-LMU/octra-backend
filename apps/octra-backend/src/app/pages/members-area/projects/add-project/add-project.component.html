@@ -85,7 +85,7 @@
     </div>
     <div class="col-12">
       <div class="form-group">
-        <ocb-user-dropdown [label]="adminSelectionLabel" (selectionChange)="userSelectionChanged($event)">
+        <ocb-user-dropdown #userDropdown [label]="adminSelectionLabel" (selectionChange)="userSelectionChanged($event)">
         </ocb-user-dropdown>
       </div>
     </div>

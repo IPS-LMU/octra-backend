@@ -7,6 +7,8 @@ import {AnnotationFreeCommand} from './annotation/annotation.free.command';
 import {AnnotationSaveCommand} from './annotation/annotation.save.command';
 import {ProjectListCommand} from './project.list.command';
 import {ProjectRemoveCommand} from './project.remove.command';
+import {ProjectGetCommand} from './project.get.command';
+import {ProjectChangeCommand} from './project.change.command';
 
 export class ProjectModule extends CommandModule {
   constructor() {
@@ -15,6 +17,8 @@ export class ProjectModule extends CommandModule {
       new ProjectTranscriptsGetCommand(),
       new ProjectCreateCommand(),
       new ProjectRemoveCommand(),
+      new ProjectGetCommand(),
+      new ProjectChangeCommand(),
       new ProjectListCommand(),
       new AnnotationStartCommand(),
       new AnnotationSaveCommand(),

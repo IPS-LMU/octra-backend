@@ -2,6 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {APIService} from '../../../api.service';
 import {DateTime} from 'luxon';
 import {ModalsService} from '../../../modals/modals.service';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'ocb-projects',
@@ -13,7 +14,7 @@ export class ProjectsComponent implements OnInit {
   projects: any[];
   users: any[];
 
-  constructor(private api: APIService, private modalService: ModalsService) {
+  constructor(private api: APIService, private modalService: ModalsService, private router: Router) {
   }
 
   ngOnInit(): void {
@@ -48,6 +49,14 @@ export class ProjectsComponent implements OnInit {
       });
     }).catch((error) => {
       console.error(error);
+    });
+  }
+
+  onProjectEdit(project: any) {
+    this.router.navigate(['members/projects/add'], {
+      queryParams: {
+        edit: project.id
+      }
     });
   }
 

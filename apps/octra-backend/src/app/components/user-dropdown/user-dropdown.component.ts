@@ -10,14 +10,20 @@ export class UserDropdownComponent implements OnInit {
   users: any [] = [];
   @Input() label = 'Select User';
   selectedUserID = null;
-
   @Output() selectionChange: EventEmitter<any> = new EventEmitter<any>();
+  private usersRetrieved: EventEmitter<any[]>;
+  private usersLoaded = false;
 
   constructor(private api: APIService) {
+    this.usersRetrieved = new EventEmitter<any[]>();
     this.api.retrieveUsers().then((users) => {
       this.users = users;
+      this.usersLoaded = true;
+      this.usersRetrieved.emit(users);
     }).catch((error) => {
       console.error(error);
+      this.usersLoaded = true;
+      this.usersRetrieved.emit(this.users);
     });
   }
 
@@ -29,4 +35,15 @@ export class UserDropdownComponent implements OnInit {
     this.selectionChange.emit(user);
   }
 
+  public selectUserById(id: number) {
+    const subscr = this.usersRetrieved.subscribe((users) => {
+      const user = users.find(a => a.id === id);
+      if (user) {
+        this.selectUser(user);
+      } else {
+        console.error(`Can't set user to dropdown because not found.`);
+      }
+      subscr.unsubscribe();
+    });
+  }
 }
