@@ -63,7 +63,6 @@ export class AddProjectComponent implements OnInit {
           if (this.formData.admin_id && this.formData.admin_id > -1) {
             this.userDropdown.selectUserById(this.formData.admin_id);
           }
-          console.log(result);
           this.isEditPage = true;
         }).catch(() => {
           this.modalService.openErrorModal('Error occured', 'Can not find project.');
@@ -124,6 +123,19 @@ export class AddProjectComponent implements OnInit {
     } else {
       this.projectSchedule.end = $event;
     }
+  }
+
+  openProjectConfiguration() {
+    this.modalService.openProjectConfigModal(this.formData.configuration).then((event) => {
+      if (event.status === 'changed') {
+        try {
+          const json = JSON.parse(event.projectConfig);
+          this.formData.configuration = JSON.stringify(json);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    });
   }
 
 }

@@ -2,7 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {BsModalRef, ModalOptions} from 'ngx-bootstrap/modal';
 
 @Component({
-  selector: 'ocb-success',
+  selector: 'ocb-success-modal',
   templateUrl: './success-modal.component.html',
   styleUrls: ['./success-modal.component.css']
 })

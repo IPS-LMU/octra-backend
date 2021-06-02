@@ -35,6 +35,7 @@ import {UserDropdownComponent} from './components/user-dropdown/user-dropdown.co
 import {BsDropdownModule} from 'ngx-bootstrap/dropdown';
 import {TimepickerModule} from 'ngx-bootstrap/timepicker';
 import {ChoiceModalComponent} from './modals/choice-modal/choice-modal.component';
+import {ProjectConfigModalComponent} from './modals/projectconfig-modal/project-config-modal.component';
 
 @NgModule({
   declarations: [
@@ -56,7 +57,8 @@ import {ChoiceModalComponent} from './modals/choice-modal/choice-modal.component
     ProfileComponent,
     ProjectsComponent,
     AddProjectComponent,
-    UserDropdownComponent
+    UserDropdownComponent,
+    ProjectConfigModalComponent
   ],
   imports: [
     BrowserModule,

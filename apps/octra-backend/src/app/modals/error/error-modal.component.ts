@@ -2,7 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {BsModalRef, ModalOptions} from 'ngx-bootstrap/modal';
 
 @Component({
-  selector: 'ocb-error',
+  selector: 'ocb-error-modal',
   templateUrl: './error-modal.component.html',
   styleUrls: ['./error-modal.component.css']
 })

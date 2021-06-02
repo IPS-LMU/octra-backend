@@ -2,7 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {BsModalRef, ModalOptions} from 'ngx-bootstrap/modal';
 
 @Component({
-  selector: 'ocb-error',
+  selector: 'ocb-yes-no-modal',
   templateUrl: './yes-no-modal.component.html',
   styleUrls: ['./yes-no-modal.component.css']
 })

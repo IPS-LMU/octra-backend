@@ -72,7 +72,6 @@ export class APIService {
   public retrieveTokenFromWindow(windowURL: string): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       this.http.get(windowURL).subscribe((result: any) => {
-        console.log(result);
         if (result.token) {
           this._webToken = result.token;
           resolve();
@@ -117,7 +116,6 @@ export class APIService {
         },
         responseType: 'json'
       }).subscribe((result: AppTokenRemoveResponse) => {
-        console.log(result);
         if (result.status === 'success') {
           resolve(true);
         } else {
@@ -143,7 +141,6 @@ export class APIService {
         },
         responseType: 'json'
       }).subscribe((result: any) => {
-        console.log(result);
         if (result.status === 'success') {
           resolve(true);
         } else {
@@ -170,7 +167,6 @@ export class APIService {
         },
         responseType: 'json'
       }).subscribe((result: any) => {
-        console.log(result);
         if (result.status === 'success') {
           resolve(true);
         } else {
@@ -191,7 +187,6 @@ export class APIService {
         },
         responseType: 'json'
       }).subscribe((result: any) => {
-        console.log(result);
         if (result.status === 'success') {
           resolve(true);
         } else {
@@ -205,7 +200,6 @@ export class APIService {
 
   public retrieveTranscript(): Promise<any[]> {
     return new Promise<any[]>((resolve, reject) => {
-      console.log(`CALL`);
       this.http.get(this.settingsService.settings.api.url + '/transcripts/120', {
         headers: {
           Authorization: `Bearer ${this.settingsService.settings.api.token}`,
@@ -213,7 +207,6 @@ export class APIService {
         },
         responseType: 'json'
       }).subscribe((result: any) => {
-        console.log(`data`);
         resolve(result.data);
       }, (e) => {
         reject(e.error.message);
@@ -224,7 +217,6 @@ export class APIService {
 
   public retrieveTranscripts(): Promise<any[]> {
     return new Promise<any[]>((resolve, reject) => {
-      console.log(`CALL 2`);
       this.http.get(this.settingsService.settings.api.url + '/projects/transcripts/?projectName=TestProject_1616628350486', {
         headers: {
           Authorization: `Bearer ${this.settingsService.settings.api.token}`,
@@ -232,7 +224,6 @@ export class APIService {
         },
         responseType: 'json'
       }).subscribe((result: any) => {
-        console.log(`data`);
         resolve(result.data);
       }, (e) => {
         reject(e.error.message);
@@ -249,7 +240,6 @@ export class APIService {
         },
         responseType: 'json'
       }).subscribe((result: any) => {
-        console.log(`data`);
         resolve(result.data);
       }, (e) => {
         reject(e.error.message);
@@ -266,7 +256,6 @@ export class APIService {
         },
         responseType: 'json'
       }).subscribe((result: any) => {
-        console.log(`data`);
         resolve(result.data);
       }, (e) => {
         reject(e.error.message);
@@ -276,7 +265,6 @@ export class APIService {
 
   public retrieveProjects(): Promise<any[]> {
     return new Promise<any[]>((resolve, reject) => {
-      console.log(this.settingsService.settings.api.url + '/projects/');
       this.http.get(this.settingsService.settings.api.url + '/projects/', {
         headers: {
           Authorization: `Bearer ${this.settingsService.settings.api.token}`,
@@ -284,7 +272,6 @@ export class APIService {
         },
         responseType: 'json'
       }).subscribe((result: any) => {
-        console.log(`data`);
         resolve(result.data);
       }, (e) => {
         reject(e.error.message);
@@ -301,7 +288,6 @@ export class APIService {
         },
         responseType: 'json'
       }).subscribe((result: any) => {
-        console.log(result);
         if (result.status === 'success') {
           resolve(true);
         } else {
@@ -322,7 +308,6 @@ export class APIService {
         },
         responseType: 'json'
       }).subscribe((result: any) => {
-        console.log(result);
         if (result.status === 'success') {
           resolve(true);
         } else {
@@ -350,7 +335,6 @@ export class APIService {
         },
         responseType: 'json'
       }).subscribe((result: any) => {
-        console.log(result);
         if (result.status === 'success') {
           resolve(true);
         } else {

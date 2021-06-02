@@ -26,19 +26,11 @@
       </div>
     </div>
     <div class="col-12">
-      <div class="form-group">
-        <label for="configuration">Configuration</label>
-        <textarea class="form-control" id="configuration" placeholder="Enter a configuration" name="configuration"
-                  required="required"
-                  [(ngModel)]="formData.configuration"></textarea>
-      </div>
-    </div>
-    <div class="col-12">
       <div class="row">
         <div class="col-sm-12 col-md-12 col-lg-6">
           <div class="row">
             <div class="col-12">
-              <label for="configuration">Start date</label>
+              <label for="startDatePicker">Start date</label>
             </div>
           </div>
           <div class="row">
@@ -49,6 +41,7 @@
                      (bsValueChange)="onScheduleChange($event, 'start')"
                      [bsValue]="projectSchedule.start"
                      placeholder="Datepicker"
+                     id="startDatePicker"
                      class="form-control"
                      bsDatepicker>
             </div>
@@ -61,7 +54,7 @@
         <div class="col-sm-12 col-md-12 col-lg-6">
           <div class="row">
             <div class="col-12">
-              <label for="configuration">End date</label>
+              <label for="endDatePicker">End date</label>
             </div>
           </div>
           <div class="row">
@@ -73,6 +66,7 @@
                      [minDate]="projectSchedule.start"
                      [bsValue]="projectSchedule.end"
                      placeholder="Datepicker"
+                     id="endDatePicker"
                      class="form-control"
                      bsDatepicker>
             </div>
@@ -81,6 +75,11 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+    <div class="col-12">
+      <div class="form-group">
+        <a class="btn btn-outline-info" (click)="openProjectConfiguration()">Edit project configuration</a>
       </div>
     </div>
     <div class="col-12">

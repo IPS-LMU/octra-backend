@@ -1,9 +1,10 @@
 import {Injectable} from '@angular/core';
 import {BsModalRef, BsModalService} from 'ngx-bootstrap/modal';
 import {ErrorModalComponent} from './error/error-modal.component';
-import {YesNoModalComponent} from './YesNoModal/yes-no-modal.component';
+import {YesNoModalComponent} from './yes-no-modal/yes-no-modal.component';
 import {SuccessModalComponent} from './success/success-modal.component';
 import {ChoiceModalComponent} from './choice-modal/choice-modal.component';
+import {ProjectConfigModalComponent} from './projectconfig-modal/project-config-modal.component';
 
 @Injectable({
   providedIn: 'root'
@@ -50,5 +51,39 @@ export class ModalsService {
     this.bsModalRef.content.message = message;
     this.bsModalRef.content.callback = callback;
     this.bsModalRef.content.choices = choices;
+  }
+
+
+  public openProjectConfigModal(projectConfigJSON: string): Promise<{
+    status: string;
+    projectConfig?: string;
+  }> {
+    return new Promise<{
+      status: string;
+      projectConfig?: string;
+    }>((resolve) => {
+      let jsonString = '';
+      if (projectConfigJSON) {
+        try {
+          jsonString = JSON.parse(projectConfigJSON);
+          jsonString = JSON.stringify(jsonString, null, 2);
+        } catch (e) {
+        }
+      }
+
+      this.bsModalRef = this.modalService.show(ProjectConfigModalComponent, ProjectConfigModalComponent.options);
+      this.bsModalRef.content.projectConfig = jsonString;
+      this.bsModalRef.content.saveCallback = (projectConfig: string) => {
+        resolve({
+          status: 'changed',
+          projectConfig
+        });
+      };
+      this.bsModalRef.content.closeCallback = (projectConfig: string) => {
+        resolve({
+          status: 'aborted'
+        });
+      };
+    });
   }
 }

@@ -1,0 +1,14 @@
+#editor {
+  border: 1px solid gray;
+  min-height: 300px;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+#buttons {
+  text-align: right;
+}
+
+#buttons * {
+  margin-left: 10px;
+}
