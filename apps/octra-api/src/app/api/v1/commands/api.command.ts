@@ -82,8 +82,8 @@ export abstract class ApiCommand {
   private readonly _type: RequestType;
   private readonly _url: string;
   protected _description: string;
-  protected _acceptedContentType: string;
-  protected _responseContentType: string;
+  protected _acceptedContentType = 'application/json';
+  protected _responseContentType = 'application/json';
   protected _requestStructure: Schema;
   protected _responseStructure: Schema;
   protected _needsJWTAuthentication = false;

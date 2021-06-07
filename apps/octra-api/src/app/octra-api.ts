@@ -18,6 +18,7 @@ import {UserRole} from '@octra/db';
 import {SHA256} from 'crypto-js';
 import {DatabaseFunctions} from './api/v1/obj/database.functions';
 import {TokenData} from './api/v1/obj/types';
+import {FileSystemHandler} from './api/v1/filesystem-handler';
 import express = require('express');
 
 export class OctraApi {
@@ -71,6 +72,10 @@ export class OctraApi {
     this.settings.executionPath = this._executionPath;
 
     if (this.settings.validation.valid) {
+      FileSystemHandler.createDirIfNotExists(this.settings.api.uploadPath).catch((error) => {
+        console.error(error);
+      });
+
       const app = express();
       app.set('view engine', 'ejs');
       app.engine('ejs', ejs.__express); //<-- this

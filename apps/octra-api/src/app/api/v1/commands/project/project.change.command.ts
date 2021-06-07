@@ -17,7 +17,36 @@ export class ProjectChangeCommand extends ApiCommand {
     this._responseContentType = 'application/json';
 
     // relevant for reference creation
-    this._requestStructure = {};
+    this._requestStructure = {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          required: true
+        },
+        shortname: {
+          type: 'string'
+        },
+        description: {
+          type: 'string'
+        },
+        configuration: {
+          type: 'object'
+        },
+        startdate: {
+          type: 'date-time'
+        },
+        enddate: {
+          type: 'date-time'
+        },
+        active: {
+          type: 'boolean'
+        },
+        admin_id: {
+          type: 'number'
+        }
+      }
+    };
 
     // relevant for reference creation
     this._responseStructure = {
@@ -41,7 +70,7 @@ export class ProjectChangeCommand extends ApiCommand {
               type: 'string'
             },
             configuration: {
-              type: 'json'
+              type: 'object'
             },
             startdate: {
               type: 'date-time'

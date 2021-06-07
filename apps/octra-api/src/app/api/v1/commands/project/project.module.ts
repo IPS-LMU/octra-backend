@@ -9,6 +9,8 @@ import {ProjectListCommand} from './project.list.command';
 import {ProjectRemoveCommand} from './project.remove.command';
 import {ProjectGetCommand} from './project.get.command';
 import {ProjectChangeCommand} from './project.change.command';
+import {GuidelinesGetCommand} from './guidelines/guidelines.get.command';
+import {GuidelinesSaveCommand} from './guidelines/guidelines.save.command';
 
 export class ProjectModule extends CommandModule {
   constructor() {
@@ -23,7 +25,9 @@ export class ProjectModule extends CommandModule {
       new AnnotationStartCommand(),
       new AnnotationSaveCommand(),
       new AnnotationFreeCommand(),
-      new AnnotationContinueCommand()
+      new AnnotationContinueCommand(),
+      new GuidelinesSaveCommand(),
+      new GuidelinesGetCommand()
     ];
   }
 }

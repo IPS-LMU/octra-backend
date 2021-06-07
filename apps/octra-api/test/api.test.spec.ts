@@ -89,6 +89,10 @@ const todoList = {
     start: true,
     continue: true,
     save: true
+  },
+  guidelines: {
+    save: true,
+    get: true
   }
 };
 
@@ -606,10 +610,10 @@ if (todoList.annotation.continue) {
 if (todoList.annotation.save) {
   it('it should save an annotation', (done) => {
     const requestData = {
-      transcript: "Transcasijdioasjdioa sdjioajs dioajsid ajsiodj aisodiasj oaisd ioasd",
-      comment: "Some comment",
-      assessment: "OK",
-      log: "LOG",
+      transcript: 'Transcasijdioasjdioa sdjioajs dioajsid ajsiodj aisodiasj oaisd ioasd',
+      comment: 'Some comment',
+      assessment: 'OK',
+      log: 'LOG',
       tool_id: 44
     }
 
@@ -643,6 +647,49 @@ if (todoList.project.transcripts.get) {
 
         expect(res.status).toBe(200);
         expect(typeof res.body.data).toBe('object');
+        done();
+      });
+  });
+}
+
+
+if (todoList.guidelines.save) {
+  it('it should save guidelines', (done) => {
+    const requestData = {
+      language: 'de',
+      json: {
+        test: 1232
+      }
+    };
+
+    request
+      .post(`/v1/projects/${tempData.project.id}/guidelines/`)
+      .set('Authorization', `Bearer ${appToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .set('x-access-token', tempData.admin.jwtToken)
+      .send(requestData)
+      .end((err, res) => {
+        checkForErrors(err, res);
+        console.log(res.body);
+
+        expect(res.status).toBe(200);
+        done();
+      });
+  });
+}
+
+if (todoList.guidelines.get) {
+  it('it should retrieve guidelines', (done) => {
+    request
+      .get(`/v1/projects/${tempData.project.id}/guidelines/`)
+      .set('Authorization', `Bearer ${appToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .set('x-access-token', tempData.admin.jwtToken)
+      .end((err, res) => {
+        checkForErrors(err, res);
+        console.log(res.body);
+
+        expect(res.status).toBe(200);
         done();
       });
   });

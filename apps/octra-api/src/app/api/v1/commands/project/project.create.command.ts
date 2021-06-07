@@ -30,7 +30,7 @@ export class ProjectCreateCommand extends ApiCommand {
           type: 'string'
         },
         configuration: {
-          type: 'json'
+          type: 'object'
         },
         startdate: {
           type: 'date-time'
@@ -69,7 +69,7 @@ export class ProjectCreateCommand extends ApiCommand {
               type: 'string'
             },
             configuration: {
-              type: 'json'
+              type: 'object'
             },
             startdate: {
               type: 'date-time'

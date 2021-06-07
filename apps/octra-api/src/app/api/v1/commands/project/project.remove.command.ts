@@ -5,6 +5,8 @@ import {BadRequest} from '../../../../obj/http-codes/client.codes';
 import {RemoveProjectRequest, UserRole} from '@octra/db';
 import {InternRequest} from '../../obj/types';
 import {Response} from 'express';
+import {FileSystemHandler} from '../../filesystem-handler';
+import {PathBuilder} from '../../path-builder';
 
 export class ProjectRemoveCommand extends ApiCommand {
   constructor() {
@@ -59,7 +61,9 @@ export class ProjectRemoveCommand extends ApiCommand {
       }
 
       try {
+        const projectFolder = PathBuilder.getProjectPath(Number(req.params.id), this.settings.api.uploadPath);
         await DatabaseFunctions.removeProject(Number(req.params.id), reqData);
+        await FileSystemHandler.removeFolder(projectFolder);
         this.checkAndSendAnswer(res, answer);
       } catch (e) {
         ApiCommand.sendError(res, InternalServerError, e);

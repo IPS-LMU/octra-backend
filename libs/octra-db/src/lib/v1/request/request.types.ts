@@ -97,6 +97,11 @@ export interface SaveAnnotationRequest {
   tool_id?: string
 }
 
+export interface CreateGuidelinesRequest {
+  language: string;
+  json: any;
+}
+
 export interface RemoveProjectRequest {
   removeAllReferences?: boolean;
   cutAllReferences?: boolean;

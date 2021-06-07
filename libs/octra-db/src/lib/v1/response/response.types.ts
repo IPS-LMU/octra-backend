@@ -189,7 +189,7 @@ export interface UserInfoResponse extends APIResponse {
 }
 
 export interface UserListResponse extends APIResponse {
- data: UserInfoResult[];
+  data: UserInfoResult[];
 }
 
 export interface UserLoginResponse extends APIResponse {
@@ -214,4 +214,18 @@ export interface UserRegisterResponse extends APIResponse {
 
 export interface UserRemoveResponse extends APIResponse {
   data: {};
+}
+
+export interface GuidelinesSaveResponse extends APIResponse {
+  data: {
+    language: string;
+    json: any;
+  };
+}
+
+export interface GuidelinesGetResponse extends APIResponse {
+  data: {
+    language: string;
+    json: any;
+  }[];
 }
