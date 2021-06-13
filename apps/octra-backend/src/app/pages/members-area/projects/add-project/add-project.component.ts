@@ -25,7 +25,7 @@ export class AddProjectComponent implements OnInit {
     startdate: '',
     enddate: '',
     active: true,
-    admin_id: null
+    admin_id: undefined
   };
 
   private guidelines: any[] = [];
@@ -39,7 +39,7 @@ export class AddProjectComponent implements OnInit {
     end: new Date()
   }
 
-  @ViewChild('userDropdown') userDropdown: UserDropdownComponent;
+  @ViewChild('userDropdown') userDropdown: UserDropdownComponent | undefined;
 
   constructor(private localeService: BsLocaleService, private api: APIService,
               private modalService: ModalsService, private router: Router, private route: ActivatedRoute) {
@@ -65,11 +65,13 @@ export class AddProjectComponent implements OnInit {
           this.formData = project;
           this.isEditPage = true;
           this.projectSchedule.start = (this.formData.startdate) ?
-            DateTime.fromISO(this.formData.startdate).toJSDate() : undefined;
+            DateTime.fromISO(this.formData.startdate).toJSDate() : new Date();
           this.projectSchedule.end = (this.formData.enddate)
-            ? DateTime.fromISO(this.formData.enddate).toJSDate() : undefined;
+            ? DateTime.fromISO(this.formData.enddate).toJSDate() : new Date();
           if (this.formData.admin_id && this.formData.admin_id > -1) {
-            this.userDropdown.selectUserById(this.formData.admin_id);
+            if (this.userDropdown) {
+              this.userDropdown.selectUserById(this.formData.admin_id);
+            }
           }
 
           //read guidelines
@@ -86,8 +88,9 @@ export class AddProjectComponent implements OnInit {
   }
 
   onSubmit() {
-    this.formData.startdate = DateTime.fromJSDate(this.projectSchedule.start).toJSON();
-    this.formData.enddate = DateTime.fromJSDate(this.projectSchedule.end).toJSON();
+    this.formData.startdate = (this.projectSchedule.start) ? DateTime.fromJSDate(this.projectSchedule.start).toJSON() : undefined;
+    this.formData.enddate = (this.projectSchedule.end) ? DateTime.fromJSDate(this.projectSchedule.end).toJSON() : undefined;
+
     if (this.formData.startdate === null) {
       delete this.formData.startdate;
     }
@@ -132,7 +135,7 @@ export class AddProjectComponent implements OnInit {
       this.formData.admin_id = user.id;
       this.adminSelectionLabel = `Selected project administrator: ${user.username}`;
     } else {
-      this.formData.admin_id = null;
+      this.formData.admin_id = undefined;
       this.adminSelectionLabel = 'Select project administrator';
     }
   }
@@ -153,20 +156,23 @@ export class AddProjectComponent implements OnInit {
         try {
           this.formData.configuration = JSON.parse(event.projectConfig.json);
           let guidelinesInvalid = false;
-          this.guidelines = event.guidelines.map(a => {
-            try {
-              return {
-                language: a.language,
-                json: JSON.parse(a.json)
-              };
-            } catch (e) {
-              guidelinesInvalid = true;
-              return {
-                language: a.language,
-                json: {}
-              };
-            }
-          });
+
+          if (event.guidelines) {
+            this.guidelines = event.guidelines.map(a => {
+              try {
+                return {
+                  language: a.language,
+                  json: JSON.parse(a.json)
+                };
+              } catch (e) {
+                guidelinesInvalid = true;
+                return {
+                  language: a.language,
+                  json: {}
+                };
+              }
+            });
+          }
           console.log(`guidelines:`);
           console.log(this.guidelines);
         } catch (e) {

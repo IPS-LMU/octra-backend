@@ -15,9 +15,9 @@ export class SettingsService {
     return this._settingsLoaded;
   }
 
-  private _settings: AppSettings;
+  private _settings: AppSettings | undefined = undefined;
 
-  get settings(): AppSettings {
+  get settings(): AppSettings | undefined {
     return this._settings;
   }
 
@@ -27,8 +27,8 @@ export class SettingsService {
     this._settingsLoaded = new EventEmitter<boolean>();
     this.http.get('./config/config.json', {
       responseType: 'json'
-    }).subscribe((settings: AppSettings) => {
-        this._settings = settings;
+    }).subscribe((response: any) => {
+        this._settings = response as AppSettings;
         this._settingsLoaded.emit(true);
       },
       (e) => {

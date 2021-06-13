@@ -2,7 +2,9 @@ module.exports = {
   displayName: 'octra-api',
   preset: '../../jest.preset.js',
   globals: {
-    'ts-jest': { tsconfig: '<rootDir>/tsconfig.spec.json' },
+    'ts-jest': {
+      tsconfig: '<rootDir>/tsconfig.spec.json',
+    },
   },
   testMatch: ['**/?(*.)+(spec|test).+(ts|tsx|js)'],
   transform: {

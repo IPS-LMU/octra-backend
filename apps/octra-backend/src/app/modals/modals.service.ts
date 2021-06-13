@@ -10,7 +10,7 @@ import {ProjectConfigModalComponent} from './projectconfig-modal/project-config-
   providedIn: 'root'
 })
 export class ModalsService {
-  bsModalRef: BsModalRef;
+  bsModalRef: BsModalRef | undefined;
 
   constructor(private modalService: BsModalService) {
   }
@@ -91,7 +91,7 @@ export class ModalsService {
         this.openErrorModal('Guidelines Error', 'Reading guidelines failed');
       }
 
-      this.bsModalRef.content.saveCallback = (newProjectConfig, newGuidelines) => {
+      this.bsModalRef.content.saveCallback = (newProjectConfig: any, newGuidelines: any) => {
         resolve({
           status: 'changed',
           projectConfig: newProjectConfig,

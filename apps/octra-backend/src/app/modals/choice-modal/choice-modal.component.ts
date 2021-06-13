@@ -16,9 +16,10 @@ export class ChoiceModalComponent implements OnInit {
     class: 'modal-lg'
   };
 
-  title: string;
-  message: string;
-  callback: (choiceValue: string) => void;
+  title = '';
+  message = '';
+  callback: (choiceValue: string) => void = () => {
+  };
   choices: {
     label: string;
     value: string;

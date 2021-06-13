@@ -7,8 +7,8 @@ import {BsModalRef, ModalOptions} from 'ngx-bootstrap/modal';
   styleUrls: ['./success-modal.component.css']
 })
 export class SuccessModalComponent implements OnInit {
-  title: string;
-  message: string;
+  title = '';
+  message = '';
 
   public static options: ModalOptions = {
     ignoreBackdropClick: true

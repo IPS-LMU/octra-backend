@@ -11,8 +11,8 @@ import {Router} from '@angular/router';
 })
 export class ProjectsComponent implements OnInit {
 
-  projects: any[];
-  users: any[];
+  projects: any[] = [];
+  users: any[] = [];
 
   constructor(private api: APIService, private modalService: ModalsService, private router: Router) {
   }

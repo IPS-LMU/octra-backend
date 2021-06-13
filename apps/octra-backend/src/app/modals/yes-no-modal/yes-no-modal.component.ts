@@ -15,10 +15,12 @@ export class YesNoModalComponent implements OnInit {
     ignoreBackdropClick: true
   };
 
-  title: string;
-  message: string;
-  yesCallback: () => void;
-  noCallback: () => void;
+  title = '';
+  message = '';
+  yesCallback: () => void = () => {
+  };
+  noCallback: () => void = () => {
+  };
 
   ngOnInit(): void {
   }

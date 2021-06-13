@@ -613,6 +613,7 @@ FodyWeavers.xsd
 !src/api
 /doc/
 deploy.sh
+deploy_dev.sh
 api.prod.test.js
 /apps/octra-api/src/config.json
 /apps/octra-backend/src/config/config.json

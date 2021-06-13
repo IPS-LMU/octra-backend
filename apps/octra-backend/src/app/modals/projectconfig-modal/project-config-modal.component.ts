@@ -45,8 +45,10 @@ export class ProjectConfigModalComponent implements OnInit, AfterViewInit {
     language: string;
     json: string;
     isValid: boolean;
-  }[]) => void;
-  closeCallback: () => void;
+  }[]) => void = () => {
+  };
+  closeCallback: () => void = () => {
+  };
 
   selectedLanguage = '';
 

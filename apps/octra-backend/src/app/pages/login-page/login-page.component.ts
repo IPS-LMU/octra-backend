@@ -16,7 +16,7 @@ export class LoginPageComponent implements OnInit {
     password: ''
   };
 
-  windowChecker = null;
+  windowChecker: number = -1;
 
   constructor(public api: APIService, private router: Router, private modalsService: ModalsService, private http: HttpClient) {
   }
@@ -34,26 +34,29 @@ export class LoginPageComponent implements OnInit {
         // need to open windowURL
         console.log(`open window!`);
         const authWindow = window.open(openURL, '_blank', `top:${(window.outerHeight - 400) / 2},width=600,height=400,titlebar=no,status=no,location=no`);
-        authWindow.addEventListener('beforeunload', () => {
-          console.log(`window closed`);
-        });
-        if (this.windowChecker !== null) {
-          clearInterval(this.windowChecker);
-        }
-        let closed = false;
-        this.windowChecker = setInterval(() => {
-          if (!closed && authWindow.closed) {
-            clearInterval(this.windowChecker);
-            this.windowChecker = null;
-            closed = true;
+        if (authWindow) {
+          authWindow.addEventListener('beforeunload', () => {
+            console.log(`window closed`);
+          });
 
-            this.api.retrieveTokenFromWindow(openURL).then(() => {
-              this.router.navigate(['/loading']);
-            }).catch((error) => {
-              console.error(error);
-            });
+          if (this.windowChecker > -1) {
+            clearInterval(this.windowChecker);
           }
-        }, 1000);
+          let closed = false;
+          this.windowChecker = setInterval(() => {
+            if (!closed && authWindow.closed) {
+              clearInterval(this.windowChecker);
+              this.windowChecker = -1;
+              closed = true;
+
+              this.api.retrieveTokenFromWindow(openURL).then(() => {
+                this.router.navigate(['/loading']);
+              }).catch((error) => {
+                console.error(error);
+              });
+            }
+          }, 1000);
+        }
       }
     }).catch((error) => {
       console.error(error);

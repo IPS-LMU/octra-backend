@@ -31,9 +31,9 @@
     </td>
     <td>
       <fa-icon icon="edit" class="action-icon" title="Edit app token" (click)="onAppTokenEdit(apptoken.id)"></fa-icon>
-      <fa-icon *ngIf="apptoken.key !== settingsService.settings.api.token" icon="redo" class="action-icon"
+      <fa-icon *ngIf="!checkEqualAppToken(apptoken)" icon="redo" class="action-icon"
                title="Refresh app token" (click)="onAppTokenRefresh(apptoken.id)"></fa-icon>
-      <fa-icon *ngIf="apptoken.key !== settingsService.settings.api.token" icon="trash" class="action-icon"
+      <fa-icon *ngIf="!checkEqualAppToken(apptoken)" icon="trash" class="action-icon"
                title="Remove app token" (click)="onAppTokenRemove(apptoken.id)"></fa-icon>
     </td>
   </tr>

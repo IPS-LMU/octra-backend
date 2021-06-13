@@ -24,9 +24,14 @@
     },
     "octra-backend-e2e": {
       "tags": [],
-      "implicitDependencies": ["octra-backend"]
+      "implicitDependencies": [
+        "octra-backend"
+      ]
     },
     "octra-api": {
+      "tags": []
+    },
+    "ngx-octra-api": {
       "tags": []
     },
     "octra-db": {

@@ -60,4 +60,11 @@ export class ApptokensComponent implements OnInit {
     }, () => {
     });
   }
+
+  checkEqualAppToken(apptoken: string) {
+    if (this.settingsService.settings) {
+      return apptoken === this.settingsService.settings.api.token;
+    }
+    return false;
+  }
 }

@@ -15,7 +15,12 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@octra/db": ["libs/octra-db/src/index.ts"]
+      "@octra/ngx-octra-api": [
+        "libs/ngx-octra-api/src/index.ts"
+      ],
+      "@octra/db": [
+        "libs/octra-db/src/index.ts"
+      ]
     }
   },
   "exclude": ["node_modules", "tmp"]
