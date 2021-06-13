@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
-import {APIService} from '../api.service';
 import {ActivatedRoute, Router} from '@angular/router';
+import {AppStorageService} from '../app-storage.service';
 
 @Component({
   selector: 'ocb-loading',
@@ -11,7 +11,7 @@ export class LoadingComponent implements OnInit {
 
   errorMessage = '';
 
-  constructor(private api: APIService, private router: Router, private route: ActivatedRoute) {
+  constructor(private appStorage: AppStorageService, private router: Router, private route: ActivatedRoute) {
   }
 
   ngOnInit(): void {
@@ -26,15 +26,15 @@ export class LoadingComponent implements OnInit {
       delete queryParams.origin;
       console.log(`params`);
       console.log(params);
-      if (this.api.initialized) {
+      if (this.appStorage.initialized) {
         console.log(`initialized`);
         this.router.navigate([`/members/${targetRoute}`], {
           queryParams
         });
       } else {
         console.log(`load api init`);
-        this.api.initAfterLogin().then(() => {
-          console.log(`initialized: ${this.api.initialized}`);
+        this.appStorage.initAfterLogin().then(() => {
+          console.log(`initialized: ${this.appStorage.initialized}`);
           this.router.navigate([`/members/${targetRoute}`], {
             queryParams
           });

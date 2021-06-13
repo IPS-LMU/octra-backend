@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {APIService} from '../../api.service';
+import {AppStorageService} from '../../app-storage.service';
 
 @Component({
   selector: 'ocb-members-area',
@@ -8,7 +8,7 @@ import {APIService} from '../../api.service';
 })
 export class MembersAreaComponent implements OnInit {
 
-  constructor(public api: APIService) {
+  constructor(public appStorage: AppStorageService) {
   }
 
   ngOnInit(): void {

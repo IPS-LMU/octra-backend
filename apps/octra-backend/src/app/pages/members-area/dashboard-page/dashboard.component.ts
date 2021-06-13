@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {APIService} from '../../../api.service';
+import {OctraAPIService} from '@octra/ngx-octra-api';
 
 @Component({
   selector: 'ocb-dashboard',
@@ -7,7 +7,7 @@ import {APIService} from '../../../api.service';
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit {
-  constructor(public api: APIService) {
+  constructor(public api: OctraAPIService) {
   }
 
   ngOnInit(): void {

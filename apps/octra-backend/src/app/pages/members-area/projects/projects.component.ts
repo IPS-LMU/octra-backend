@@ -1,8 +1,8 @@
 import {Component, OnInit} from '@angular/core';
-import {APIService} from '../../../api.service';
 import {DateTime} from 'luxon';
 import {ModalsService} from '../../../modals/modals.service';
 import {Router} from '@angular/router';
+import {OctraAPIService} from '@octra/ngx-octra-api';
 
 @Component({
   selector: 'ocb-projects',
@@ -14,7 +14,7 @@ export class ProjectsComponent implements OnInit {
   projects: any[] = [];
   users: any[] = [];
 
-  constructor(private api: APIService, private modalService: ModalsService, private router: Router) {
+  constructor(private api: OctraAPIService, private modalService: ModalsService, private router: Router) {
   }
 
   ngOnInit(): void {

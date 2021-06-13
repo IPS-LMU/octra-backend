@@ -5,18 +5,18 @@
     <tbody>
     <tr>
       <td>Username:</td>
-      <td>{{api.user.name}}</td>
+      <td>{{appStorage.user.name}}</td>
     </tr>
     <tr>
       <td>Associated roles:</td>
-      <td>{{api.user.roles | join: {
+      <td>{{appStorage.user.roles | join: {
         separator: ','
       }
         }}</td>
     </tr>
     <tr>
       <td>E-mail:</td>
-      <td>{{api.user.email}}</td>
+      <td>{{appStorage.user.email}}</td>
     </tr>
     </tbody>
   </table>
@@ -24,7 +24,7 @@
 <section>
   <h4>Change password</h4>
   <form (ngSubmit)="onChangeClick()">
-    <ng-container *ngIf="api.authType === 'local'; else changePasswordDisabled;">
+    <ng-container *ngIf="appStorage.authType === 'local'; else changePasswordDisabled;">
       <div class="mb-3">
         <label for="old-password" class="form-label">Old password</label>
         <input type="password" [(ngModel)]="oldPassword" name="password" class="form-control"
@@ -44,7 +44,7 @@
     </ng-container>
     <ng-template #changePasswordDisabled>
       <p>
-        You can't change your password because your are signed in with {{api.authType}}
+        You can't change your password because your are signed in with {{appStorage.authType}}
       </p>
     </ng-template>
   </form>

@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {APIService} from '../../../api.service';
+import {OctraAPIService} from '@octra/ngx-octra-api';
 
 @Component({
   selector: 'ocb-users',
@@ -9,7 +9,7 @@ import {APIService} from '../../../api.service';
 export class UsersPage implements OnInit {
   public transcripts: any[];
 
-  constructor(private api: APIService) {
+  constructor(private api: OctraAPIService) {
     this.transcripts = [];
   }
 

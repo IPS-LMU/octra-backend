@@ -2,12 +2,12 @@ import {Component, OnInit, ViewChild} from '@angular/core';
 import {BsLocaleService} from 'ngx-bootstrap/datepicker';
 import {defineLocale, esLocale, frLocale, itLocale} from 'ngx-bootstrap/chronos';
 import {deLocale} from 'ngx-bootstrap/locale';
-import {APIService} from '../../../../api.service';
 import {DateTime} from 'luxon';
 import {ModalsService} from '../../../../modals/modals.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {CreateProjectRequest} from '@octra/db';
 import {UserDropdownComponent} from '../../../../components/user-dropdown/user-dropdown.component';
+import {OctraAPIService} from '@octra/ngx-octra-api';
 
 @Component({
   selector: 'ocb-add-project',
@@ -41,7 +41,7 @@ export class AddProjectComponent implements OnInit {
 
   @ViewChild('userDropdown') userDropdown: UserDropdownComponent | undefined;
 
-  constructor(private localeService: BsLocaleService, private api: APIService,
+  constructor(private localeService: BsLocaleService, private api: OctraAPIService,
               private modalService: ModalsService, private router: Router, private route: ActivatedRoute) {
     defineLocale('de', deLocale);
     defineLocale('fr', frLocale);

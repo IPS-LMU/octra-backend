@@ -1,8 +1,8 @@
 import {Component, OnInit} from '@angular/core';
-import {APIService} from '../../../api.service';
 import {ModalsService} from '../../../modals/modals.service';
 import {SettingsService} from '../../../settings.service';
 import {Router} from '@angular/router';
+import {OctraAPIService} from '@octra/ngx-octra-api';
 
 @Component({
   selector: 'ocb-app-tokens',
@@ -13,7 +13,7 @@ export class ApptokensComponent implements OnInit {
 
   public apptokens: any[] = [];
 
-  constructor(public api: APIService, private modalService: ModalsService, public settingsService: SettingsService, private router: Router
+  constructor(public api: OctraAPIService, private modalService: ModalsService, public settingsService: SettingsService, private router: Router
   ) {
   }
 

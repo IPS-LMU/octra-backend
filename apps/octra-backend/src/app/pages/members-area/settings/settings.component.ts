@@ -1,5 +1,5 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {APIService} from '../../../api.service';
+import {OctraAPIService} from '@octra/ngx-octra-api';
 
 @Component({
   selector: 'ocb-settings',
@@ -8,7 +8,7 @@ import {APIService} from '../../../api.service';
 })
 export class SettingsComponent implements OnInit, OnDestroy {
 
-  constructor(public api: APIService) {
+  constructor(public api: OctraAPIService) {
   }
 
   ngOnInit(): void {

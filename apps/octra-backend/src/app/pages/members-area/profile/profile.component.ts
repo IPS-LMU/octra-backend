@@ -1,6 +1,7 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {APIService} from '../../../api.service';
 import {ModalsService} from '../../../modals/modals.service';
+import {OctraAPIService} from '@octra/ngx-octra-api';
+import {AppStorageService} from '../../../app-storage.service';
 
 @Component({
   selector: 'ocb-profile',
@@ -16,7 +17,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     return this.oldPassword.trim() !== '' && this.newPassword.trim() !== '' && this.newPasswordRepeat.trim() !== '';
   }
 
-  constructor(public api: APIService, private modalsService: ModalsService) {
+  constructor(public api: OctraAPIService, public appStorage: AppStorageService, private modalsService: ModalsService) {
   }
 
   ngOnInit(): void {
@@ -24,20 +25,10 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   onChangeClick() {
     if (this.newPassword === this.newPasswordRepeat) {
-      this.api.changePassword(this.oldPassword, this.newPassword).then((response) => {
-        if (response.status) {
-          if (response.status === 'success') {
-            this.modalsService.openSuccessModal('Password changed', 'Password was changed. You will now be signed out.').then(() => {
-              this.api.logout();
-            }).catch((error) => {
-              console.error(error);
-            });
-          } else {
-            this.modalsService.openErrorModal('Error occurred', response.message);
-          }
-        } else {
-          this.modalsService.openErrorModal('Error occurred', 'Invalid result');
-        }
+      this.api.changePassword(this.oldPassword, this.newPassword).then(() => {
+        this.modalsService.openSuccessModal('Password changed', 'Password was changed. You will now be signed out.').then(() => {
+          this.api.logout();
+        });
       }).catch((error) => {
         console.error(error);
         this.modalsService.openErrorModal('Error occurred', error);

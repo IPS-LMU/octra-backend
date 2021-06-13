@@ -7,7 +7,6 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
 import {FormsModule} from '@angular/forms';
-import {APIService} from './api.service';
 import {HttpClientModule} from '@angular/common/http';
 import {NgxWebstorageModule} from 'ngx-webstorage';
 import {SettingsService} from './settings.service';
@@ -38,6 +37,7 @@ import {ChoiceModalComponent} from './modals/choice-modal/choice-modal.component
 import {ProjectConfigModalComponent} from './modals/projectconfig-modal/project-config-modal.component';
 import {TabsModule} from 'ngx-bootstrap/tabs';
 import {NgxCodejarModule} from 'ngx-codejar';
+import {NgxOctraApiModule, OctraAPIService} from '@octra/ngx-octra-api';
 
 @NgModule({
   declarations: [
@@ -75,9 +75,10 @@ import {NgxCodejarModule} from 'ngx-codejar';
     BsDropdownModule.forRoot(),
     TimepickerModule.forRoot(),
     TabsModule.forRoot(),
-    NgxCodejarModule
+    NgxCodejarModule,
+    NgxOctraApiModule
   ],
-  providers: [SettingsService, APIService, ModalsService],
+  providers: [SettingsService, OctraAPIService, ModalsService],
   bootstrap: [AppComponent]
 })
 export class AppModule {

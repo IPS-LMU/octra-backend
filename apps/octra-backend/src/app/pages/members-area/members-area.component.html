@@ -12,10 +12,10 @@
       <li class="nav-item" style="border-right: 1px solid gray;">
         <a class="nav-link" [routerLink]="['/members/profile']">
           <fa-icon icon="user-circle"></fa-icon>
-          {{api.user.name}}</a>
+          {{appStorage.user.name}}</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" (click)="api.logout()">Sign out
+        <a class="nav-link" (click)="appStorage.logout()">Sign out
           <fa-icon icon="door-open"></fa-icon>
         </a>
       </li>
@@ -28,28 +28,28 @@
     <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
       <div class="sidebar-sticky pt-3">
         <ul class="nav flex-column">
-          <li class="nav-item" *ngIf="api.isAdministrator()">
+          <li class="nav-item" *ngIf="appStorage.isAdministrator()">
             <a class="nav-link" [routerLinkActive]="['active']" aria-current="page"
                [routerLink]="['/members/dashboard']">
               <fa-icon icon="tachometer-alt"></fa-icon>
               Dashboard
             </a>
           </li>
-          <li class="nav-item" *ngIf="api.isAdministrator()">
+          <li class="nav-item" *ngIf="appStorage.isAdministrator()">
             <a class="nav-link" [routerLinkActive]="['active']" aria-current="page"
                [routerLink]="['/members/projects']">
               <fa-icon icon="tags"></fa-icon>
               Projects
             </a>
           </li>
-          <li class="nav-item" *ngIf="api.isAdministrator()">
+          <li class="nav-item" *ngIf="appStorage.isAdministrator()">
             <a class="nav-link" [routerLinkActive]="['active']" aria-current="page"
                [routerLink]="['/members/users']">
               <fa-icon icon="users"></fa-icon>
               Users
             </a>
           </li>
-          <li class="nav-item" *ngIf="api.isAdministrator()">
+          <li class="nav-item" *ngIf="appStorage.isAdministrator()">
             <a class="nav-link" [routerLinkActive]="['active']" aria-current="page"
                [routerLink]="['/members/apptokens']">
               <fa-icon icon="tags"></fa-icon>

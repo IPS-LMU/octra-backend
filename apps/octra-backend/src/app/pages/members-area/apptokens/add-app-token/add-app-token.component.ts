@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
-import {APIService} from '../../../../api.service';
 import {ModalsService} from '../../../../modals/modals.service';
 import {ActivatedRoute, Router} from '@angular/router';
+import {OctraAPIService} from '@octra/ngx-octra-api';
 
 @Component({
   selector: 'ocb-add-app-token',
@@ -19,7 +19,7 @@ export class AddAppTokenComponent implements OnInit {
   isEditPage = false;
   editingID = -1;
 
-  constructor(private api: APIService, private modalService: ModalsService, private router: Router, private route: ActivatedRoute) {
+  constructor(private api: OctraAPIService, private modalService: ModalsService, private router: Router, private route: ActivatedRoute) {
   }
 
   ngOnInit(): void {

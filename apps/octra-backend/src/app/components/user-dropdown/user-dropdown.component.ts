@@ -1,5 +1,5 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {APIService} from '../../api.service';
+import {OctraAPIService} from '@octra/ngx-octra-api';
 
 @Component({
   selector: 'ocb-user-dropdown',
@@ -14,7 +14,7 @@ export class UserDropdownComponent implements OnInit {
   private usersRetrieved: EventEmitter<any[]>;
   private usersLoaded = false;
 
-  constructor(private api: APIService) {
+  constructor(private api: OctraAPIService) {
     this.usersRetrieved = new EventEmitter<any[]>();
     this.api.retrieveUsers().then((users) => {
       this.users = users;
