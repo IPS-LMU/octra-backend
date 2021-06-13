@@ -54,32 +54,51 @@ export class ModalsService {
   }
 
 
-  public openProjectConfigModal(projectConfigJSON: string): Promise<{
+  public openProjectConfigModal(projectConfig: any, guidelines: any[]): Promise<{
     status: string;
-    projectConfig?: string;
+    projectConfig?: any;
+    guidelines?: any[];
   }> {
     return new Promise<{
       status: string;
-      projectConfig?: string;
+      projectConfig?: any;
+      guidelines?: any[];
     }>((resolve) => {
-      let jsonString = '';
-      if (projectConfigJSON) {
-        try {
-          jsonString = JSON.parse(projectConfigJSON);
-          jsonString = JSON.stringify(jsonString, null, 2);
-        } catch (e) {
-        }
-      }
+      const jsonString = (projectConfig) ? JSON.stringify(projectConfig, null, '\t') : '';
 
       this.bsModalRef = this.modalService.show(ProjectConfigModalComponent, ProjectConfigModalComponent.options);
-      this.bsModalRef.content.projectConfig = jsonString;
-      this.bsModalRef.content.saveCallback = (projectConfig: string) => {
+      this.bsModalRef.content.projectConfig = {
+        isValid: false,
+        json: jsonString
+      };
+      let guidelinesValid = true;
+      this.bsModalRef.content.guidelines = guidelines.map(a => {
+        try {
+          return {
+            language: a.language,
+            json: JSON.stringify(a.json, null, '\t')
+          }
+        } catch (e) {
+          guidelinesValid = false;
+          return {
+            language: a.language,
+            json: ''
+          };
+        }
+      });
+
+      if (!guidelinesValid) {
+        this.openErrorModal('Guidelines Error', 'Reading guidelines failed');
+      }
+
+      this.bsModalRef.content.saveCallback = (newProjectConfig, newGuidelines) => {
         resolve({
           status: 'changed',
-          projectConfig
+          projectConfig: newProjectConfig,
+          guidelines: newGuidelines
         });
       };
-      this.bsModalRef.content.closeCallback = (projectConfig: string) => {
+      this.bsModalRef.content.closeCallback = () => {
         resolve({
           status: 'aborted'
         });

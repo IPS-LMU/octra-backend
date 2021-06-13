@@ -36,6 +36,8 @@ import {BsDropdownModule} from 'ngx-bootstrap/dropdown';
 import {TimepickerModule} from 'ngx-bootstrap/timepicker';
 import {ChoiceModalComponent} from './modals/choice-modal/choice-modal.component';
 import {ProjectConfigModalComponent} from './modals/projectconfig-modal/project-config-modal.component';
+import {TabsModule} from 'ngx-bootstrap/tabs';
+import {NgxCodejarModule} from 'ngx-codejar';
 
 @NgModule({
   declarations: [
@@ -71,7 +73,9 @@ import {ProjectConfigModalComponent} from './modals/projectconfig-modal/project-
     BrowserAnimationsModule,
     BsDatepickerModule.forRoot(),
     BsDropdownModule.forRoot(),
-    TimepickerModule.forRoot()
+    TimepickerModule.forRoot(),
+    TabsModule.forRoot(),
+    NgxCodejarModule
   ],
   providers: [SettingsService, APIService, ModalsService],
   bootstrap: [AppComponent]

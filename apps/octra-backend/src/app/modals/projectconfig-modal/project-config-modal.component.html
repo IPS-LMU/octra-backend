@@ -5,20 +5,62 @@
   </button>
 </div>
 <div class="modal-body">
-  <div id="buttons">
-    <span class="text-danger" [hidden]="isValid">Invalid JSON.</span>
+  <div class="buttons">
+    <span class="text-danger" [hidden]="areAllValid">Invalid JSON.</span>
+    <form #languageForm="ngForm" class="left" style="display:inline-flex;">
+      <input type="text" id="language-input" class="form-control" name="language-input" pattern="[a-z]{2}"
+             [required]="true" maxlength="2" placeholder="de" [(ngModel)]="selectedLanguage">
+      <button type="button" class="btn btn-info" [disabled]="!languageForm.form.valid"
+              (click)="addGuidelines()">Add guidelines
+      </button>
+    </form>
     <button type="button" class="btn btn-secondary" (click)="bsModalRef.hide(); closeCallback();">Abort</button>
-    <button type="button" class="btn btn-primary" (click)="bsModalRef.hide(); saveCallback(projectConfig);"
-            [disabled]="isChecking || !isValid">Apply
+    <button type="button" class="btn btn-primary" (click)="bsModalRef.hide(); saveCallback(projectConfig, guidelines);"
+            [disabled]="this.isChecking || !areAllValid">Apply
     </button>
   </div>
-  <h3>Editor:</h3>
-  <div #editor id="editor"></div>
+  <div>
+    <tabset #tabset>
+      <tab id="tab1">
+        <ng-template tabHeading>
+          <div class="tab-heading">
+            Configuration
+          </div>
+        </ng-template>
+        <div class="buttons toolbar">
+          <button type="button" class="btn btn-outline-info btn-sm" (click)="overwriteProjectConfigWithDefaults();">
+            Overwrite with
+            defaults
+          </button>
+        </div>
+        <ngx-codejar [(code)]="projectConfig.json" [highlightMethod]="highlightMethod"
+                     (update)="onProjectConfigUpdated($event)" [showLineNumbers]="true"></ngx-codejar>
+      </tab>
+      <tab *ngFor="let guideline of guidelines; let i = index;">
+        <ng-template tabHeading>
+          <div class="tab-heading">
+            {{'Guidelines (' + guideline.language.toUpperCase() + ')'}}
+          </div>
+          <div class="tab-heading remove-guideline">
+            <span aria-hidden="true" (click)="removeGuidelines(i, tabset)">&times;</span>
+          </div>
+        </ng-template>
+        <div class="buttons toolbar">
+          <button type="button" class="btn btn-outline-info btn-sm" (click)="overwriteGuidelinesWithDefaults(i);">
+            Overwrite with
+            defaults
+          </button>
+        </div>
+        <ngx-codejar [(code)]="guideline.json" [highlightMethod]="highlightMethod"
+                     (update)="onGuidelineUpdated($event, i)" [showLineNumbers]="true"></ngx-codejar>
+      </tab>
+    </tabset>
+  </div>
 </div>
 <div class="modal-footer">
-  <span class="text-danger" [hidden]="isValid">Invalid JSON.</span>
+  <span class="text-danger" [hidden]="areAllValid">Invalid JSON.</span>
   <button type="button" class="btn btn-secondary" (click)="bsModalRef.hide(); closeCallback();">Abort</button>
-  <button type="button" class="btn btn-primary" (click)="bsModalRef.hide(); saveCallback(projectConfig);"
-          [disabled]="isChecking || !isValid">Apply
+  <button type="button" class="btn btn-primary" (click)="bsModalRef.hide(); saveCallback(projectConfig, guidelines);"
+          [disabled]="this.isChecking || !areAllValid">Apply
   </button>
 </div>

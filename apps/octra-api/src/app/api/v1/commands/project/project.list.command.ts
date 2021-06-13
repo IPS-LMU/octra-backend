@@ -43,7 +43,7 @@ export class ProjectListCommand extends ApiCommand {
                 type: 'string'
               },
               configuration: {
-                type: 'json'
+                type: 'object'
               },
               startdate: {
                 type: 'date-time'
@@ -72,6 +72,20 @@ export class ProjectListCommand extends ApiCommand {
     if (validation.length === 0) {
       try {
         answer.data = await DatabaseFunctions.listProjects();
+
+        answer.data = answer.data.map(a => {
+          if (a.configuration) {
+            try {
+              a.configuration = JSON.parse(a.configuration);
+            } catch (e) {
+              console.error(e);
+              a.configuration = {};
+            }
+          } else {
+            a.configuration = {};
+          }
+          return a;
+        });
 
         if (!req.decoded) {
           console.log(req.decoded);

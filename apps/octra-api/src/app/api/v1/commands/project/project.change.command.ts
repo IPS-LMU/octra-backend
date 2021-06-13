@@ -103,6 +103,15 @@ export class ProjectChangeCommand extends ApiCommand {
       }
       try {
         answer.data = await DatabaseFunctions.changeProject(req.params.id, body);
+
+        if (answer.data.configuration) {
+          try {
+            answer.data.configuration = JSON.parse(answer.data.configuration);
+          } catch (e) {
+            console.error(e);
+          }
+        }
+
         this.checkAndSendAnswer(res, answer);
         return;
       } catch (e) {

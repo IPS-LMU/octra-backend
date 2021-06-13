@@ -28,3 +28,7 @@ fa-icon[icon='redo'] {
   text-align: right;
   margin: 10px;
 }
+
+.codejar-linenumbers * {
+  color: white !important;
+}

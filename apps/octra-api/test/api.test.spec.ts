@@ -195,9 +195,8 @@ if (todoList.user.getUsers) {
       .set('x-access-token', tempData.admin.jwtToken)
       .end((err, res) => {
         checkForErrors(err, res);
-        log(`retrieved rows: ${res.body.data.length}`);
-
         expect(res.status).toBe(200);
+        log(`retrieved rows: ${res.body.data.length}`);
         expect(Array.isArray(res.body.data)).toBe(true);
         done();
       });
@@ -276,9 +275,9 @@ if (todoList.app.tokens.add) {
       .end((err, res) => {
         checkForErrors(err, res);
         tempData.apptoken.addedID = res.body.data.id;
-        log(`added ${res.body.data.id}`);
 
         expect(res.status).toBe(200);
+        log(`added ${res.body.data.id}`);
         expect(typeof res.body.data).toBe('object');
         done();
       });
@@ -300,9 +299,9 @@ if (todoList.app.tokens.change) {
       .send(requestData)
       .end((err, res) => {
         checkForErrors(err, res);
-        log(`changed app token ${tempData.apptoken.addedID}`);
 
         expect(res.status).toBe(200);
+        log(`changed app token ${tempData.apptoken.addedID}`);
         expect(typeof res.body.data).toBe('object');
         done();
       });
@@ -320,9 +319,9 @@ if (todoList.app.tokens.refresh) {
       .send(requestData)
       .end((err, res) => {
         checkForErrors(err, res);
-        log(`refreshed app token ${tempData.apptoken.addedID}`);
 
         expect(res.status).toBe(200);
+        log(`refreshed app token ${tempData.apptoken.addedID}`);
         expect(typeof res.body.data).toBe('object');
         done();
       });
@@ -338,9 +337,9 @@ if (todoList.app.tokens.getList) {
       .set('x-access-token', tempData.admin.jwtToken)
       .end((err, res) => {
         checkForErrors(err, res);
-        log(`retrieved rows: ${res.body.data.length}`);
 
         expect(res.status).toBe(200);
+        log(`retrieved rows: ${res.body.data.length}`);
         expect(Array.isArray(res.body.data)).toBe(true);
         done();
       });
@@ -383,11 +382,11 @@ if (todoList.project.get) {
       .set('Origin', 'http://localhost:8080')
       .end((err, res) => {
         checkForErrors(err, res);
+
+        expect(res.status).toBe(200);
         console.log(`get project id`);
         console.log(`${tempData.project.id}`);
         console.log((res.body.data as any));
-
-        expect(res.status).toBe(200);
         expect(typeof res.body.data).toBe('object');
         done();
       });
@@ -401,11 +400,11 @@ if (todoList.project.list) {
       .set('Authorization', `Bearer ${appToken}`)
       .set('Origin', 'http://localhost:8080')
       .end((err, res) => {
-        console.log(`listed:`);
         checkForErrors(err, res);
-        console.log((res.body.data as any[])[res.body.data.length - 1]);
 
         expect(res.status).toBe(200);
+        console.log(`listed:`);
+        console.log((res.body.data as any[])[res.body.data.length - 1]);
         expect(typeof res.body.data).toBe('object');
         done();
       });
@@ -426,11 +425,11 @@ if (todoList.project.change) {
       .send(requestData)
       .end((err, res) => {
         checkForErrors(err, res);
+
+        expect(res.status).toBe(200);
         console.log(`change project id`);
         console.log(`${tempData.project.id}`);
         console.log((res.body.data as any));
-
-        expect(res.status).toBe(200);
         expect(typeof res.body.data).toBe('object');
         done();
       });
@@ -452,9 +451,9 @@ if (todoList.media.add) {
       .send(requestData)
       .end((err, res) => {
         checkForErrors(err, res);
-        log(`added ${res.body.data.id}`);
-        tempData.mediaItem.id = res.body.data.id;
         expect(res.status).toBe(200);
+        tempData.mediaItem.id = res.body.data.id;
+        log(`added ${res.body.data.id}`);
         expect(typeof res.body.data).toBe('object');
         done();
       });
@@ -549,9 +548,9 @@ if (todoList.transcripts.get) {
       .set('x-access-token', tempData.user.jwtToken)
       .end((err, res) => {
         checkForErrors(err, res);
-        log(`retrieved rows: ${res.body.data.length}`);
 
         expect(res.status).toBe(200);
+        log(`retrieved rows: ${res.body.data.length}`);
         expect(typeof res.body.data).toBe('object');
         done();
       });
@@ -655,15 +654,15 @@ if (todoList.project.transcripts.get) {
 
 if (todoList.guidelines.save) {
   it('it should save guidelines', (done) => {
-    const requestData = {
+    const requestData = [{
       language: 'de',
       json: {
         test: 1232
       }
-    };
+    }];
 
     request
-      .post(`/v1/projects/${tempData.project.id}/guidelines/`)
+      .put(`/v1/projects/752/guidelines/`)
       .set('Authorization', `Bearer ${appToken}`)
       .set('Origin', 'http://localhost:8080')
       .set('x-access-token', tempData.admin.jwtToken)
@@ -758,7 +757,7 @@ function logJSON(json) {
 
 
 function checkForErrors(err, res) {
-  console.log(res.body);
+  // console.log(res.body);
   // expect(err).toBeUndefined();
   if (err) {
     console.log('ERROR: ');

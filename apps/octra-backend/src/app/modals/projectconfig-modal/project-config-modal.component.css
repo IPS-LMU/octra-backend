@@ -1,14 +1,41 @@
-#editor {
-  border: 1px solid gray;
-  min-height: 300px;
-  padding: 10px;
-  border-radius: 5px;
-}
-
-#buttons {
+.buttons {
   text-align: right;
+  margin-bottom: 20px;
+  position: relative;
 }
 
-#buttons * {
+.buttons * {
   margin-left: 10px;
+}
+
+tabset .buttons {
+  margin-bottom: 0;
+}
+
+.toolbar {
+  background-color: whitesmoke;
+  border: 1px solid gray;
+  padding: 10px;
+  border-bottom: none;
+}
+
+.left {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+#language-input {
+  height: 38px;
+  width: 50px;
+}
+
+.remove-guideline {
+  margin-left: 10px;
+  font-size: 1.3em;
+}
+
+.tab-heading {
+  display: inline-block;
+  vertical-align: middle;
 }

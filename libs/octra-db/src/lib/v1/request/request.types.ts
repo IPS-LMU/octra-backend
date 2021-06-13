@@ -4,7 +4,7 @@ export interface CreateProjectRequest {
   name: string;
   shortname?: string;
   description?: string;
-  configuration?: string;
+  configuration?: any;
   startdate?: string;
   enddate?: string;
   active?: boolean;

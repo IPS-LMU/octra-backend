@@ -620,3 +620,4 @@ api.prod.test.js
 apps/octra-backend/src/php/window-auth.config.php
 apps/shibboleth-php-authenticator/authShibboleth.config.php
 /data/
+/extern/

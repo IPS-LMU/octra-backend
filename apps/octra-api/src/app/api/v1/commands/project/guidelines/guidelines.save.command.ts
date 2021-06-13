@@ -11,7 +11,7 @@ import * as path from 'path';
 
 export class GuidelinesSaveCommand extends ApiCommand {
   constructor() {
-    super('saveGuidelines', '/projects', RequestType.POST, '/:project_id/guidelines/', true,
+    super('saveGuidelines', '/projects', RequestType.PUT, '/:project_id/guidelines/', true,
       [
         UserRole.administrator,
         UserRole.projectAdministrator
@@ -23,33 +23,24 @@ export class GuidelinesSaveCommand extends ApiCommand {
 
     // relevant for reference creation
     this._requestStructure = {
-      type: 'object',
-      properties: {
-        language: {
-          type: 'string'
-        },
-        json: {
-          type: 'object'
+      type: 'array',
+      items: [{
+        type: 'object',
+        properties: {
+          language: {
+            type: 'string'
+          },
+          json: {
+            type: 'object'
+          }
         }
-      }
+      }]
     };
 
     // relevant for reference creation
     this._responseStructure = {
       properties: {
-        ...this.defaultResponseSchema.properties,
-        data: {
-          type: 'object',
-          properties: {
-            language: {
-              type: 'string',
-              pattern: '[a-z]{2}'
-            },
-            json: {
-              type: 'object'
-            }
-          }
-        }
+        ...this.defaultResponseSchema.properties
       }
     };
   }
@@ -65,12 +56,17 @@ export class GuidelinesSaveCommand extends ApiCommand {
 
     // do something
     if (validation.length === 0) {
-      const body: CreateGuidelinesRequest = req.body;
+      const body: CreateGuidelinesRequest[] = req.body;
       try {
         const guidelinesPath = PathBuilder.getGuidelinesPath(Number(req.params.project_id), this.settings.api.uploadPath);
-        await FileSystemHandler.saveFileAsync(path.join(guidelinesPath, `guidelines_${body.language}.json`), JSON.stringify(body.json, null, 2), {
-          encoding: 'utf-8'
-        });
+        await FileSystemHandler.removeFolder(guidelinesPath);
+
+        for (const createGuidelinesRequest of body) {
+          await FileSystemHandler.saveFileAsync(path.join(guidelinesPath, `guidelines_${createGuidelinesRequest.language}.json`), JSON.stringify(createGuidelinesRequest.json, null, 2), {
+            encoding: 'utf-8'
+          });
+        }
+
         this.checkAndSendAnswer(res, answer);
       } catch (e) {
         console.log(e);

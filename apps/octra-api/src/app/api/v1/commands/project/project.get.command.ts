@@ -40,7 +40,7 @@ export class ProjectGetCommand extends ApiCommand {
               type: 'string'
             },
             configuration: {
-              type: 'json'
+              type: 'object'
             },
             startdate: {
               type: 'date-time'
@@ -72,6 +72,13 @@ export class ProjectGetCommand extends ApiCommand {
       }
       try {
         answer.data = await DatabaseFunctions.getProject(req.params.id);
+        if (answer.data.configuration) {
+          try {
+            answer.data.configuration = JSON.parse(answer.data.configuration);
+          } catch (e) {
+            console.error(e);
+          }
+        }
         this.checkAndSendAnswer(res, answer);
         return;
       } catch (e) {

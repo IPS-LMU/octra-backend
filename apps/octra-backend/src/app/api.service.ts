@@ -3,7 +3,13 @@ import {HttpClient} from '@angular/common/http';
 import {Router} from '@angular/router';
 import {SessionStorage} from 'ngx-webstorage';
 import {SettingsService} from './settings.service';
-import {AppTokenListResponse, AppTokenRemoveResponse, CreateProjectRequest, UserLoginResponse} from '@octra/db';
+import {
+  AppTokenListResponse,
+  AppTokenRemoveResponse,
+  CreateGuidelinesRequest,
+  CreateProjectRequest,
+  UserLoginResponse
+} from '@octra/db';
 
 @Injectable({
   providedIn: 'root'
@@ -263,6 +269,22 @@ export class APIService {
     });
   }
 
+  public getGuidelines(id: number): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+      this.http.get(`${this.settingsService.settings.api.url}/projects/${id}/guidelines`, {
+        headers: {
+          Authorization: `Bearer ${this.settingsService.settings.api.token}`,
+          'x-access-token': this._webToken
+        },
+        responseType: 'json'
+      }).subscribe((result: any) => {
+        resolve(result.data);
+      }, (e) => {
+        reject(e.error.message);
+      });
+    });
+  }
+
   public retrieveProjects(): Promise<any[]> {
     return new Promise<any[]>((resolve, reject) => {
       this.http.get(this.settingsService.settings.api.url + '/projects/', {
@@ -279,8 +301,8 @@ export class APIService {
     });
   }
 
-  public createProject(projectData: CreateProjectRequest): Promise<boolean> {
-    return new Promise<boolean>((resolve, reject) => {
+  public createProject(projectData: CreateProjectRequest): Promise<number> {
+    return new Promise<number>((resolve, reject) => {
       this.http.post(`${this.settingsService.settings.api.url}/projects`, projectData, {
         headers: {
           Authorization: `Bearer ${this.settingsService.settings.api.token}`,
@@ -289,7 +311,7 @@ export class APIService {
         responseType: 'json'
       }).subscribe((result: any) => {
         if (result.status === 'success') {
-          resolve(true);
+          resolve(result.id);
         } else {
           reject(result.message);
         }
@@ -299,8 +321,8 @@ export class APIService {
     });
   }
 
-  public changeProject(id: number, requestData: CreateProjectRequest): Promise<boolean> {
-    return new Promise<boolean>((resolve, reject) => {
+  public changeProject(id: number, requestData: CreateProjectRequest): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
       this.http.put(`${this.settingsService.settings.api.url}/projects/${id}`, requestData, {
         headers: {
           Authorization: `Bearer ${this.settingsService.settings.api.token}`,
@@ -309,7 +331,27 @@ export class APIService {
         responseType: 'json'
       }).subscribe((result: any) => {
         if (result.status === 'success') {
-          resolve(true);
+          resolve();
+        } else {
+          reject(result.message);
+        }
+      }, (e) => {
+        reject(e.error.message);
+      });
+    });
+  }
+
+  public saveGuidelines(projectID: number, requestData: CreateGuidelinesRequest[]): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      this.http.put(`${this.settingsService.settings.api.url}/projects/${projectID}/guidelines`, requestData, {
+        headers: {
+          Authorization: `Bearer ${this.settingsService.settings.api.token}`,
+          'x-access-token': this._webToken
+        },
+        responseType: 'json'
+      }).subscribe((result: any) => {
+        if (result.status === 'success') {
+          resolve();
         } else {
           reject(result.message);
         }

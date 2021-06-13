@@ -21,12 +21,14 @@ export class AddProjectComponent implements OnInit {
     name: '',
     shortname: '',
     description: '',
-    configuration: '',
+    configuration: null,
     startdate: '',
     enddate: '',
     active: true,
     admin_id: null
   };
+
+  private guidelines: any[] = [];
 
   adminSelectionLabel = 'Select project administrator';
   projectSchedule: {
@@ -54,8 +56,14 @@ export class AddProjectComponent implements OnInit {
     this.route.queryParams.subscribe((params) => {
       if (params.edit) {
         this.editingID = Number(params.edit);
-        this.api.getProject(this.editingID).then((result) => {
-          this.formData = result;
+
+        Promise.all([
+          this.api.getProject(this.editingID),
+          this.api.getGuidelines(this.editingID)
+        ]).then(([project, guidelines]) => {
+          // read project
+          this.formData = project;
+          this.isEditPage = true;
           this.projectSchedule.start = (this.formData.startdate) ?
             DateTime.fromISO(this.formData.startdate).toJSDate() : undefined;
           this.projectSchedule.end = (this.formData.enddate)
@@ -63,7 +71,13 @@ export class AddProjectComponent implements OnInit {
           if (this.formData.admin_id && this.formData.admin_id > -1) {
             this.userDropdown.selectUserById(this.formData.admin_id);
           }
-          this.isEditPage = true;
+
+          //read guidelines
+          this.guidelines = guidelines;
+        }).catch((error) => {
+          console.error(error);
+        });
+        this.api.getProject(this.editingID).then((result) => {
         }).catch(() => {
           this.modalService.openErrorModal('Error occured', 'Can not find project.');
         });
@@ -83,23 +97,29 @@ export class AddProjectComponent implements OnInit {
     this.formData.admin_id = (this.formData.admin_id === null) ? undefined : this.formData.admin_id;
 
     if (!this.isEditPage) {
-      this.api.createProject(this.formData).then((success) => {
-        if (success) {
+      this.api.createProject(this.formData).then((projectID: number) => {
+        this.api.saveGuidelines(projectID, this.guidelines).then(() => {
           this.modalService.openSuccessModal('Project created', 'The project was created successfully').then(() => {
             this.router.navigate(['members/projects']);
           });
-        }
+        }).catch((error) => {
+          this.modalService.openErrorModal('Guidelines not saved', error);
+          console.error(error);
+        });
       }).catch((error) => {
         console.error(error);
         this.modalService.openErrorModal('Project not created', 'Project could not be created.');
       });
     } else {
-      this.api.changeProject(this.editingID, this.formData).then((success) => {
-        if (success) {
+      this.api.changeProject(this.editingID, this.formData).then(() => {
+        this.api.saveGuidelines(this.editingID, this.guidelines).then(() => {
           this.modalService.openSuccessModal('Project changed', 'The project was changed successfully').then(() => {
             this.router.navigate(['members/projects']);
           });
-        }
+        }).catch((error) => {
+          this.modalService.openErrorModal('Guidelines not saved', error);
+          console.error(error);
+        });
       }).catch((error) => {
         console.error(error);
         this.modalService.openErrorModal('Project not changed', error);
@@ -126,11 +146,29 @@ export class AddProjectComponent implements OnInit {
   }
 
   openProjectConfiguration() {
-    this.modalService.openProjectConfigModal(this.formData.configuration).then((event) => {
+    console.log(`open`);
+    console.log(this.guidelines);
+    this.modalService.openProjectConfigModal(this.formData.configuration, this.guidelines).then((event) => {
       if (event.status === 'changed') {
         try {
-          const json = JSON.parse(event.projectConfig);
-          this.formData.configuration = JSON.stringify(json);
+          this.formData.configuration = JSON.parse(event.projectConfig.json);
+          let guidelinesInvalid = false;
+          this.guidelines = event.guidelines.map(a => {
+            try {
+              return {
+                language: a.language,
+                json: JSON.parse(a.json)
+              };
+            } catch (e) {
+              guidelinesInvalid = true;
+              return {
+                language: a.language,
+                json: {}
+              };
+            }
+          });
+          console.log(`guidelines:`);
+          console.log(this.guidelines);
         } catch (e) {
           console.error(e);
         }

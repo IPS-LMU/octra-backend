@@ -1,4 +1,5 @@
 import {MediaItemRow, UserRole} from '../db';
+import {OctraProject} from './response.objects';
 
 export interface ProjectTranscriptsGetResult {
   id: number;
@@ -109,7 +110,7 @@ export interface ProjectCreateResponse extends APIResponse {
     name: string;
     shortname?: string;
     description?: string;
-    configuration?: string;
+    configuration?: any;
     startdate?: string;
     enddate?: string;
     active?: boolean;
@@ -118,17 +119,7 @@ export interface ProjectCreateResponse extends APIResponse {
 }
 
 export interface ProjectListResponse extends APIResponse {
-  data: {
-    id: number;
-    name: string;
-    shortname?: string;
-    description?: string;
-    configuration?: string;
-    startdate?: string;
-    enddate?: string;
-    active?: boolean;
-    admin_id?: number
-  }[];
+  data: OctraProject[];
 }
 
 export interface ProjectTranscriptsGetResponse extends APIResponse {
@@ -220,7 +211,7 @@ export interface GuidelinesSaveResponse extends APIResponse {
   data: {
     language: string;
     json: any;
-  };
+  }[];
 }
 
 export interface GuidelinesGetResponse extends APIResponse {
