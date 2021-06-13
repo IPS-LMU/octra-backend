@@ -1,41 +1,19 @@
-import {MediaItemRow, UserRole} from '../db';
-import {OctraProject} from './response.objects';
-
-export interface ProjectTranscriptsGetResult {
-  id: number;
-  pid?: string;
-  orgtext?: string;
-  transcript?: string;
-  assessment?: string;
-  priority?: number;
-  status?: string;
-  code?: string;
-  creationdate?: string;
-  startdate?: string;
-  enddate?: string;
-  log?: string;
-  comment?: string;
-  tool_id?: number;
-  transcriber_id?: number;
-  mediaitem_id?: number;
-  mediaitem?: MediaItemRow;
-  nexttranscript?: number;
-}
-
-export interface TranscriptGetResult extends ProjectTranscriptsGetResult {
-  project_id?: number;
-}
-
-export interface UserInfoResult {
-  id: number;
-  username: string;
-  roles?: UserRole[];
-  createdate: string;
-  active: boolean;
-  training?: string;
-  loginmethod: string;
-  comment?: string;
-}
+import {
+  AppTokenChangeResponseDataItem,
+  AppTokenRefreshResponseDataItem,
+  AppTokenResponseDataItem,
+  GuidelinesSaveResponseDataItem,
+  MediaAddResponseDataItem,
+  ProjectCreateResponseDataItem,
+  ProjectResponseDataItem,
+  ProjectTranscriptsGetResponseDataItem,
+  ToolAddResponseDataItem,
+  TranscriptAddResponseDataItem,
+  TranscriptGetResponseDataItem,
+  UserInfoResponseDataItem,
+  UserLoginResponseDataItem,
+  UserRegisterResponseDataItem
+} from './response.objects';
 
 export interface APIResponse {
   status: 'success' | 'error';
@@ -46,121 +24,55 @@ export interface APIResponse {
 }
 
 export interface AppTokenChangeResponse extends APIResponse {
-  data: {
-    name: string;
-    key: string;
-    domain?: string;
-    description?: string;
-    registrations?: boolean;
-  }
+  data: AppTokenChangeResponseDataItem;
 }
 
 export interface AppTokenCreateResponse extends APIResponse {
-  data: {
-    name: string;
-    key: string;
-    domain?: string;
-    description?: string;
-    registrations?: boolean;
-  }
+  data: AppTokenChangeResponseDataItem;
 }
 
 export interface AppTokenListResponse extends APIResponse {
-  data: {
-    id: number;
-    name: string;
-    key: string;
-    domain?: string;
-    description?: string;
-    registrations?: boolean;
-  }[]
+  data: AppTokenResponseDataItem[]
 }
 
 export interface AppTokenRefreshResponse extends APIResponse {
-  data: {
-    name: string;
-    key: string;
-    domain?: string;
-    description?: string;
-    registrations?: boolean;
-  }
+  data: AppTokenRefreshResponseDataItem;
 }
 
 export interface AppTokenRemoveResponse extends APIResponse {
-  data: {}
+  data: {};
 }
 
 export interface DeliveryMediaAddResponse extends APIResponse {
-  data: ProjectTranscriptsGetResult
+  data: ProjectTranscriptsGetResponseDataItem;
 }
 
 export interface MediaAddResponse extends APIResponse {
-  data: {
-    id: number;
-    url: string;
-    type: string;
-    size: number;
-    metadata: string;
-  }
+  data: MediaAddResponseDataItem;
 }
 
 export interface ProjectCreateResponse extends APIResponse {
-  data: {
-    id: number;
-    name: string;
-    shortname?: string;
-    description?: string;
-    configuration?: any;
-    startdate?: string;
-    enddate?: string;
-    active?: boolean;
-    admin_id?: number
-  }
+  data: ProjectCreateResponseDataItem;
 }
 
 export interface ProjectListResponse extends APIResponse {
-  data: OctraProject[];
+  data: ProjectResponseDataItem[];
 }
 
 export interface ProjectTranscriptsGetResponse extends APIResponse {
-  data: ProjectTranscriptsGetResult[]
+  data: ProjectTranscriptsGetResponseDataItem[];
 }
 
 export interface ToolAddResponse extends APIResponse {
-  data: {
-    id: number;
-    pid?: string;
-    name: string;
-    version?: string;
-    description?: string;
-  }
+  data: ToolAddResponseDataItem;
 }
 
 export interface TranscriptAddResponse extends APIResponse {
-  data: {
-    id: number;
-    pid?: string;
-    orgtext?: string;
-    transcript?: string;
-    assessment?: string;
-    priority?: number;
-    status?: string;
-    code?: string;
-    creationdate?: string;
-    startdate?: string;
-    enddate?: string;
-    log?: string;
-    comment?: string;
-    tool_id?: number;
-    transcriber_id?: number;
-    project_id?: number;
-    mediaitem_id?: number;
-    nexttranscript?: number;
-  }
+  data: TranscriptAddResponseDataItem;
 }
 
 export interface TranscriptGetResponse extends APIResponse {
-  data: TranscriptGetResult
+  data: TranscriptGetResponseDataItem;
 }
 
 export interface UserAssignRolesResponse extends APIResponse {
@@ -168,7 +80,7 @@ export interface UserAssignRolesResponse extends APIResponse {
 }
 
 export interface UserCurrentInfoResponse extends APIResponse {
-  data: UserInfoResult;
+  data: UserInfoResponseDataItem;
 }
 
 export interface UserExistsHashResponse extends APIResponse {
@@ -176,20 +88,16 @@ export interface UserExistsHashResponse extends APIResponse {
 }
 
 export interface UserInfoResponse extends APIResponse {
-  data: UserInfoResult;
+  data: UserInfoResponseDataItem;
 }
 
 export interface UserListResponse extends APIResponse {
-  data: UserInfoResult[];
+  data: UserInfoResponseDataItem[];
 }
 
 export interface UserLoginResponse extends APIResponse {
   token: string;
-  data: {
-    id?: number;
-    name?: string;
-    openURL?: string;
-  }
+  data: UserLoginResponseDataItem;
 }
 
 export interface UserPasswordChangeResponse extends APIResponse {
@@ -198,9 +106,7 @@ export interface UserPasswordChangeResponse extends APIResponse {
 
 export interface UserRegisterResponse extends APIResponse {
   token: string;
-  data: {
-    id: number;
-  }
+  data: UserRegisterResponseDataItem;
 }
 
 export interface UserRemoveResponse extends APIResponse {
@@ -208,15 +114,9 @@ export interface UserRemoveResponse extends APIResponse {
 }
 
 export interface GuidelinesSaveResponse extends APIResponse {
-  data: {
-    language: string;
-    json: any;
-  }[];
+  data: GuidelinesSaveResponseDataItem[];
 }
 
 export interface GuidelinesGetResponse extends APIResponse {
-  data: {
-    language: string;
-    json: any;
-  }[];
+  data: GuidelinesSaveResponseDataItem[];
 }

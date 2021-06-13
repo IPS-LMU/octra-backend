@@ -2,6 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {ModalsService} from '../../../../modals/modals.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {OctraAPIService} from '@octra/ngx-octra-api';
+import {AppTokenResponseDataItem} from '@octra/db';
 
 @Component({
   selector: 'ocb-add-app-token',
@@ -9,7 +10,8 @@ import {OctraAPIService} from '@octra/ngx-octra-api';
   styleUrls: ['./add-app-token.component.css']
 })
 export class AddAppTokenComponent implements OnInit {
-  formData = {
+  formData: AppTokenResponseDataItem = {
+    id: 0, key: '', // ignored
     name: '',
     description: '',
     domain: '',
@@ -38,7 +40,7 @@ export class AddAppTokenComponent implements OnInit {
           } else {
             this.modalService.openErrorModal('Error occured', 'Can not find app token.');
           }
-        }).catch((error) => {
+        }).catch(() => {
           this.modalService.openErrorModal('Can not retrieve App tokens', 'Retrieving app tokens failed');
         });
       }

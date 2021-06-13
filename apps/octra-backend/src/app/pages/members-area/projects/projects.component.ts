@@ -37,10 +37,10 @@ export class ProjectsComponent implements OnInit {
           if (project.admin_id) {
             console.log(`look for admin ${project.admin_id}`);
             const project_admin = this.users.find(a => a.id === project.admin_id);
-            project.administrator = (project_admin) ? project_admin.username : 'NA';
             delete project.admin_id;
+            (project as any).administrator = (project_admin) ? project_admin.username : 'NA';
           } else {
-            project.administrator = 'NA';
+            (project as any).administrator = 'NA';
           }
         }
         this.projects = projects;

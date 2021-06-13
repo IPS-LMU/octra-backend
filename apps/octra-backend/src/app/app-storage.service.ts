@@ -93,7 +93,7 @@ export class AppStorageService {
       this.api.getCurrentUserInfo().then((information) => {
         this._user.name = information.username;
         this._user.email = information.email;
-        this._user.roles = information.roles;
+        this._user.roles = (information.roles) ? information.roles : [];
         this._initialized = true;
 
         resolve();

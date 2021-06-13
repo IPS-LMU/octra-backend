@@ -84,3 +84,39 @@ export interface TranscriptRow extends DatabaseRow {
   mediaitem_id: number;
   nexttranscript_id: number;
 }
+
+export interface ProjectTranscriptsGetResult {
+  id: number;
+  pid?: string;
+  orgtext?: string;
+  transcript?: string;
+  assessment?: string;
+  priority?: number;
+  status?: string;
+  code?: string;
+  creationdate?: string;
+  startdate?: string;
+  enddate?: string;
+  log?: string;
+  comment?: string;
+  tool_id?: number;
+  transcriber_id?: number;
+  mediaitem_id?: number;
+  mediaitem?: MediaItemRow;
+  nexttranscript?: number;
+}
+
+export interface TranscriptGetResult extends ProjectTranscriptsGetResult {
+  project_id?: number;
+}
+
+export interface UserInfoResult {
+  id: number;
+  username: string;
+  roles?: UserRole[];
+  createdate: string;
+  active: boolean;
+  training?: string;
+  loginmethod: string;
+  comment?: string;
+}

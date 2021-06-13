@@ -1,6 +1,18 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {CreateGuidelinesRequest, CreateProjectRequest, UserRole} from '@octra/db';
+import {
+  AppTokenChangeResponseDataItem,
+  AppTokenRefreshResponseDataItem,
+  AppTokenResponseDataItem,
+  CreateGuidelinesRequest,
+  CreateProjectRequest,
+  GuidelinesSaveResponseDataItem,
+  ProjectResponseDataItem,
+  ProjectTranscriptsGetResponseDataItem,
+  TranscriptGetResponseDataItem,
+  UserInfoResponseDataItem,
+  UserRole
+} from '@octra/db';
 
 @Injectable({
   providedIn: 'root'
@@ -97,15 +109,15 @@ export class OctraAPIService {
     this._authenticated = false;
   }
 
-  public retrieveAppTokenList(): Promise<any[]> {
-    return this.get<any[]>('/app/tokens', true);
+  public retrieveAppTokenList(): Promise<AppTokenResponseDataItem[]> {
+    return this.get('/app/tokens', true);
   }
 
-  public retrieveTranscript(transcriptID: number): Promise<any[]> {
-    return this.get<any[]>(`${this.apiURL}/transcripts/${transcriptID}`, true);
+  public retrieveTranscript(transcriptID: number): Promise<TranscriptGetResponseDataItem[]> {
+    return this.get(`${this.apiURL}/transcripts/${transcriptID}`, true);
   }
 
-  public retrieveTranscripts(projectName: string): Promise<any[]> {
+  public retrieveTranscripts(projectName: string): Promise<ProjectTranscriptsGetResponseDataItem[]> {
     return this.get(`/projects/transcripts/?projectName=${projectName}`, true);
   }
 
@@ -113,19 +125,19 @@ export class OctraAPIService {
     return this.delete<any>(`${this.apiURL}/app/tokens/${id}`, true);
   }
 
-  public getProject(id: number): Promise<any> {
+  public getProject(id: number): Promise<ProjectResponseDataItem> {
     return this.get(`/projects/${id}`, true);
   }
 
-  public getGuidelines(id: number): Promise<any> {
+  public getGuidelines(id: number): Promise<GuidelinesSaveResponseDataItem[]> {
     return this.get(`/projects/${id}/guidelines`, true);
   }
 
-  public retrieveUsers(): Promise<any[]> {
+  public retrieveUsers(): Promise<UserInfoResponseDataItem[]> {
     return this.get('/users/', true);
   }
 
-  public retrieveProjects(): Promise<any[]> {
+  public retrieveProjects(): Promise<ProjectResponseDataItem[]> {
     return this.get('/projects/', true);
   }
 
@@ -148,14 +160,14 @@ export class OctraAPIService {
     return this.delete(`/projects/${id}/${options}`, true);
   }
 
-  public changePassword(oldPassword: string, password: string): Promise<any> {
+  public changePassword(oldPassword: string, password: string): Promise<void> {
     return this.put('/users/password', {
       oldPassword,
       password
     }, true);
   }
 
-  public getCurrentUserInfo(): Promise<any> {
+  public getCurrentUserInfo(): Promise<UserInfoResponseDataItem> {
     return this.get('/users/current', true);
   }
 
@@ -163,26 +175,16 @@ export class OctraAPIService {
     return this.put(`/projects/${id}`, requestData, true);
   }
 
-  public createAppToken(tokenData: {
-    name: string,
-    domain: string,
-    description: string,
-    registrations: boolean
-  }): Promise<boolean> {
+  public createAppToken(tokenData: AppTokenResponseDataItem): Promise<boolean> {
     return this.post<any>(`/app/tokens`, tokenData, true);
   }
 
-  public changeAppToken(id: number, tokenData: {
-    name: string,
-    domain: string,
-    description: string,
-    registrations: boolean
-  }): Promise<boolean> {
-    return this.put<any>(`/app/tokens/${id}`, tokenData, true);
+  public changeAppToken(id: number, tokenData: AppTokenResponseDataItem): Promise<AppTokenChangeResponseDataItem> {
+    return this.put(`/app/tokens/${id}`, tokenData, true);
   }
 
-  public refreshAppToken(id: number): Promise<boolean> {
-    return this.put<any>(`app/tokens/${id}/refresh`, {}, true);
+  public refreshAppToken(id: number): Promise<AppTokenRefreshResponseDataItem> {
+    return this.put(`app/tokens/${id}/refresh`, {}, true);
   }
 
   private get<T>(partURL: string, needsJWT: boolean): Promise<T> {

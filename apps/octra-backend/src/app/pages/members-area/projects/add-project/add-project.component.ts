@@ -5,7 +5,7 @@ import {deLocale} from 'ngx-bootstrap/locale';
 import {DateTime} from 'luxon';
 import {ModalsService} from '../../../../modals/modals.service';
 import {ActivatedRoute, Router} from '@angular/router';
-import {CreateProjectRequest} from '@octra/db';
+import {CreateProjectRequest, GuidelinesSaveResponseDataItem} from '@octra/db';
 import {UserDropdownComponent} from '../../../../components/user-dropdown/user-dropdown.component';
 import {OctraAPIService} from '@octra/ngx-octra-api';
 
@@ -28,7 +28,7 @@ export class AddProjectComponent implements OnInit {
     admin_id: undefined
   };
 
-  private guidelines: any[] = [];
+  private guidelines: GuidelinesSaveResponseDataItem[] = [];
 
   adminSelectionLabel = 'Select project administrator';
   projectSchedule: {
