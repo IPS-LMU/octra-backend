@@ -14,7 +14,7 @@ export class UsersPage implements OnInit {
   }
 
   ngOnInit(): void {
-    this.api.retrieveUsers().then((result) => {
+    this.api.listUsers().then((result) => {
       console.log(`result`);
       console.log(result);
       this.transcripts = result;

@@ -22,11 +22,11 @@ export class ProjectsComponent implements OnInit {
   }
 
   updateProjects() {
-    this.api.retrieveUsers().then((users) => {
+    this.api.listUsers().then((users) => {
       this.users = users;
       console.log(this.users);
 
-      this.api.retrieveProjects().then((projects) => {
+      this.api.listProjects().then((projects) => {
         for (const project of projects) {
           if (project.startdate) {
             project.startdate = DateTime.fromISO(project.startdate).toLocaleString(DateTime.DATETIME_SHORT);

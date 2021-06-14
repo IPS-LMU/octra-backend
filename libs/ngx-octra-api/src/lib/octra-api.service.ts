@@ -43,7 +43,13 @@ export class OctraAPIService {
     this._initialized = true;
   }
 
-  public login(type: 'local' | 'shibboleth', name?: string, password?: string): Promise<{
+  /***
+   * does the login process.
+   * @param type
+   * @param name
+   * @param password
+   */
+  public loginUser(type: 'local' | 'shibboleth', name?: string, password?: string): Promise<{
     openWindowURL?: string;
     user?: {
       name: string;
@@ -89,6 +95,10 @@ export class OctraAPIService {
     });
   }
 
+  /***
+   * retrieves the jwt from the authentication window.
+   * @param windowURL
+   */
   public retrieveTokenFromWindow(windowURL: string): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       this.http.get(windowURL).subscribe((result: any) => {
@@ -104,24 +114,30 @@ export class OctraAPIService {
     });
   }
 
+  /**
+   * does logout process
+   */
   public logout() {
     this._webToken = '';
     this._authenticated = false;
   }
 
-  public retrieveAppTokenList(): Promise<AppTokenResponseDataItem[]> {
+  /***
+   * lists the app tokens.
+   */
+  public listAppTokens(): Promise<AppTokenResponseDataItem[]> {
     return this.get('/app/tokens', true);
   }
 
-  public retrieveTranscript(transcriptID: number): Promise<TranscriptGetResponseDataItem[]> {
+  public getTranscript(transcriptID: number): Promise<TranscriptGetResponseDataItem[]> {
     return this.get(`${this.apiURL}/transcripts/${transcriptID}`, true);
   }
 
-  public retrieveTranscripts(projectName: string): Promise<ProjectTranscriptsGetResponseDataItem[]> {
+  public getProjectTranscripts(projectName: string): Promise<ProjectTranscriptsGetResponseDataItem[]> {
     return this.get(`/projects/transcripts/?projectName=${projectName}`, true);
   }
 
-  public removeApptoken(id: number): Promise<void> {
+  public removeAppToken(id: number): Promise<void> {
     return this.delete<any>(`${this.apiURL}/app/tokens/${id}`, true);
   }
 
@@ -133,11 +149,11 @@ export class OctraAPIService {
     return this.get(`/projects/${id}/guidelines`, true);
   }
 
-  public retrieveUsers(): Promise<UserInfoResponseDataItem[]> {
+  public listUsers(): Promise<UserInfoResponseDataItem[]> {
     return this.get('/users/', true);
   }
 
-  public retrieveProjects(): Promise<ProjectResponseDataItem[]> {
+  public listProjects(): Promise<ProjectResponseDataItem[]> {
     return this.get('/projects/', true);
   }
 
@@ -160,14 +176,14 @@ export class OctraAPIService {
     return this.delete(`/projects/${id}/${options}`, true);
   }
 
-  public changePassword(oldPassword: string, password: string): Promise<void> {
+  public changeMyPassword(oldPassword: string, password: string): Promise<void> {
     return this.put('/users/password', {
       oldPassword,
       password
     }, true);
   }
 
-  public getCurrentUserInfo(): Promise<UserInfoResponseDataItem> {
+  public getCurrentUserInformation(): Promise<UserInfoResponseDataItem> {
     return this.get('/users/current', true);
   }
 

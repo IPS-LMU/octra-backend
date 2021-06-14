@@ -16,7 +16,7 @@ export class UserDropdownComponent implements OnInit {
 
   constructor(private api: OctraAPIService) {
     this.usersRetrieved = new EventEmitter<any[]>();
-    this.api.retrieveUsers().then((users) => {
+    this.api.listUsers().then((users) => {
       this.users = users;
       this.usersLoaded = true;
       this.usersRetrieved.emit(users);

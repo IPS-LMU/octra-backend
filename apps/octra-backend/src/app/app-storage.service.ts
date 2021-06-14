@@ -41,7 +41,7 @@ export class AppStorageService {
   }
 
   public login(type: 'local' | 'shibboleth', name?: string, password?: string) {
-    return this.api.login(type, name, password).then((result) => {
+    return this.api.loginUser(type, name, password).then((result) => {
       if (result.openWindowURL !== undefined) {
         // need to open windowURL
         console.log(`open window!`);
@@ -90,7 +90,7 @@ export class AppStorageService {
   public initAfterLogin(): Promise<void> {
     this.api.webToken = (this._webToken) ? this._webToken : '';
     return new Promise<void>((resolve, reject) => {
-      this.api.getCurrentUserInfo().then((information) => {
+      this.api.getCurrentUserInformation().then((information) => {
         this._user.name = information.username;
         this._user.email = information.email;
         this._user.roles = (information.roles) ? information.roles : [];

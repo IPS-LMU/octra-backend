@@ -22,7 +22,7 @@ export class ApptokensComponent implements OnInit {
   }
 
   updateAppTokens() {
-    this.api.retrieveAppTokenList().then((rows) => {
+    this.api.listAppTokens().then((rows) => {
         this.apptokens = rows;
       }
     ).catch((error) => {
@@ -52,7 +52,7 @@ export class ApptokensComponent implements OnInit {
 
   onAppTokenRemove(id: number) {
     this.modalService.openYesNoModal('Remove app token', 'Are you sure to remove the app token permanently?', () => {
-      this.api.removeApptoken(id).then(() => {
+      this.api.removeAppToken(id).then(() => {
         this.updateAppTokens();
       }).catch((error) => {
         this.modalService.openErrorModal('Error occured', error);

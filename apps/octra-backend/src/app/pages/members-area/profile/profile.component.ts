@@ -25,7 +25,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   onChangeClick() {
     if (this.newPassword === this.newPasswordRepeat) {
-      this.api.changePassword(this.oldPassword, this.newPassword).then(() => {
+      this.api.changeMyPassword(this.oldPassword, this.newPassword).then(() => {
         this.modalsService.openSuccessModal('Password changed', 'Password was changed. You will now be signed out.').then(() => {
           this.api.logout();
         });

@@ -27,7 +27,7 @@ export class AddAppTokenComponent implements OnInit {
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
       if (params.edit) {
-        this.api.retrieveAppTokenList().then((appTokens) => {
+        this.api.listAppTokens().then((appTokens) => {
           console.log(appTokens);
           this.editingID = Number(params.edit);
           const appToken = appTokens.find(a => a.id === this.editingID);
