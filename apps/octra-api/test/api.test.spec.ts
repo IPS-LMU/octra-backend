@@ -394,10 +394,11 @@ if (todoList.project.get) {
 }
 
 if (todoList.project.list) {
-  it('it should list projects in public', (done) => {
+  it('it should list projects', (done) => {
     request
       .get('/v1/projects')
       .set('Authorization', `Bearer ${appToken}`)
+      .set('x-access-token', tempData.admin.jwtToken)
       .set('Origin', 'http://localhost:8080')
       .end((err, res) => {
         checkForErrors(err, res);

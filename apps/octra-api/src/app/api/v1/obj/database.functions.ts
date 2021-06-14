@@ -10,6 +10,7 @@ import {
   CreateProjectRequest,
   DeliverNewMediaRequest,
   MediaItemRow,
+  ProjectResponseDataItem,
   ProjectRow,
   ProjectTranscriptsGetResult,
   RemoveProjectRequest,
@@ -320,18 +321,17 @@ export class DatabaseFunctions {
     }
   }
 
-  public static async listProjects(): Promise<ProjectRow[]> {
+  public static async listProjects(): Promise<ProjectResponseDataItem[]> {
     try {
       const selectQuery = {
-        text: DatabaseFunctions.selectAllStatements.project + ' order by id asc'
+        text: 'select pr.id::integer, pr.name::text, pr.shortname::text, pr.description::text, pr.configuration::text, pr.startdate::timestamp, pr.enddate::timestamp, pr.active::boolean, pr.admin_id::integer, count(transcript.id)::integer as transcripts_count, count(case when transcript.status=\'FREE\' then transcript.id end)::integer as transcripts_count_free from transcript full outer join project pr on transcript.project_id=pr.id group by pr.id order by pr.id;'
       };
       const selectResult = await DatabaseFunctions.dbManager.query(selectQuery);
 
       if (selectResult.rowCount > 0) {
+        selectResult.rows = selectResult.rows.filter(a => (a.id !== null && a.id !== undefined));
         this.prepareRows(selectResult.rows);
-        console.log(`last row`);
-        console.log(selectResult.rows[selectResult.rowCount - 1]);
-        return selectResult.rows as ProjectRow[];
+        return selectResult.rows as ProjectResponseDataItem[];
       }
       throw new Error('insertionResult does not have id');
     } catch (e) {
@@ -517,8 +517,10 @@ export class DatabaseFunctions {
       const updateResult = await DatabaseFunctions.dbManager.query({
         text: `update transcript
                set status='BUSY',
-                   transcriber_id=${tokenData.id}::integer, startdate=(to_timestamp(${Date.now()} / 1000.0)), tool_id=${data.tool_id}:: integer
-               where id=${transcriptRow.id}:: integer`
+                   transcriber_id=${tokenData.id}::integer,
+                   startdate=(to_timestamp(${Date.now()} / 1000.0)),
+                   tool_id=${data.tool_id}:: integer
+               where id = ${transcriptRow.id}:: integer`
       });
 
       if (updateResult.rowCount !== 1) {

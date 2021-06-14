@@ -17,7 +17,9 @@ export interface ProjectResponseDataItem {
   startdate?: string;
   enddate?: string;
   active?: boolean;
-  admin_id?: number
+  admin_id?: number;
+  transcripts_count: number;
+  transcripts_count_free: number;
 }
 
 export interface AppTokenResponseDataItem {

@@ -8,8 +8,8 @@ export class ProjectListCommand extends ApiCommand {
   constructor() {
     super('listProjects', '/projects', RequestType.GET, '/', true,
       [
-        UserRole.public,
-        UserRole.administrator
+        UserRole.administrator,
+        UserRole.transcriber
       ]);
 
     this._description = 'List projects.';
@@ -56,6 +56,14 @@ export class ProjectListCommand extends ApiCommand {
               },
               admin_id: {
                 type: 'number'
+              },
+              transcripts_count: {
+                type: 'number',
+                required: true
+              },
+              transcripts_count_free: {
+                type: 'number',
+                required: true
               }
             }
           }
@@ -87,19 +95,19 @@ export class ProjectListCommand extends ApiCommand {
           return a;
         });
 
-        if (!req.decoded) {
-          console.log(req.decoded);
-          console.log(`IS PUBLIC`);
-          // is public
+        if (req.decoded && req.decoded.role.find(a => a !== UserRole.transcriber) > -1) {
+          // is not administrator, remove data
           answer.data = answer.data.filter(a => a.active);
 
           for (const projectRow of answer.data) {
             delete projectRow.enddate;
             delete projectRow.admin_id;
-            delete projectRow.configuration;
             delete projectRow.startdate;
             delete projectRow.active;
           }
+
+          // show only active projects
+          answer.data = answer.data.filter(a => a.active);
         }
 
         this.checkAndSendAnswer(res, answer);
