@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {
+  AnnotationStartResponseDataItem,
   AppTokenChangeResponseDataItem,
   AppTokenRefreshResponseDataItem,
   AppTokenResponseDataItem,
@@ -68,7 +69,7 @@ export class OctraAPIService {
         jwt: string;
       }
     }>((resolve, reject) => {
-      this.http.post(`${this, this.apiURL}/users/login`, {
+      this.http.post(`${this.apiURL}/users/login`, {
         type, name, password
       }, {
         headers: this.getHeaders(false)
@@ -86,7 +87,7 @@ export class OctraAPIService {
           });
         } else if (result.data.openURL && result.data.openURL.trim() !== '') {
           resolve({
-            openWindowURL: result.data.openWindowURL
+            openWindowURL: result.data.openURL
           });
         }
       }).catch((error) => {
@@ -157,7 +158,7 @@ export class OctraAPIService {
     return this.get('/projects/', true);
   }
 
-  public createProject(projectData: CreateProjectRequest): Promise<number> {
+  public createProject(projectData: CreateProjectRequest): Promise<ProjectResponseDataItem> {
     return this.post(`/projects`, projectData, true);
   }
 
@@ -200,7 +201,15 @@ export class OctraAPIService {
   }
 
   public refreshAppToken(id: number): Promise<AppTokenRefreshResponseDataItem> {
-    return this.put(`app/tokens/${id}/refresh`, {}, true);
+    return this.put(`/app/tokens/${id}/refresh`, {}, true);
+  }
+
+  public startAnnotation(projectID: number): Promise<AnnotationStartResponseDataItem> {
+    return this.put(`/projects/${projectID}/annotations/start`, {}, true);
+  }
+
+  public freeAnnotation(projectID: number, annotationID: number): Promise<AppTokenRefreshResponseDataItem> {
+    return this.post(`/projects/${projectID}/annotations/${annotationID}/free`, {}, true);
   }
 
   private get<T>(partURL: string, needsJWT: boolean): Promise<T> {

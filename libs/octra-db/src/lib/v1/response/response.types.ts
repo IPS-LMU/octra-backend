@@ -1,4 +1,5 @@
 import {
+  AnnotationStartResponseDataItem,
   AppTokenChangeResponseDataItem,
   AppTokenRefreshResponseDataItem,
   AppTokenResponseDataItem,
@@ -119,4 +120,8 @@ export interface GuidelinesSaveResponse extends APIResponse {
 
 export interface GuidelinesGetResponse extends APIResponse {
   data: GuidelinesSaveResponseDataItem[];
+}
+
+export interface AnnotationStartResponse extends APIResponse {
+  data: AnnotationStartResponseDataItem
 }

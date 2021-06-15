@@ -100,6 +100,14 @@ export class ProjectCreateCommand extends ApiCommand {
         const result = await DatabaseFunctions.createProject(body);
         if (result.length === 1) {
           answer.data = result[0];
+          if (answer.data.configuration) {
+            try {
+              answer.data.configuration = JSON.parse(answer.data.configuration);
+            } catch (e) {
+              console.error(e);
+            }
+          }
+
           this.checkAndSendAnswer(res, answer);
           return;
         }

@@ -1,4 +1,4 @@
-import {StartAnnotationRequest, TranscriptAddResponse, UserRole} from '@octra/db';
+import {AnnotationStartResponse, StartAnnotationRequest, UserRole} from '@octra/db';
 import {ApiCommand, RequestType} from '../../api.command';
 import {DatabaseFunctions} from '../../../obj/database.functions';
 import {InternalServerError} from '../../../../../obj/http-codes/server.codes';
@@ -95,7 +95,7 @@ export class AnnotationFreeCommand extends ApiCommand {
   }
 
   async do(req: InternRequest, res: Response) {
-    const answer = ApiCommand.createAnswer() as TranscriptAddResponse;
+    const answer = ApiCommand.createAnswer() as AnnotationStartResponse;
     const validation = this.validate(req.params, req.body);
     const tokenData = req.decoded;
 

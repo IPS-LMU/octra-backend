@@ -32,8 +32,8 @@ export class AddProjectComponent implements OnInit {
 
   adminSelectionLabel = 'Select project administrator';
   projectSchedule: {
-    start: Date,
-    end: Date
+    start: any,
+    end: any
   } = {
     start: new Date(),
     end: new Date()
@@ -64,10 +64,10 @@ export class AddProjectComponent implements OnInit {
           // read project
           this.formData = project;
           this.isEditPage = true;
-          this.projectSchedule.start = (this.formData.startdate) ?
-            DateTime.fromISO(this.formData.startdate).toJSDate() : new Date();
-          this.projectSchedule.end = (this.formData.enddate)
-            ? DateTime.fromISO(this.formData.enddate).toJSDate() : new Date();
+          this.projectSchedule.start = (this.formData.startdate && this.formData.startdate !== '') ?
+            DateTime.fromISO(this.formData.startdate).toJSDate() : undefined;
+          this.projectSchedule.end = (this.formData.enddate && this.formData.enddate !== '')
+            ? DateTime.fromISO(this.formData.enddate).toJSDate() : undefined;
           if (this.formData.admin_id && this.formData.admin_id > -1) {
             if (this.userDropdown) {
               this.userDropdown.selectUserById(this.formData.admin_id);
@@ -81,7 +81,7 @@ export class AddProjectComponent implements OnInit {
         });
         this.api.getProject(this.editingID).then((result) => {
         }).catch(() => {
-          this.modalService.openErrorModal('Error occured', 'Can not find project.');
+          this.modalService.openErrorModal('Error occurred', 'Can not find project.');
         });
       }
     });
@@ -91,17 +91,17 @@ export class AddProjectComponent implements OnInit {
     this.formData.startdate = (this.projectSchedule.start) ? DateTime.fromJSDate(this.projectSchedule.start).toJSON() : undefined;
     this.formData.enddate = (this.projectSchedule.end) ? DateTime.fromJSDate(this.projectSchedule.end).toJSON() : undefined;
 
-    if (this.formData.startdate === null) {
+    if (this.formData.startdate === '') {
       delete this.formData.startdate;
     }
-    if (this.formData.enddate === null) {
+    if (this.formData.enddate === '') {
       delete this.formData.enddate;
     }
     this.formData.admin_id = (this.formData.admin_id === null) ? undefined : this.formData.admin_id;
 
     if (!this.isEditPage) {
-      this.api.createProject(this.formData).then((projectID: number) => {
-        this.api.saveGuidelines(projectID, this.guidelines).then(() => {
+      this.api.createProject(this.formData).then((projectResponse) => {
+        this.api.saveGuidelines(projectResponse.id, this.guidelines).then(() => {
           this.modalService.openSuccessModal('Project created', 'The project was created successfully').then(() => {
             this.router.navigate(['members/projects']);
           });
