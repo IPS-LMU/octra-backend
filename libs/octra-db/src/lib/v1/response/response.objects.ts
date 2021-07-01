@@ -153,13 +153,14 @@ export interface AnnotationStartResponseDataItem {
   creationdate?: string;
   startdate?: string;
   enddate?: string;
-  log?: string;
+  log?: any[];
   comment?: string;
   tool_id?: number;
   transcriber_id?: number;
   mediaitem_id?: number;
   mediaitem?: MediaItemResponseDataItem;
   nexttranscript?: number;
+  transcripts_free_count: number;
 }
 
 export interface MediaItemResponseDataItem {

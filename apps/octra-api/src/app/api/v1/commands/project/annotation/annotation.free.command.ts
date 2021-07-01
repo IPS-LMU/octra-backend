@@ -35,7 +35,7 @@ export class AnnotationFreeCommand extends ApiCommand {
               type: 'string'
             },
             transcript: {
-              type: 'string'
+              type: 'object'
             },
             assessment: {
               type: 'string'
@@ -59,7 +59,10 @@ export class AnnotationFreeCommand extends ApiCommand {
               type: 'date-time'
             },
             log: {
-              type: 'string'
+              type: 'array',
+              items: {
+                type: 'object'
+              }
             },
             comment: {
               type: 'string'
@@ -114,10 +117,15 @@ export class AnnotationFreeCommand extends ApiCommand {
     if (validation.length === 0) {
       const body: StartAnnotationRequest = req.body;
       try {
-        const result = await DatabaseFunctions.startAnnotation(body, Number(req.params.project_id), tokenData);
+        const result = await DatabaseFunctions.freeAnnotation(Number(req.params.project_id), Number(req.params.id), tokenData);
         if (result) {
-          answer.data = result;
+          answer.data = {
+            ...result,
+            log: (result.log !== undefined && result.log !== '') ? JSON.parse(result.log) : [],
+            transcripts_free_count: result.transcripts_free_count
+          };
           this.checkAndSendAnswer(res, answer);
+
           return;
         }
         ApiCommand.sendError(res, InternalServerError, 'Can not free annotation.');

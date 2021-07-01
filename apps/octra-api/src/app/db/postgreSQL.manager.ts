@@ -141,7 +141,8 @@ export class PostgreSQLManager extends DBManager {
 
       statement = `update ${query.tableName}
                    set ${statement}
-                   where ${where}`;
+                   where ${where}
+                   returning *`;
 
       return {
         text: statement,

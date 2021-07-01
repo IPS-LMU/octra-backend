@@ -10,6 +10,7 @@ import {
   GuidelinesSaveResponseDataItem,
   ProjectResponseDataItem,
   ProjectTranscriptsGetResponseDataItem,
+  SaveAnnotationRequest,
   TranscriptGetResponseDataItem,
   UserInfoResponseDataItem,
   UserRole
@@ -100,12 +101,12 @@ export class OctraAPIService {
    * retrieves the jwt from the authentication window.
    * @param windowURL
    */
-  public retrieveTokenFromWindow(windowURL: string): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
+  public retrieveTokenFromWindow(windowURL: string): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
       this.http.get(windowURL).subscribe((result: any) => {
         if (result.token) {
           this._webToken = result.token;
-          resolve();
+          resolve(this._webToken);
         } else {
           reject('No web token.')
         }
@@ -205,11 +206,15 @@ export class OctraAPIService {
   }
 
   public startAnnotation(projectID: number): Promise<AnnotationStartResponseDataItem> {
-    return this.put(`/projects/${projectID}/annotations/start`, {}, true);
+    return this.post(`/projects/${projectID}/annotations/start`, {}, true);
   }
 
-  public freeAnnotation(projectID: number, annotationID: number): Promise<AppTokenRefreshResponseDataItem> {
+  public freeAnnotation(projectID: number, annotationID: number): Promise<AnnotationStartResponseDataItem> {
     return this.post(`/projects/${projectID}/annotations/${annotationID}/free`, {}, true);
+  }
+
+  public saveAnnotation(projectID: number, annotationID: number, data: SaveAnnotationRequest): Promise<AnnotationStartResponseDataItem> {
+    return this.post(`/projects/${projectID}/annotations/${annotationID}/save`, data, true);
   }
 
   private get<T>(partURL: string, needsJWT: boolean): Promise<T> {

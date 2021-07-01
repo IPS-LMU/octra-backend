@@ -446,7 +446,7 @@ export class DatabaseFunctions {
   public static async freeAnnotation(projectID: number, transcriptID: number, tokenData: TokenData): Promise<ProjectTranscriptsGetResult> {
     try {
       const selectQuery: SQLQuery = {
-        'text': DatabaseFunctions.selectAllStatements.transcript + ` where project_id=$1::integer and transcriptID=$2::integer and status='BUSY'`,
+        'text': DatabaseFunctions.selectAllStatements.transcript + ` where project_id=$1::integer and id=$2::integer and status='BUSY'`,
         values: [projectID, transcriptID]
       };
 
@@ -462,7 +462,7 @@ export class DatabaseFunctions {
       const updateResult = await DatabaseFunctions.dbManager.query({
         text: `update transcript
                set status='FREE',
-                   transcriber_id=''
+                   transcriber_id=null
                where id = ${transcriptRow.id}:: integer`
       });
 
@@ -501,7 +501,15 @@ export class DatabaseFunctions {
     try {
       // TODO check next transcript!
       const insertQuery: SQLQuery = {
-        'text': DatabaseFunctions.selectAllStatements.transcript + ` where project_id=$1::integer and status='FREE' order by priority desc`,
+        'text': `select transcript.*,
+                        (select count(tr.id)
+                         from transcript as tr
+                         where tr.project_id = transcript.project_id
+                           and tr.status = 'FREE')::integer as transcripts_free_count
+                 from transcript
+                 where project_id = $1::integer
+                   and status = 'FREE'
+                 order by priority desc`,
         values: [projectID]
       };
 
@@ -518,8 +526,7 @@ export class DatabaseFunctions {
         text: `update transcript
                set status='BUSY',
                    transcriber_id=${tokenData.id}::integer,
-                   startdate=(to_timestamp(${Date.now()} / 1000.0)),
-                   tool_id=${data.tool_id}:: integer
+                   startdate=(to_timestamp(${Date.now()} / 1000.0))
                where id = ${transcriptRow.id}:: integer`
       });
 
@@ -528,6 +535,9 @@ export class DatabaseFunctions {
       }
       // status set to BUSY
 
+      if (transcriptRow.transcripts_free_count) {
+        transcriptRow.transcripts_free_count--;
+      }
       if (transcriptRow.mediaitem_id) {
         selectResult = await DatabaseFunctions.dbManager.query({
           text: DatabaseFunctions.selectAllStatements.mediaitem + ' where id=$1::integer',
@@ -568,7 +578,7 @@ export class DatabaseFunctions {
         throw new Error(`Can not find proper annotation to overwrite.`);
       }
 
-      const transcriptRow = selectResult.rows[0] as ProjectTranscriptsGetResult;
+      let transcriptRow = selectResult.rows[0] as ProjectTranscriptsGetResult;
 
       // Set transcript status to BUSY and set transcriber_id, set start date, tool_id
       const updateResult = await DatabaseFunctions.dbManager.update({
@@ -577,19 +587,19 @@ export class DatabaseFunctions {
           DatabaseFunctions.getColumnDefinition('transcriber_id', 'integer', tokenData.id, false),
           DatabaseFunctions.getColumnDefinition('enddate', '', `(to_timestamp(${Date.now()} / 1000.0))`, false),
           DatabaseFunctions.getColumnDefinition('tool_id', 'integer', data.tool_id, false),
-          DatabaseFunctions.getColumnDefinition('transcript', 'text', data.transcript, false),
+          DatabaseFunctions.getColumnDefinition('transcript', 'text', JSON.stringify(data.transcript), false),
           DatabaseFunctions.getColumnDefinition('status', 'text', 'ANNOTATED'),
           DatabaseFunctions.getColumnDefinition('comment', 'text', data.comment),
           DatabaseFunctions.getColumnDefinition('assessment', 'text', data.assessment),
-          DatabaseFunctions.getColumnDefinition('log', 'text', data.log)
+          DatabaseFunctions.getColumnDefinition('log', 'text', JSON.stringify(data.log))
         ]
       }, `id=${transcriptRow.id}:: integer`);
 
       if (updateResult.rowCount !== 1) {
         throw new Error(`Can not save annotation with id ${transcriptRow.id}.`);
       }
+      transcriptRow = updateResult.rows[0];
       // saved
-
       if (transcriptRow.mediaitem_id) {
         selectResult = await DatabaseFunctions.dbManager.query({
           text: DatabaseFunctions.selectAllStatements.mediaitem + ' where id=$1::integer',

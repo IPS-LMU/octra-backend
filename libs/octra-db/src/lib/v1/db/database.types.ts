@@ -104,6 +104,7 @@ export interface ProjectTranscriptsGetResult {
   mediaitem_id?: number;
   mediaitem?: MediaItemRow;
   nexttranscript?: number;
+  transcripts_free_count?: number;
 }
 
 export interface TranscriptGetResult extends ProjectTranscriptsGetResult {

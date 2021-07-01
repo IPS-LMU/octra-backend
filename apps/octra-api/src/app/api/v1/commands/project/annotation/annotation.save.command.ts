@@ -19,11 +19,12 @@ export class AnnotationSaveCommand extends ApiCommand {
 
     // relevant for reference creation
     this._requestStructure = {
-      required: ['transcript', 'tool_id'],
+      required: ['transcript'],
       properties: {
         ...this.defaultRequestSchema.properties,
         transcript: {
-          type: 'string'
+          type: 'object',
+          description: 'AnnotJSON as JSON object'
         },
         comment: {
           type: 'string'
@@ -32,7 +33,11 @@ export class AnnotationSaveCommand extends ApiCommand {
           type: 'string'
         },
         log: {
-          type: 'string'
+          type: 'array',
+          items: {
+            type: 'object'
+          },
+          description: 'Array of log items'
         },
         tool_id: {
           type: 'number'
@@ -55,7 +60,7 @@ export class AnnotationSaveCommand extends ApiCommand {
               type: 'string'
             },
             transcript: {
-              type: 'string'
+              type: 'object'
             },
             assessment: {
               type: 'string'
@@ -79,7 +84,11 @@ export class AnnotationSaveCommand extends ApiCommand {
               type: 'date-time'
             },
             log: {
-              type: 'string'
+              type: 'array',
+              items: {
+                type: 'object'
+              },
+              description: 'Array of log items'
             },
             comment: {
               type: 'string'
@@ -135,11 +144,18 @@ export class AnnotationSaveCommand extends ApiCommand {
       try {
         const result = await DatabaseFunctions.saveAnnotation(body, Number(req.params.project_id), req.params.id, tokenData);
         if (result) {
+          try {
+            result.transcript = JSON.parse(result.transcript);
+            result.log = JSON.parse(result.log);
+          } catch (e) {
+            ApiCommand.sendError(res, InternalServerError, e);
+            return;
+          }
           answer.data = result;
           this.checkAndSendAnswer(res, answer);
           return;
         }
-        ApiCommand.sendError(res, InternalServerError, 'Can not start new annotation.');
+        this.checkAndSendAnswer(res, answer);
       } catch (e) {
         console.log(e);
         ApiCommand.sendError(res, InternalServerError, e);
