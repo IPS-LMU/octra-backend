@@ -8,10 +8,7 @@
       "prefix": "octra-backend",
       "architect": {
         "build": {
-          "builder": "@nrwl/angular:package",
-          "outputs": [
-            "dist/libs/ngx-octra-api"
-          ],
+          "builder": "@nrwl/angular:ng-packagr-lite"
           "options": {
             "project": "libs/ngx-octra-api/ng-package.json"
           },
