@@ -58,7 +58,8 @@ export class GuidelinesSaveCommand extends ApiCommand {
     if (validation.length === 0) {
       const body: CreateGuidelinesRequest[] = req.body;
       try {
-        const guidelinesPath = PathBuilder.getGuidelinesPath(Number(req.params.project_id), this.settings.api.uploadPath);
+        const pathBuilder = new PathBuilder(this.settings.api);
+        const guidelinesPath = pathBuilder.getGuidelinesPath(Number(req.params.project_id));
         await FileSystemHandler.removeFolder(guidelinesPath);
 
         for (const createGuidelinesRequest of body) {

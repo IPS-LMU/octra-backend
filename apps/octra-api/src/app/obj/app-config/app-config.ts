@@ -25,9 +25,15 @@ export interface IAPIConfiguration {
   host: string,
   port: number,
   debugging?: boolean,
-  uploadPath: string,
   secret: string,
   passwordSalt: string,
+  files: {
+    uploadPath: string,
+    urlEncryption: {
+      secret: string,
+      salt: string
+    }
+  },
   shibboleth: {
     secret: string,
     windowURL: string
@@ -42,6 +48,10 @@ export interface IDBSSLConfiguration {
 }
 
 export class AppConfiguration implements IAppConfiguration {
+  get configuration(): IAppConfiguration {
+    return this._configuration;
+  }
+
   get version(): string {
     return this._version;
   }
@@ -51,22 +61,23 @@ export class AppConfiguration implements IAppConfiguration {
   }
 
   get api(): IAPIConfiguration {
-    return this.configuration.api;
+    return this._configuration.api;
   }
 
   get database(): IDBConfiguration {
-    return this.configuration.database;
+    return this._configuration.database;
   }
 
-  private configuration: IAppConfiguration;
+  private _configuration: IAppConfiguration;
   private _validation: ValidatorResult;
   public appPath: string;
+  public uploadPath: string;
   public executionPath: string;
   private _version: string;
 
   constructor(configuration: IAppConfiguration) {
     const validator = new Validator();
-    this.configuration = configuration;
+    this._configuration = configuration;
     this._validation = validator.validate(configuration, AppConfigurationSchema);
   }
 }

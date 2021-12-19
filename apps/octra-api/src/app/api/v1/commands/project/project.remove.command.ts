@@ -61,7 +61,8 @@ export class ProjectRemoveCommand extends ApiCommand {
       }
 
       try {
-        const projectFolder = PathBuilder.getProjectPath(Number(req.params.id), this.settings.api.uploadPath);
+        const pathBuilder = new PathBuilder(this.settings.api);
+        const projectFolder = pathBuilder.getProjectPath(Number(req.params.id));
         await DatabaseFunctions.removeProject(Number(req.params.id), reqData);
         await FileSystemHandler.removeFolder(projectFolder);
         this.checkAndSendAnswer(res, answer);

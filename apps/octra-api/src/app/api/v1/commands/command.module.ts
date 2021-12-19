@@ -62,7 +62,7 @@ export class CommandModule {
             console.log(`test route ${validCommand.name}`);
             if (validCommand.needsJWTAuthentication) {
               console.log(`NEEDSJWT`);
-              verifyWebToken(req, res, next, settings, validCommand, (tokenBody: TokenData) => {
+              verifyWebToken(req, res, next, settings, validCommand.allowedUserRoles, (tokenBody: TokenData) => {
                 req.decoded = tokenBody;
                 verifyUserRole(req, res, validCommand, () => {
                   // user may use this api method

@@ -1,7 +1,7 @@
 /***
  * This class contains a list of API commands and a call() method to use a command from list
  */
-import {Express, Router} from 'express';
+import {Express, NextFunction, Response, Router} from 'express';
 import * as bodyParser from 'body-parser';
 import {SampleCommand} from './commands/sample.command';
 import {APIV1Module} from './api.module';
@@ -10,6 +10,12 @@ import {DatabaseFunctions} from './obj/database.functions';
 import {CommandModule} from './commands/command.module';
 import {DBManager} from '../../db/db.manager';
 import {ApiCommand} from './commands/api.command';
+import {PathBuilder} from './path-builder';
+import * as path from 'path';
+import {pathExists} from 'fs-extra';
+import {InternRequest} from './obj/types';
+import {verifyAppToken, verifyWebToken} from './obj/middlewares';
+import {UserRole} from '@octra/db';
 
 export class APIV1 {
   get modules(): CommandModule[] {
@@ -128,6 +134,24 @@ export class APIV1 {
         appSettings: settings,
         url: settings.api.url
       });
+    });
+
+    // serve files with encrypted paths
+    v1Router.get('/files/:encryptedPath/:fileName', (req: InternRequest, res: Response, next: NextFunction) => {
+      verifyAppToken(req, res, next, settings, () => {
+      });
+    }, (req, res, next) => {
+      verifyWebToken(req, res, next, settings, [UserRole.administrator, UserRole.projectAdministrator, UserRole.transcriber, UserRole.dataDelivery], next);
+    }, async (req, res, next) => {
+      const builder = new PathBuilder(settings.api);
+      const decryptedPath = path.join(builder.decryptFilePath(req.params.encryptedPath), req.params.fileName);
+      const filePath = path.join(settings.uploadPath, decryptedPath);
+
+      if (await pathExists(filePath)) {
+        res.sendFile(filePath);
+      } else {
+        res.sendStatus(404);
+      }
     });
 
     app.use(`/${this.information.apiSlug}`, v1Router);

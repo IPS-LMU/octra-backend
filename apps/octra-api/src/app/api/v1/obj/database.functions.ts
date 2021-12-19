@@ -1066,10 +1066,13 @@ export class DatabaseFunctions {
           } else if (row.hasOwnProperty(col) && col.indexOf('date') > -1
             && !(row[col] === undefined || row[col] === null)) {
             row[col] = DateTime.fromSQL(row[col]).toJSON();
+          } else if (typeof row[col] === 'object') {
+            row[col] = this.prepareRows([row[col]])[0];
           }
         }
       }
     }
+    return rows;
   }
 
   static getColumnDefinition(key: string, type: string, value: any, maybeNull = true) {

@@ -52,6 +52,12 @@ export interface MediaAddResponse extends APIResponse {
   data: MediaAddResponseDataItem;
 }
 
+export interface MediaUploadResponse extends APIResponse {
+  data: {
+    url: string;
+  };
+}
+
 export interface ProjectCreateResponse extends APIResponse {
   data: ProjectCreateResponseDataItem;
 }

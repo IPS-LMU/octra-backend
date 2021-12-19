@@ -29,9 +29,9 @@ export const verifyAppToken = (req: InternRequest, res: Response, next: NextFunc
   }
 };
 
-export const verifyWebToken = (req: Request, res: Response, next: NextFunction, settings: AppConfiguration, command: ApiCommand, callback) => {
+export const verifyWebToken = (req: Request, res: Response, next: NextFunction, settings: AppConfiguration, allowedUserRoles: UserRole[], callback) => {
   const token = req.get('x-access-token');
-  const hasPublicRole = command.allowedUserRoles.findIndex(a => a === UserRole.public) > -1;
+  const hasPublicRole = allowedUserRoles.findIndex(a => a === UserRole.public) > -1;
 
   if (!token && !hasPublicRole) {
     ApiCommand.sendError(res, 401, `Missing token in x-access-token header.`, false);
@@ -39,7 +39,7 @@ export const verifyWebToken = (req: Request, res: Response, next: NextFunction, 
     if (token) {
       jwt.verify(token, settings.api.secret, (err, tokenBody) => {
         if (err) {
-          ApiCommand.sendError(res, 401, `Invalid Web Token. Please authenticate again.${hasPublicRole} ${command.name}`, false);
+          ApiCommand.sendError(res, 401, `Invalid Web Token. Please authenticate again.`, false);
         } else {
           callback(tokenBody);
         }

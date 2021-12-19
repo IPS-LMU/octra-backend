@@ -78,10 +78,6 @@ export const AppConfigurationSchema: Schema = {
         debugging: {
           type: 'boolean'
         },
-        uploadPath: {
-          type: 'string',
-          required: true
-        },
         secret: {
           type: 'string',
           pattern: '.{10}',
@@ -99,6 +95,31 @@ export const AppConfigurationSchema: Schema = {
           type: 'string',
           pattern: '.{10}',
           required: true
+        },
+        files: {
+          type: 'object',
+          required: true,
+          properties: {
+            uploadPath: {
+              type: 'string',
+              required: true,
+              pattern: '^/'
+            },
+            urlEncryption: {
+              type: 'object',
+              required: true,
+              properties: {
+                secret: {
+                  type: 'string',
+                  required: true
+                },
+                salt: {
+                  type: 'string',
+                  required: true
+                }
+              }
+            }
+          }
         }
       },
       required: true

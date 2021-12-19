@@ -2,7 +2,6 @@ import {Express, NextFunction, Request, Response} from 'express';
 import * as bodyParser from 'body-parser';
 import {APIV1} from './api/v1/api';
 import * as path from 'path';
-import * as Path from 'path';
 import {ApiCommand} from './api/v1/commands/api.command';
 import {createTerminus} from '@godaddy/terminus';
 import * as ejs from 'ejs';
@@ -38,6 +37,7 @@ export class OctraApi {
 
   private _executionPath: string;
   private _appPath: string;
+  private _uploadPath: string;
   private settings: AppConfiguration;
   private name = 'OCTRA';
   private version = '0.3.1';
@@ -71,8 +71,14 @@ export class OctraApi {
     this.settings.appPath = this._appPath;
     this.settings.executionPath = this._executionPath;
 
+    if (this.settings.configuration.api.files.uploadPath.indexOf('/') === 0) {
+      // absolute path
+      console.log(`absolute upload path`);
+      this.settings.uploadPath = this.settings.configuration.api.files.uploadPath;
+    }
+
     if (this.settings.validation.valid) {
-      FileSystemHandler.createDirIfNotExists(this.settings.api.uploadPath).catch((error) => {
+      FileSystemHandler.createDirIfNotExists(this.settings.api.files.uploadPath).catch((error) => {
         console.error(error);
       });
 
@@ -96,7 +102,9 @@ export class OctraApi {
         req['appSettings'] = {
           ...this.settings
         };
-        delete req['appSettings'].configuration.database;
+        if (req['appSettings'].configuration) {
+          delete req['appSettings'].configuration.database;
+        }
         next();
       });
 
@@ -110,7 +118,7 @@ export class OctraApi {
       });
 
 
-      console.log(`app path is ${Path.join(this._appPath, '/views/index.ejs')}`);
+      console.log(`app path is ${path.join(this._appPath, '/views/index.ejs')}`);
       app.get('/', (req, res) => {
         res.render('index.ejs', {
           activeAPIs: this._activeAPIs,

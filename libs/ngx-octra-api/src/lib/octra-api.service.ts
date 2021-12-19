@@ -8,6 +8,7 @@ import {
   CreateGuidelinesRequest,
   CreateProjectRequest,
   GuidelinesSaveResponseDataItem,
+  MediaUploadResponse,
   ProjectResponseDataItem,
   ProjectTranscriptsGetResponseDataItem,
   SaveAnnotationRequest,
@@ -215,6 +216,13 @@ export class OctraAPIService {
 
   public saveAnnotation(projectID: number, annotationID: number, data: SaveAnnotationRequest): Promise<AnnotationStartResponseDataItem> {
     return this.post(`/projects/${projectID}/annotations/${annotationID}/save`, data, true);
+  }
+
+  public uploadMedia(projectID: number, file: File, data: any): Promise<MediaUploadResponse> {
+    const formData = new FormData();
+    formData.append('media', file);
+    formData.append('data', JSON.stringify(data));
+    return this.post(`/media/upload`, formData, true);
   }
 
   private get<T>(partURL: string, needsJWT: boolean): Promise<T> {

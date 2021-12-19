@@ -37,6 +37,10 @@ export interface AddMediaItemRequest {
   metadata?: string;
 }
 
+export interface AddUploadItemRequest {
+  file: File;
+}
+
 export interface AddToolRequest {
   name?: string;
   version?: string;
