@@ -74,7 +74,7 @@ export class ProjectListCommand extends ApiCommand {
 
   async do(req, res) {
     const answer = ApiCommand.createAnswer() as ProjectListResponse;
-    const validation = this.validate(req.params, req.body);
+    const validation = this.validate(req);
 
     // do something
     if (validation.length === 0) {

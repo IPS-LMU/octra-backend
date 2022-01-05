@@ -15,6 +15,7 @@
     "build:api": "nx build octra-api --generatePackageJson && node ./apps/octra-api/src/app.prepare.js && cp ./LICENSE ./dist/apps/octra-api/LICENSE",
     "build:libs": "nx build octra-db && nx build ngx-octra-api && cp ./LICENSE ./dist/libs/octra-db/LICENSE && cp ./LICENSE ./dist/libs/ngx-octra-api/LICENSE",
     "build:extern": "npm run build:libs && rm -rf extern && cp -rf dist/libs extern",
+    "watch:libs": "nx build ngx-octra-api --prod --watch & nx build octra-db --watch",
     "test:api": "nx test octra-api --clear-cache && DEBUG=jest nx test octra-api --runInBand --verbose false",
     "deploy:api": "npm run package:api && sh ./deploy.sh",
     "package:api": "nx build octra-api --generatePackageJson --prod && node ./apps/octra-api/src/app.prepare.js && pkg ./dist/apps/octra-api/main.js -c ./dist/apps/octra-api/package.json",
@@ -71,6 +72,7 @@
     "jsonwebtoken": "^8.5.1",
     "lokijs": "^1.5.5",
     "luxon": "^1.28.0",
+    "mime-types": "^2.1.34",
     "multer": "^1.4.3",
     "ngx-bootstrap": "^6.2.0",
     "ngx-codejar": "^1.0.2",
@@ -131,4 +133,3 @@
     "typescript": "4.4.4"
   }
 }
-

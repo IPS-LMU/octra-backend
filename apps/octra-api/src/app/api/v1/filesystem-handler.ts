@@ -3,6 +3,7 @@ import {MakeDirectoryOptions} from 'fs';
 import * as fsExtra from 'fs-extra';
 import {WriteFileOptions} from 'fs-extra';
 import * as pathFunctions from 'path';
+import * as mime from 'mime';
 
 export class FileSystemHandler {
   static mkDir(path) {
@@ -106,4 +107,33 @@ export class FileSystemHandler {
     }
     return result;
   }
+
+  public static async moveFile(oldPath: string, newPath: string): Promise<void> {
+    return new Promise((res, rej) => {
+      fs.rename(oldPath, newPath, (err) =>
+        err ? rej(err) : res());
+    });
+  }
+
+  public static readFileInformation(path: string): Promise<FileInformation> {
+    return new Promise((resolve, reject) => {
+      fs.stat(path, (err, stats) => {
+        if (err) {
+          reject('File doesn\'t exist.');
+        } else {
+          resolve({
+            name: pathFunctions.basename(path),
+            size: stats.size,
+            type: mime.lookup(path)
+          });
+        }
+      })
+    });
+  }
+}
+
+export interface FileInformation {
+  name: string;
+  size: number;
+  type: string;
 }

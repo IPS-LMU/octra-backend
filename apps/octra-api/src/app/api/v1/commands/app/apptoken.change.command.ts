@@ -66,7 +66,7 @@ export class AppTokenChangeCommand extends ApiCommand {
 
   async do(req, res) {
     const answer = ApiCommand.createAnswer() as AppTokenChangeResponse;
-    const validation = this.validate(req.params, req.body);
+    const validation = this.validate(req);
     const data: CreateAppTokenRequest = req.body;
     // do something
     if (validation.length === 0) {

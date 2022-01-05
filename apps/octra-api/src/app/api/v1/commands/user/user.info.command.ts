@@ -60,7 +60,7 @@ export class UserInfoCommand extends ApiCommand {
 
   async do(req, res) {
     const answer = ApiCommand.createAnswer() as UserInfoResponse;
-    const validation = this.validate(req.params, req.body);
+    const validation = this.validate(req);
 
     if (validation.length === 0) {
       try {

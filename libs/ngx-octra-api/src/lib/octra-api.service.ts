@@ -218,16 +218,31 @@ export class OctraAPIService {
     return this.post(`/projects/${projectID}/annotations/${annotationID}/save`, data, true);
   }
 
-  public uploadMedia(projectID: number, file: File, data: any): Promise<MediaUploadResponse> {
+  public deliverMediaForTranscription(projectID: number, file: File, data: any): Promise<MediaUploadResponse> {
+    return this.post(`/media/`, data, true);
+  }
+
+  public uploadMediaForTranscription(file: File, data: any): Promise<MediaUploadResponse> {
     const formData = new FormData();
     formData.append('media', file);
-    formData.append('data', JSON.stringify(data));
-    return this.post(`/media/upload`, formData, true);
+    data = (!(typeof data === 'string')) ? JSON.stringify(data) : data;
+    formData.append('data', new File([data], 'data.json', {type: 'application/json'}));
+    return this.post(`delivery/media/upload`, formData, true);
+  }
+
+  public uploadMediaItem(file: File): Promise<MediaUploadResponse> {
+    const formData = new FormData();
+    // TODO we need a projectID?
+    // TODO do we need transcript?
+    // TODO or do we rename it to just "uploadFile?" => /files/upload?
+    formData.append('media', file);
+    return this.post(`media/upload`, formData, true);
   }
 
   private get<T>(partURL: string, needsJWT: boolean): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       const headers = this.getHeaders(needsJWT);
+      partURL = (partURL.indexOf('/') === 0) ? partURL.substr(1) : partURL;
 
       const subscription = this.http.get(`${this.apiURL}/${partURL}`, {
         responseType: 'json',
@@ -244,6 +259,7 @@ export class OctraAPIService {
   private post<T>(partURL: string, data: any, needsJWT: boolean): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       const headers = this.getHeaders(needsJWT);
+      partURL = (partURL.indexOf('/') === 0) ? partURL.substr(1) : partURL;
 
       const subscription = this.http.post(`${this.apiURL}/${partURL}`, data, {
         responseType: 'json',
@@ -260,6 +276,7 @@ export class OctraAPIService {
   private put<T>(partURL: string, data: any, needsJWT: boolean): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       const headers = this.getHeaders(needsJWT);
+      partURL = (partURL.indexOf('/') === 0) ? partURL.substr(1) : partURL;
 
       const subscription = this.http.put(`${this.apiURL}/${partURL}`, data, {
         responseType: 'json',
@@ -276,6 +293,7 @@ export class OctraAPIService {
   private delete<T>(partURL: string, needsJWT: boolean): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       const headers = this.getHeaders(needsJWT);
+      partURL = (partURL.indexOf('/') === 0) ? partURL.substr(1) : partURL;
 
       const subscription = this.http.delete(`${this.apiURL}/${partURL}`, {
         responseType: 'json',

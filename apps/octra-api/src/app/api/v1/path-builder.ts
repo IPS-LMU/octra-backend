@@ -1,15 +1,17 @@
-import * as path from 'path';
+import * as Path from 'path';
 import {IAPIConfiguration} from '../../obj/app-config/app-config';
 import * as CryptoJS from 'crypto-js';
 
 export class PathBuilder {
   private readonly uploadPath: string;
+  private readonly settings: IAPIConfiguration;
   private readonly urlEncryption: {
     key: string;
     iv: string;
   };
 
   constructor(settings: IAPIConfiguration) {
+    this.settings = settings;
     this.uploadPath = settings.files.uploadPath;
     this.urlEncryption = {
       key: CryptoJS.enc.Utf8.parse(settings.files.urlEncryption.secret),
@@ -33,10 +35,22 @@ export class PathBuilder {
   }
 
   public getProjectPath(projectID: number) {
-    return path.join(this.uploadPath, 'projects', `project_${projectID}`);
+    return Path.join(this.uploadPath, 'projects', `project_${projectID}`);
+  }
+
+  public getProjectFilestPath(projectID: number) {
+    return Path.join(this.getProjectPath(projectID), 'files');
   }
 
   public getGuidelinesPath(projectID: number) {
-    return this.encryptFilePath(path.join(this.getProjectPath(projectID), 'guidelines'));
+    return this.encryptFilePath(Path.join(this.getProjectPath(projectID), 'guidelines'));
+  }
+
+  public getEncryptedProjectFileURL(projectId: number, filePath: string) {
+    return this.settings.url + Path.join('/v1/files', this.encryptFilePath(Path.join('projects', `project_${projectId}`, Path.dirname(filePath))), Path.basename(filePath));
+  }
+
+  public getEncryptedFileURL(filePath: string) {
+    return this.settings.url + Path.join('/v1/files', this.encryptFilePath(Path.dirname(filePath)), Path.basename(filePath));
   }
 }

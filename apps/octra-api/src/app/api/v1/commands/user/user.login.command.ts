@@ -67,7 +67,7 @@ export class UserLoginCommand extends ApiCommand {
 
   async do(req, res) {
     console.log(`IN LOGIN`);
-    const validation = this.validate(req.params, req.body);
+    const validation = this.validate(req);
     const body: UserLoginRequest = req.body;
     console.log(`body is`);
     console.log(req.body);

@@ -25,10 +25,12 @@ import {SHA256} from 'crypto-js';
 import {DBManager, SQLQuery} from '../../../db/db.manager';
 import {TokenData} from './types';
 import {DateTime} from 'luxon';
+import {PathBuilder} from '../path-builder';
 
 export class DatabaseFunctions {
   private static dbManager: DBManager;
   private static settings: AppConfiguration;
+  private static pathBuilder: PathBuilder;
 
   private static selectAllStatements = {
     appToken: 'select id::integer, name::text, key::text, domain::text, description::text, registrations::boolean from apptoken',
@@ -42,9 +44,10 @@ export class DatabaseFunctions {
   constructor() {
   }
 
-  public static init(_dbManager: DBManager, settings: AppConfiguration) {
+  public static init(_dbManager: DBManager, settings: AppConfiguration, pathBuilder: PathBuilder) {
     DatabaseFunctions.dbManager = _dbManager;
     DatabaseFunctions.settings = settings;
+    DatabaseFunctions.pathBuilder = pathBuilder;
   }
 
   public static async isValidAppToken(token: string, originHost: string): Promise<void> {
@@ -361,6 +364,7 @@ export class DatabaseFunctions {
           values: [id]
         });
         this.prepareRows(selectResult.rows);
+        (selectResult.rows[0] as MediaItemRow).url = this.pathBuilder.getEncryptedFileURL((selectResult.rows[0] as MediaItemRow).url);
         return selectResult.rows as MediaItemRow[];
       }
       throw new Error('insertionResult does not have id');
@@ -550,6 +554,7 @@ export class DatabaseFunctions {
           // Mediaitem found, add
           const mediaRow = selectResult.rows[0] as MediaItemRow;
           delete mediaRow.id;
+          mediaRow.url = this.getPublicFileURL(projectID, mediaRow.url);
 
           transcriptRow.mediaitem = mediaRow;
           delete transcriptRow.mediaitem_id;
@@ -612,6 +617,7 @@ export class DatabaseFunctions {
           // Mediaitem found, add
           const mediaRow = selectResult.rows[0] as MediaItemRow;
           delete mediaRow.id;
+          mediaRow.url = this.getPublicFileURL(projectID, mediaRow.url);
 
           transcriptRow.mediaitem = mediaRow;
           delete transcriptRow.mediaitem_id;
@@ -661,6 +667,7 @@ export class DatabaseFunctions {
           // Mediaitem found, add
           const mediaRow = selectResult.rows[0] as MediaItemRow;
           delete mediaRow.id;
+          mediaRow.url = this.getPublicFileURL(projectID, mediaRow.url);
 
           transcriptRow.mediaitem = mediaRow;
           delete transcriptRow.mediaitem_id;
@@ -1032,6 +1039,7 @@ export class DatabaseFunctions {
         });
 
         if (mediaItem.rowCount === 1) {
+          (mediaItem.rows[0] as MediaItemRow).url = this.getPublicFileURL(dataDeliveryRequest.project_id, (mediaItem.rows[0] as MediaItemRow).url);
           result.mediaitem = mediaItem.rows[0] as MediaItemRow;
           DatabaseFunctions.prepareRows([result.mediaitem]);
         }
@@ -1091,6 +1099,17 @@ export class DatabaseFunctions {
     return (datetime) ? DateTime.fromISO(datetime).toSQL({
       includeOffset: true
     }) : undefined;
+  }
+
+  static getPublicFileURL(projectID: number, path: string) {
+    const regex = /^https?:\/\//g;
+    const matches = regex.exec(path);
+
+    if (matches !== null) {
+      return path;
+    } else {
+      return this.pathBuilder.getEncryptedProjectFileURL(projectID, path);
+    }
   }
 
 }

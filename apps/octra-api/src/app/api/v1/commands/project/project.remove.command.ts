@@ -42,7 +42,7 @@ export class ProjectRemoveCommand extends ApiCommand {
 
   async do(req: InternRequest, res: Response) {
     const answer = ApiCommand.createAnswer();
-    const validation = this.validate(req.params, req.body, req.query);
+    const validation = this.validate(req);
 
     if (!req.params.id) {
       ApiCommand.sendError(res, BadRequest, 'Missing id parameter in URI.');

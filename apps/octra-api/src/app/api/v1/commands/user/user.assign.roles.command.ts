@@ -42,7 +42,7 @@ export class UserAssignRolesCommand extends ApiCommand {
   }
 
   async do(req, res) {
-    const validation = this.validate(req.params, req.body);
+    const validation = this.validate(req);
     // do something
     if (validation.length === 0) {
       const userData: AssignUserRoleRequest = req.body;

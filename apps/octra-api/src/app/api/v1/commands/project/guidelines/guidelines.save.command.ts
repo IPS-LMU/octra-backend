@@ -47,7 +47,7 @@ export class GuidelinesSaveCommand extends ApiCommand {
 
   async do(req: InternRequest, res: Response) {
     const answer = ApiCommand.createAnswer() as GuidelinesSaveResponse;
-    const validation = this.validate(req.params, req.body);
+    const validation = this.validate(req);
 
     if (!req.params.project_id || !isNumber(req.params.project_id)) {
       ApiCommand.sendError(res, BadRequest, 'Missing project_id in URI.');

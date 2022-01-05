@@ -66,8 +66,8 @@ const todoList = {
     create: true,
     get: true,
     list: true,
-    change: false,
-    remove: false,
+    change: true,
+    remove: true,
     transcripts: {
       get: true
     }
@@ -97,6 +97,8 @@ const todoList = {
 };
 
 const appToken = 'a810c2e6e76774fadf03d8edd1fc9d1954cc27d6';
+
+// TODO fix Tests
 
 if (todoList.user.register) {
   it('it should POST a new user registration', (done) => {

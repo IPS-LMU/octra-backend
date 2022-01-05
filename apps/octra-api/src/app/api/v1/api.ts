@@ -1,7 +1,7 @@
 /***
  * This class contains a list of API commands and a call() method to use a command from list
  */
-import {Express, NextFunction, Response, Router} from 'express';
+import {Express, Router} from 'express';
 import * as bodyParser from 'body-parser';
 import {SampleCommand} from './commands/sample.command';
 import {APIV1Module} from './api.module';
@@ -14,8 +14,6 @@ import {PathBuilder} from './path-builder';
 import * as path from 'path';
 import {pathExists} from 'fs-extra';
 import {InternRequest} from './obj/types';
-import {verifyAppToken, verifyWebToken} from './obj/middlewares';
-import {UserRole} from '@octra/db';
 
 export class APIV1 {
   get modules(): CommandModule[] {
@@ -54,9 +52,9 @@ export class APIV1 {
    * @param settings
    * @param dbManager
    */
-  public init(app: Express, environment: 'production' | 'development', settings: AppConfiguration, dbManager: DBManager) {
+  public init(app: Express, environment: 'production' | 'development', settings: AppConfiguration, dbManager: DBManager, pathBuilder: PathBuilder) {
     console.log(`INIT V1`);
-    DatabaseFunctions.init(dbManager, settings);
+    DatabaseFunctions.init(dbManager, settings, pathBuilder);
     this._appPath = process.cwd();
     const v1Router = Router();
 
@@ -137,14 +135,8 @@ export class APIV1 {
     });
 
     // serve files with encrypted paths
-    v1Router.get('/files/:encryptedPath/:fileName', (req: InternRequest, res: Response, next: NextFunction) => {
-      verifyAppToken(req, res, next, settings, () => {
-      });
-    }, (req, res, next) => {
-      verifyWebToken(req, res, next, settings, [UserRole.administrator, UserRole.projectAdministrator, UserRole.transcriber, UserRole.dataDelivery], next);
-    }, async (req, res, next) => {
-      const builder = new PathBuilder(settings.api);
-      const decryptedPath = path.join(builder.decryptFilePath(req.params.encryptedPath), req.params.fileName);
+    v1Router.get('/files/:encryptedPath/:fileName', async (req: InternRequest, res, next) => {
+      const decryptedPath = path.join(req.pathBuilder.decryptFilePath(req.params.encryptedPath), req.params.fileName);
       const filePath = path.join(settings.uploadPath, decryptedPath);
 
       if (await pathExists(filePath)) {

@@ -1,7 +1,7 @@
 import {Response} from 'express';
 import {Schema, Validator} from 'jsonschema';
 import {AppConfiguration} from '../../../obj/app-config/app-config';
-import {isNumber} from '../../../obj/functions';
+import {isEmpty, isNumber} from '../../../obj/functions';
 import {OK} from '../../../obj/http-codes/success.codes';
 import {BadRequest} from '../../../obj/http-codes/client.codes';
 import {UserRole} from '@octra/db';
@@ -193,29 +193,29 @@ export abstract class ApiCommand {
 
   /***
    * checks if the request by the client is valid
-   * @param params
-   * @param body
-   * @param query
+   * @param req
    */
-  validate(params: any, body: any, query?: any): any[] {
+  validate(req: InternRequest, formData?: any): any[] {
     const errors = [];
     const validator = new Validator();
     let validationResult = null;
-    if (query) {
-      validationResult = validator.validate(query, this.requestStructure);
+    if (req.headers['content-type']?.indexOf('multipart/form-data') === 0) {
+      validationResult = validator.validate(formData, this.requestStructure);
+    } else if (!isEmpty(req.query)) {
+      validationResult = validator.validate(req.query, this.requestStructure);
     } else {
-      validationResult = validator.validate(body, this.requestStructure);
+      validationResult = validator.validate(req.body, this.requestStructure);
     }
 
-    if (params) {
+    if (req.params) {
       const paramsErrors = {
         section: 'URI params',
         errors: []
       };
 
-      for (const attr in params) {
-        if (params.hasOwnProperty(attr)) {
-          if (!isNumber(params[attr])) {
+      for (const attr in req.params) {
+        if (req.params.hasOwnProperty(attr)) {
+          if (!isNumber(req.params[attr])) {
             paramsErrors.errors.push(`${attr} is not of type number`);
           }
         }
@@ -227,7 +227,7 @@ export abstract class ApiCommand {
 
     if (!validationResult.valid) {
       errors.push({
-        section: (query) ? 'GET params' : 'Request payload',
+        section: (req.query) ? 'GET params' : 'Request payload',
         errors: validationResult.errors.map(a => a.path.join('.') + ' ' + a.message)
       });
     }

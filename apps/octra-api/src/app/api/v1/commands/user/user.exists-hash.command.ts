@@ -42,7 +42,7 @@ export class UserExistsHashCommand extends ApiCommand {
 
   async do(req, res) {
     const answer = ApiCommand.createAnswer() as UserExistsHashResponse;
-    const validation = this.validate(req.params, req.body, req.query);
+    const validation = this.validate(req);
 
     if (validation.length === 0) {
       try {

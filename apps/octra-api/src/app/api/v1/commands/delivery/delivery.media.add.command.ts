@@ -13,7 +13,7 @@ export class DeliveryMediaAddCommand extends ApiCommand {
       ]
     );
 
-    this._description = 'Delivers one audio url for an given project. The media is going to be transcribed with a Tool e.g. Octra.';
+    this._description = 'Uploads one audio url for a given project. The media is going to be transcribed with a Tool e.g. Octra.';
     this._acceptedContentType = 'application/json';
     this._responseContentType = 'application/json';
 
@@ -133,7 +133,7 @@ export class DeliveryMediaAddCommand extends ApiCommand {
 
   async do(req, res) {
     const answer = ApiCommand.createAnswer() as DeliveryMediaAddResponse;
-    const validation = this.validate(req.params, req.body);
+    const validation = this.validate(req);
 
     // do something
     if (validation.length === 0) {

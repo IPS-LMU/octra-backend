@@ -47,6 +47,10 @@ export interface MediaItemRow extends DatabaseRow {
   metadata: string;
 }
 
+interface testT {
+  test: string;
+}
+
 export interface ProjectRow extends DatabaseRow {
   name: string;
   shortname: string;

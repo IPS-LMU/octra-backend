@@ -96,7 +96,7 @@ export class AnnotationContinueCommand extends ApiCommand {
 
   async do(req: InternRequest, res: Response) {
     const answer = ApiCommand.createAnswer() as TranscriptAddResponse;
-    const validation = this.validate(req.params, req.body);
+    const validation = this.validate(req);
     const tokenData = req.decoded;
 
     if (!req.params.project_id) {

@@ -35,7 +35,7 @@ export class UserPasswordChangeCommand extends ApiCommand {
   }
 
   async do(req, res) {
-    const validation = this.validate(req.params, req.body);
+    const validation = this.validate(req);
     const body: {
       oldPassword: string,
       password: string

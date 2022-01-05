@@ -59,7 +59,7 @@ export class UserRegisterCommand extends ApiCommand {
   }
 
   async do(req, res) {
-    const validation = this.validate(req.params, req.body);
+    const validation = this.validate(req);
 
     // do something
     if (validation.length === 0) {

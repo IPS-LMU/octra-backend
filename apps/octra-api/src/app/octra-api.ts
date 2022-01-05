@@ -1,4 +1,4 @@
-import {Express, NextFunction, Request, Response} from 'express';
+import {Express, NextFunction, Response} from 'express';
 import * as bodyParser from 'body-parser';
 import {APIV1} from './api/v1/api';
 import * as path from 'path';
@@ -16,8 +16,9 @@ import * as jwt from 'jsonwebtoken';
 import {UserRole} from '@octra/db';
 import {SHA256} from 'crypto-js';
 import {DatabaseFunctions} from './api/v1/obj/database.functions';
-import {TokenData} from './api/v1/obj/types';
+import {InternRequest, TokenData} from './api/v1/obj/types';
 import {FileSystemHandler} from './api/v1/filesystem-handler';
+import {PathBuilder} from './api/v1/path-builder';
 import express = require('express');
 
 export class OctraApi {
@@ -96,8 +97,9 @@ export class OctraApi {
 
       const router = express.Router();
       this.dbManager = this.getDBWrapper(this.settings.database);
+      const pathBuilder = new PathBuilder(this.settings.api);
 
-      router.route('*').all((req: Request, res: Response, next: NextFunction) => {
+      app.all('*', (req: InternRequest, res: Response, next: NextFunction) => {
         res.removeHeader('x-powered-by');
         req['appSettings'] = {
           ...this.settings
@@ -105,11 +107,12 @@ export class OctraApi {
         if (req['appSettings'].configuration) {
           delete req['appSettings'].configuration.database;
         }
+        req.pathBuilder = pathBuilder;
         next();
       });
 
       for (const api of this._activeAPIs) {
-        api.init(app, environment, this.settings, this.dbManager);
+        api.init(app, environment, this.settings, this.dbManager, pathBuilder);
       }
 
       app.get('/robots.txt', function (req, res) {
@@ -144,8 +147,9 @@ export class OctraApi {
         });
       }
 
-      console.log(`static is ${path.join(this._appPath, 'static')}`);
-      app.use(express.static(path.join(this._appPath, 'static')));
+      const staticPath = path.join(this._appPath, 'static');
+      console.log(`static is ${staticPath}`);
+      app.use(express.static(staticPath));
       app.use('/', router);
 
       router.route(`/confirmShibboleth`).post((req, res) => {

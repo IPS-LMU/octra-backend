@@ -92,7 +92,7 @@ export class ProjectChangeCommand extends ApiCommand {
 
   async do(req, res) {
     const answer = ApiCommand.createAnswer() as ProjectCreateResponse;
-    const validation = this.validate(req.params, req.body);
+    const validation = this.validate(req);
     const body: CreateProjectRequest = req.body;
 
     // do something

@@ -60,7 +60,7 @@ export class UserCurrentInfoCommand extends ApiCommand {
 
   async do(req, res) {
     const answer = ApiCommand.createAnswer() as UserCurrentInfoResponse;
-    const validation = this.validate(req.params, req.body);
+    const validation = this.validate(req);
     const tokenData: TokenData = req.decoded;
 
     if (validation.length === 0) {
