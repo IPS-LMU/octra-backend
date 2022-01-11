@@ -124,7 +124,8 @@
                             <nav class="nav btn-toggle-nav list-unstyled fw-normal pb-1 flex-column">
                                 <% for(var j = 0; j < commands[i].commands.length; j++){ %>
                                     <a class="nav-link" data-hash="<%= commands[i].commands[j]._name %>"
-                                       href="#<%= commands[i].commands[j]._name %>"><%= commands[i].commands[j]._name %></a>
+                                       href="#<%= commands[i].commands[j]._name %>"><%= commands[i].commands[j]._name %>
+                                        (<%= commands[i].commands[j]._type %>)</a>
                                 <% } %>
                             </nav>
                         </div>

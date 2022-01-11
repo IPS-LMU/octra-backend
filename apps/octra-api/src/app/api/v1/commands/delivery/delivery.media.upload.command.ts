@@ -147,25 +147,27 @@ export class DeliveryMediaUploadCommand extends ApiCommand {
             // success
 
             try {
-              const reqData = req.files[1].content as DeliverNewMediaRequest;
+
+              const mediaFile = req.files.find(a => a.fieldname === 'media');
+              const jsonFile = req.files.find(a => a.fieldname === 'data');
+              const reqData = jsonFile.content as DeliverNewMediaRequest;
               const projectFilesPath = req.pathBuilder.getProjectFilestPath(reqData.project_id);
               await FileSystemHandler.createDirIfNotExists(projectFilesPath);
 
-              // TODO what happens if files are appended by another order?
               //move from temp to project folder
-              await FileSystemHandler.moveFile(Path.join(mediaPath, req.files[0].originalname), Path.join(projectFilesPath, req.files[0].originalname));
+              await FileSystemHandler.moveFile(Path.join(mediaPath, mediaFile.originalname), Path.join(projectFilesPath, mediaFile.originalname));
               await FileSystemHandler.removeFolder(mediaPath);
 
               // fill in file information
-              const fileInformation = await FileSystemHandler.readFileInformation(Path.join(projectFilesPath, req.files[0].originalname));
+              const fileInformation = await FileSystemHandler.readFileInformation(Path.join(projectFilesPath, mediaFile.originalname));
 
               reqData.media = {
-                url: Path.join('files', req.files[0].originalname),
+                url: Path.join('files', mediaFile.originalname),
                 size: fileInformation.size,
                 type: fileInformation.type
               }
               const data = await DatabaseFunctions.deliverNewMedia(reqData);
-              const publicURL = Path.join(this.settings.api.url, '/v1/files', req.pathBuilder.encryptFilePath(Path.join('projects', `project_${reqData.project_id}`, 'files')), req.files[0].originalname);
+              const publicURL = Path.join(this.settings.api.url, '/v1/files', req.pathBuilder.encryptFilePath(Path.join('projects', `project_${reqData.project_id}`, 'files')), mediaFile.originalname);
 
               answer.data = {
                 ...data,
@@ -198,7 +200,9 @@ export class DeliveryMediaUploadCommand extends ApiCommand {
     const result = super.validate(req, formData);
 
     if (result.length === 0) {
-      if (formData.length > 1 && formData[1].fieldname == 'data') {
+      const mediaFile = formData.find(a => a.fieldname === 'media');
+      const jsonFile = formData.find(a => a.fieldname === 'data');
+      if (formData.length > 1 && mediaFile && jsonFile) {
         const schema = {
           properties: {
             project_id: {
@@ -215,9 +219,8 @@ export class DeliveryMediaUploadCommand extends ApiCommand {
         };
 
         const validator = new Validator();
-        // TODO change to async
-        req.files[1].content = readJSONSync(formData[1].path);
-        const validationResult = validator.validate(formData[1], req.files[1].content);
+        jsonFile.content = readJSONSync(jsonFile.path);
+        const validationResult = validator.validate(jsonFile, jsonFile.content);
         if (!validationResult.valid) {
           result.push({
             section: (req.query && req.query !== {}) ? 'GET params' : 'Request payload',

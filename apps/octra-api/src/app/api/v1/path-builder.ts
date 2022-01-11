@@ -43,11 +43,15 @@ export class PathBuilder {
   }
 
   public getGuidelinesPath(projectID: number) {
-    return this.encryptFilePath(Path.join(this.getProjectPath(projectID), 'guidelines'));
+    return Path.join(this.getProjectPath(projectID), 'guidelines');
   }
 
-  public getEncryptedProjectFileURL(projectId: number, filePath: string) {
-    return this.settings.url + Path.join('/v1/files', this.encryptFilePath(Path.join('projects', `project_${projectId}`, Path.dirname(filePath))), Path.basename(filePath));
+  public getEncryptedProjectFileURL(projectId: number, fileName: string) {
+    return this.settings.url + Path.join('/v1/files', this.encryptFilePath(this.getProjectPath(projectId)), Path.basename(fileName));
+  }
+
+  public getEncryptedGuidelinesFileURL(projectId: number, fileName: string) {
+    return this.settings.url + Path.join('/v1/files', this.encryptFilePath(this.getGuidelinesPath(projectId)), Path.basename(fileName));
   }
 
   public getEncryptedFileURL(filePath: string) {

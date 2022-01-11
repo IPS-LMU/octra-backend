@@ -73,13 +73,15 @@ const todoList = {
     }
   },
   media: {
-    add: true
+    add: true,
+    upload: true
   },
   tool: {
     add: true
   },
   dataDelivery: {
-    deliver: true
+    deliver: true,
+    upload: true
   },
   transcripts: {
     add: true,
@@ -824,6 +826,52 @@ if (todoList.annotation.save) {
       .set('Origin', 'http://localhost:8080')
       .set('x-access-token', tempData.admin.jwtToken)
       .send(requestData)
+      .end((err, res) => {
+        checkForErrors(err, res);
+        console.log(res.body);
+
+        expect(res.status).toBe(200);
+        expect(typeof res.body.data).toBe('object');
+        done();
+      });
+  });
+}
+
+if (todoList.dataDelivery.upload) {
+  it('it should upload a mediaitem with its transcript', (done) => {
+
+    request
+      .post(`/v1/delivery/media/upload`)
+      .set('Content-Type', 'application/x-www-form-urlencoded')
+      .attach('data', Buffer.from(JSON.stringify({
+        project_id: 367,
+        orgtext: ''
+      }), 'utf-8'), 'data.json')
+      .attach('media', './LICENSE', 'test.txt')
+      .set('Authorization', `Bearer ${appToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .set('x-access-token', tempData.admin.jwtToken)
+      .end((err, res) => {
+        checkForErrors(err, res);
+        console.log(res.body);
+
+        expect(res.status).toBe(200);
+        expect(typeof res.body.data).toBe('object');
+        done();
+      });
+  });
+}
+
+if (todoList.media.upload) {
+  it('it should upload a mediaitem with its transcript', (done) => {
+
+    request
+      .post(`/v1/media/upload`)
+      .set('Content-Type', 'application/x-www-form-urlencoded')
+      .attach('media', './LICENSE', 'test.txt')
+      .set('Authorization', `Bearer ${appToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .set('x-access-token', tempData.admin.jwtToken)
       .end((err, res) => {
         checkForErrors(err, res);
         console.log(res.body);
