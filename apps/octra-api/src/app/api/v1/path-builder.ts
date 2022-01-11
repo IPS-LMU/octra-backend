@@ -38,7 +38,7 @@ export class PathBuilder {
     return Path.join(this.uploadPath, 'projects', `project_${projectID}`);
   }
 
-  public getProjectFilestPath(projectID: number) {
+  public getProjectFilesPath(projectID: number) {
     return Path.join(this.getProjectPath(projectID), 'files');
   }
 
@@ -47,14 +47,14 @@ export class PathBuilder {
   }
 
   public getEncryptedProjectFileURL(projectId: number, fileName: string) {
-    return this.settings.url + Path.join('/v1/files', this.encryptFilePath(this.getProjectPath(projectId)), Path.basename(fileName));
+    return this.settings.url + Path.join('/v1/files/public/', this.encryptFilePath(Path.join('projects', `project_${projectId}`, 'files')), Path.basename(fileName));
   }
 
   public getEncryptedGuidelinesFileURL(projectId: number, fileName: string) {
-    return this.settings.url + Path.join('/v1/files', this.encryptFilePath(this.getGuidelinesPath(projectId)), Path.basename(fileName));
+    return this.settings.url + Path.join('/v1/files/public/', this.encryptFilePath(this.getGuidelinesPath(projectId)), Path.basename(fileName));
   }
 
   public getEncryptedFileURL(filePath: string) {
-    return this.settings.url + Path.join('/v1/files', this.encryptFilePath(Path.dirname(filePath)), Path.basename(filePath));
+    return this.settings.url + Path.join('/v1/files/public/', this.encryptFilePath(Path.dirname(filePath)), Path.basename(filePath));
   }
 }

@@ -11,9 +11,6 @@ import {CommandModule} from './commands/command.module';
 import {DBManager} from '../../db/db.manager';
 import {ApiCommand} from './commands/api.command';
 import {PathBuilder} from './path-builder';
-import * as path from 'path';
-import {pathExists} from 'fs-extra';
-import {InternRequest} from './obj/types';
 
 export class APIV1 {
   get modules(): CommandModule[] {
@@ -132,18 +129,6 @@ export class APIV1 {
         appSettings: settings,
         url: settings.api.url
       });
-    });
-
-    // serve files with encrypted paths
-    v1Router.get('/files/:encryptedPath/:fileName', async (req: InternRequest, res, next) => {
-      const decryptedPath = path.join(req.pathBuilder.decryptFilePath(req.params.encryptedPath), req.params.fileName);
-      const filePath = path.join(settings.uploadPath, decryptedPath);
-
-      if (await pathExists(filePath)) {
-        res.sendFile(filePath);
-      } else {
-        res.sendStatus(404);
-      }
     });
 
     app.use(`/${this.information.apiSlug}`, v1Router);

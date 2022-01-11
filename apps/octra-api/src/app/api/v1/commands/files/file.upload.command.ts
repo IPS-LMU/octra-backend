@@ -6,12 +6,11 @@ import * as multer from 'multer';
 import * as Path from 'path';
 import {mkdirp, pathExists} from 'fs-extra';
 
-export class MediaUploadCommand extends ApiCommand {
+export class FileUploadCommand extends ApiCommand {
   constructor() {
-    super('uploadMediaItem', '/media', RequestType.POST, '/upload', true,
+    super('uploadFile', '/files', RequestType.POST, '/upload', true,
       [
-        UserRole.administrator,
-        UserRole.projectAdministrator
+        UserRole.administrator
       ]);
 
     this._description = 'Uploads a new media file and returns its URL.';

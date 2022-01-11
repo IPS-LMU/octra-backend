@@ -54,7 +54,7 @@ export class FileSystemHandler {
     if (exists) {
       return;
     }
-    return fsExtra.mkdir(path, options);
+    return fsExtra.mkdir(path, {recursive: true});
   }
 
   /**

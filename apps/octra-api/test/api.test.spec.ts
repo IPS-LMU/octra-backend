@@ -28,7 +28,8 @@ const tempData = {
     name: ''
   },
   mediaItem: {
-    id: 0
+    id: 0,
+    url: ''
   },
   transcript: {
     id: 0
@@ -69,23 +70,26 @@ const todoList = {
     change: true,
     remove: true,
     transcripts: {
-      get: true
+      get: true,
+      upload: true
     }
   },
   media: {
-    add: true,
-    upload: true
+    add: false,
+    upload: false
   },
   tool: {
     add: true
   },
   dataDelivery: {
     deliver: true,
-    upload: true
+    transcripts: {
+      upload: true
+    }
   },
   transcripts: {
-    add: true,
-    get: true
+    add: false,
+    get: false
   },
   annotation: {
     start: true,
@@ -95,12 +99,13 @@ const todoList = {
   guidelines: {
     save: true,
     get: true
+  },
+  files: {
+    get: true
   }
 };
 
 const appToken = 'a810c2e6e76774fadf03d8edd1fc9d1954cc27d6';
-
-// TODO fix Tests
 
 if (todoList.user.register) {
   it('it should POST a new user registration', (done) => {
@@ -837,11 +842,11 @@ if (todoList.annotation.save) {
   });
 }
 
-if (todoList.dataDelivery.upload) {
+if (todoList.dataDelivery.transcripts.upload) {
   it('it should upload a mediaitem with its transcript', (done) => {
 
     request
-      .post(`/v1/delivery/media/upload`)
+      .post(`/v1/delivery/transcripts/upload`)
       .set('Content-Type', 'application/x-www-form-urlencoded')
       .attach('data', Buffer.from(JSON.stringify({
         project_id: 367,
@@ -853,8 +858,6 @@ if (todoList.dataDelivery.upload) {
       .set('x-access-token', tempData.admin.jwtToken)
       .end((err, res) => {
         checkForErrors(err, res);
-        console.log(res.body);
-
         expect(res.status).toBe(200);
         expect(typeof res.body.data).toBe('object');
         done();
@@ -901,6 +904,29 @@ if (todoList.project.transcripts.get) {
   });
 }
 
+if (todoList.project.transcripts.upload) {
+  it('it should upload a transcript and its mediafile', (done) => {
+
+    request
+      .post(`/v1/projects/${tempData.project.id}/transcripts/upload`)
+      .set('Content-Type', 'application/x-www-form-urlencoded')
+      .attach('data', Buffer.from(JSON.stringify({
+        orgtext: ''
+      }), 'utf-8'), 'data.json')
+      .attach('media', './LICENSE', 'test.txt')
+      .set('Authorization', `Bearer ${appToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .set('x-access-token', tempData.admin.jwtToken)
+      .end((err, res) => {
+        checkForErrors(err, res);
+        expect(res.status).toBe(200);
+        tempData.mediaItem.url = res.body.data.mediaitem.url;
+        expect(typeof res.body.data).toBe('object');
+        done();
+      });
+  });
+}
+
 
 if (todoList.guidelines.save) {
   it('it should save guidelines', (done) => {
@@ -938,6 +964,20 @@ if (todoList.guidelines.get) {
         checkForErrors(err, res);
         console.log(res.body);
 
+        expect(res.status).toBe(200);
+        done();
+      });
+  });
+}
+
+if (todoList.files.get) {
+  it('it should retrieve a file', (done) => {
+    request
+      .get(tempData.mediaItem.url.replace('http://localhost:8080', ''))
+      .set('Authorization', `Bearer ${appToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .set('x-access-token', tempData.admin.jwtToken)
+      .end((err, res) => {
         expect(res.status).toBe(200);
         done();
       });

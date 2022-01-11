@@ -1,21 +1,21 @@
-import {ApiCommand, RequestType} from '../api.command';
-import {DatabaseFunctions} from '../../obj/database.functions';
-import {InternalServerError} from '../../../../obj/http-codes/server.codes';
-import {BadRequest} from '../../../../obj/http-codes/client.codes';
+import {ApiCommand, RequestType} from '../../api.command';
+import {DatabaseFunctions} from '../../../obj/database.functions';
+import {InternalServerError} from '../../../../../obj/http-codes/server.codes';
+import {BadRequest} from '../../../../../obj/http-codes/client.codes';
 import {DeliverNewMediaRequest, DeliveryMediaAddResponse, UserRole} from '@octra/db';
-import {InternRequest} from '../../obj/types';
+import {InternRequest} from '../../../obj/types';
 import {Validator} from 'jsonschema';
 import * as Path from 'path';
 import * as multer from 'multer';
 import {mkdirp, pathExists, readJSONSync} from 'fs-extra';
-import {FileSystemHandler} from '../../filesystem-handler';
+import {FileSystemHandler} from '../../../filesystem-handler';
+import {isNumber} from '../../../../../obj/functions';
 
-export class DeliveryMediaUploadCommand extends ApiCommand {
+export class TranscriptUploadCommand extends ApiCommand {
   constructor() {
-    super('uploadTranscriptWithMedia', '/delivery', RequestType.POST, '/transcripts/upload', true,
+    super('uploadTranscriptWithMedia', '/projects', RequestType.POST, '/:project_id/transcripts/upload', true,
       [
-        UserRole.administrator,
-        UserRole.dataDelivery
+        UserRole.administrator
       ]
     );
 
@@ -121,6 +121,12 @@ export class DeliveryMediaUploadCommand extends ApiCommand {
 
   async do(req, res) {
     const answer = ApiCommand.createAnswer() as DeliveryMediaAddResponse;
+
+    if (!req.params.project_id || !isNumber(req.params.project_id)) {
+      TranscriptUploadCommand.sendError(res, 400, 'project_id must be of type number.');
+      return;
+    }
+
     const currentTime = Date.now();
     const mediaPath = Path.join(this.settings.api.files.uploadPath, 'temp', `temp_${currentTime}`);
     const storage = multer.diskStorage({
@@ -136,24 +142,22 @@ export class DeliveryMediaUploadCommand extends ApiCommand {
     });
     const upload = multer({storage: storage});
     try {
-      await upload.any()(req, res, async (err) => {
+      upload.any()(req, res, async (err) => {
         const validation = this.validate(req, req.files);
         if (validation.length === 0) {
           if (err instanceof multer.MulterError) {
             // A Multer error occurred when uploading.
-            ApiCommand.sendError(res, InternalServerError, 'Could not upload media item.');
+            ApiCommand.sendError(res, InternalServerError, 'Could not upload transcript.');
           } else if (err) {
             // An unknown error occurred when uploading.
-            ApiCommand.sendError(res, InternalServerError, 'Could not upload media item.');
+            ApiCommand.sendError(res, InternalServerError, 'Could not upload transcript.');
           } else {
             // success
-
             try {
-
               const mediaFile = req.files.find(a => a.fieldname === 'media');
               const jsonFile = req.files.find(a => a.fieldname === 'data');
               const reqData = jsonFile.content as DeliverNewMediaRequest;
-              const projectFilesPath = req.pathBuilder.getProjectFilesPath(reqData.project_id);
+              const projectFilesPath = req.pathBuilder.getProjectFilesPath(req.params.project_id);
               await FileSystemHandler.createDirIfNotExists(projectFilesPath);
 
               //move from temp to project folder
@@ -167,9 +171,9 @@ export class DeliveryMediaUploadCommand extends ApiCommand {
                 url: Path.join('files', mediaFile.originalname),
                 size: fileInformation.size,
                 type: fileInformation.type
-              }
+              };
               const data = await DatabaseFunctions.deliverNewMedia(reqData);
-              const publicURL = Path.join(this.settings.api.url, '/v1/files', req.pathBuilder.encryptFilePath(Path.join('projects', `project_${reqData.project_id}`, 'files')), mediaFile.originalname);
+              const publicURL = req.pathBuilder.getEncryptedProjectFileURL(req.params.project_id, mediaFile.originalname);
 
               answer.data = {
                 ...data,
@@ -207,10 +211,6 @@ export class DeliveryMediaUploadCommand extends ApiCommand {
       if (formData.length > 1 && mediaFile && jsonFile) {
         const schema = {
           properties: {
-            project_id: {
-              type: 'number',
-              required: true
-            },
             orgtext: {
               type: 'string'
             },
