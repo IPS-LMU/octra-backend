@@ -29,7 +29,9 @@ const tempData = {
   },
   mediaItem: {
     id: 0,
-    url: ''
+    uploadURL: '',
+    url: '',
+    delivery_url: ''
   },
   transcript: {
     id: 0
@@ -70,6 +72,7 @@ const todoList = {
     change: true,
     remove: true,
     transcripts: {
+      getAll: true,
       get: true,
       upload: true
     }
@@ -82,14 +85,11 @@ const todoList = {
     add: true
   },
   dataDelivery: {
-    deliver: true,
-    transcripts: {
-      upload: true
-    }
+    deliver: true
   },
   transcripts: {
     add: false,
-    get: false
+    get: true
   },
   annotation: {
     start: true,
@@ -495,7 +495,6 @@ if (todoList.tool.add) {
   });
 }
 
-
 if (todoList.dataDelivery.deliver) {
   it('it should deliver a new audio file', (done) => {
     console.log(`PROJECT ID FOR TEST ${tempData.project.id}`);
@@ -517,206 +516,7 @@ if (todoList.dataDelivery.deliver) {
       .end((err, res) => {
         checkForErrors(err, res);
         log(`delivered new media! Transcript ID: ${res.body.data.transcriptID}`);
-        tempData.transcript.id = res.body.data.transcriptID;
-        expect(res.status).toBe(200);
-        expect(typeof res.body.data).toBe('object');
-        done();
-      });
-  });
-}
-
-if (todoList.dataDelivery.deliver) {
-  it('it should deliver a new audio file', (done) => {
-    console.log(`PROJECT ID FOR TEST ${tempData.project.id}`);
-    const requestData = {
-      project_id: tempData.project.id,
-      media: {
-        url: `https://clarin.phonetik.uni-muenchen.de/apps/octra/octra/media/Bahnauskunft.wav`,
-        type: 'audio/wav',
-        size: 2334,
-        metadata: 'data delivery'
-      }
-    }
-    request
-      .post('/v1/delivery/media')
-      .set('Authorization', `Bearer ${appToken}`)
-      .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.user.jwtToken)
-      .send(requestData)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        log(`delivered new media! Transcript ID: ${res.body.data.transcriptID}`);
-        tempData.transcript.id = res.body.data.transcriptID;
-        expect(res.status).toBe(200);
-        expect(typeof res.body.data).toBe('object');
-        done();
-      });
-  });
-}
-
-if (todoList.dataDelivery.deliver) {
-  it('it should deliver a new audio file', (done) => {
-    console.log(`PROJECT ID FOR TEST ${tempData.project.id}`);
-    const requestData = {
-      project_id: tempData.project.id,
-      media: {
-        url: `https://clarin.phonetik.uni-muenchen.de/apps/octra/octra/media/Bahnauskunft.wav`,
-        type: 'audio/wav',
-        size: 2334,
-        metadata: 'data delivery'
-      }
-    }
-    request
-      .post('/v1/delivery/media')
-      .set('Authorization', `Bearer ${appToken}`)
-      .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.user.jwtToken)
-      .send(requestData)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        log(`delivered new media! Transcript ID: ${res.body.data.transcriptID}`);
-        tempData.transcript.id = res.body.data.transcriptID;
-        expect(res.status).toBe(200);
-        expect(typeof res.body.data).toBe('object');
-        done();
-      });
-  });
-}
-
-if (todoList.dataDelivery.deliver) {
-  it('it should deliver a new audio file', (done) => {
-    console.log(`PROJECT ID FOR TEST ${tempData.project.id}`);
-    const requestData = {
-      project_id: tempData.project.id,
-      media: {
-        url: `https://clarin.phonetik.uni-muenchen.de/apps/octra/octra/media/Bahnauskunft.wav`,
-        type: 'audio/wav',
-        size: 2334,
-        metadata: 'data delivery'
-      }
-    }
-    request
-      .post('/v1/delivery/media')
-      .set('Authorization', `Bearer ${appToken}`)
-      .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.user.jwtToken)
-      .send(requestData)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        log(`delivered new media! Transcript ID: ${res.body.data.transcriptID}`);
-        tempData.transcript.id = res.body.data.transcriptID;
-        expect(res.status).toBe(200);
-        expect(typeof res.body.data).toBe('object');
-        done();
-      });
-  });
-}
-if (todoList.dataDelivery.deliver) {
-  it('it should deliver a new audio file', (done) => {
-    console.log(`PROJECT ID FOR TEST ${tempData.project.id}`);
-    const requestData = {
-      project_id: tempData.project.id,
-      media: {
-        url: `https://clarin.phonetik.uni-muenchen.de/apps/octra/octra/media/Bahnauskunft.wav`,
-        type: 'audio/wav',
-        size: 2334,
-        metadata: 'data delivery'
-      }
-    }
-    request
-      .post('/v1/delivery/media')
-      .set('Authorization', `Bearer ${appToken}`)
-      .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.user.jwtToken)
-      .send(requestData)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        log(`delivered new media! Transcript ID: ${res.body.data.transcriptID}`);
-        tempData.transcript.id = res.body.data.transcriptID;
-        expect(res.status).toBe(200);
-        expect(typeof res.body.data).toBe('object');
-        done();
-      });
-  });
-}
-if (todoList.dataDelivery.deliver) {
-  it('it should deliver a new audio file', (done) => {
-    console.log(`PROJECT ID FOR TEST ${tempData.project.id}`);
-    const requestData = {
-      project_id: tempData.project.id,
-      media: {
-        url: `https://clarin.phonetik.uni-muenchen.de/apps/octra/octra/media/Bahnauskunft.wav`,
-        type: 'audio/wav',
-        size: 2334,
-        metadata: 'data delivery'
-      }
-    }
-    request
-      .post('/v1/delivery/media')
-      .set('Authorization', `Bearer ${appToken}`)
-      .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.user.jwtToken)
-      .send(requestData)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        log(`delivered new media! Transcript ID: ${res.body.data.transcriptID}`);
-        tempData.transcript.id = res.body.data.transcriptID;
-        expect(res.status).toBe(200);
-        expect(typeof res.body.data).toBe('object');
-        done();
-      });
-  });
-}
-if (todoList.dataDelivery.deliver) {
-  it('it should deliver a new audio file', (done) => {
-    console.log(`PROJECT ID FOR TEST ${tempData.project.id}`);
-    const requestData = {
-      project_id: tempData.project.id,
-      media: {
-        url: `https://clarin.phonetik.uni-muenchen.de/apps/octra/octra/media/Bahnauskunft.wav`,
-        type: 'audio/wav',
-        size: 2334,
-        metadata: 'data delivery'
-      }
-    }
-    request
-      .post('/v1/delivery/media')
-      .set('Authorization', `Bearer ${appToken}`)
-      .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.user.jwtToken)
-      .send(requestData)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        log(`delivered new media! Transcript ID: ${res.body.data.transcriptID}`);
-        tempData.transcript.id = res.body.data.transcriptID;
-        expect(res.status).toBe(200);
-        expect(typeof res.body.data).toBe('object');
-        done();
-      });
-  });
-}
-if (todoList.dataDelivery.deliver) {
-  it('it should deliver a new audio file', (done) => {
-    console.log(`PROJECT ID FOR TEST ${tempData.project.id}`);
-    const requestData = {
-      project_id: tempData.project.id,
-      media: {
-        url: `https://clarin.phonetik.uni-muenchen.de/apps/octra/octra/media/Bahnauskunft.wav`,
-        type: 'audio/wav',
-        size: 2334,
-        metadata: 'data delivery'
-      }
-    }
-    request
-      .post('/v1/delivery/media')
-      .set('Authorization', `Bearer ${appToken}`)
-      .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.user.jwtToken)
-      .send(requestData)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        log(`delivered new media! Transcript ID: ${res.body.data.transcriptID}`);
-        tempData.transcript.id = res.body.data.transcriptID;
+        tempData.transcript.id = res.body.data.id;
         expect(res.status).toBe(200);
         expect(typeof res.body.data).toBe('object');
         done();
@@ -740,7 +540,7 @@ if (todoList.transcripts.add) {
       .end((err, res) => {
         checkForErrors(err, res);
         // log(`added ${res.body.data.id}`);
-        tempData.transcript.id = res.body.data.id;
+        // tempData.transcript.id = res.body.data.id;
         expect(res.status).toBe(200);
         expect(typeof res.body.data).toBe('object');
         done();
@@ -842,36 +642,13 @@ if (todoList.annotation.save) {
   });
 }
 
-if (todoList.dataDelivery.transcripts.upload) {
-  it('it should upload a mediaitem with its transcript', (done) => {
-
-    request
-      .post(`/v1/delivery/transcripts/upload`)
-      .set('Content-Type', 'application/x-www-form-urlencoded')
-      .attach('data', Buffer.from(JSON.stringify({
-        project_id: 367,
-        orgtext: ''
-      }), 'utf-8'), 'data.json')
-      .attach('media', './LICENSE', 'test.txt')
-      .set('Authorization', `Bearer ${appToken}`)
-      .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.admin.jwtToken)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        expect(res.status).toBe(200);
-        expect(typeof res.body.data).toBe('object');
-        done();
-      });
-  });
-}
-
 if (todoList.media.upload) {
   it('it should upload a mediaitem with its transcript', (done) => {
 
     request
       .post(`/v1/media/upload`)
       .set('Content-Type', 'application/x-www-form-urlencoded')
-      .attach('media', './LICENSE', 'test.txt')
+      .attach('media', './test/testfiles/Bahnauskunft.wav', 'Bahnauskunft.wav')
       .set('Authorization', `Bearer ${appToken}`)
       .set('Origin', 'http://localhost:8080')
       .set('x-access-token', tempData.admin.jwtToken)
@@ -886,7 +663,7 @@ if (todoList.media.upload) {
   });
 }
 
-if (todoList.project.transcripts.get) {
+if (todoList.project.transcripts.getAll) {
   it('it should list an array of transcripts for a given project', (done) => {
     request
       .get(`/v1/projects/${tempData.project.id}/transcripts`)
@@ -906,21 +683,57 @@ if (todoList.project.transcripts.get) {
 
 if (todoList.project.transcripts.upload) {
   it('it should upload a transcript and its mediafile', (done) => {
-
     request
       .post(`/v1/projects/${tempData.project.id}/transcripts/upload`)
       .set('Content-Type', 'application/x-www-form-urlencoded')
       .attach('data', Buffer.from(JSON.stringify({
         orgtext: ''
       }), 'utf-8'), 'data.json')
-      .attach('media', './LICENSE', 'test.txt')
+      .attach('media', './testfiles/Bahnauskunft.wav', 'Bahnauskunft.wav')
       .set('Authorization', `Bearer ${appToken}`)
       .set('Origin', 'http://localhost:8080')
       .set('x-access-token', tempData.admin.jwtToken)
       .end((err, res) => {
         checkForErrors(err, res);
         expect(res.status).toBe(200);
+        tempData.mediaItem.uploadURL = res.body.data.mediaitem.url;
+        expect(typeof res.body.data).toBe('object');
+        done();
+      });
+  });
+}
+
+if (todoList.project.transcripts.get) {
+  it('it should retrieve a transcript and its mediafile from project id', (done) => {
+
+    request
+      .get(`/v1/projects/${tempData.project.id}/transcripts/${tempData.transcript.id}/`)
+      .set('Authorization', `Bearer ${appToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .set('x-access-token', tempData.admin.jwtToken)
+      .send()
+      .end((err, res) => {
+        checkForErrors(err, res);
+        expect(res.status).toBe(200);
         tempData.mediaItem.url = res.body.data.mediaitem.url;
+        expect(typeof res.body.data).toBe('object');
+        done();
+      });
+  });
+}
+
+if (todoList.project.transcripts.getAll) {
+  it('it should retrieve all transcripts from project id', (done) => {
+
+    request
+      .get(`/v1/projects/${tempData.project.id}/transcripts/`)
+      .set('Authorization', `Bearer ${appToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .set('x-access-token', tempData.admin.jwtToken)
+      .send()
+      .end((err, res) => {
+        checkForErrors(err, res);
+        expect(res.status).toBe(200);
         expect(typeof res.body.data).toBe('object');
         done();
       });
@@ -971,9 +784,9 @@ if (todoList.guidelines.get) {
 }
 
 if (todoList.files.get) {
-  it('it should retrieve a file', (done) => {
+  it('it should retrieve a file from transcripts upload', (done) => {
     request
-      .get(tempData.mediaItem.url.replace('http://localhost:8080', ''))
+      .get(tempData.mediaItem.uploadURL.replace('http://localhost:8080', ''))
       .set('Authorization', `Bearer ${appToken}`)
       .set('Origin', 'http://localhost:8080')
       .set('x-access-token', tempData.admin.jwtToken)
@@ -983,7 +796,6 @@ if (todoList.files.get) {
       });
   });
 }
-
 
 if (todoList.app.tokens.delete) {
   it('it should remove an app token', (done) => {

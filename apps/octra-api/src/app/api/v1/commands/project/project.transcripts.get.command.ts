@@ -2,6 +2,7 @@ import {ApiCommand, RequestType} from '../api.command';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 import {ProjectTranscriptsGetResponse, UserRole} from '@octra/db';
+import * as Path from 'path';
 
 export class ProjectTranscriptsGetCommand extends ApiCommand {
   constructor() {
@@ -118,6 +119,18 @@ export class ProjectTranscriptsGetCommand extends ApiCommand {
     if (validation.length === 0) {
       try {
         answer.data = await DatabaseFunctions.getTranscriptsByProjectID(Number(req.params.id));
+
+        if (answer.data.length > 0) {
+          answer.data = answer.data.map((a) => {
+            if (a.mediaitem?.url) {
+              a.mediaitem.url = a.mediaitem.url.indexOf('http') > -1 ? a.mediaitem.url
+                : req.pathBuilder.getEncryptedProjectFileURL(
+                  Number(req.params.project_id), Path.basename(a.mediaitem.url)
+                );
+            }
+            return a;
+          });
+        }
         this.checkAndSendAnswer(res, answer);
         return;
       } catch (e) {

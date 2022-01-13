@@ -6,6 +6,7 @@ import {DeliverNewMediaRequest, DeliveryMediaAddResponse, UserRole} from '@octra
 import {InternRequest} from '../../../obj/types';
 import {Validator} from 'jsonschema';
 import * as Path from 'path';
+import * as path from 'path';
 import * as multer from 'multer';
 import {mkdirp, pathExists, readJSONSync} from 'fs-extra';
 import {FileSystemHandler} from '../../../filesystem-handler';
@@ -13,9 +14,11 @@ import {isNumber} from '../../../../../obj/functions';
 
 export class TranscriptUploadCommand extends ApiCommand {
   constructor() {
-    super('uploadTranscriptWithMedia', '/projects', RequestType.POST, '/:project_id/transcripts/upload', true,
+    super('uploadTranscriptData', '/projects', RequestType.POST, '/:project_id/transcripts/upload', true,
       [
-        UserRole.administrator
+        UserRole.administrator,
+        UserRole.projectAdministrator,
+        UserRole.dataDelivery
       ]
     );
 
@@ -128,7 +131,7 @@ export class TranscriptUploadCommand extends ApiCommand {
     }
 
     const currentTime = Date.now();
-    const mediaPath = Path.join(this.settings.api.files.uploadPath, 'temp', `temp_${currentTime}`);
+    const mediaPath = Path.join(this.settings.api.files.uploadPath, 'temp', `temp_${req.decoded.id}_${currentTime}`);
     const storage = multer.diskStorage({
       destination: async (req, file, callback) => {
         if (!(await pathExists(mediaPath))) {
@@ -148,32 +151,47 @@ export class TranscriptUploadCommand extends ApiCommand {
           if (err instanceof multer.MulterError) {
             // A Multer error occurred when uploading.
             ApiCommand.sendError(res, InternalServerError, 'Could not upload transcript.');
+            await FileSystemHandler.removeFolder(mediaPath);
           } else if (err) {
             // An unknown error occurred when uploading.
             ApiCommand.sendError(res, InternalServerError, 'Could not upload transcript.');
+            await FileSystemHandler.removeFolder(mediaPath);
           } else {
             // success
             try {
               const mediaFile = req.files.find(a => a.fieldname === 'media');
               const jsonFile = req.files.find(a => a.fieldname === 'data');
-              const reqData = jsonFile.content as DeliverNewMediaRequest;
+              let reqData: DeliverNewMediaRequest = {
+                project_id: req.params.project_id,
+                media: undefined
+              }
+
+              if (jsonFile) {
+                reqData = {
+                  ...reqData,
+                  ...jsonFile.content
+                }
+              }
+
               const projectFilesPath = req.pathBuilder.getProjectFilesPath(req.params.project_id);
               await FileSystemHandler.createDirIfNotExists(projectFilesPath);
+              let fileInformation;
 
-              //move from temp to project folder
-              await FileSystemHandler.moveFile(Path.join(mediaPath, mediaFile.originalname), Path.join(projectFilesPath, mediaFile.originalname));
-              await FileSystemHandler.removeFolder(mediaPath);
+              if (mediaFile) {
+                //move from temp to project folder
+                await FileSystemHandler.moveFile(Path.join(mediaPath, mediaFile.originalname), Path.join(projectFilesPath, mediaFile.originalname));
+                await FileSystemHandler.removeFolder(mediaPath);
+                // fill in file information
+                fileInformation = await FileSystemHandler.readFileInformation(Path.join(projectFilesPath, mediaFile.originalname));
+                reqData.media = {
+                  url: Path.join('files', mediaFile.originalname),
+                  size: fileInformation.size,
+                  type: fileInformation.type
+                };
+              }
 
-              // fill in file information
-              const fileInformation = await FileSystemHandler.readFileInformation(Path.join(projectFilesPath, mediaFile.originalname));
-
-              reqData.media = {
-                url: Path.join('files', mediaFile.originalname),
-                size: fileInformation.size,
-                type: fileInformation.type
-              };
               const data = await DatabaseFunctions.deliverNewMedia(reqData);
-              const publicURL = req.pathBuilder.getEncryptedProjectFileURL(req.params.project_id, mediaFile.originalname);
+              const publicURL = req.pathBuilder.getEncryptedProjectFileURL(req.params.project_id, path.basename(data.mediaitem.url));
 
               answer.data = {
                 ...data,
@@ -208,31 +226,60 @@ export class TranscriptUploadCommand extends ApiCommand {
     if (result.length === 0) {
       const mediaFile = formData.find(a => a.fieldname === 'media');
       const jsonFile = formData.find(a => a.fieldname === 'data');
-      if (formData.length > 1 && mediaFile && jsonFile) {
-        const schema = {
-          properties: {
-            orgtext: {
-              type: 'string'
-            },
-            transcript: {
-              type: 'string'
+
+      if (mediaFile) {
+        if (path.extname(mediaFile.originalname) !== '.wav') {
+          result.push({
+            section: 'FormData',
+            errors: 'The media file must be of type WAVE.'
+          });
+          return result;
+        }
+      }
+
+      if (formData.length && (mediaFile || jsonFile)) {
+        if (jsonFile) {
+          // TODO we need global instances of schemas
+          let schema = {
+            properties: {
+              orgtext: {
+                type: 'string'
+              },
+              transcript: {
+                type: 'string'
+              }
+            }
+          };
+
+          if (!mediaFile) {
+            schema.properties['media'] = {
+              type: 'object',
+              required: true,
+              properties: {
+                url: {
+                  type: 'string',
+                  required: true,
+                  pattern: '^https?:\/\/',
+                  description: 'Public URL to the media file'
+                }
+              }
             }
           }
-        };
 
-        const validator = new Validator();
-        jsonFile.content = readJSONSync(jsonFile.path);
-        const validationResult = validator.validate(jsonFile, jsonFile.content);
-        if (!validationResult.valid) {
-          result.push({
-            section: (req.query && req.query !== {}) ? 'GET params' : 'Request payload',
-            errors: validationResult.errors.map(a => a.path.join('.') + ' ' + a.message)
-          });
+          const validator = new Validator();
+          jsonFile.content = readJSONSync(jsonFile.path);
+          const validationResult = validator.validate(jsonFile.content, schema);
+          if (!validationResult.valid) {
+            result.push({
+              section: 'Request payload',
+              errors: validationResult.errors.map(a => a.path.join('.') + ' ' + a.message)
+            });
+          }
         }
       } else {
         result.push({
           section: 'FormData',
-          errors: 'Missing item with fieldname \'data\'.'
+          errors: 'There must be at least one of the fields "media" or "data".'
         });
       }
     }

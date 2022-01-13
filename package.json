@@ -16,7 +16,7 @@
     "build:libs": "nx build octra-db && nx build ngx-octra-api && cp ./LICENSE ./dist/libs/octra-db/LICENSE && cp ./LICENSE ./dist/libs/ngx-octra-api/LICENSE",
     "build:extern": "npm run build:libs && rm -rf extern && cp -rf dist/libs extern",
     "watch:libs": "nx build ngx-octra-api --prod --watch & nx build octra-db --watch",
-    "test:api": "nx test octra-api --clear-cache && DEBUG=jest nx test octra-api --runInBand --verbose false",
+    "test:api": "nx test octra-api --runInBand --bail 1  --silent",
     "deploy:api": "npm run package:api && sh ./deploy.sh",
     "package:api": "nx build octra-api --generatePackageJson --prod && node ./apps/octra-api/src/app.prepare.js && pkg ./dist/apps/octra-api/main.js -c ./dist/apps/octra-api/package.json",
     "test": "ng test",

@@ -6,7 +6,7 @@ import {AddTranscriptRequest, TranscriptAddResponse, UserRole} from '@octra/db';
 
 export class TranscriptAddCommand extends ApiCommand {
   constructor() {
-    super('addTranscript', '/transcripts', RequestType.POST, '/', true,
+    super('addTranscript (deprecated)', '/transcripts', RequestType.POST, '/', true,
       [
         UserRole.administrator
       ]);

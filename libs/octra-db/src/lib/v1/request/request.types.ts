@@ -75,7 +75,7 @@ export interface AssignUserRoleRequest {
 
 export interface DeliverNewMediaRequest {
   project_id: number;
-  media: {
+  media?: {
     url: string;
     type?: string;
     size?: number;

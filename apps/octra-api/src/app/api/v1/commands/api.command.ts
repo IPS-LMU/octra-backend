@@ -227,7 +227,7 @@ export abstract class ApiCommand {
 
     if (!validationResult.valid) {
       errors.push({
-        section: (req.query) ? 'GET params' : 'Request payload',
+        section: (req.query && Object.entries(req.query).length > 0) ? 'GET params' : 'Request payload',
         errors: validationResult.errors.map(a => a.path.join('.') + ' ' + a.message)
       });
     }

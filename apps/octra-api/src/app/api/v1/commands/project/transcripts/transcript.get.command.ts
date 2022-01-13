@@ -1,18 +1,21 @@
-import {ApiCommand, RequestType} from '../api.command';
-import {DatabaseFunctions} from '../../obj/database.functions';
-import {InternalServerError} from '../../../../obj/http-codes/server.codes';
-import {ProjectTranscriptsGetResult, TranscriptGetResponse, UserRole} from '@octra/db';
-import {InternRequest} from '../../obj/types';
 import {Response} from 'express';
+import {ApiCommand, RequestType} from '../../api.command';
+import {ProjectTranscriptsGetResult, TranscriptGetResponse, UserRole} from '@octra/db';
+import {InternRequest} from '../../../obj/types';
+import {DatabaseFunctions} from '../../../obj/database.functions';
+import {InternalServerError} from '../../../../../obj/http-codes/server.codes';
+import * as Path from 'path';
 
 export class TranscriptGetCommand extends ApiCommand {
   constructor() {
-    super('getTranscript', '/transcripts', RequestType.GET, '/:id', true,
+    super('getTranscript', '/projects', RequestType.GET, '/:project_id/transcripts/:transcript_id', true,
       [
-        UserRole.administrator
+        UserRole.administrator,
+        UserRole.projectAdministrator,
+        UserRole.dataDelivery
       ]);
 
-    this._description = 'Returns a transcript object by ID.';
+    this._description = 'Returns a transcript object by transcript ID and project ID.';
     this._acceptedContentType = 'application/json';
     this._responseContentType = 'application/json';
 
@@ -115,7 +118,14 @@ export class TranscriptGetCommand extends ApiCommand {
     // do something
     if (validation.length === 0) {
       try {
-        answer.data = await DatabaseFunctions.getTranscriptByID(Number(req.params.id));
+        answer.data = await DatabaseFunctions.getTranscriptByID(Number(req.params.transcript_id));
+
+        if (answer.data.mediaitem?.url) {
+          answer.data.mediaitem.url = answer.data.mediaitem.url.indexOf('http') > -1 ? answer.data.mediaitem.url
+            : req.pathBuilder.getEncryptedProjectFileURL(
+              Number(req.params.project_id), Path.basename(answer.data.mediaitem.url)
+            );
+        }
         this.reduceDataForUser(req, answer)
         this.checkAndSendAnswer(res, answer);
         return;
