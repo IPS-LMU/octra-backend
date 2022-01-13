@@ -20,9 +20,9 @@ export class ModalsService {
       this.bsModalRef = this.modalService.show(SuccessModalComponent, SuccessModalComponent.options);
       this.bsModalRef.content.title = title;
       this.bsModalRef.content.message = message;
-      const subscr = this.bsModalRef.onHidden.subscribe(() => {
+      const subscr = this.bsModalRef?.onHidden?.subscribe(() => {
         resolve();
-        subscr.unsubscribe();
+        subscr?.unsubscribe();
       });
     });
   }
