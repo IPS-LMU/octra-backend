@@ -23,6 +23,10 @@ $$
       ADD COLUMN IF NOT EXISTS role_id integer
         CONSTRAINT account_id_fkey REFERENCES role (id);
 
+    RAISE NOTICE '-> Füge last_login zur account Tabelle hinzu...';
+    ALTER TABLE account
+      ADD COLUMN IF NOT EXISTS last_login timestamp without time zone;
+
     RAISE NOTICE '-> Füge Spalte "scope" zu role Tabelle hinzu und setze die scopes...';
     ALTER TABLE role
       ADD COLUMN IF NOT EXISTS scope TEXT;
@@ -70,9 +74,16 @@ $$
     ALTER TABLE account_role
       RENAME TO account_role_project;
 
-    RAISE NOTICE '-> Füge session zur mediaitem Tabelle hinzu...';
+    RAISE NOTICE '-> Füge Spalte session zur mediaitem Tabelle hinzu...';
     ALTER TABLE mediaitem
       ADD COLUMN IF NOT EXISTS session text NOT NULL DEFAULT 'unknown_session';
+    RAISE NOTICE '-> Füge Spalte originalname zur mediaitem Tabelle hinzu...';
+    ALTER TABLE mediaitem
+      ADD COLUMN IF NOT EXISTS originalname text NOT NULL DEFAULT '';
+    RAISE NOTICE '-> Füge Spalte project_id zur mediaitem Tabelle hinzu...';
+    ALTER TABLE mediaitem
+      ADD COLUMN IF NOT EXISTS project_id INT
+        CONSTRAINT account_project_id_fkey REFERENCES project (id);
     RAISE NOTICE '-> Ändere Typ von mediaitem.metadata auf json';
     ALTER TABLE mediaitem
       DROP COLUMN metadata;
