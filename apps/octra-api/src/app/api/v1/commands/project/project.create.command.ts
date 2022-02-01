@@ -40,9 +40,6 @@ export class ProjectCreateCommand extends ApiCommand {
         },
         active: {
           type: 'boolean'
-        },
-        admin_id: {
-          type: 'number'
         }
       }
     };
@@ -79,9 +76,6 @@ export class ProjectCreateCommand extends ApiCommand {
             },
             active: {
               type: 'boolean'
-            },
-            admin_id: {
-              type: 'number'
             }
           }
         }

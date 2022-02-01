@@ -70,7 +70,10 @@ export interface AddTranscriptRequest {
 
 export interface AssignUserRoleRequest {
   accountID: number;
-  roles: UserRole[];
+  roles: {
+    role: UserRole,
+    project_id?: number
+  }[];
 }
 
 export interface DeliverNewMediaRequest {

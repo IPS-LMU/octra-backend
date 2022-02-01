@@ -46,12 +46,12 @@ const todoList = {
     register: true,
     login: true,
     loginNormal: true,
-    hash: true,
+    hash: false,
     assign: true,
     getUserInfo: true,
     getCurrentInfo: true,
     getUsers: true,
-    delete: true,
+    delete: false,
     password: {
       change: true
     }
@@ -66,15 +66,15 @@ const todoList = {
     }
   },
   project: {
-    create: true,
-    get: true,
-    list: true,
-    change: true,
-    remove: true,
+    create: true, // TODO <--- hier ein Fehler, weiter arbeiten
+    get: false,
+    list: false,
+    change: false,
+    remove: false,
     transcripts: {
-      getAll: true,
-      get: true,
-      upload: true
+      getAll: false,
+      get: false,
+      upload: false
     }
   },
   media: {
@@ -82,28 +82,32 @@ const todoList = {
     upload: false
   },
   tool: {
-    add: true
+    add: false
   },
   dataDelivery: {
-    deliver: true
+    deliver: false
   },
   transcripts: {
     add: false,
-    get: true
+    get: false
   },
   annotation: {
-    start: true,
-    continue: true,
-    save: true
+    start: false,
+    continue: false,
+    save: false
   },
   guidelines: {
-    save: true,
-    get: true
+    save: false,
+    get: false
   },
   files: {
-    get: true
+    get: false
   }
 };
+
+function logError(message) {
+  console.log(`\x1b[31m${message}\x1b[0m`);
+}
 
 const appToken = 'a810c2e6e76774fadf03d8edd1fc9d1954cc27d6';
 
@@ -116,7 +120,7 @@ if (todoList.user.register) {
     }
 
     request.post('/v1/users/register')
-      .set('Authorization', `Bearer ${appToken}`)
+      .set('X-App-Token', `${appToken}`)
       .set('Origin', 'http://localhost:8080')
       .send(requestData)
       .end((err, res) => {
@@ -139,7 +143,7 @@ if (todoList.user.login) {
     }
     request
       .post('/v1/users/login')
-      .set('Authorization', `Bearer ${appToken}`)
+      .set('X-App-Token', `${appToken}`)
       .set('Origin', 'http://localhost:8080')
       .send(requestData)
       .end((err, res) => {
@@ -156,12 +160,15 @@ if (todoList.user.login) {
 if (todoList.user.assign) {
   it('it should assign user roles', (done) => {
     const requestData = {
-      roles: ['data_delivery']
+      roles: [{
+        role: 'data_delivery',
+        project_id: 979
+      }]
     }
     request
       .post(`/v1/users/${tempData.user.id}/roles`)
-      .set('Authorization', `Bearer ${appToken}`)
-      .set('x-access-token', tempData.admin.jwtToken)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
+      .set('X-App-Token', appToken)
       .set('Origin', 'http://localhost:8080')
       .send(requestData)
       .end((err, res) => {
@@ -181,7 +188,8 @@ if (todoList.user.loginNormal) {
     }
     request
       .post('/v1/users/login')
-      .set('Authorization', `Bearer ${appToken}`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
+      .set('X-App-Token', appToken)
       .set('Origin', 'http://localhost:8080')
       .send(requestData)
       .end((err, res) => {
@@ -199,9 +207,9 @@ if (todoList.user.getUsers) {
   it('it should retrieve a list of users', (done) => {
     request
       .get(`/v1/users`)
-      .set('Authorization', `Bearer ${appToken}`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.admin.jwtToken)
+      .set('X-App-Token', appToken)
       .end((err, res) => {
         checkForErrors(err, res);
         expect(res.status).toBe(200);
@@ -216,12 +224,11 @@ if (todoList.user.getUserInfo) {
   it('it should retrieve information about a user by id', (done) => {
     request
       .get(`/v1/users/${tempData.user.id}`)
-      .set('Authorization', `Bearer ${appToken}`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.admin.jwtToken)
+      .set('X-App-Token', appToken)
       .end((err, res) => {
         checkForErrors(err, res);
-
         expect(res.status).toBe(200);
         expect(typeof res.body.data).toBe('object');
         done();
@@ -234,9 +241,9 @@ if (todoList.user.getCurrentInfo) {
   it('it should retrieve information about the current user.', (done) => {
     request
       .get(`/v1/users/current`)
-      .set('Authorization', `Bearer ${appToken}`)
+      .set('Authorization', `Bearer ${tempData.user.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.admin.jwtToken)
+      .set('X-App-Token', appToken)
       .end((err, res) => {
         checkForErrors(err, res);
 
@@ -255,9 +262,9 @@ if (todoList.user.password.change) {
     }
     request
       .put(`/v1/users/password`)
-      .set('Authorization', `Bearer ${appToken}`)
-      .set('x-access-token', tempData.user.jwtToken)
+      .set('Authorization', `Bearer ${tempData.user.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
+      .set('X-App-Token', appToken)
       .send(requestData)
       .end((err, res) => {
         checkForErrors(err, res);
@@ -277,9 +284,9 @@ if (todoList.app.tokens.add) {
     }
     request
       .post('/v1/app/tokens')
-      .set('Authorization', `Bearer ${appToken}`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.admin.jwtToken)
+      .set('X-App-Token', appToken)
       .send(requestData)
       .end((err, res) => {
         checkForErrors(err, res);
@@ -302,9 +309,9 @@ if (todoList.app.tokens.change) {
     }
     request
       .put(`/v1/app/tokens/${tempData.apptoken.addedID}`)
-      .set('Authorization', `Bearer ${appToken}`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.admin.jwtToken)
+      .set('X-App-Token', appToken)
       .send(requestData)
       .end((err, res) => {
         checkForErrors(err, res);
@@ -322,9 +329,9 @@ if (todoList.app.tokens.refresh) {
     const requestData = {}
     request
       .put(`/v1/app/tokens/${tempData.apptoken.addedID}/refresh`)
-      .set('Authorization', `Bearer ${appToken}`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.admin.jwtToken)
+      .set('X-App-Token', appToken)
       .send(requestData)
       .end((err, res) => {
         checkForErrors(err, res);
@@ -341,9 +348,9 @@ if (todoList.app.tokens.getList) {
   it('it should retrieve a list of app tokens', (done) => {
     request
       .get(`/v1/app/tokens`)
-      .set('Authorization', `Bearer ${appToken}`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.admin.jwtToken)
+      .set('X-App-Token', appToken)
       .end((err, res) => {
         checkForErrors(err, res);
 
@@ -361,21 +368,19 @@ if (todoList.project.create) {
   it('it should create a project', (done) => {
     const requestData = {
       'name': tempData.project.name,
-      'admin_id': tempData.admin.id,
       'description': 'aiosdjp askdopasdk oakdspoakdopaküpd akdspkapsdükapüds'
     }
     request
       .post('/v1/projects')
-      .set('Authorization', `Bearer ${appToken}`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.admin.jwtToken)
+      .set('X-App-Token', appToken)
       .send(requestData)
       .end((err, res) => {
         checkForErrors(err, res);
         console.log(`SET PROJECT ID!`);
-        tempData.project.id = res.body.data.id;
-
         expect(res.status).toBe(200);
+        tempData.project.id = res.body.data.id;
         expect(typeof res.body.data).toBe('object');
         done();
       });
@@ -386,8 +391,8 @@ if (todoList.project.get) {
   it('it should get a project by id', (done) => {
     request
       .get(`/v1/projects/${tempData.project.id}`)
-      .set('Authorization', `Bearer ${appToken}`)
-      .set('x-access-token', tempData.admin.jwtToken)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
+      .set('X-App-Token', appToken)
       .set('Origin', 'http://localhost:8080')
       .end((err, res) => {
         checkForErrors(err, res);
@@ -406,8 +411,8 @@ if (todoList.project.list) {
   it('it should list projects', (done) => {
     request
       .get('/v1/projects')
-      .set('Authorization', `Bearer ${appToken}`)
-      .set('x-access-token', tempData.admin.jwtToken)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
+      .set('X-App-Token', appToken)
       .set('Origin', 'http://localhost:8080')
       .end((err, res) => {
         checkForErrors(err, res);
@@ -429,8 +434,8 @@ if (todoList.project.change) {
 
     request
       .put(`/v1/projects/${tempData.project.id}`)
-      .set('Authorization', `Bearer ${appToken}`)
-      .set('x-access-token', tempData.admin.jwtToken)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
+      .set('X-App-Token', appToken)
       .set('Origin', 'http://localhost:8080')
       .send(requestData)
       .end((err, res) => {
@@ -455,9 +460,9 @@ if (todoList.media.add) {
     }
     request
       .post('/v1/media')
-      .set('Authorization', `Bearer ${appToken}`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.admin.jwtToken)
+      .set('X-App-Token', appToken)
       .send(requestData)
       .end((err, res) => {
         checkForErrors(err, res);
@@ -480,9 +485,9 @@ if (todoList.tool.add) {
     }
     request
       .post('/v1/tools')
-      .set('Authorization', `Bearer ${appToken}`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.admin.jwtToken)
+      .set('X-App-Token', appToken)
       .send(requestData)
       .end((err, res) => {
         checkForErrors(err, res);
@@ -509,7 +514,7 @@ if (todoList.dataDelivery.deliver) {
     }
     request
       .post('/v1/delivery/media')
-      .set('Authorization', `Bearer ${appToken}`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
       .set('x-access-token', tempData.user.jwtToken)
       .send(requestData)
@@ -533,9 +538,9 @@ if (todoList.transcripts.add) {
     }
     request
       .post('/v1/transcripts')
-      .set('Authorization', `Bearer ${appToken}`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.admin.jwtToken)
+      .set('X-App-Token', appToken)
       .send(requestData)
       .end((err, res) => {
         checkForErrors(err, res);
@@ -552,7 +557,7 @@ if (todoList.transcripts.get) {
   it('it should get an transcript by id', (done) => {
     request
       .get(`/v1/transcripts/${tempData.transcript.id}`)
-      .set('Authorization', `Bearer ${appToken}`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
       .set('x-access-token', tempData.user.jwtToken)
       .end((err, res) => {
@@ -576,9 +581,9 @@ if (todoList.annotation.start) {
 
     request
       .post(`/v1/projects/${tempData.project.id}/annotations/start`)
-      .set('Authorization', `Bearer ${appToken}`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.admin.jwtToken)
+      .set('X-App-Token', appToken)
       .send(requestData)
       .end((err, res) => {
         checkForErrors(err, res);
@@ -600,9 +605,9 @@ if (todoList.annotation.continue) {
 
     request
       .post(`/v1/projects/${tempData.project.id}/annotations/${tempData.transcript.id}/continue`)
-      .set('Authorization', `Bearer ${appToken}`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.admin.jwtToken)
+      .set('X-App-Token', appToken)
       .send(requestData)
       .end((err, res) => {
         checkForErrors(err, res);
@@ -627,9 +632,9 @@ if (todoList.annotation.save) {
 
     request
       .post(`/v1/projects/${tempData.project.id}/annotations/${tempData.transcript.id}/save`)
-      .set('Authorization', `Bearer ${appToken}`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.admin.jwtToken)
+      .set('X-App-Token', appToken)
       .send(requestData)
       .end((err, res) => {
         checkForErrors(err, res);
@@ -649,9 +654,9 @@ if (todoList.media.upload) {
       .post(`/v1/media/upload`)
       .set('Content-Type', 'application/x-www-form-urlencoded')
       .attach('media', './test/testfiles/Bahnauskunft.wav', 'Bahnauskunft.wav')
-      .set('Authorization', `Bearer ${appToken}`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.admin.jwtToken)
+      .set('X-App-Token', appToken)
       .end((err, res) => {
         checkForErrors(err, res);
         console.log(res.body);
@@ -667,7 +672,7 @@ if (todoList.project.transcripts.getAll) {
   it('it should list an array of transcripts for a given project', (done) => {
     request
       .get(`/v1/projects/${tempData.project.id}/transcripts`)
-      .set('Authorization', `Bearer ${appToken}`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
       .set('x-access-token', tempData.user.jwtToken)
       .end((err, res) => {
@@ -690,9 +695,9 @@ if (todoList.project.transcripts.upload) {
         orgtext: ''
       }), 'utf-8'), 'data.json')
       .attach('media', './testfiles/Bahnauskunft.wav', 'Bahnauskunft.wav')
-      .set('Authorization', `Bearer ${appToken}`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.admin.jwtToken)
+      .set('X-App-Token', appToken)
       .end((err, res) => {
         checkForErrors(err, res);
         expect(res.status).toBe(200);
@@ -708,9 +713,9 @@ if (todoList.project.transcripts.get) {
 
     request
       .get(`/v1/projects/${tempData.project.id}/transcripts/${tempData.transcript.id}/`)
-      .set('Authorization', `Bearer ${appToken}`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.admin.jwtToken)
+      .set('X-App-Token', appToken)
       .send()
       .end((err, res) => {
         checkForErrors(err, res);
@@ -727,9 +732,9 @@ if (todoList.project.transcripts.getAll) {
 
     request
       .get(`/v1/projects/${tempData.project.id}/transcripts/`)
-      .set('Authorization', `Bearer ${appToken}`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.admin.jwtToken)
+      .set('X-App-Token', appToken)
       .send()
       .end((err, res) => {
         checkForErrors(err, res);
@@ -752,9 +757,9 @@ if (todoList.guidelines.save) {
 
     request
       .put(`/v1/projects/752/guidelines/`)
-      .set('Authorization', `Bearer ${appToken}`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.admin.jwtToken)
+      .set('X-App-Token', appToken)
       .send(requestData)
       .end((err, res) => {
         checkForErrors(err, res);
@@ -770,9 +775,9 @@ if (todoList.guidelines.get) {
   it('it should retrieve guidelines', (done) => {
     request
       .get(`/v1/projects/${tempData.project.id}/guidelines/`)
-      .set('Authorization', `Bearer ${appToken}`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.admin.jwtToken)
+      .set('X-App-Token', appToken)
       .end((err, res) => {
         checkForErrors(err, res);
         console.log(res.body);
@@ -787,9 +792,9 @@ if (todoList.files.get) {
   it('it should retrieve a file from transcripts upload', (done) => {
     request
       .get(tempData.mediaItem.uploadURL.replace('http://localhost:8080', ''))
-      .set('Authorization', `Bearer ${appToken}`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.admin.jwtToken)
+      .set('X-App-Token', appToken)
       .end((err, res) => {
         expect(res.status).toBe(200);
         done();
@@ -801,9 +806,9 @@ if (todoList.app.tokens.delete) {
   it('it should remove an app token', (done) => {
     request
       .delete(`/v1/app/tokens/${tempData.apptoken.addedID}`)
-      .set('Authorization', `Bearer ${appToken}`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.admin.jwtToken)
+      .set('X-App-Token', appToken)
       .end((err, res) => {
         checkForErrors(err, res);
 
@@ -817,9 +822,9 @@ if (todoList.user.delete) {
   it('it should remove a user account', (done) => {
     request
       .delete(`/v1/users/${tempData.user.id}`)
-      .set('Authorization', `Bearer ${appToken}`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.admin.jwtToken)
+      .set('X-App-Token', appToken)
       .end((err, res) => {
         checkForErrors(err, res);
         console.log(res.body);
@@ -846,13 +851,12 @@ function checkForErrors(err, res) {
   // console.log(res.body);
   // expect(err).toBeUndefined();
   if (err) {
-    console.log('ERROR: ');
-    console.error(err);
+    logError('ERROR: ');
+    logError(err);
   }
   if (res && res.body) {
     if (res.body.status === 'error') {
-      console.error(`ERROR`);
-      console.error('ResponseError:\n' + JSON.stringify(res.body.message, null, 2));
+      logError('ResponseError:\n' + JSON.stringify(res.body.message, null, 2));
     } else {
       expect(res.body.message).toBe(undefined);
       expect(res.body.status).toBe('success');

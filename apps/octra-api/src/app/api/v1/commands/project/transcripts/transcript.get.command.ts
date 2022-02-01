@@ -139,7 +139,7 @@ export class TranscriptGetCommand extends ApiCommand {
     return;
   }
 
-  reduceDataForUser(req: InternRequest, answer) {
+  reduceDataForUser(req: InternRequest, answer: TranscriptGetResponse) {
     const tokenData = req.decoded;
 
     if (!tokenData) {
@@ -147,12 +147,12 @@ export class TranscriptGetCommand extends ApiCommand {
       return;
     }
 
-    if (!tokenData.role) {
+    if (!tokenData.accessRights) {
       console.log(`no roles in token data!`);
       return;
     }
 
-    if (tokenData.role.find(a => a === UserRole.dataDelivery)) {
+    if (tokenData.accessRights.find(a => a.role === UserRole.dataDelivery && a.project_id === answer.data.project_id)) {
       // is data delivery
       const data = answer.data as ProjectTranscriptsGetResult;
       delete data.pid;

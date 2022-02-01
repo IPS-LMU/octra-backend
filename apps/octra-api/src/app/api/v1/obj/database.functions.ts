@@ -1,7 +1,7 @@
 import {AppConfiguration} from '../../../obj/app-config/app-config';
 import {randomBytes} from 'crypto';
 import {
-  AccountRow,
+  AccessRight,
   AddMediaItemRequest,
   AddToolRequest,
   AddTranscriptRequest,
@@ -10,6 +10,8 @@ import {
   CreateProjectRequest,
   DeliverNewMediaRequest,
   MediaItemRow,
+  OCTRASQLStatements,
+  PreparedAccountRow,
   ProjectResponseDataItem,
   ProjectRow,
   ProjectTranscriptsGetResult,
@@ -19,13 +21,15 @@ import {
   StartAnnotationRequest,
   ToolRow,
   TranscriptRow,
-  UserRole
+  UserRole,
+  UserRoleScope
 } from '@octra/db';
 import {SHA256} from 'crypto-js';
-import {DBManager, SQLQuery} from '../../../db/db.manager';
+import {DBManager, ParameterizedQuery, SQLQuery} from '../../../db/db.manager';
 import {TokenData} from './types';
 import {DateTime} from 'luxon';
 import {PathBuilder} from '../path-builder';
+import {isNumber} from '../../../obj/functions';
 
 export class DatabaseFunctions {
   private static dbManager: DBManager;
@@ -35,7 +39,7 @@ export class DatabaseFunctions {
   private static selectAllStatements = {
     appToken: 'select id::integer, name::text, key::text, domain::text, description::text, registrations::boolean from apptoken',
     account: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp from account ac',
-    project: 'select id::integer, name::text, shortname::text, description::text, configuration::text, startdate::timestamp, enddate::timestamp, active::boolean, admin_id::integer from project',
+    project: 'select id::integer, name::text, shortname::text, description::text, configuration::text, startdate::timestamp, enddate::timestamp, active::boolean from project',
     mediaitem: 'select id::integer, url::text, type::text, size::integer, metadata::text from mediaitem',
     tool: 'select id::integer, name::text, version::text, description::text, pid::text from tool',
     transcript: 'select id::integer, pid::text, orgtext::text, transcript::text, assessment::text, priority::integer, status::text, code::text, creationdate::timestamp, startdate::timestamp, enddate::timestamp, log::text, comment::text, tool_id::integer, transcriber_id::integer, project_id::integer, mediaitem_id::integer, nexttranscript_id::integer from transcript'
@@ -109,7 +113,7 @@ export class DatabaseFunctions {
     try {
       const token = await DatabaseFunctions.generateAppToken();
 
-      const insertQuery = {
+      const insertQuery: ParameterizedQuery = {
         tableName: 'apptoken',
         columns: [
           DatabaseFunctions.getColumnDefinition('name', 'text', data.name, false),
@@ -210,8 +214,8 @@ export class DatabaseFunctions {
     try {
       const startdate = DatabaseFunctions.convertJSONDateTime(data.startdate);
       const enddate = DatabaseFunctions.convertJSONDateTime(data.enddate);
-
-      const insertQuery = {
+      const roles = await DatabaseFunctions.getRoles();
+      const insertProjectResult = await DatabaseFunctions.dbManager.insert({
         tableName: 'project',
         columns: [
           DatabaseFunctions.getColumnDefinition('name', 'text', data.name, false),
@@ -220,22 +224,28 @@ export class DatabaseFunctions {
           DatabaseFunctions.getColumnDefinition('configuration', 'text', data.configuration),
           DatabaseFunctions.getColumnDefinition('startdate', 'timestamp', startdate),
           DatabaseFunctions.getColumnDefinition('enddate', 'timestamp', enddate),
-          DatabaseFunctions.getColumnDefinition('active', 'boolean', data.active),
-          DatabaseFunctions.getColumnDefinition('admin_id', 'integer', data.admin_id)
+          DatabaseFunctions.getColumnDefinition('active', 'boolean', data.active)
         ]
-      };
-      const insertionResult = await DatabaseFunctions.dbManager.insert(insertQuery, 'id');
+      }, '*');
 
-      if (insertionResult.rowCount === 1 && insertionResult.rows[0].hasOwnProperty('id')) {
-        const id = insertionResult.rows[0].id;
-        const selectResult = await DatabaseFunctions.dbManager.query({
-          text: DatabaseFunctions.selectAllStatements.project + ' where id=$1',
-          values: [id]
-        });
-        this.prepareRows(selectResult.rows);
-        return selectResult.rows as ProjectRow[];
+      if (insertProjectResult.rowCount === 0) {
+        throw new Error('Can\'t add project.');
+      } else {
+        /* const insertProjectRole = await DatabaseFunctions.dbManager.insert({
+          tableName: 'account_role_project',
+          columns: [
+            DatabaseFunctions.getColumnDefinition('account_id', 'integer', data.admin_id, false),
+            DatabaseFunctions.getColumnDefinition('role_id', 'integer', roles.find(a => a.label === UserRole.projectAdministrator).id, false),
+            DatabaseFunctions.getColumnDefinition('project_id', 'integer', insertProjectResult.rows[0].id, false)
+          ]
+        }, 'project_id');
+        */
+        // TODO project create without any admins, because created by system administrator
+        // TODO reference admins on project change
+
+        this.prepareRows(insertProjectResult.rows);
+        return insertProjectResult.rows as ProjectRow[];
       }
-      throw new Error('insertionResult does not have id');
     } catch (e) {
       console.log(e);
       throw new Error('Could not create and save a new project.');
@@ -300,8 +310,7 @@ export class DatabaseFunctions {
           DatabaseFunctions.getColumnDefinition('configuration', 'text', data.configuration),
           DatabaseFunctions.getColumnDefinition('startdate', 'timestamp', data.startdate),
           DatabaseFunctions.getColumnDefinition('enddate', 'timestamp', data.enddate),
-          DatabaseFunctions.getColumnDefinition('active', 'boolean', data.active),
-          DatabaseFunctions.getColumnDefinition('admin_id', 'integer', data.admin_id)
+          DatabaseFunctions.getColumnDefinition('active', 'boolean', data.active)
         ]
       };
       const updateResult = await DatabaseFunctions.dbManager.update(updateQuery, `id=${id}::integer`);
@@ -327,7 +336,32 @@ export class DatabaseFunctions {
   public static async listProjects(): Promise<ProjectResponseDataItem[]> {
     try {
       const selectQuery = {
-        text: 'select pr.id::integer, pr.name::text, pr.shortname::text, pr.description::text, pr.configuration::text, pr.startdate::timestamp, pr.enddate::timestamp, pr.active::boolean, pr.admin_id::integer, count(transcript.id)::integer as transcripts_count, count(case when transcript.status=\'FREE\' then transcript.id end)::integer as transcripts_count_free from transcript full outer join project pr on transcript.project_id=pr.id group by pr.id order by pr.id;'
+        text: `with project_admins as (
+          select ar.project_id                        as project_id,
+                 r.label                              as role_id,
+                 json_agg(json_build_object('username', ar.account_id, 'label', r.label, 'scope',
+                                            r.scope)) as user_roles
+          from account ac
+                 full outer join account_role_project ar on ac.id = ar.account_id
+                 inner join project pr on ar.project_id = pr.id
+                 inner join role r on r.id = ar.role_id
+          group by ar.project_id, r.label
+        )
+               select pr.id,
+                      pr.name,
+                      pr.shortname,
+                      pr.startdate,
+                      pr.enddate,
+                      pr.active,
+                      pra.user_roles::text,
+                      count(transcript.id)                                               as transcripts_count,
+                      count(case when transcript.status = 'FREE' then transcript.id end) as transcripts_count_free
+               from transcript
+                      full outer join project pr on transcript.project_id = pr.id
+                      full outer join project_admins pra on pra.project_id = pr.id
+               where pr.id IS NOT NULL
+               group by pr.id, pra.user_roles::text
+               order by pr.id;`
       };
       const selectResult = await DatabaseFunctions.dbManager.query(selectQuery);
 
@@ -730,9 +764,9 @@ export class DatabaseFunctions {
           });
 
           const mediaItemRows = mediaItem.rows as MediaItemRow[];
-          const result: ProjectTranscriptsGetResult = {
+          const result = {
             ...row
-          };
+          } as ProjectTranscriptsGetResult;
 
           if (mediaItem.rowCount === 1) {
             result.mediaitem = {
@@ -776,15 +810,23 @@ export class DatabaseFunctions {
     loginmethod: string
   }): Promise<{
     id: number;
-    roles: UserRole[];
+    accessRights: AccessRight[];
   }> {
+    const roles = await this.getRoles();
+    const userRole = roles.find(a => a.label === UserRole.user);
+
+    if (!userRole) {
+      throw new Error('Couldn\'t find user role in role table.');
+    }
+
     const insertAccountQuery = {
       tableName: 'account',
       columns: [
         DatabaseFunctions.getColumnDefinition('username', 'text', userData.name),
         DatabaseFunctions.getColumnDefinition('email', 'text', userData.email),
         DatabaseFunctions.getColumnDefinition('hash', 'text', userData.password),
-        DatabaseFunctions.getColumnDefinition('loginmethod', 'text', userData.loginmethod)
+        DatabaseFunctions.getColumnDefinition('loginmethod', 'text', userData.loginmethod),
+        DatabaseFunctions.getColumnDefinition('role_id', 'integer', userRole.id)
       ]
     };
     const insertionResult = await DatabaseFunctions.dbManager.insert(insertAccountQuery, 'id');
@@ -792,13 +834,8 @@ export class DatabaseFunctions {
     if (insertionResult.rowCount === 1 && insertionResult.rows[0].hasOwnProperty('id')) {
       const id = insertionResult.rows[0].id;
 
-      await DatabaseFunctions.assignUserRolesToUser({
-        roles: [UserRole.transcriber],
-        accountID: id
-      });
-
       const selectResult = await DatabaseFunctions.dbManager.query({
-        text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_role ar ON ac.id=ar.account_id full outer join role r ON r.id=ar.role_id where ac.id=$1::integer',
+        text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join role r ON r.id=ac.role_id where ac.id=$1::integer',
         values: [
           id
         ]
@@ -806,11 +843,14 @@ export class DatabaseFunctions {
 
       if (selectResult.rowCount > 0) {
         DatabaseFunctions.prepareRows(selectResult.rows);
-        const roles: UserRole[] = (selectResult.rows as any).map(a => a.role).filter(a => !(a === undefined || a === null));
 
         return {
           id: selectResult.rows[0].id,
-          roles
+          accessRights: [
+            {
+              scope: UserRoleScope.global,
+              role: UserRole.user
+            }]
         };
       }
     }
@@ -818,6 +858,7 @@ export class DatabaseFunctions {
     throw new Error('Could not create user.');
   }
 
+  // TODO remove/replace?
   static async assignUserRolesToUser(data: AssignUserRoleRequest) {
     const rolesTable = await this.getRoles();
 
@@ -825,19 +866,27 @@ export class DatabaseFunctions {
 
     // remove all roles from this account at first
     queries.push({
-      text: 'delete from account_role where account_id=$1::integer',
+      text: 'delete from account_role_project where account_id=$1::integer',
       values: [data.accountID]
     });
 
     for (const role of data.roles) {
-      const roleEntry = rolesTable.find(a => a.label === role);
+      const roleEntry = rolesTable.find(a => a.label === role.role);
 
       if (roleEntry) {
         const roleID = roleEntry.id;
-        queries.push({
-          text: 'insert into account_role(account_id, role_id) values($1::integer, $2::integer)',
-          values: [data.accountID, roleID]
-        });
+        if (roleEntry.scope === 'general') {
+          queries.push({
+            text: 'update account set role_id=$1::integer where id=$2::integer',
+            values: [roleID, data.accountID]
+          });
+        } else {
+          queries.push({
+            text: 'insert into account_role_project(account_id, role_id, project_id) values($1::integer, $2::integer, $3::integer)',
+            values: [data.accountID, roleID, role.project_id]
+          });
+        }
+
       } else {
         throw new Error(`Could not find role '${role}'`);
       }
@@ -861,7 +910,7 @@ export class DatabaseFunctions {
   static async getRolesByUserID(id: number): Promise<string[]> {
     const rolesTable = await DatabaseFunctions.getRoles();
     const accountRolesTable = await DatabaseFunctions.dbManager.query({
-      text: 'select * from account_role where account_id=$1::integer',
+      text: 'select * from account_role_project where account_id=$1::integer',
       values: [id]
     });
     return (accountRolesTable.rows as any).map(a => a.role_id)
@@ -875,26 +924,14 @@ export class DatabaseFunctions {
       .filter(a => a !== null);
   }
 
-  static async listUsers(): Promise<AccountRow[]> {
+  static async listUsers(): Promise<PreparedAccountRow[]> {
     const selectResult = await DatabaseFunctions.dbManager.query({
-      text: this.selectAllStatements.account + ' order by id'
+      text: OCTRASQLStatements.allUsersWithRoles
     });
 
-    const results: any[] = [];
-    for (const row of selectResult.rows) {
-      const roles = await DatabaseFunctions.getRolesByUserID(row.id);
-      delete (row as any).hash;
+    DatabaseFunctions.prepareRows(selectResult.rows);
 
-      const result = {
-        ...row,
-        roles
-      }
-      results.push(result);
-    }
-
-    DatabaseFunctions.prepareRows(results);
-
-    return results as AccountRow[];
+    return selectResult.rows as PreparedAccountRow[];
   }
 
   static async removeUserByID(id: number): Promise<void> {
@@ -904,11 +941,7 @@ export class DatabaseFunctions {
         values: [id]
       },
       {
-        text: 'update project set admin_id=null where admin_id=$1::integer',
-        values: [id]
-      },
-      {
-        text: 'delete from account_role where account_id=$1::integer',
+        text: 'delete from account_role_project where account_id=$1::integer',
         values: [id]
       },
       {
@@ -923,14 +956,11 @@ export class DatabaseFunctions {
     return;
   }
 
-  static async getUserByHash(loginmethod: 'shibboleth' | 'local', hash: string): Promise<boolean> {
-    const selectResult = await DatabaseFunctions.dbManager.query({
-      text: this.selectAllStatements.account + ' where hash=$1::text and loginmethod=$2::text',
-      values: [hash, loginmethod]
-    });
+  static async checkUserExistsByHash(loginmethod: 'shibboleth' | 'local', hash: string): Promise<boolean> {
+    const selectResult = await DatabaseFunctions.getUserInfo({hash});
 
-    if (selectResult.rowCount === 1) {
-      DatabaseFunctions.prepareRows(selectResult.rows);
+    if (selectResult) {
+      DatabaseFunctions.prepareRows([selectResult]);
       return true;
     }
 
@@ -938,38 +968,45 @@ export class DatabaseFunctions {
   }
 
   static async getUserInfo(data: {
-    name: string;
-    email: string;
-    hash: string;
-  }): Promise<AccountRow> {
+    name?: string;
+    email?: string;
+    hash?: string;
+    id?: number;
+  }): Promise<PreparedAccountRow> {
     let selectResult = null;
 
-    if (data.name && data.name.trim() !== '') {
+    const sqlStatement = OCTRASQLStatements.allUsersWithRoles;
+
+    if (data.id && isNumber(data.id)) {
       selectResult = await DatabaseFunctions.dbManager.query({
-        text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_role ar ON ac.id=ar.account_id full outer join role r ON r.id=ar.role_id where ac.username=$1::text',
+        text: `${sqlStatement} where ac.id=$1::integer;`,
+        values: [data.id]
+      });
+    } else if (data.name && data.name.trim() !== '') {
+      selectResult = await DatabaseFunctions.dbManager.query({
+        text: `${sqlStatement} where ac.username=$1::text;`,
         values: [data.name]
       });
     } else if (data.hash && data.hash.trim() !== '') {
       console.log(`get by hash ${data.hash}`);
       selectResult = await DatabaseFunctions.dbManager.query({
-        text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_role ar ON ac.id=ar.account_id full outer join role r ON r.id=ar.role_id where ac.hash=$1::text',
+        text: `${sqlStatement} where ac.hash=$1::text;`,
         values: [data.hash]
       });
     } else if (data.email && data.email.trim() !== '') {
       selectResult = await DatabaseFunctions.dbManager.query({
-        text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_role ar ON ac.id=ar.account_id full outer join role r ON r.id=ar.role_id where ac.email=$1::text',
+        text: `${sqlStatement} where ac.email=$1::text;`,
         values: [data.email]
       });
     }
 
     if (selectResult) {
-      const roles: UserRole[] = (selectResult.rows as any[]).map(a => a.role).filter(a => !(a === undefined || a === null));
-      const row = selectResult.rows[0] as AccountRow;
+      DatabaseFunctions.prepareRows(selectResult.rows);
+      const row = selectResult.rows[0] as PreparedAccountRow;
+      row.accessRights = selectResult.rows[0].user_roles;
+
       if (selectResult.rowCount > 0) {
-        return {
-          ...row,
-          role: roles
-        };
+        return row;
       }
     }
 
@@ -991,22 +1028,12 @@ export class DatabaseFunctions {
   }
 
 
-  static async getUserInfoByUserID(id: number): Promise<AccountRow> {
-    const selectResult = await DatabaseFunctions.dbManager.query({
-      text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join account_role ar ON ac.id=ar.account_id full outer join role r ON r.id=ar.role_id where ac.id=$1::integer',
-      values: [id]
-    });
+  static async getUserInfoByUserID(id: number): Promise<PreparedAccountRow> {
+    const result = await DatabaseFunctions.getUserInfo({id});
 
-    const role: UserRole[] = (selectResult.rows as any[]).map(a => a.role).filter(a => !(a === undefined || a === null));
-    if (selectResult.rowCount > 0) {
-      const row = selectResult.rows[0] as AccountRow;
-      DatabaseFunctions.prepareRows([row]);
-      return {
-        ...row,
-        role
-      };
+    if (result) {
+      return result;
     }
-
     throw new Error('could not find user');
   }
 

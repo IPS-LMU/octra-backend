@@ -46,7 +46,7 @@ export class UserExistsHashCommand extends ApiCommand {
 
     if (validation.length === 0) {
       try {
-        answer.data = await DatabaseFunctions.getUserByHash(req.query.loginmethod, req.query.hash);
+        answer.data = await DatabaseFunctions.checkUserExistsByHash(req.query.loginmethod, req.query.hash);
         this.checkAndSendAnswer(res, answer, false);
       } catch (e) {
         console.log(e);

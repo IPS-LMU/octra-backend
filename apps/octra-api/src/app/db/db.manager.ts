@@ -17,6 +17,7 @@ export interface ParameterizedQuery {
     key: string;
     type: string;
     value: any;
+    maybeNull: boolean;
   }[];
 }
 

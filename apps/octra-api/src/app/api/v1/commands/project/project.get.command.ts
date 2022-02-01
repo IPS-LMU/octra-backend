@@ -6,7 +6,7 @@ import {ProjectCreateResponse, UserRole} from '@octra/db';
 
 export class ProjectGetCommand extends ApiCommand {
   constructor() {
-    super('getProject', '/projects', RequestType.GET, '/:id', true,
+    super('getProject', '/projects', RequestType.GET, '/:project_id', true,
       [
         UserRole.administrator
       ]);
@@ -50,9 +50,6 @@ export class ProjectGetCommand extends ApiCommand {
             },
             active: {
               type: 'boolean'
-            },
-            admin_id: {
-              type: 'number'
             }
           }
         }
@@ -66,12 +63,12 @@ export class ProjectGetCommand extends ApiCommand {
 
     // do something
     if (validation.length === 0) {
-      if (!req.params.id) {
+      if (!req.params.project_id) {
         ApiCommand.sendError(res, InternalServerError, 'Missing id in URL.');
         return;
       }
       try {
-        answer.data = await DatabaseFunctions.getProject(req.params.id);
+        answer.data = await DatabaseFunctions.getProject(req.params.project_id);
         if (answer.data.configuration) {
           try {
             answer.data.configuration = JSON.parse(answer.data.configuration);

@@ -13,7 +13,7 @@ import {DBManager} from './db/db.manager';
 import {PostgreSQLManager} from './db/postgreSQL.manager';
 import * as cookieParser from 'cookie-parser';
 import * as jwt from 'jsonwebtoken';
-import {UserRole} from '@octra/db';
+import {AccessRight} from '@octra/db';
 import {SHA256} from 'crypto-js';
 import {DatabaseFunctions} from './api/v1/obj/database.functions';
 import {InternRequest, TokenData} from './api/v1/obj/types';
@@ -182,10 +182,10 @@ export class OctraApi {
                 email: '',
                 hash: UUID
               }).then((user) => {
-                const redirectWithToken = (id: number, roles: UserRole[]) => {
+                const redirectWithToken = (id: number, roles: AccessRight[]) => {
                   const tokenData: TokenData = {
                     id,
-                    role: roles
+                    accessRights: roles
                   };
                   const token = jwt.sign(tokenData, this.settings.api.secret, {
                     expiresIn: 86400 // expires in 24 hours
@@ -201,7 +201,7 @@ export class OctraApi {
 
                 if (user) {
                   console.log(`user exists`);
-                  redirectWithToken(user.id, user.role);
+                  redirectWithToken(user.id, user.accessRights);
                 } else {
                   console.log(`user does not exist`);
 
@@ -222,7 +222,7 @@ export class OctraApi {
                         loginmethod: 'shibboleth'
                       }).then((newUser) => {
                         console.log(`user created with id ${newUser.id}`);
-                        redirectWithToken(newUser.id, newUser.roles);
+                        redirectWithToken(newUser.id, newUser.accessRights);
                       }).catch((error) => {
                         ApiCommand.sendError(res, 401, error, false);
                       });

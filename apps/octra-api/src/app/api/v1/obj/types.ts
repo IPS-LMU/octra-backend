@@ -1,11 +1,11 @@
 import {Request} from 'express';
-import {UserRole} from '@octra/db';
+import {AccessRight} from '@octra/db';
 import {PathBuilder} from '../path-builder';
 
 
 export interface TokenData {
   id: number;
-  role: UserRole[]
+  accessRights: AccessRight[]
 }
 
 export interface InternRequest extends Request {

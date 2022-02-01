@@ -54,9 +54,6 @@ export class ProjectListCommand extends ApiCommand {
               active: {
                 type: 'boolean'
               },
-              admin_id: {
-                type: 'number'
-              },
               transcripts_count: {
                 type: 'number',
                 required: true
@@ -95,13 +92,12 @@ export class ProjectListCommand extends ApiCommand {
           return a;
         });
 
-        if (req.decoded && req.decoded.role.find(a => a !== UserRole.transcriber) > -1) {
+        if (req.decoded && req.decoded.accessRights.find(a => a !== UserRole.transcriber) > -1) {
           // is not administrator, remove data
           answer.data = answer.data.filter(a => a.active);
 
           for (const projectRow of answer.data) {
             delete projectRow.enddate;
-            delete projectRow.admin_id;
             delete projectRow.startdate;
             delete projectRow.active;
           }

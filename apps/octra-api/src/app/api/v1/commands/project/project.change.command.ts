@@ -41,9 +41,6 @@ export class ProjectChangeCommand extends ApiCommand {
         },
         active: {
           type: 'boolean'
-        },
-        admin_id: {
-          type: 'number'
         }
       }
     };
@@ -80,9 +77,6 @@ export class ProjectChangeCommand extends ApiCommand {
             },
             active: {
               type: 'boolean'
-            },
-            admin_id: {
-              type: 'number'
             }
           }
         }

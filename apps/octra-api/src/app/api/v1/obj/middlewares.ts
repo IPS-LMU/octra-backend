@@ -5,13 +5,13 @@ import {DatabaseFunctions} from './database.functions';
 import {UserRole} from '@octra/db';
 import {NextFunction, Request, Response} from 'express';
 import {InternRequest} from './types';
+import {isNumber} from '../../../obj/functions';
 
 export const verifyAppToken = (req: InternRequest, res: Response, next: NextFunction, settings: AppConfiguration, callback) => {
   let originHost = req.get('origin')
-  let appToken = req.get('Authorization');
+  let appToken = req.get('X-App-Token');
 
   if (appToken) {
-    appToken = appToken.replace('Bearer ', '');
     originHost = (originHost) ? originHost = originHost.replace(/:[0-9]{1,5}$/g, '').replace(/^https?:\/\//g, '') : '';
     if (originHost === '') {
       originHost = req.get('host');
@@ -30,13 +30,14 @@ export const verifyAppToken = (req: InternRequest, res: Response, next: NextFunc
 };
 
 export const verifyWebToken = (req: Request, res: Response, next: NextFunction, settings: AppConfiguration, allowedUserRoles: UserRole[], callback) => {
-  const token = req.get('x-access-token');
+  let token = req.get('Authorization');
   const hasPublicRole = allowedUserRoles.findIndex(a => a === UserRole.public) > -1;
 
   if (!token && !hasPublicRole) {
     ApiCommand.sendError(res, 401, `Missing token in x-access-token header.`, false);
   } else {
     if (token) {
+      token = token.replace('Bearer ', '');
       jwt.verify(token, settings.api.secret, (err, tokenBody) => {
         if (err) {
           ApiCommand.sendError(res, 401, `Invalid Web Token. Please authenticate again.`, false);
@@ -61,10 +62,28 @@ export const verifyUserRole = (req: InternRequest, res: Response, command: ApiCo
       if (command.allowedUserRoles.length > 0) {
         // verify roles
         DatabaseFunctions.getUserInfoByUserID(tokenData.id).then((info) => {
-          const foundOne = info.role.find(a => command.allowedUserRoles.findIndex(b => b === a) > -1);
+          const foundOnes = info.accessRights.filter(a => command.allowedUserRoles.findIndex(b => {
+            return a.role === b;
+          }) > -1);
 
-          if (foundOne) {
-            callback();
+          if (foundOnes.length > 0) {
+            if (!foundOnes.find(a => a.role === UserRole.administrator)) {
+
+              if (req.params.project_id && isNumber(req.params.project_id)) {
+                const project_id = Number(req.params.project_id);
+                const isProjectAdmin = foundOnes.find(a => a.role === UserRole.projectAdministrator && a.project_id === project_id) !== undefined;
+
+                if (isProjectAdmin) {
+                  callback();
+                } else {
+                  ApiCommand.sendError(res, 401, 'You don\'t have access rights to use this function.');
+                }
+              } else {
+                callback();
+              }
+            } else {
+              callback();
+            }
           } else {
             ApiCommand.sendError(res, 401, 'You don\'t have access rights to use this function.');
           }

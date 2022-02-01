@@ -103,10 +103,10 @@ export class UserLoginCommand extends ApiCommand {
         }
         authenticated = true;
 
-        const {id, username, role} = userData;
+        const {id, username, accessRights} = userData;
         answer.authenticated = authenticated;
         const tokenData: TokenData = {
-          id, role
+          id, accessRights: accessRights
         };
         answer.token = jwt.sign(tokenData, this.settings.api.secret, {
           expiresIn: 86400 // expires in 24 hours

@@ -3,7 +3,20 @@ export enum UserRole {
   transcriber = 'transcriber',
   projectAdministrator = 'project_admin',
   dataDelivery = 'data_delivery',
-  public = 'public'
+  public = 'public',
+  user = 'user'
+}
+
+export enum UserRoleScope {
+  global = 'global',
+  project = 'project'
+}
+
+export interface AccessRight {
+  role: UserRole;
+  scope: UserRoleScope;
+  project_id?: number;
+  project_name?: string;
 }
 
 export interface DatabaseRow {
@@ -19,7 +32,20 @@ export interface AccountRow extends DatabaseRow {
   hash: string;
   training: string;
   comment: string;
-  role: UserRole[];
+  role: UserRole;
+}
+
+export interface PreparedAccountRow extends DatabaseRow {
+  username: string;
+  email: string;
+  loginmethod: string;
+  createdate: string;
+  active: boolean;
+  hash: string;
+  training: string;
+  comment: string;
+  role: UserRole;
+  accessRights: AccessRight[];
 }
 
 export interface AccountRolesRow {
@@ -30,6 +56,7 @@ export interface AccountRolesRow {
 export interface RolesRow extends DatabaseRow {
   label: UserRole;
   description: string;
+  scope: 'general' | 'project';
 }
 
 export interface AppTokensRow extends DatabaseRow {
@@ -59,7 +86,6 @@ export interface ProjectRow extends DatabaseRow {
   startdate: string; //timestamp without timezone
   enddate: string; //timestamp without timezone
   active: boolean;
-  admin_id: number;
 }
 
 export interface ToolRow extends DatabaseRow {
@@ -70,6 +96,7 @@ export interface ToolRow extends DatabaseRow {
 }
 
 export interface TranscriptRow extends DatabaseRow {
+  id: number;
   pid: string;
   orgtext: string;
   transcript: string;
@@ -89,7 +116,7 @@ export interface TranscriptRow extends DatabaseRow {
   nexttranscript_id: number;
 }
 
-export interface ProjectTranscriptsGetResult {
+export interface ProjectTranscriptsGetResult extends DatabaseRow {
   id: number;
   pid?: string;
   orgtext?: string;

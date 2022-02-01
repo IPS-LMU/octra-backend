@@ -1,4 +1,4 @@
-import {MediaItemRow, UserRole} from '../db';
+import {AccessRight, MediaItemRow, UserRole} from '../db';
 
 export interface AppTokenChangeResponseDataItem {
   name: string;
@@ -17,7 +17,7 @@ export interface ProjectResponseDataItem {
   startdate?: string;
   enddate?: string;
   active?: boolean;
-  admin_id?: number;
+  accessRights?: AccessRight[];
   transcripts_count: number;
   transcripts_count_free: number;
 }
@@ -86,7 +86,7 @@ export interface ProjectCreateResponseDataItem {
   startdate?: string;
   enddate?: string;
   active?: boolean;
-  admin_id?: number
+  accessRights?: AccessRight[]
 }
 
 export interface UserLoginResponseDataItem {
@@ -139,6 +139,7 @@ export interface UserInfoResponseDataItem {
   training?: string;
   loginmethod: string;
   comment?: string;
+  accessRights: AccessRight[];
 }
 
 export interface AnnotationStartResponseDataItem {

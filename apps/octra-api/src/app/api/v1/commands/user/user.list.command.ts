@@ -55,6 +55,27 @@ export class UserListCommand extends ApiCommand {
               },
               comment: {
                 type: 'string'
+              },
+              accessRights: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  required: ['role', 'scope'],
+                  properties: {
+                    role: {
+                      type: 'string'
+                    },
+                    project_id: {
+                      type: 'number'
+                    },
+                    project_name: {
+                      type: 'string'
+                    },
+                    scope: {
+                      type: 'string'
+                    }
+                  }
+                }
               }
             }
           }

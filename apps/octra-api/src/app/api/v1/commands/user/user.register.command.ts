@@ -84,7 +84,7 @@ export class UserRegisterCommand extends ApiCommand {
             answer.authenticated = true;
             const tokenData: TokenData = {
               id: result.id,
-              role: result.roles
+              accessRights: result.accessRights
             };
             answer.token = jwt.sign(tokenData, this.settings.api.secret, {
               expiresIn: 86400 // expires in 24 hours

@@ -111,6 +111,10 @@ export class TranscriptUploadCommand extends ApiCommand {
                 size: {
                   type: 'number'
                 },
+                session: {
+                  type: 'string',
+                  required: true
+                },
                 metadata: {
                   type: 'string'
                 }
@@ -227,6 +231,10 @@ export class TranscriptUploadCommand extends ApiCommand {
       const mediaFile = formData.find(a => a.fieldname === 'media');
       const jsonFile = formData.find(a => a.fieldname === 'data');
 
+      // TODO transcript mediaitem is a n:1 relation
+      // TODO transcript file must be uploaded anyway because of session
+      // TODO implement session folder structure
+
       if (mediaFile) {
         if (path.extname(mediaFile.originalname) !== '.wav') {
           result.push({
@@ -247,6 +255,10 @@ export class TranscriptUploadCommand extends ApiCommand {
               },
               transcript: {
                 type: 'string'
+              },
+              session: {
+                type: 'string',
+                required: true
               }
             }
           };

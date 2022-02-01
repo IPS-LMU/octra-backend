@@ -71,10 +71,10 @@ export class UserCurrentInfoCommand extends ApiCommand {
             delete result.hash;
           }
 
-          if (result.role) {
+          if (result.accessRights) {
             answer.data = {
               ...result,
-              roles: result.role
+              accessRights: result.accessRights
             }
             delete (answer.data as any).role;
           }

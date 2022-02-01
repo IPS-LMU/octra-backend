@@ -6,8 +6,8 @@ export class PathBuilder {
   private readonly uploadPath: string;
   private readonly settings: IAPIConfiguration;
   private readonly urlEncryption: {
-    key: string;
-    iv: string;
+    key: CryptoJS.lib.WordArray;
+    iv: CryptoJS.lib.WordArray;
   };
 
   constructor(settings: IAPIConfiguration) {
