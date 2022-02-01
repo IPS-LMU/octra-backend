@@ -38,8 +38,9 @@ export class PathBuilder {
     return Path.join(this.uploadPath, 'projects', `project_${projectID}`);
   }
 
-  public getProjectFilesPath(projectID: number) {
-    return Path.join(this.getProjectPath(projectID), 'files');
+  public getProjectSessionPath(projectID: number, sessionName: string) {
+    sessionName = this.sanitizeFileName(sessionName);
+    return Path.join(this.getProjectPath(projectID), 'session_', sessionName);
   }
 
   public getGuidelinesPath(projectID: number) {
@@ -56,5 +57,9 @@ export class PathBuilder {
 
   public getEncryptedFileURL(filePath: string) {
     return this.settings.url + Path.join('/v1/files/public/', this.encryptFilePath(Path.dirname(filePath)), Path.basename(filePath));
+  }
+
+  public sanitizeFileName(baseName: string) {
+    return baseName.replace(/[:\d&%\\/\.=?]+/g, "_");
   }
 }

@@ -177,25 +177,52 @@ export class TranscriptUploadCommand extends ApiCommand {
                 }
               }
 
-              const projectFilesPath = req.pathBuilder.getProjectFilesPath(req.params.project_id);
+              // TODO check if session name is correct
+              // TODO test this cloass
+              const sanitizedSessionName = req.pathBuilder.sanitizeFileName(jsonFile.content.media.session);
+              const projectFilesPath = req.pathBuilder.getProjectSessionPath(req.params.project_id, jsonFile.content.media.session);
               await FileSystemHandler.createDirIfNotExists(projectFilesPath);
               let fileInformation;
 
+              let publicURL = "";
               if (mediaFile) {
                 //move from temp to project folder
-                await FileSystemHandler.moveFile(Path.join(mediaPath, mediaFile.originalname), Path.join(projectFilesPath, mediaFile.originalname));
+                const sanitizedFileName = req.pathBuilder.sanitizeFileName(Path.basename(mediaFile.originalname)) + Path.extname(mediaFile.originalname);
+                await FileSystemHandler.moveFile(Path.join(mediaPath, mediaFile.originalname), Path.join(projectFilesPath, sanitizedFileName));
                 await FileSystemHandler.removeFolder(mediaPath);
                 // fill in file information
-                fileInformation = await FileSystemHandler.readFileInformation(Path.join(projectFilesPath, mediaFile.originalname));
+                fileInformation = await FileSystemHandler.readFileInformation(Path.join(projectFilesPath, sanitizedFileName));
                 reqData.media = {
-                  url: Path.join('files', mediaFile.originalname),
+                  session: jsonFile.content.media.session,
+                  url: Path.join(`session_${sanitizedSessionName}`, sanitizedFileName),
                   size: fileInformation.size,
-                  type: fileInformation.type
+                  type: fileInformation.type,
+                  originalname: mediaFile.originalname
                 };
+                publicURL = req.pathBuilder.getEncryptedProjectFileURL(req.params.project_id, path.basename(reqData.media.url));
+              } else {
+                const regex = new RegExp(`^${Path.join(this.settings.api.url, 'v1/links')}`);
+
+                let originalName = undefined;
+                if (regex.exec(reqData.media.url)) {
+                  reqData.media.url = reqData.media.url.replace(/^.+links\/([\/]+)\/(.+)/g, (g0, g1, g2) => {
+                    originalName = g2;
+                    return `${req.pathBuilder.decryptFilePath(g1)}/${g2}`;
+                  });
+
+                  if (!(await pathExists(Path.join(this.settings.uploadPath, reqData.media.url)))) {
+                    ApiCommand.sendError(res, InternalServerError, 'The file referenced by this URL doesn\'t exist.');
+                  }
+                } else {
+                  originalName = reqData.media.url.replace(/.+\/(.+)/g, (g0, g1) => {
+                    return g1;
+                  });
+                  publicURL = reqData.media.url;
+                }
+                reqData.media.originalname = originalName;
               }
 
               const data = await DatabaseFunctions.deliverNewMedia(reqData);
-              const publicURL = req.pathBuilder.getEncryptedProjectFileURL(req.params.project_id, path.basename(data.mediaitem.url));
 
               answer.data = {
                 ...data,
@@ -232,8 +259,6 @@ export class TranscriptUploadCommand extends ApiCommand {
       const jsonFile = formData.find(a => a.fieldname === 'data');
 
       // TODO transcript mediaitem is a n:1 relation
-      // TODO transcript file must be uploaded anyway because of session
-      // TODO implement session folder structure
 
       if (mediaFile) {
         if (path.extname(mediaFile.originalname) !== '.wav') {
@@ -245,48 +270,47 @@ export class TranscriptUploadCommand extends ApiCommand {
         }
       }
 
-      if (formData.length && (mediaFile || jsonFile)) {
-        if (jsonFile) {
-          // TODO we need global instances of schemas
-          let schema = {
-            properties: {
-              orgtext: {
-                type: 'string'
-              },
-              transcript: {
-                type: 'string'
-              },
-              session: {
-                type: 'string',
-                required: true
-              }
-            }
-          };
-
-          if (!mediaFile) {
-            schema.properties['media'] = {
-              type: 'object',
+      if (formData.length > 0 && jsonFile) {
+        // TODO we need global instances of schemas
+        let schema = {
+          properties: {
+            orgtext: {
+              type: 'string'
+            },
+            transcript: {
+              type: 'string'
+            },
+            media: {
+              type: "object",
               required: true,
               properties: {
-                url: {
+                session: {
                   type: 'string',
-                  required: true,
-                  pattern: '^https?:\/\/',
-                  description: 'Public URL to the media file'
+                  pattern: ".{3, 60}",
+                  required: true
                 }
               }
             }
           }
+        };
 
-          const validator = new Validator();
-          jsonFile.content = readJSONSync(jsonFile.path);
-          const validationResult = validator.validate(jsonFile.content, schema);
-          if (!validationResult.valid) {
-            result.push({
-              section: 'Request payload',
-              errors: validationResult.errors.map(a => a.path.join('.') + ' ' + a.message)
-            });
-          }
+        if (!mediaFile) {
+          schema.properties["media"].properties["url"] = {
+            type: 'string',
+            required: true,
+            pattern: '^https?:\/\/',
+            description: 'Public URL to the media file'
+          };
+        }
+
+        const validator = new Validator();
+        jsonFile.content = readJSONSync(jsonFile.path);
+        const validationResult = validator.validate(jsonFile.content, schema);
+        if (!validationResult.valid) {
+          result.push({
+            section: 'Request payload',
+            errors: validationResult.errors.map(a => a.path.join('.') + ' ' + a.message)
+          });
         }
       } else {
         result.push({

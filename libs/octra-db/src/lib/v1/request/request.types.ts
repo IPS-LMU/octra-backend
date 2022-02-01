@@ -31,10 +31,13 @@ export interface UserRegisterRequest {
 }
 
 export interface AddMediaItemRequest {
+  project_id: number;
   url: string;
   type?: string;
   size?: number;
   metadata?: string;
+  session: string;
+  originalname: string;
 }
 
 export interface AddUploadItemRequest {
@@ -83,6 +86,8 @@ export interface DeliverNewMediaRequest {
     type?: string;
     size?: number;
     metadata?: string;
+    session: string;
+    originalname: string;
   },
   orgtext?: string;
   transcript?: string;

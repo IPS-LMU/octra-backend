@@ -379,29 +379,42 @@ export class DatabaseFunctions {
 
   public static async addMediaItem(data: AddMediaItemRequest): Promise<MediaItemRow[]> {
     try {
-      const insertQuery = {
-        tableName: 'mediaitem',
-        columns: [
-          DatabaseFunctions.getColumnDefinition('url', 'text', data.url, false),
-          DatabaseFunctions.getColumnDefinition('type', 'text', data.type),
-          DatabaseFunctions.getColumnDefinition('size', 'integer', data.size),
-          DatabaseFunctions.getColumnDefinition('metadata', 'text', data.metadata)
-        ]
-      };
+      const selectResult = await this.dbManager.query({
+        text: "select * from mediaitem where project_id=$1::integer and session=$2::text and url=$3::text",
+        values: [data.project_id, data.session, data.url]
+      });
 
-      const insertionResult = await DatabaseFunctions.dbManager.insert(insertQuery, 'id');
+      let mediaitem_row: MediaItemRow = undefined
+      if (selectResult.rows.length === 1) {
+        mediaitem_row = selectResult.rows[0] as MediaItemRow;
+      } else {
+        const insertQuery = {
+          tableName: 'mediaitem',
+          columns: [
+            DatabaseFunctions.getColumnDefinition('url', 'text', data.url, false),
+            DatabaseFunctions.getColumnDefinition('type', 'text', data.type),
+            DatabaseFunctions.getColumnDefinition('size', 'integer', data.size),
+            DatabaseFunctions.getColumnDefinition('metadata', 'text', data.metadata),
+            DatabaseFunctions.getColumnDefinition('session', 'text', data.session),
+            DatabaseFunctions.getColumnDefinition('originalname', 'text', data.originalname),
+            DatabaseFunctions.getColumnDefinition('project_id', 'integer', data.project_id)
+          ]
+        };
 
-      if (insertionResult.rowCount === 1 && insertionResult.rows[0].hasOwnProperty('id')) {
-        const id = insertionResult.rows[0].id;
-        const selectResult = await DatabaseFunctions.dbManager.query({
-          text: DatabaseFunctions.selectAllStatements.mediaitem + ' where id=$1',
-          values: [id]
-        });
-        this.prepareRows(selectResult.rows);
-        (selectResult.rows[0] as MediaItemRow).url = this.pathBuilder.getEncryptedFileURL((selectResult.rows[0] as MediaItemRow).url);
-        return selectResult.rows as MediaItemRow[];
+        const insertionResult = await DatabaseFunctions.dbManager.insert(insertQuery, '*');
+        if (insertionResult.rowCount === 1 && insertionResult.rows[0].hasOwnProperty('id')) {
+          mediaitem_row = insertionResult.rows[0] as MediaItemRow;
+        } else {
+          throw new Error('insertionResult does not have id');
+        }
       }
-      throw new Error('insertionResult does not have id');
+
+      this.prepareRows([mediaitem_row]);
+      if (mediaitem_row.url && !(/https?:\/\//g.exec(mediaitem_row.url))) {
+        mediaitem_row.url = this.pathBuilder.getEncryptedFileURL(mediaitem_row.url);
+      }
+
+      return selectResult.rows as MediaItemRow[];
     } catch (e) {
       console.log(e);
       throw new Error('Could not save a new media item.');
@@ -1044,7 +1057,10 @@ export class DatabaseFunctions {
       url: media.url,
       type: media.type,
       size: media.size,
-      metadata: media.metadata
+      originalname: dataDeliveryRequest.media.originalname,
+      project_id: dataDeliveryRequest.project_id,
+      metadata: media.metadata,
+      session: media.session
     });
 
     if (mediaInsertResult.length > 0) {
@@ -1054,7 +1070,7 @@ export class DatabaseFunctions {
         transcript: dataDeliveryRequest.transcript,
         project_id: dataDeliveryRequest.project_id,
         mediaitem_id: mediaID,
-        status: 'FREE'
+        status: 'DRAFT'
       });
 
       if (transcriptResult.length > 0) {
