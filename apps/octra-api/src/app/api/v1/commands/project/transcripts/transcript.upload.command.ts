@@ -134,17 +134,14 @@ export class TranscriptUploadCommand extends ApiCommand {
       return;
     }
 
-    const currentTime = Date.now();
-    const mediaPath = Path.join(this.settings.api.files.uploadPath, 'temp', `temp_${req.decoded.id}_${currentTime}`);
+    const currentTime = new Date().toISOString().replace(/[.:]/g, "-").replace("T", "_");
+    const mediaPath = Path.join(this.settings.api.files.uploadPath, 'temp', `temp_${currentTime}_u${req.decoded.id}`);
     const storage = multer.diskStorage({
       destination: async (req, file, callback) => {
         if (!(await pathExists(mediaPath))) {
           await mkdirp(mediaPath);
         }
         return callback(null, mediaPath);
-      },
-      filename: (req, file, callback) => {
-        return callback(null, file.originalname);
       }
     });
     const upload = multer({storage: storage});
@@ -179,27 +176,25 @@ export class TranscriptUploadCommand extends ApiCommand {
 
               // TODO check if session name is correct
               // TODO test this cloass
-              const sanitizedSessionName = req.pathBuilder.sanitizeFileName(jsonFile.content.media.session);
               const projectFilesPath = req.pathBuilder.getProjectSessionPath(req.params.project_id, jsonFile.content.media.session);
               await FileSystemHandler.createDirIfNotExists(projectFilesPath);
               let fileInformation;
 
-              let publicURL = "";
+              let publicURL = undefined;
               if (mediaFile) {
                 //move from temp to project folder
-                const sanitizedFileName = req.pathBuilder.sanitizeFileName(Path.basename(mediaFile.originalname)) + Path.extname(mediaFile.originalname);
-                await FileSystemHandler.moveFile(Path.join(mediaPath, mediaFile.originalname), Path.join(projectFilesPath, sanitizedFileName));
+                await FileSystemHandler.moveFile(Path.join(mediaPath, mediaFile.filename), Path.join(projectFilesPath, mediaFile.filename + Path.extname(mediaFile.originalname)));
                 await FileSystemHandler.removeFolder(mediaPath);
                 // fill in file information
-                fileInformation = await FileSystemHandler.readFileInformation(Path.join(projectFilesPath, sanitizedFileName));
+                fileInformation = await FileSystemHandler.readFileInformation(Path.join(projectFilesPath, mediaFile.filename + Path.extname(mediaFile.originalname)));
                 reqData.media = {
                   session: jsonFile.content.media.session,
-                  url: Path.join(`session_${sanitizedSessionName}`, sanitizedFileName),
+                  url: mediaFile.filename + Path.extname(mediaFile.originalname),
                   size: fileInformation.size,
                   type: fileInformation.type,
-                  originalname: mediaFile.originalname
+                  originalname: mediaFile.originalname,
+                  filename: mediaFile.filename
                 };
-                publicURL = req.pathBuilder.getEncryptedProjectFileURL(req.params.project_id, path.basename(reqData.media.url));
               } else {
                 const regex = new RegExp(`^${Path.join(this.settings.api.url, 'v1/links')}`);
 
@@ -228,7 +223,7 @@ export class TranscriptUploadCommand extends ApiCommand {
                 ...data,
                 mediaitem: {
                   ...data.mediaitem,
-                  url: publicURL
+                  url: (publicURL) ? publicURL : data.mediaitem.url
                 }
               };
             } catch (e) {
@@ -286,7 +281,7 @@ export class TranscriptUploadCommand extends ApiCommand {
               properties: {
                 session: {
                   type: 'string',
-                  pattern: ".{3, 60}",
+                  pattern: ".{3,60}",
                   required: true
                 }
               }

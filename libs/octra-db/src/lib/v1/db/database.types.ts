@@ -72,6 +72,8 @@ export interface MediaItemRow extends DatabaseRow {
   type: string;
   size: number;
   metadata: string;
+  session: string;
+  project_id: number;
 }
 
 interface testT {

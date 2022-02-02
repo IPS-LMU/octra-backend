@@ -123,7 +123,7 @@ export class TranscriptGetCommand extends ApiCommand {
         if (answer.data.mediaitem?.url) {
           answer.data.mediaitem.url = answer.data.mediaitem.url.indexOf('http') > -1 ? answer.data.mediaitem.url
             : req.pathBuilder.getEncryptedProjectFileURL(
-              Number(req.params.project_id), Path.basename(answer.data.mediaitem.url)
+              Number(req.params.project_id), answer.data.mediaitem.session, Path.basename(answer.data.mediaitem.url)
             );
         }
         this.reduceDataForUser(req, answer)

@@ -242,6 +242,7 @@ export class DatabaseFunctions {
         */
         // TODO project create without any admins, because created by system administrator
         // TODO reference admins on project change
+        // TODO project_admin festlegen
 
         this.prepareRows(insertProjectResult.rows);
         return insertProjectResult.rows as ProjectRow[];
@@ -354,8 +355,8 @@ export class DatabaseFunctions {
                       pr.enddate,
                       pr.active,
                       pra.user_roles::text,
-                      count(transcript.id)                                               as transcripts_count,
-                      count(case when transcript.status = 'FREE' then transcript.id end) as transcripts_count_free
+                      count(transcript.id)::integer                                               as transcripts_count,
+                      count(case when transcript.status = 'FREE' then transcript.id end)::integer as transcripts_count_free
                from transcript
                       full outer join project pr on transcript.project_id = pr.id
                       full outer join project_admins pra on pra.project_id = pr.id
@@ -411,10 +412,10 @@ export class DatabaseFunctions {
 
       this.prepareRows([mediaitem_row]);
       if (mediaitem_row.url && !(/https?:\/\//g.exec(mediaitem_row.url))) {
-        mediaitem_row.url = this.pathBuilder.getEncryptedFileURL(mediaitem_row.url);
+        mediaitem_row.url = this.pathBuilder.getEncryptedProjectFileURL(data.project_id, data.session, data.filename);
       }
 
-      return selectResult.rows as MediaItemRow[];
+      return [mediaitem_row];
     } catch (e) {
       console.log(e);
       throw new Error('Could not save a new media item.');
@@ -601,7 +602,7 @@ export class DatabaseFunctions {
           // Mediaitem found, add
           const mediaRow = selectResult.rows[0] as MediaItemRow;
           delete mediaRow.id;
-          mediaRow.url = this.getPublicFileURL(projectID, mediaRow.url);
+          mediaRow.url = this.getPublicFileURL(projectID, mediaRow.session, mediaRow.url);
 
           transcriptRow.mediaitem = mediaRow;
           delete transcriptRow.mediaitem_id;
@@ -664,7 +665,7 @@ export class DatabaseFunctions {
           // Mediaitem found, add
           const mediaRow = selectResult.rows[0] as MediaItemRow;
           delete mediaRow.id;
-          mediaRow.url = this.getPublicFileURL(projectID, mediaRow.url);
+          mediaRow.url = this.getPublicFileURL(projectID, mediaRow.session, mediaRow.url);
 
           transcriptRow.mediaitem = mediaRow;
           delete transcriptRow.mediaitem_id;
@@ -714,7 +715,7 @@ export class DatabaseFunctions {
           // Mediaitem found, add
           const mediaRow = selectResult.rows[0] as MediaItemRow;
           delete mediaRow.id;
-          mediaRow.url = this.getPublicFileURL(projectID, mediaRow.url);
+          mediaRow.url = this.getPublicFileURL(projectID, mediaRow.session, mediaRow.url);
 
           transcriptRow.mediaitem = mediaRow;
           delete transcriptRow.mediaitem_id;
@@ -1058,6 +1059,7 @@ export class DatabaseFunctions {
       type: media.type,
       size: media.size,
       originalname: dataDeliveryRequest.media.originalname,
+      filename: dataDeliveryRequest.media.filename,
       project_id: dataDeliveryRequest.project_id,
       metadata: media.metadata,
       session: media.session
@@ -1075,18 +1077,8 @@ export class DatabaseFunctions {
 
       if (transcriptResult.length > 0) {
         const result = transcriptResult[0] as ProjectTranscriptsGetResult;
-
-        const mediaItem = await DatabaseFunctions.dbManager.query({
-          text: this.selectAllStatements.mediaitem + ' where id=$1::integer',
-          values: [mediaID]
-        });
-
-        if (mediaItem.rowCount === 1) {
-          (mediaItem.rows[0] as MediaItemRow).url = this.getPublicFileURL(dataDeliveryRequest.project_id, (mediaItem.rows[0] as MediaItemRow).url);
-          result.mediaitem = mediaItem.rows[0] as MediaItemRow;
-          DatabaseFunctions.prepareRows([result.mediaitem]);
-        }
-
+        result.mediaitem = mediaInsertResult[0] as MediaItemRow;
+        DatabaseFunctions.prepareRows([result.mediaitem]);
         DatabaseFunctions.prepareRows([result]);
         return result;
       }
@@ -1144,14 +1136,14 @@ export class DatabaseFunctions {
     }) : undefined;
   }
 
-  static getPublicFileURL(projectID: number, path: string) {
+  static getPublicFileURL(projectID: number, session: string, path: string) {
     const regex = /^https?:\/\//g;
     const matches = regex.exec(path);
 
     if (matches !== null) {
       return path;
     } else {
-      return this.pathBuilder.getEncryptedProjectFileURL(projectID, path);
+      return this.pathBuilder.getEncryptedProjectFileURL(projectID, session, path);
     }
   }
 

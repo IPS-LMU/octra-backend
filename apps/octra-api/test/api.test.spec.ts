@@ -46,12 +46,12 @@ const todoList = {
     register: true,
     login: true,
     loginNormal: true,
-    hash: false,
+    hash: true,
     assign: true,
     getUserInfo: true,
     getCurrentInfo: true,
     getUsers: true,
-    delete: false,
+    delete: true,
     password: {
       change: true
     }
@@ -66,15 +66,15 @@ const todoList = {
     }
   },
   project: {
-    create: true, // TODO <--- hier ein Fehler, weiter arbeiten
-    get: false,
-    list: false,
-    change: false,
-    remove: false,
+    create: true,
+    get: true,
+    list: true,
+    change: true,
+    remove: true,
     transcripts: {
       getAll: false,
       get: false,
-      upload: false
+      upload: true
     }
   },
   media: {
@@ -162,7 +162,7 @@ if (todoList.user.assign) {
     const requestData = {
       roles: [{
         role: 'data_delivery',
-        project_id: 979
+        project_id: 977
       }]
     }
     request
@@ -416,7 +416,6 @@ if (todoList.project.list) {
       .set('Origin', 'http://localhost:8080')
       .end((err, res) => {
         checkForErrors(err, res);
-
         expect(res.status).toBe(200);
         console.log(`listed:`);
         console.log((res.body.data as any[])[res.body.data.length - 1]);
@@ -672,9 +671,9 @@ if (todoList.project.transcripts.getAll) {
   it('it should list an array of transcripts for a given project', (done) => {
     request
       .get(`/v1/projects/${tempData.project.id}/transcripts`)
-      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
+      .set('Authorization', `Bearer ${tempData.user.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
-      .set('x-access-token', tempData.user.jwtToken)
+      .set('X-App-Token', appToken)
       .end((err, res) => {
         checkForErrors(err, res);
         log(`list of ${res.body.data.length} transcripts for project ${tempData.project.name}`);
@@ -692,9 +691,13 @@ if (todoList.project.transcripts.upload) {
       .post(`/v1/projects/${tempData.project.id}/transcripts/upload`)
       .set('Content-Type', 'application/x-www-form-urlencoded')
       .attach('data', Buffer.from(JSON.stringify({
-        orgtext: ''
+        orgtext: '',
+        media: {
+          url: "https://www.example.com/test.wav",
+          session: "test263748"
+        }
       }), 'utf-8'), 'data.json')
-      .attach('media', './testfiles/Bahnauskunft.wav', 'Bahnauskunft.wav')
+      .attach('media', './testfiles/Bahnauskunft.wav', 'Bahnäuskun%&$(ft.wav')
       .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
       .set('X-App-Token', appToken)

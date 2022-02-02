@@ -40,15 +40,15 @@ export class PathBuilder {
 
   public getProjectSessionPath(projectID: number, sessionName: string) {
     sessionName = this.sanitizeFileName(sessionName);
-    return Path.join(this.getProjectPath(projectID), 'session_', sessionName);
+    return Path.join(this.getProjectPath(projectID), `session_${sessionName}`);
   }
 
   public getGuidelinesPath(projectID: number) {
     return Path.join(this.getProjectPath(projectID), 'guidelines');
   }
 
-  public getEncryptedProjectFileURL(projectId: number, fileName: string) {
-    return this.settings.url + Path.join('/v1/files/public/', this.encryptFilePath(Path.join('projects', `project_${projectId}`, 'files')), Path.basename(fileName));
+  public getEncryptedProjectFileURL(projectId: number, session: string, fileName: string) {
+    return this.settings.url + Path.join('/v1/files/public/', this.encryptFilePath(Path.join('projects', `project_${projectId}`, `session_${session}`)), Path.basename(fileName));
   }
 
   public getEncryptedGuidelinesFileURL(projectId: number, fileName: string) {
@@ -60,6 +60,23 @@ export class PathBuilder {
   }
 
   public sanitizeFileName(baseName: string) {
-    return baseName.replace(/[:\d&%\\/\.=?]+/g, "_");
+    return baseName.replace(/[:&%\\()$/.=?]+/g, "_").replace(/([äÄßüÜöÖ])/g, (g0, g1) => {
+      switch (g1) {
+        case('ü'):
+          return "ue";
+        case('Ü'):
+          return "Ue";
+        case('ä'):
+          return "ae";
+        case('Ä'):
+          return "Ae";
+        case('Ö'):
+          return "Oe";
+        case('ö'):
+          return "oe";
+        case('ß'):
+          return "ss";
+      }
+    });
   }
 }

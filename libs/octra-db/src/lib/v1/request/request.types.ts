@@ -38,6 +38,7 @@ export interface AddMediaItemRequest {
   metadata?: string;
   session: string;
   originalname: string;
+  filename: string;
 }
 
 export interface AddUploadItemRequest {
@@ -88,6 +89,7 @@ export interface DeliverNewMediaRequest {
     metadata?: string;
     session: string;
     originalname: string;
+    filename: string;
   },
   orgtext?: string;
   transcript?: string;
