@@ -4,6 +4,8 @@ import * as fsExtra from 'fs-extra';
 import {WriteFileOptions} from 'fs-extra';
 import * as pathFunctions from 'path';
 import * as mime from 'mime';
+import * as mm from 'music-metadata';
+import {removeEmptyAttributes} from "../../obj/functions";
 
 export class FileSystemHandler {
   static mkDir(path) {
@@ -130,10 +132,36 @@ export class FileSystemHandler {
       })
     });
   }
+
+  public static async readAudioFileInformation(path: string): Promise<AudioInformation> {
+    const metadata = await mm.parseFile(path);
+    return removeEmptyAttributes({
+      bitRate: metadata.format.bitrate,
+      numberOfChannels: metadata.format.numberOfChannels,
+      duration: {samples: metadata.format.numberOfSamples, seconds: metadata.format.duration},
+      sampleRate: metadata.format.sampleRate,
+      container: metadata.format.container,
+      codec: undefined,
+      losless: metadata.format.lossless
+    });
+  }
 }
 
 export interface FileInformation {
   name: string;
   size: number;
   type: string;
+}
+
+export interface AudioInformation {
+  duration: {
+    samples?: number;
+    seconds?: number;
+  },
+  sampleRate?: number;
+  bitRate?: number;
+  numberOfChannels?: number;
+  container?: string;
+  codec?: string;
+  losless: boolean;
 }

@@ -74,6 +74,7 @@
     "luxon": "^2.3.0",
     "mime-types": "^2.1.34",
     "multer": "^1.4.4",
+    "music-metadata": "^7.11.8",
     "ngx-bootstrap": "^7.1.2",
     "ngx-codejar": "^1.0.2",
     "ngx-webstorage": "^9.0.0",

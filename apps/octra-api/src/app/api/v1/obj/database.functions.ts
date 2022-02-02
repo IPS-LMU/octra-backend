@@ -395,7 +395,7 @@ export class DatabaseFunctions {
             DatabaseFunctions.getColumnDefinition('url', 'text', data.url, false),
             DatabaseFunctions.getColumnDefinition('type', 'text', data.type),
             DatabaseFunctions.getColumnDefinition('size', 'integer', data.size),
-            DatabaseFunctions.getColumnDefinition('metadata', 'text', data.metadata),
+            DatabaseFunctions.getColumnDefinition('metadata', 'jsonb', data.metadata),
             DatabaseFunctions.getColumnDefinition('session', 'text', data.session),
             DatabaseFunctions.getColumnDefinition('originalname', 'text', data.originalname),
             DatabaseFunctions.getColumnDefinition('project_id', 'integer', data.project_id)

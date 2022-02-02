@@ -116,7 +116,38 @@ export class TranscriptUploadCommand extends ApiCommand {
                   required: true
                 },
                 metadata: {
-                  type: 'string'
+                  type: 'object',
+                  properties: {
+                    duration: {
+                      type: "object",
+                      properties: {
+                        samples: {
+                          type: "number"
+                        },
+                        seconds: {
+                          type: "number"
+                        }
+                      }
+                    },
+                    sampleRate: {
+                      type: "number"
+                    },
+                    bitRate: {
+                      type: "number"
+                    },
+                    numberOfChannels: {
+                      type: "number"
+                    },
+                    container: {
+                      type: "string"
+                    },
+                    codec: {
+                      type: "string"
+                    },
+                    losless: {
+                      type: "boolean"
+                    }
+                  }
                 }
               }
             }
@@ -187,13 +218,15 @@ export class TranscriptUploadCommand extends ApiCommand {
                 await FileSystemHandler.removeFolder(mediaPath);
                 // fill in file information
                 fileInformation = await FileSystemHandler.readFileInformation(Path.join(projectFilesPath, mediaFile.filename + Path.extname(mediaFile.originalname)));
+                const audioInformation = await FileSystemHandler.readAudioFileInformation(Path.join(projectFilesPath, mediaFile.filename + Path.extname(mediaFile.originalname)))
                 reqData.media = {
                   session: jsonFile.content.media.session,
                   url: mediaFile.filename + Path.extname(mediaFile.originalname),
                   size: fileInformation.size,
                   type: fileInformation.type,
                   originalname: mediaFile.originalname,
-                  filename: mediaFile.filename
+                  filename: mediaFile.filename,
+                  metadata: audioInformation
                 };
               } else {
                 const regex = new RegExp(`^${Path.join(this.settings.api.url, 'v1/links')}`);

@@ -86,7 +86,7 @@ export interface DeliverNewMediaRequest {
     url: string;
     type?: string;
     size?: number;
-    metadata?: string;
+    metadata?: any;
     session: string;
     originalname: string;
     filename: string;
