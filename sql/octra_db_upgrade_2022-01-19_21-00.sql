@@ -56,7 +56,7 @@ $$
 
     RAISE NOTICE '-> Füge project_id zu account_role Tabelle hinzu...';
     ALTER TABLE account_role
-      ADD COLUMN IF NOT EXISTS project_id INT NOT NULL
+      ADD COLUMN IF NOT EXISTS project_id INT
         CONSTRAINT account_project_id_fkey REFERENCES project (id);
 
     RAISE NOTICE '-> Füge Adornis als data_delivery zu ihren Projekten hinzu...';
@@ -80,15 +80,30 @@ $$
     RAISE NOTICE '-> Füge Spalte originalname zur mediaitem Tabelle hinzu...';
     ALTER TABLE mediaitem
       ADD COLUMN IF NOT EXISTS originalname text NOT NULL DEFAULT '';
-    RAISE NOTICE '-> Füge Spalte project_id zur mediaitem Tabelle hinzu...';
-    ALTER TABLE mediaitem
-      ADD COLUMN IF NOT EXISTS project_id INT
-        CONSTRAINT account_project_id_fkey REFERENCES project (id);
     RAISE NOTICE '-> Ändere Typ von mediaitem.metadata auf json';
     ALTER TABLE mediaitem
       DROP COLUMN metadata;
     ALTER TABLE mediaitem
       ADD COLUMN metadata jsonb;
+
+    RAISE NOTICE '-> Erstelle Tabelle mediaitem_project...';
+    CREATE TABLE mediaitem_project
+    (
+      mediaitem_id integer NOT NULL,
+      project_id   integer NOT NULL
+    );
+
+    ALTER TABLE ONLY public.mediaitem_project
+      ADD CONSTRAINT mediaitem_project_mediaitem_id_fkey FOREIGN KEY (mediaitem_id) REFERENCES public.mediaitem (id);
+
+    ALTER TABLE ONLY public.mediaitem_project
+      ADD CONSTRAINT mediaitem_project_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.project (id);
+
+    RAISE NOTICE '-> Füge Gültigungsdauer zu account_role_project hinzu...';
+    ALTER TABLE account_role_project
+      ADD COLUMN valid_startdate timestamp without time zone;
+    ALTER TABLE account_role_project
+      ADD COLUMN valid_enddate timestamp without time zone;
   END;
 $$;
 COMMIT;

@@ -11,6 +11,7 @@ import * as multer from 'multer';
 import {mkdirp, pathExists, readJSONSync} from 'fs-extra';
 import {FileSystemHandler} from '../../../filesystem-handler';
 import {isNumber} from '../../../../../obj/functions';
+import {MulterStorageHashing} from '../../../../../obj/multer-storage-hashing';
 
 export class TranscriptUploadCommand extends ApiCommand {
   constructor() {
@@ -167,7 +168,7 @@ export class TranscriptUploadCommand extends ApiCommand {
 
     const currentTime = new Date().toISOString().replace(/[.:]/g, "-").replace("T", "_");
     const mediaPath = Path.join(this.settings.api.files.uploadPath, 'temp', `temp_${currentTime}_u${req.decoded.id}`);
-    const storage = multer.diskStorage({
+    const storage = new MulterStorageHashing({
       destination: async (req, file, callback) => {
         if (!(await pathExists(mediaPath))) {
           await mkdirp(mediaPath);
@@ -177,6 +178,10 @@ export class TranscriptUploadCommand extends ApiCommand {
     });
     const upload = multer({storage: storage});
     try {
+
+      // TODO formData values doesn't need to be files
+      // TODO generate hash on client side => check it with other function => upload only if hash doesn't exist
+      // TODO function to upload file as hash
       upload.any()(req, res, async (err) => {
         const validation = this.validate(req, req.files);
         if (validation.length === 0) {
@@ -225,7 +230,7 @@ export class TranscriptUploadCommand extends ApiCommand {
                   size: fileInformation.size,
                   type: fileInformation.type,
                   originalname: mediaFile.originalname,
-                  filename: mediaFile.filename,
+                  filename: mediaFile.filename + Path.extname(mediaFile.originalname),
                   metadata: audioInformation
                 };
               } else {

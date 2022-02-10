@@ -73,7 +73,7 @@ const todoList = {
     remove: true,
     transcripts: {
       getAll: false,
-      get: false,
+      get: true,
       upload: true
     }
   },
@@ -688,16 +688,16 @@ if (todoList.project.transcripts.getAll) {
 if (todoList.project.transcripts.upload) {
   it('it should upload a transcript and its mediafile', (done) => {
     request
-      .post(`/v1/projects/${tempData.project.id}/transcripts/upload`)
+      .post(`/v1/projects/1049/transcripts/upload`)
       .set('Content-Type', 'application/x-www-form-urlencoded')
       .attach('data', Buffer.from(JSON.stringify({
         orgtext: '',
         media: {
-          url: "https://www.example.com/test.wav",
-          session: "test263748"
+          url: 'https://www.example.com/test.wav',
+          session: 'test263748'
         }
       }), 'utf-8'), 'data.json')
-      .attach('media', './testfiles/Bahnauskunft.wav', 'Bahnäuskun%&$(ft.wav')
+      .attach('media', './testfiles/WebTranscribe.wav', 'WebTranscribe.wav')
       .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
       .set('X-App-Token', appToken)
@@ -705,6 +705,7 @@ if (todoList.project.transcripts.upload) {
         checkForErrors(err, res);
         expect(res.status).toBe(200);
         tempData.mediaItem.uploadURL = res.body.data.mediaitem.url;
+        tempData.transcript.id = res.body.data.id;
         expect(typeof res.body.data).toBe('object');
         done();
       });
