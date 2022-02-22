@@ -37,7 +37,7 @@ export abstract class DBManager {
 
   abstract update(query: ParameterizedQuery, where: string): Promise<QueryResult>
 
-  abstract transaction(query: SQLQuery[]): Promise<any>;
+  abstract transaction(query: SQLQuery[]): Promise<DatabaseRow[][]>;
 
   abstract createSQLQueryForInsert(query: ParameterizedQuery, idColumn: string): SQLQuery;
 

@@ -91,7 +91,7 @@ export class ProjectCreateCommand extends ApiCommand {
     if (validation.length === 0) {
       const body: CreateProjectRequest = req.body;
       try {
-        const result = await DatabaseFunctions.createProject(body);
+        const result = await DatabaseFunctions.createProject(body, req.decoded.id);
         if (result.length === 1) {
           answer.data = result[0];
           if (answer.data.configuration) {

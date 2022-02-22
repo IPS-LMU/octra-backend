@@ -210,7 +210,7 @@ export class DatabaseFunctions {
     }
   }
 
-  public static async createProject(data: CreateProjectRequest): Promise<ProjectRow[]> {
+  public static async createProject(data: CreateProjectRequest, currentUserID: number): Promise<ProjectRow[]> {
     try {
       const startdate = DatabaseFunctions.convertJSONDateTime(data.startdate);
       const enddate = DatabaseFunctions.convertJSONDateTime(data.enddate);
@@ -231,16 +231,18 @@ export class DatabaseFunctions {
       if (insertProjectResult.rowCount === 0) {
         throw new Error('Can\'t add project.');
       } else {
-        /* const insertProjectRole = await DatabaseFunctions.dbManager.insert({
+        const insertProjectRole = await DatabaseFunctions.dbManager.insert({
           tableName: 'account_role_project',
           columns: [
-            DatabaseFunctions.getColumnDefinition('account_id', 'integer', data.admin_id, false),
+            DatabaseFunctions.getColumnDefinition('account_id', 'integer', data.admin_id ?? currentUserID, false),
             DatabaseFunctions.getColumnDefinition('role_id', 'integer', roles.find(a => a.label === UserRole.projectAdministrator).id, false),
             DatabaseFunctions.getColumnDefinition('project_id', 'integer', insertProjectResult.rows[0].id, false)
           ]
         }, 'project_id');
-        */
-        // TODO project create without any admins, because created by system administrator
+
+        if (insertProjectRole.rowCount === 0) {
+          throw new Error('Can\'t assign user role \'project_admin\'');
+        }
         // TODO reference admins on project change
         // TODO project_admin festlegen
 
@@ -274,10 +276,7 @@ export class DatabaseFunctions {
       values: [id]
     });
 
-    const removeResult = await DatabaseFunctions.dbManager.transaction(sqlQueries);
-    if (removeResult.command === 'COMMIT') {
-      return;
-    }
+    await DatabaseFunctions.dbManager.transaction(sqlQueries);
     return;
   }
 
@@ -296,7 +295,7 @@ export class DatabaseFunctions {
       throw new Error('insertionResult does not have id');
     } catch (e) {
       console.log(e);
-      throw new Error('Could not create and save a new project.');
+      throw new Error('Could not create and get the project.');
     }
   }
 
@@ -381,7 +380,7 @@ export class DatabaseFunctions {
   public static async addMediaItem(data: AddMediaItemRequest): Promise<MediaItemRow[]> {
     try {
       const selectResult = await this.dbManager.query({
-        text: "select * from mediaitem where project_id=$1::integer and session=$2::text and url=$3::text",
+        text: 'select * from mediaitem where project_id=$1::integer and session=$2::text and url=$3::text',
         values: [data.project_id, data.session, data.url]
       });
 
@@ -906,12 +905,12 @@ export class DatabaseFunctions {
       }
     }
 
-    const transactionResult = await DatabaseFunctions.dbManager.transaction(queries);
-
-    if (transactionResult.command === 'COMMIT') {
-      return;
+    try {
+      await DatabaseFunctions.dbManager.transaction(queries);
+    } catch (e) {
+      throw new Error('Could not assign role');
     }
-    throw new Error('Could not assign role');
+    return;
   }
 
   static async getRoles() {
@@ -949,22 +948,22 @@ export class DatabaseFunctions {
   }
 
   static async removeUserByID(id: number): Promise<void> {
-    const removeResult = await DatabaseFunctions.dbManager.transaction([
-      {
-        text: 'update transcript set transcriber_id=null where transcriber_id=$1::integer',
-        values: [id]
-      },
-      {
-        text: 'delete from account_role_project where account_id=$1::integer',
-        values: [id]
-      },
-      {
-        text: 'delete from account where id=$1::integer',
-        values: [id]
-      }
-    ]);
-
-    if (removeResult.command !== 'COMMIT') {
+    try {
+      await DatabaseFunctions.dbManager.transaction([
+        {
+          text: 'update transcript set transcriber_id=null where transcriber_id=$1::integer',
+          values: [id]
+        },
+        {
+          text: 'delete from account_role_project where account_id=$1::integer',
+          values: [id]
+        },
+        {
+          text: 'delete from account where id=$1::integer',
+          values: [id]
+        }
+      ]);
+    } catch (e) {
       throw new Error(`Could not remove user account.}.`);
     }
     return;
@@ -1109,6 +1108,9 @@ export class DatabaseFunctions {
           } else if (row.hasOwnProperty(col) && col.indexOf('date') > -1
             && !(row[col] === undefined || row[col] === null)) {
             row[col] = DateTime.fromSQL(row[col]).toJSON();
+          } else if (row.hasOwnProperty(col) && col.indexOf('id') > -1
+            && !(row[col] === undefined || row[col] === null)) {
+            row[col] = Number(row[col]);
           } else if (typeof row[col] === 'object') {
             row[col] = this.prepareRows([row[col]])[0];
           }

@@ -2,6 +2,7 @@ import {DBManager, ParameterizedQuery, SQLQuery} from './db.manager';
 import {Pool, QueryResult, types} from 'pg';
 import {IDBConfiguration, IDBSSLConfiguration} from '../obj/app-config/app-config';
 import * as fs from 'fs';
+import {DatabaseRow} from '@octra/db';
 
 /**
  * See https://node-postgres.com/
@@ -53,19 +54,22 @@ export class PostgreSQLManager extends DBManager {
     })
   }
 
-  async transaction(queries: SQLQuery[]): Promise<any> {
+  async transaction(queries: SQLQuery[]): Promise<DatabaseRow[][]> {
+    // allow dry run
     const client = await this.pool.connect();
+    const results: DatabaseRow[][] = []
 
     try {
       await client.query('BEGIN');
 
       for (const sqlQuery of queries) {
-        await client.query(sqlQuery);
+        const t = await client.query(sqlQuery);
+        results.push(t.rows as DatabaseRow[]);
       }
 
-      const result = await client.query('COMMIT');
+      await client.query('COMMIT');
       client.release();
-      return result;
+      return results;
     } catch (e) {
       // Make sure to release the client before any error handling,
       // just in case the error handling itself throws an error.
@@ -111,8 +115,7 @@ export class PostgreSQLManager extends DBManager {
       statement += ' values(' + columns.map(
         (a, index) => `$${index + 1}::${a.type}`).join(', ') + ')'
 
-      statement = `insert into ${statement}
-                     returning ${idColumn}`;
+      statement = `insert into ${statement}${(idColumn !== '') ? ` returning ${idColumn}` : ''}`;
 
       return {
         text: statement,

@@ -30,6 +30,6 @@ export const OCTRASQLStatements = {
             where ar.account_id is not null
             group by ac.id, r.label
           )
-     select *
+     select ac.*, ac.id::integer
      from user_roles ac`
 };

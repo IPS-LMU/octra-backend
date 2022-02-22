@@ -73,8 +73,8 @@ const todoList = {
     remove: true,
     transcripts: {
       getAll: false,
-      get: true,
-      upload: true
+      get: false,
+      upload: false
     }
   },
   media: {
@@ -123,13 +123,13 @@ if (todoList.user.register) {
       .set('X-App-Token', `${appToken}`)
       .set('Origin', 'http://localhost:8080')
       .send(requestData)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        tempData.user.jwtToken = res.body.token;
-        console.log(res.body.token);
-        tempData.user.id = res.body.data.id;
-        expect(res.body.status).toBe('success');
-        expect(typeof res.body.data).toBe('object');
+      .end((err, {body}) => {
+        checkForErrors(err, body);
+        tempData.user.jwtToken = body.token;
+        console.log(body.token);
+        tempData.user.id = body.data.id;
+        expect(body.status).toBe('success');
+        expect(typeof body.data).toBe('object');
         done();
       });
   });
@@ -146,12 +146,12 @@ if (todoList.user.login) {
       .set('X-App-Token', `${appToken}`)
       .set('Origin', 'http://localhost:8080')
       .send(requestData)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        expect(res.body.status).toBe('success');
-        expect(typeof res.body.data).toBe('object');
-        tempData.admin.id = res.body.data.id;
-        tempData.admin.jwtToken = res.body.token;
+      .end((err, {body}) => {
+        checkForErrors(err, body);
+        expect(body.status).toBe('success');
+        expect(typeof body.data).toBe('object');
+        tempData.admin.id = body.data.id;
+        tempData.admin.jwtToken = body.token;
         done();
       });
   });
@@ -171,9 +171,9 @@ if (todoList.user.assign) {
       .set('X-App-Token', appToken)
       .set('Origin', 'http://localhost:8080')
       .send(requestData)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        expect(res.body.status).toBe('success');
+      .end((err, {body}) => {
+        checkForErrors(err, body);
+        expect(body.status).toBe('success');
         done();
       });
   });
@@ -192,12 +192,12 @@ if (todoList.user.loginNormal) {
       .set('X-App-Token', appToken)
       .set('Origin', 'http://localhost:8080')
       .send(requestData)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        expect(res.body.status).toBe('success');
-        expect(typeof res.body.data).toBe('object');
-        tempData.user.id = res.body.data.id;
-        tempData.user.jwtToken = res.body.token;
+      .end((err, {body}) => {
+        checkForErrors(err, body);
+        expect(body.status).toBe('success');
+        expect(typeof body.data).toBe('object');
+        tempData.user.id = body.data.id;
+        tempData.user.jwtToken = body.token;
         done();
       });
   });
@@ -210,11 +210,11 @@ if (todoList.user.getUsers) {
       .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
       .set('X-App-Token', appToken)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        expect(res.status).toBe(200);
-        log(`retrieved rows: ${res.body.data.length}`);
-        expect(Array.isArray(res.body.data)).toBe(true);
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
+        expect(status).toBe(200);
+        log(`retrieved rows: ${body.data.length}`);
+        expect(Array.isArray(body.data)).toBe(true);
         done();
       });
   });
@@ -227,10 +227,10 @@ if (todoList.user.getUserInfo) {
       .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
       .set('X-App-Token', appToken)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        expect(res.status).toBe(200);
-        expect(typeof res.body.data).toBe('object');
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
+        expect(status).toBe(200);
+        expect(typeof body.data).toBe('object');
         done();
       });
   });
@@ -244,11 +244,11 @@ if (todoList.user.getCurrentInfo) {
       .set('Authorization', `Bearer ${tempData.user.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
       .set('X-App-Token', appToken)
-      .end((err, res) => {
-        checkForErrors(err, res);
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
 
-        expect(res.status).toBe(200);
-        expect(typeof res.body.data).toBe('object');
+        expect(status).toBe(200);
+        expect(typeof body.data).toBe('object');
         done();
       });
   });
@@ -266,9 +266,9 @@ if (todoList.user.password.change) {
       .set('Origin', 'http://localhost:8080')
       .set('X-App-Token', appToken)
       .send(requestData)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        expect(res.body.status).toBe('success');
+      .end((err, {body}) => {
+        checkForErrors(err, body);
+        expect(body.status).toBe('success');
         done();
       });
   });
@@ -288,13 +288,13 @@ if (todoList.app.tokens.add) {
       .set('Origin', 'http://localhost:8080')
       .set('X-App-Token', appToken)
       .send(requestData)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        tempData.apptoken.addedID = res.body.data.id;
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
+        tempData.apptoken.addedID = body.data.id;
 
-        expect(res.status).toBe(200);
-        log(`added ${res.body.data.id}`);
-        expect(typeof res.body.data).toBe('object');
+        expect(status).toBe(200);
+        log(`added ${body.data.id}`);
+        expect(typeof body.data).toBe('object');
         done();
       });
   });
@@ -313,12 +313,12 @@ if (todoList.app.tokens.change) {
       .set('Origin', 'http://localhost:8080')
       .set('X-App-Token', appToken)
       .send(requestData)
-      .end((err, res) => {
-        checkForErrors(err, res);
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
 
-        expect(res.status).toBe(200);
+        expect(status).toBe(200);
         log(`changed app token ${tempData.apptoken.addedID}`);
-        expect(typeof res.body.data).toBe('object');
+        expect(typeof body.data).toBe('object');
         done();
       });
   });
@@ -333,12 +333,12 @@ if (todoList.app.tokens.refresh) {
       .set('Origin', 'http://localhost:8080')
       .set('X-App-Token', appToken)
       .send(requestData)
-      .end((err, res) => {
-        checkForErrors(err, res);
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
 
-        expect(res.status).toBe(200);
+        expect(status).toBe(200);
         log(`refreshed app token ${tempData.apptoken.addedID}`);
-        expect(typeof res.body.data).toBe('object');
+        expect(typeof body.data).toBe('object');
         done();
       });
   });
@@ -351,12 +351,12 @@ if (todoList.app.tokens.getList) {
       .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
       .set('X-App-Token', appToken)
-      .end((err, res) => {
-        checkForErrors(err, res);
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
 
-        expect(res.status).toBe(200);
-        log(`retrieved rows: ${res.body.data.length}`);
-        expect(Array.isArray(res.body.data)).toBe(true);
+        expect(status).toBe(200);
+        log(`retrieved rows: ${body.data.length}`);
+        expect(Array.isArray(body.data)).toBe(true);
         done();
       });
   });
@@ -376,12 +376,12 @@ if (todoList.project.create) {
       .set('Origin', 'http://localhost:8080')
       .set('X-App-Token', appToken)
       .send(requestData)
-      .end((err, res) => {
-        checkForErrors(err, res);
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
         console.log(`SET PROJECT ID!`);
-        expect(res.status).toBe(200);
-        tempData.project.id = res.body.data.id;
-        expect(typeof res.body.data).toBe('object');
+        expect(status).toBe(200);
+        tempData.project.id = body.data.id;
+        expect(typeof body.data).toBe('object');
         done();
       });
   });
@@ -394,14 +394,13 @@ if (todoList.project.get) {
       .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('X-App-Token', appToken)
       .set('Origin', 'http://localhost:8080')
-      .end((err, res) => {
-        checkForErrors(err, res);
-
-        expect(res.status).toBe(200);
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
+        expect(status).toBe(200);
         console.log(`get project id`);
         console.log(`${tempData.project.id}`);
-        console.log((res.body.data as any));
-        expect(typeof res.body.data).toBe('object');
+        console.log((body.data as any));
+        expect(typeof body.data).toBe('object');
         done();
       });
   });
@@ -414,12 +413,12 @@ if (todoList.project.list) {
       .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('X-App-Token', appToken)
       .set('Origin', 'http://localhost:8080')
-      .end((err, res) => {
-        checkForErrors(err, res);
-        expect(res.status).toBe(200);
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
+        expect(status).toBe(200);
         console.log(`listed:`);
-        console.log((res.body.data as any[])[res.body.data.length - 1]);
-        expect(typeof res.body.data).toBe('object');
+        console.log((body.data as any[])[body.data.length - 1]);
+        expect(typeof body.data).toBe('object');
         done();
       });
   });
@@ -437,14 +436,14 @@ if (todoList.project.change) {
       .set('X-App-Token', appToken)
       .set('Origin', 'http://localhost:8080')
       .send(requestData)
-      .end((err, res) => {
-        checkForErrors(err, res);
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
 
-        expect(res.status).toBe(200);
+        expect(status).toBe(200);
         console.log(`change project id`);
         console.log(`${tempData.project.id}`);
-        console.log((res.body.data as any));
-        expect(typeof res.body.data).toBe('object');
+        console.log((body.data as any));
+        expect(typeof body.data).toBe('object');
         done();
       });
   });
@@ -463,12 +462,12 @@ if (todoList.media.add) {
       .set('Origin', 'http://localhost:8080')
       .set('X-App-Token', appToken)
       .send(requestData)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        expect(res.status).toBe(200);
-        tempData.mediaItem.id = res.body.data.id;
-        log(`added ${res.body.data.id}`);
-        expect(typeof res.body.data).toBe('object');
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
+        expect(status).toBe(200);
+        tempData.mediaItem.id = body.data.id;
+        log(`added ${body.data.id}`);
+        expect(typeof body.data).toBe('object');
         done();
       });
   });
@@ -488,12 +487,12 @@ if (todoList.tool.add) {
       .set('Origin', 'http://localhost:8080')
       .set('X-App-Token', appToken)
       .send(requestData)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        expect(res.status).toBe(200);
-        expect(typeof res.body.data).toBe('object');
-        log(`added ${res.body.data.id}`);
-        tempData.tool.id = res.body.data.id;
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
+        expect(status).toBe(200);
+        expect(typeof body.data).toBe('object');
+        log(`added ${body.data.id}`);
+        tempData.tool.id = body.data.id;
         done();
       });
   });
@@ -517,12 +516,12 @@ if (todoList.dataDelivery.deliver) {
       .set('Origin', 'http://localhost:8080')
       .set('x-access-token', tempData.user.jwtToken)
       .send(requestData)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        log(`delivered new media! Transcript ID: ${res.body.data.transcriptID}`);
-        tempData.transcript.id = res.body.data.id;
-        expect(res.status).toBe(200);
-        expect(typeof res.body.data).toBe('object');
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
+        log(`delivered new media! Transcript ID: ${body.data.transcriptID}`);
+        tempData.transcript.id = body.data.id;
+        expect(status).toBe(200);
+        expect(typeof body.data).toBe('object');
         done();
       });
   });
@@ -541,12 +540,12 @@ if (todoList.transcripts.add) {
       .set('Origin', 'http://localhost:8080')
       .set('X-App-Token', appToken)
       .send(requestData)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        // log(`added ${res.body.data.id}`);
-        // tempData.transcript.id = res.body.data.id;
-        expect(res.status).toBe(200);
-        expect(typeof res.body.data).toBe('object');
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
+        // log(`added ${body.data.id}`);
+        // tempData.transcript.id = body.data.id;
+        expect(status).toBe(200);
+        expect(typeof body.data).toBe('object');
         done();
       });
   });
@@ -559,12 +558,12 @@ if (todoList.transcripts.get) {
       .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
       .set('x-access-token', tempData.user.jwtToken)
-      .end((err, res) => {
-        checkForErrors(err, res);
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
 
-        expect(res.status).toBe(200);
-        log(`retrieved rows: ${res.body.data.length}`);
-        expect(typeof res.body.data).toBe('object');
+        expect(status).toBe(200);
+        log(`retrieved rows: ${body.data.length}`);
+        expect(typeof body.data).toBe('object');
         done();
       });
   });
@@ -584,13 +583,13 @@ if (todoList.annotation.start) {
       .set('Origin', 'http://localhost:8080')
       .set('X-App-Token', appToken)
       .send(requestData)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        console.log(res.body);
-        tempData.transcript.id = res.body.data.id;
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
+        console.log(body);
+        tempData.transcript.id = body.data.id;
 
-        expect(res.status).toBe(200);
-        expect(typeof res.body.data).toBe('object');
+        expect(status).toBe(200);
+        expect(typeof body.data).toBe('object');
         done();
       });
   });
@@ -608,12 +607,12 @@ if (todoList.annotation.continue) {
       .set('Origin', 'http://localhost:8080')
       .set('X-App-Token', appToken)
       .send(requestData)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        console.log(res.body);
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
+        console.log(body);
 
-        expect(res.status).toBe(200);
-        expect(typeof res.body.data).toBe('object');
+        expect(status).toBe(200);
+        expect(typeof body.data).toBe('object');
         done();
       });
   });
@@ -635,12 +634,12 @@ if (todoList.annotation.save) {
       .set('Origin', 'http://localhost:8080')
       .set('X-App-Token', appToken)
       .send(requestData)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        console.log(res.body);
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
+        console.log(body);
 
-        expect(res.status).toBe(200);
-        expect(typeof res.body.data).toBe('object');
+        expect(status).toBe(200);
+        expect(typeof body.data).toBe('object');
         done();
       });
   });
@@ -656,12 +655,12 @@ if (todoList.media.upload) {
       .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
       .set('X-App-Token', appToken)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        console.log(res.body);
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
+        console.log(body);
 
-        expect(res.status).toBe(200);
-        expect(typeof res.body.data).toBe('object');
+        expect(status).toBe(200);
+        expect(typeof body.data).toBe('object');
         done();
       });
   });
@@ -674,12 +673,12 @@ if (todoList.project.transcripts.getAll) {
       .set('Authorization', `Bearer ${tempData.user.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
       .set('X-App-Token', appToken)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        log(`list of ${res.body.data.length} transcripts for project ${tempData.project.name}`);
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
+        log(`list of ${body.data.length} transcripts for project ${tempData.project.name}`);
 
-        expect(res.status).toBe(200);
-        expect(typeof res.body.data).toBe('object');
+        expect(status).toBe(200);
+        expect(typeof body.data).toBe('object');
         done();
       });
   });
@@ -701,12 +700,12 @@ if (todoList.project.transcripts.upload) {
       .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
       .set('X-App-Token', appToken)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        expect(res.status).toBe(200);
-        tempData.mediaItem.uploadURL = res.body.data.mediaitem.url;
-        tempData.transcript.id = res.body.data.id;
-        expect(typeof res.body.data).toBe('object');
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
+        expect(status).toBe(200);
+        tempData.mediaItem.uploadURL = body.data.mediaitem.url;
+        tempData.transcript.id = body.data.id;
+        expect(typeof body.data).toBe('object');
         done();
       });
   });
@@ -721,11 +720,11 @@ if (todoList.project.transcripts.get) {
       .set('Origin', 'http://localhost:8080')
       .set('X-App-Token', appToken)
       .send()
-      .end((err, res) => {
-        checkForErrors(err, res);
-        expect(res.status).toBe(200);
-        tempData.mediaItem.url = res.body.data.mediaitem.url;
-        expect(typeof res.body.data).toBe('object');
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
+        expect(status).toBe(200);
+        tempData.mediaItem.url = body.data.mediaitem.url;
+        expect(typeof body.data).toBe('object');
         done();
       });
   });
@@ -740,10 +739,10 @@ if (todoList.project.transcripts.getAll) {
       .set('Origin', 'http://localhost:8080')
       .set('X-App-Token', appToken)
       .send()
-      .end((err, res) => {
-        checkForErrors(err, res);
-        expect(res.status).toBe(200);
-        expect(typeof res.body.data).toBe('object');
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
+        expect(status).toBe(200);
+        expect(typeof body.data).toBe('object');
         done();
       });
   });
@@ -765,11 +764,11 @@ if (todoList.guidelines.save) {
       .set('Origin', 'http://localhost:8080')
       .set('X-App-Token', appToken)
       .send(requestData)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        console.log(res.body);
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
+        console.log(body);
 
-        expect(res.status).toBe(200);
+        expect(status).toBe(200);
         done();
       });
   });
@@ -782,11 +781,11 @@ if (todoList.guidelines.get) {
       .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
       .set('X-App-Token', appToken)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        console.log(res.body);
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
+        console.log(body);
 
-        expect(res.status).toBe(200);
+        expect(status).toBe(200);
         done();
       });
   });
@@ -799,8 +798,8 @@ if (todoList.files.get) {
       .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
       .set('X-App-Token', appToken)
-      .end((err, res) => {
-        expect(res.status).toBe(200);
+      .end((err, {body, status}) => {
+        expect(status).toBe(200);
         done();
       });
   });
@@ -813,10 +812,10 @@ if (todoList.app.tokens.delete) {
       .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
       .set('X-App-Token', appToken)
-      .end((err, res) => {
-        checkForErrors(err, res);
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
 
-        expect(res.status).toBe(200);
+        expect(status).toBe(200);
         done();
       });
   });
@@ -829,11 +828,27 @@ if (todoList.user.delete) {
       .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
       .set('X-App-Token', appToken)
-      .end((err, res) => {
-        checkForErrors(err, res);
-        console.log(res.body);
-        expect(res.status).toBe(200);
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
+        console.log(body);
+        expect(status).toBe(200);
 
+        done();
+      });
+  });
+}
+
+if (todoList.project.remove) {
+  it('it should remove a project', (done) => {
+    request
+      .delete(`/v1/projects/${tempData.project.id}`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .set('X-App-Token', appToken)
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
+
+        expect(status).toBe(200);
         done();
       });
   });
@@ -851,19 +866,19 @@ function logJSON(json) {
 }
 
 
-function checkForErrors(err, res) {
-  // console.log(res.body);
+function checkForErrors(err, body) {
+  // console.log(body);
   // expect(err).toBeUndefined();
   if (err) {
     logError('ERROR: ');
     logError(err);
   }
-  if (res && res.body) {
-    if (res.body.status === 'error') {
-      logError('ResponseError:\n' + JSON.stringify(res.body.message, null, 2));
+  if (body) {
+    if (body.status === 'error') {
+      logError('ResponseError:\n' + JSON.stringify(body.message, null, 2));
     } else {
-      expect(res.body.message).toBe(undefined);
-      expect(res.body.status).toBe('success');
+      expect(body.message).toBe(undefined);
+      expect(body.status).toBe('success');
     }
   }
 
