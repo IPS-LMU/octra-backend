@@ -1,3 +1,12 @@
+CREATE OR REPLACE FUNCTION octra_trigger_set_updated_timestamp()
+  RETURNS TRIGGER AS
+$$
+BEGIN
+  NEW.updatedate = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 BEGIN;
 DO
 $$
@@ -52,16 +61,104 @@ $$
       RENAME TO file_id_seq;
 
     /*
+     %%%%%%%%%%%% account person table
+     */
+    RAISE NOTICE '-> Create account person...';
+    CREATE TABLE account_person
+    (
+      id           bigserial NOT NULL,
+      username     text      NOT NULL,
+      email        text,
+      loginmethod  text      NOT NULL,
+      hash         text      NOT NULL,
+      active       bool      NOT NULL          DEFAULT false,
+      creationdate timestamp without time zone default now(),
+      updatedate   timestamp without time zone DEFAULT NOW()
+    );
+
+    CREATE TRIGGER set_timestamp
+      BEFORE UPDATE
+      ON account_person
+      FOR EACH ROW
+    EXECUTE PROCEDURE octra_trigger_set_updated_timestamp();
+
+    ALTER TABLE ONLY account_person
+      ADD CONSTRAINT account_person_id_pkey PRIMARY KEY (id);
+
+
+    /*
      %%%%%%%%%%%% account table
      */
-    RAISE NOTICE '-> Füge role_id zur account Tabelle hinzu...';
-    ALTER TABLE account
-      ADD COLUMN IF NOT EXISTS role_id integer
-        CONSTRAINT account_id_fkey REFERENCES role (id);
-    RAISE NOTICE '-> Füge last_login zur account Tabelle hinzu...';
-    ALTER TABLE account
-      ADD COLUMN IF NOT EXISTS last_login timestamp without time zone;
 
+    RAISE NOTICE '-> Füge role_id zur account Tabelle hinzu...';
+    RAISE NOTICE '-> Füge last_login zur account Tabelle hinzu...';
+    RAISE NOTICE '-> Füge account_person_id zur account Tabelle hinzu...';
+    ALTER TABLE account
+      ADD COLUMN IF NOT EXISTS account_person_id bigint
+        CONSTRAINT account_person_id_fkey REFERENCES account_person (id) on delete set null,
+      ADD COLUMN IF NOT EXISTS role_id           bigint
+        CONSTRAINT account_role_id_fkey2 REFERENCES role (id),
+      ADD COLUMN IF NOT EXISTS last_login        timestamp without time zone;
+
+    RAISE NOTICE '-> Persönliche Daten von account nach account_person verschieben und verknüpfen...';
+
+    DECLARE
+      account_id  bigint;
+      username    text;
+      email       text;
+      loginmethod text;
+      hash        text;
+      active      bool;
+    BEGIN
+      FOR account_id, username, email, loginmethod, hash, active IN
+        SELECT a.id as account_id, a.username, a.email, a.loginmethod, a.hash, a.active
+        FROM account a
+        order by id
+        LOOP
+          INSERT INTO account_person(username, email, loginmethod, hash, active)
+          values (username, email, loginmethod, hash, active);
+          UPDATE account SET account_person_id=lastval() WHERE id = account_id;
+        END LOOP;
+    END;
+
+    RAISE NOTICE '-> Entferne nicht mehr benötigte Spalten...';
+    ALTER TABLE account
+      DROP COLUMN username,
+      DROP COLUMN email,
+      DROP COLUMN createdate,
+      DROP COLUMN active,
+      DROP COLUMN loginmethod,
+      DROP COLUMN hash,
+      ADD COLUMN creationdate timestamp without time zone DEFAULT NOW(),
+      ADD COLUMN updatedate   timestamp without time zone DEFAULT NOW();
+
+    CREATE TRIGGER set_timestamp
+      BEFORE UPDATE
+      ON account
+      FOR EACH ROW
+    EXECUTE PROCEDURE octra_trigger_set_updated_timestamp();
+
+    ALTER TABLE account
+      ALTER id TYPE bigint;
+
+    CREATE OR REPLACE VIEW account_all AS
+    (
+    SELECT a.id as account_id,
+           p.id as person_id,
+           p.username,
+           p.email,
+           p.loginmethod,
+           p.hash,
+           p.active,
+           a.training,
+           a.comment,
+           r.label as role,
+           a.creationdate,
+           a.updatedate
+    FROM account as a
+           FULL OUTER JOIN account_person p ON a.account_person_id = p.id
+           INNER JOIN role r ON a.role_id = r.id order by a.id
+    );
     /*
     %%%%%%%%%%%% role table
     */
@@ -79,8 +176,23 @@ $$
     ALTER TABLE account
       ALTER COLUMN role_id SET NOT NULL;
 
+    /* TODO ids auslesen und datensätze dort ändern, wo ids zutreffen */
     RAISE NOTICE '-> Weise Christoph und Julian Administrator Rollen zu...';
-    UPDATE account SET role_id=admin_role_id WHERE username = 'draxler_test' OR username = 'Julian Marius Pömp';
+    DECLARE
+      account_id bigint;
+      username   text;
+    BEGIN
+      FOR account_id, username IN
+        SELECT a.account_id as account_id, a.username
+        FROM account_all a
+        WHERE a.username = 'draxler_test'
+           OR a.username = 'Julian Marius Pömp'
+           OR a.username = 'Julian'
+        LOOP
+          UPDATE account SET role_id=admin_role_id WHERE id = account_id;
+        END LOOP;
+    END;
+
     ALTER TABLE role
       ALTER COLUMN scope SET NOT NULL;
 
@@ -146,8 +258,6 @@ $$
      */
 
     RAISE NOTICE '-> Ändere IDs zu bigint um...';
-    ALTER TABLE account
-      ALTER id TYPE bigint;
     ALTER TABLE account_role_project
       ALTER account_id TYPE bigint,
       ALTER role_id TYPE bigint;
@@ -169,6 +279,7 @@ $$
       ADD CONSTRAINT option_id_pkey PRIMARY KEY (id);
 
     DROP TABLE option_old;
+
     ALTER TABLE project
       ALTER id TYPE bigint;
     ALTER TABLE transcript
@@ -176,6 +287,9 @@ $$
       ALTER transcriber_id TYPE bigint,
       ALTER project_id TYPE bigint,
       ALTER mediaitem_id TYPE bigint,
+      ALTER transcript TYPE json USING transcript::json,
+      ALTER log TYPE json USING log::json,
+      ADD COLUMN admin_comment text,
       ALTER nexttranscript_id TYPE bigint;
 
     RAISE NOTICE '-> Ändere mediaitem_id Spalten zu file_id um...';
@@ -183,6 +297,89 @@ $$
       RENAME mediaitem_id TO file_id;
     ALTER TABLE transcript
       RENAME CONSTRAINT transcription_mediaitem_id_fkey TO transcription_file_id_fkey;
+
+    RAISE NOTICE '-> Füge zu allen Tabellen die Spalten creationdate und updatedate hinzu...';
+    ALTER TABLE file_project
+      ADD COLUMN creationdate timestamp without time zone DEFAULT NOW(),
+      ADD COLUMN updatedate   timestamp without time zone DEFAULT NOW();
+    CREATE TRIGGER set_timestamp
+      BEFORE UPDATE
+      ON file_project
+      FOR EACH ROW
+    EXECUTE PROCEDURE octra_trigger_set_updated_timestamp();
+
+    ALTER TABLE project
+      ADD COLUMN creationdate timestamp without time zone DEFAULT NOW(),
+      ADD COLUMN updatedate   timestamp without time zone DEFAULT NOW();
+    CREATE TRIGGER set_timestamp
+      BEFORE UPDATE
+      ON project
+      FOR EACH ROW
+    EXECUTE PROCEDURE octra_trigger_set_updated_timestamp();
+
+    ALTER TABLE account_role_project
+      ADD COLUMN creationdate timestamp without time zone DEFAULT NOW(),
+      ADD COLUMN updatedate   timestamp without time zone DEFAULT NOW();
+    CREATE TRIGGER set_timestamp
+      BEFORE UPDATE
+      ON account_role_project
+      FOR EACH ROW
+    EXECUTE PROCEDURE octra_trigger_set_updated_timestamp();
+
+    ALTER TABLE apptoken
+      ADD COLUMN creationdate timestamp without time zone DEFAULT NOW(),
+      ADD COLUMN updatedate   timestamp without time zone DEFAULT NOW();
+    CREATE TRIGGER set_timestamp
+      BEFORE UPDATE
+      ON apptoken
+      FOR EACH ROW
+    EXECUTE PROCEDURE octra_trigger_set_updated_timestamp();
+
+    ALTER TABLE option
+      ADD COLUMN creationdate timestamp without time zone DEFAULT NOW(),
+      ADD COLUMN updatedate   timestamp without time zone DEFAULT NOW();
+    CREATE TRIGGER set_timestamp
+      BEFORE UPDATE
+      ON option
+      FOR EACH ROW
+    EXECUTE PROCEDURE octra_trigger_set_updated_timestamp();
+
+    ALTER TABLE role
+      ADD COLUMN creationdate timestamp without time zone DEFAULT NOW(),
+      ADD COLUMN updatedate   timestamp without time zone DEFAULT NOW();
+    CREATE TRIGGER set_timestamp
+      BEFORE UPDATE
+      ON role
+      FOR EACH ROW
+    EXECUTE PROCEDURE octra_trigger_set_updated_timestamp();
+
+    ALTER TABLE transcript
+      DROP COLUMN creationdate,
+      ADD COLUMN creationdate timestamp without time zone DEFAULT NOW(),
+      ADD COLUMN updatedate   timestamp without time zone DEFAULT NOW();
+    CREATE TRIGGER set_timestamp
+      BEFORE UPDATE
+      ON transcript
+      FOR EACH ROW
+    EXECUTE PROCEDURE octra_trigger_set_updated_timestamp();
+
+    ALTER TABLE tool
+      ADD COLUMN creationdate timestamp without time zone DEFAULT NOW(),
+      ADD COLUMN updatedate   timestamp without time zone DEFAULT NOW();
+    CREATE TRIGGER set_timestamp
+      BEFORE UPDATE
+      ON tool
+      FOR EACH ROW
+    EXECUTE PROCEDURE octra_trigger_set_updated_timestamp();
+
+    ALTER TABLE file
+      ADD COLUMN creationdate timestamp without time zone DEFAULT NOW(),
+      ADD COLUMN updatedate   timestamp without time zone DEFAULT NOW();
+    CREATE TRIGGER set_timestamp
+      BEFORE UPDATE
+      ON file
+      FOR EACH ROW
+    EXECUTE PROCEDURE octra_trigger_set_updated_timestamp();
   END;
 $$;
 COMMIT;
