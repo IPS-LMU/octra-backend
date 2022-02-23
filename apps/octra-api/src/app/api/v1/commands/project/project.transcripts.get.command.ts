@@ -77,10 +77,10 @@ export class ProjectTranscriptsGetCommand extends ApiCommand {
               project_id: {
                 type: 'number'
               },
-              mediaitem_id: {
+              file_id: {
                 type: 'number'
               },
-              mediaitem: {
+              file: {
                 type: 'object',
                 properties: {
                   id: {
@@ -122,10 +122,10 @@ export class ProjectTranscriptsGetCommand extends ApiCommand {
 
         if (answer.data.length > 0) {
           answer.data = answer.data.map((a) => {
-            if (a.mediaitem?.url) {
-              a.mediaitem.url = a.mediaitem.url.indexOf('http') > -1 ? a.mediaitem.url
+            if (a.file?.url) {
+              a.file.url = a.file.url.indexOf('http') > -1 ? a.file.url
                 : req.pathBuilder.getEncryptedProjectFileURL(
-                  Number(req.params.project_id), Path.basename(a.mediaitem.url)
+                  Number(req.params.project_id), Path.basename(a.file.url)
                 );
             }
             return a;

@@ -1,7 +1,7 @@
 import {ApiCommand, RequestType} from '../api.command';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
-import {ProjectTranscriptsGetResult, TranscriptGetResponse, UserRole} from '@octra/db';
+import {TranscriptGetResponse, UserRole} from '@octra/db';
 import {InternRequest} from '../../obj/types';
 import {Response} from 'express';
 
@@ -144,9 +144,8 @@ export class TranscriptGetCommand extends ApiCommand {
 
     if (tokenData.accessRights.find(a => a.role === UserRole.dataDelivery && a.project_id === answer.data.project_id)) {
       // is data delivery
-      const data = answer.data as ProjectTranscriptsGetResult;
-      delete data.pid;
-      delete data.mediaitem_id;
+      delete answer.data.pid;
+      delete answer.data.file_id;
     }
   }
 }

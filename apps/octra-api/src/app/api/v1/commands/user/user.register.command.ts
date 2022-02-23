@@ -89,9 +89,7 @@ export class UserRegisterCommand extends ApiCommand {
             answer.token = jwt.sign(tokenData, this.settings.api.secret, {
               expiresIn: 86400 // expires in 24 hours
             });
-            answer.data = {
-              id: result.id
-            };
+            answer.data = result;
             this.checkAndSendAnswer(res, answer, false);
             return;
           }

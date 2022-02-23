@@ -2,7 +2,7 @@ import {ApiCommand, RequestType} from '../api.command';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
-import {AddMediaItemRequest, MediaAddResponse, UserRole} from '@octra/db';
+import {AddFileRequest, MediaAddResponse, UserRole} from '@octra/db';
 
 export class MediaAddCommand extends ApiCommand {
   constructor() {
@@ -71,7 +71,7 @@ export class MediaAddCommand extends ApiCommand {
 
     // do something
     if (validation.length === 0) {
-      const body: AddMediaItemRequest = req.body;
+      const body: AddFileRequest = req.body;
       try {
         const result = await DatabaseFunctions.addMediaItem(body);
         if (result.length === 1) {

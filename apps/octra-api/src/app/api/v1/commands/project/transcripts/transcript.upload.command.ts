@@ -200,7 +200,7 @@ export class TranscriptUploadCommand extends ApiCommand {
               const jsonFile = req.files.find(a => a.fieldname === 'data');
               let reqData: DeliverNewMediaRequest = {
                 project_id: req.params.project_id,
-                media: undefined
+                file: undefined
               }
 
               if (jsonFile) {
@@ -224,44 +224,43 @@ export class TranscriptUploadCommand extends ApiCommand {
                 // fill in file information
                 fileInformation = await FileSystemHandler.readFileInformation(Path.join(projectFilesPath, mediaFile.filename + Path.extname(mediaFile.originalname)));
                 const audioInformation = await FileSystemHandler.readAudioFileInformation(Path.join(projectFilesPath, mediaFile.filename + Path.extname(mediaFile.originalname)))
-                reqData.media = {
+                reqData.file = {
+                  folder_path: '', // TODO set folderpath
                   session: jsonFile.content.media.session,
                   url: mediaFile.filename + Path.extname(mediaFile.originalname),
                   size: fileInformation.size,
                   type: fileInformation.type,
-                  originalname: mediaFile.originalname,
-                  filename: mediaFile.filename + Path.extname(mediaFile.originalname),
+                  filename: mediaFile.filename + Path.extname(mediaFile.originalname), // removed originalname
                   metadata: audioInformation
                 };
               } else {
                 const regex = new RegExp(`^${Path.join(this.settings.api.url, 'v1/links')}`);
 
                 let originalName = undefined;
-                if (regex.exec(reqData.media.url)) {
-                  reqData.media.url = reqData.media.url.replace(/^.+links\/([\/]+)\/(.+)/g, (g0, g1, g2) => {
+                if (regex.exec(reqData.file.url)) {
+                  reqData.file.url = reqData.file.url.replace(/^.+links\/([\/]+)\/(.+)/g, (g0, g1, g2) => {
                     originalName = g2;
                     return `${req.pathBuilder.decryptFilePath(g1)}/${g2}`;
                   });
 
-                  if (!(await pathExists(Path.join(this.settings.uploadPath, reqData.media.url)))) {
+                  if (!(await pathExists(Path.join(this.settings.uploadPath, reqData.file.url)))) {
                     ApiCommand.sendError(res, InternalServerError, 'The file referenced by this URL doesn\'t exist.');
                   }
                 } else {
-                  originalName = reqData.media.url.replace(/.+\/(.+)/g, (g0, g1) => {
+                  originalName = reqData.file.url.replace(/.+\/(.+)/g, (g0, g1) => {
                     return g1;
                   });
-                  publicURL = reqData.media.url;
+                  publicURL = reqData.file.url;
                 }
-                reqData.media.originalname = originalName;
               }
 
               const data = await DatabaseFunctions.deliverNewMedia(reqData);
 
               answer.data = {
                 ...data,
-                mediaitem: {
-                  ...data.mediaitem,
-                  url: (publicURL) ? publicURL : data.mediaitem.url
+                file: {
+                  ...data.file,
+                  url: (publicURL) ? publicURL : data.file.url
                 }
               };
             } catch (e) {

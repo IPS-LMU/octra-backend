@@ -1,26 +1,26 @@
 import {AppConfiguration} from '../../../obj/app-config/app-config';
 import {randomBytes} from 'crypto';
 import {
-  AccessRight,
-  AddMediaItemRequest,
+  AddFileRequest,
   AddToolRequest,
   AddTranscriptRequest,
   AppTokensRow,
   AssignUserRoleRequest,
   CreateProjectRequest,
   DeliverNewMediaRequest,
-  MediaItemRow,
   OCTRASQLStatements,
   PreparedAccountRow,
+  PreparedFileProjectRow,
+  PreparedTranscriptRow,
   ProjectResponseDataItem,
   ProjectRow,
-  ProjectTranscriptsGetResult,
   RemoveProjectRequest,
   RolesRow,
   SaveAnnotationRequest,
   StartAnnotationRequest,
   ToolRow,
   TranscriptRow,
+  UserInfoResponseDataItem,
   UserRole,
   UserRoleScope
 } from '@octra/db';
@@ -234,7 +234,8 @@ export class DatabaseFunctions {
         const insertProjectRole = await DatabaseFunctions.dbManager.insert({
           tableName: 'account_role_project',
           columns: [
-            DatabaseFunctions.getColumnDefinition('account_id', 'integer', data.admin_id ?? currentUserID, false),
+            // TODO set admins
+            // DatabaseFunctions.getColumnDefinition('account_id', 'integer', data.admin_id ?? currentUserID, false),
             DatabaseFunctions.getColumnDefinition('role_id', 'integer', roles.find(a => a.label === UserRole.projectAdministrator).id, false),
             DatabaseFunctions.getColumnDefinition('project_id', 'integer', insertProjectResult.rows[0].id, false)
           ]
@@ -377,16 +378,16 @@ export class DatabaseFunctions {
     }
   }
 
-  public static async addMediaItem(data: AddMediaItemRequest): Promise<MediaItemRow[]> {
+  public static async addMediaItem(data: AddFileRequest): Promise<PreparedFileProjectRow[]> {
     try {
       const selectResult = await this.dbManager.query({
         text: 'select * from mediaitem where project_id=$1::integer and session=$2::text and url=$3::text',
         values: [data.project_id, data.session, data.url]
       });
 
-      let mediaitem_row: MediaItemRow = undefined
+      let mediaitem_row: PreparedFileProjectRow = undefined
       if (selectResult.rows.length === 1) {
-        mediaitem_row = selectResult.rows[0] as MediaItemRow;
+        mediaitem_row = selectResult.rows[0] as PreparedFileProjectRow;
       } else {
         const insertQuery = {
           tableName: 'mediaitem',
@@ -403,7 +404,7 @@ export class DatabaseFunctions {
 
         const insertionResult = await DatabaseFunctions.dbManager.insert(insertQuery, '*');
         if (insertionResult.rowCount === 1 && insertionResult.rows[0].hasOwnProperty('id')) {
-          mediaitem_row = insertionResult.rows[0] as MediaItemRow;
+          mediaitem_row = insertionResult.rows[0] as PreparedFileProjectRow;
         } else {
           throw new Error('insertionResult does not have id');
         }
@@ -471,7 +472,7 @@ export class DatabaseFunctions {
           DatabaseFunctions.getColumnDefinition('tool_id', 'integer', data.tool_id),
           DatabaseFunctions.getColumnDefinition('transcriber_id', 'integer', data.transcriber_id),
           DatabaseFunctions.getColumnDefinition('project_id', 'integer', data.project_id),
-          DatabaseFunctions.getColumnDefinition('mediaitem_id', 'integer', data.mediaitem_id),
+          DatabaseFunctions.getColumnDefinition('file_id', 'integer', data.file_id),
           DatabaseFunctions.getColumnDefinition('nexttranscript_id', 'integer', data.nexttranscript_id)
         ]
       };
@@ -494,7 +495,7 @@ export class DatabaseFunctions {
   }
 
 
-  public static async freeAnnotation(projectID: number, transcriptID: number, tokenData: TokenData): Promise<ProjectTranscriptsGetResult> {
+  public static async freeAnnotation(projectID: number, transcriptID: number, tokenData: TokenData): Promise<PreparedTranscriptRow> {
     try {
       const selectQuery: SQLQuery = {
         'text': DatabaseFunctions.selectAllStatements.transcript + ` where project_id=$1::integer and id=$2::integer and status='BUSY'`,
@@ -507,7 +508,7 @@ export class DatabaseFunctions {
         throw new Error(`Can not free annotation ${transcriptID} because it either not busy or not found.`);
       }
 
-      const transcriptRow = selectResult.rows[0] as ProjectTranscriptsGetResult;
+      const transcriptRow = selectResult.rows[0] as PreparedTranscriptRow;
 
       // Set transcript status to BUSY and set transcriber_id, set start date, tool_id
       const updateResult = await DatabaseFunctions.dbManager.query({
@@ -522,21 +523,21 @@ export class DatabaseFunctions {
       }
       // status set to BUSY
 
-      if (transcriptRow.mediaitem_id) {
+      if (transcriptRow.file_id) {
         selectResult = await DatabaseFunctions.dbManager.query({
           text: DatabaseFunctions.selectAllStatements.mediaitem + ' where id=$1::integer',
           values: [
-            transcriptRow.mediaitem_id
+            transcriptRow.file_id
           ]
         });
 
         if (selectResult.rowCount > 0) {
           // Mediaitem found, add
-          const mediaRow = selectResult.rows[0] as MediaItemRow;
-          delete mediaRow.id;
+          const projectFileRow = selectResult.rows[0] as PreparedFileProjectRow;
+          delete projectFileRow.id;
 
-          transcriptRow.mediaitem = mediaRow;
-          delete transcriptRow.mediaitem_id;
+          transcriptRow.file = projectFileRow;
+          delete transcriptRow.file_id;
         }
       }
 
@@ -548,7 +549,7 @@ export class DatabaseFunctions {
     }
   }
 
-  public static async startAnnotation(data: StartAnnotationRequest, projectID: number, tokenData: TokenData): Promise<ProjectTranscriptsGetResult> {
+  public static async startAnnotation(data: StartAnnotationRequest, projectID: number, tokenData: TokenData): Promise<PreparedTranscriptRow> {
     try {
       // TODO check next transcript!
       const insertQuery: SQLQuery = {
@@ -570,7 +571,7 @@ export class DatabaseFunctions {
         return null;
       }
 
-      const transcriptRow = selectResult.rows[0] as ProjectTranscriptsGetResult;
+      const transcriptRow = selectResult.rows[0] as PreparedTranscriptRow;
 
       // Set transcript status to BUSY and set transcriber_id, set start date, tool_id
       const updateResult = await DatabaseFunctions.dbManager.query({
@@ -589,22 +590,23 @@ export class DatabaseFunctions {
       if (transcriptRow.transcripts_free_count) {
         transcriptRow.transcripts_free_count--;
       }
-      if (transcriptRow.mediaitem_id) {
+      if (transcriptRow.file_id) {
         selectResult = await DatabaseFunctions.dbManager.query({
           text: DatabaseFunctions.selectAllStatements.mediaitem + ' where id=$1::integer',
           values: [
-            transcriptRow.mediaitem_id
+            transcriptRow.file_id
           ]
         });
 
         if (selectResult.rowCount > 0) {
           // Mediaitem found, add
-          const mediaRow = selectResult.rows[0] as MediaItemRow;
+          const mediaRow = selectResult.rows[0] as PreparedFileProjectRow;
           delete mediaRow.id;
-          mediaRow.url = this.getPublicFileURL(projectID, mediaRow.session, mediaRow.url);
+          // TODO remove session
+          mediaRow.url = this.getPublicFileURL(projectID, 'session', mediaRow.url);
 
-          transcriptRow.mediaitem = mediaRow;
-          delete transcriptRow.mediaitem_id;
+          transcriptRow.file = mediaRow;
+          delete transcriptRow.file_id;
         }
       }
 
@@ -617,7 +619,7 @@ export class DatabaseFunctions {
   }
 
 
-  public static async saveAnnotation(data: SaveAnnotationRequest, projectID: number, transcriptID, tokenData: TokenData): Promise<ProjectTranscriptsGetResult> {
+  public static async saveAnnotation(data: SaveAnnotationRequest, projectID: number, transcriptID, tokenData: TokenData): Promise<PreparedTranscriptRow> {
     try {
       const insertQuery: SQLQuery = {
         'text': DatabaseFunctions.selectAllStatements.transcript + ` where project_id=$1::integer and id=$2::integer and status='BUSY'`,
@@ -630,7 +632,7 @@ export class DatabaseFunctions {
         throw new Error(`Can not find proper annotation to overwrite.`);
       }
 
-      let transcriptRow = selectResult.rows[0] as ProjectTranscriptsGetResult;
+      let transcriptRow = selectResult.rows[0] as PreparedTranscriptRow;
 
       // Set transcript status to BUSY and set transcriber_id, set start date, tool_id
       const updateResult = await DatabaseFunctions.dbManager.update({
@@ -652,22 +654,22 @@ export class DatabaseFunctions {
       }
       transcriptRow = updateResult.rows[0];
       // saved
-      if (transcriptRow.mediaitem_id) {
+      if (transcriptRow.file_id) {
         selectResult = await DatabaseFunctions.dbManager.query({
           text: DatabaseFunctions.selectAllStatements.mediaitem + ' where id=$1::integer',
           values: [
-            transcriptRow.mediaitem_id
+            transcriptRow.file_id
           ]
         });
 
         if (selectResult.rowCount > 0) {
           // Mediaitem found, add
-          const mediaRow = selectResult.rows[0] as MediaItemRow;
+          const mediaRow = selectResult.rows[0] as PreparedFileProjectRow;
           delete mediaRow.id;
-          mediaRow.url = this.getPublicFileURL(projectID, mediaRow.session, mediaRow.url);
+          mediaRow.url = this.getPublicFileURL(projectID, 'session', mediaRow.url);
 
-          transcriptRow.mediaitem = mediaRow;
-          delete transcriptRow.mediaitem_id;
+          transcriptRow.file = mediaRow;
+          delete transcriptRow.file_id;
         }
       }
 
@@ -679,7 +681,7 @@ export class DatabaseFunctions {
     }
   }
 
-  public static async continueAnnotation(projectID: number, transcriptID: number, tokenData: TokenData): Promise<ProjectTranscriptsGetResult> {
+  public static async continueAnnotation(projectID: number, transcriptID: number, tokenData: TokenData): Promise<PreparedTranscriptRow> {
     try {
       const selectQuery: SQLQuery = {
         'text': DatabaseFunctions.selectAllStatements.transcript + ` where project_id=$1::integer and id=$2::integer`,
@@ -692,7 +694,7 @@ export class DatabaseFunctions {
         return null;
       }
 
-      const transcriptRow = selectResult.rows[0] as ProjectTranscriptsGetResult;
+      const transcriptRow = selectResult.rows[0] as PreparedTranscriptRow;
 
       if (transcriptRow.transcriber_id !== tokenData.id) {
         throw new Error(`Can not continue transcript with id ${transcriptRow.id} because the transcriber IDs are not equal.`);
@@ -702,22 +704,22 @@ export class DatabaseFunctions {
         throw new Error(`Can not continue transcript with id ${transcriptRow.id} because its status is not equal 'BUSY'`);
       }
 
-      if (transcriptRow.mediaitem_id) {
+      if (transcriptRow.file_id) {
         selectResult = await DatabaseFunctions.dbManager.query({
           text: DatabaseFunctions.selectAllStatements.mediaitem + ' where id=$1::integer',
           values: [
-            transcriptRow.mediaitem_id
+            transcriptRow.file_id
           ]
         });
 
         if (selectResult.rowCount > 0) {
           // Mediaitem found, add
-          const mediaRow = selectResult.rows[0] as MediaItemRow;
+          const mediaRow = selectResult.rows[0] as PreparedFileProjectRow;
           delete mediaRow.id;
-          mediaRow.url = this.getPublicFileURL(projectID, mediaRow.session, mediaRow.url);
+          mediaRow.url = this.getPublicFileURL(projectID, 'session', mediaRow.url);
 
-          transcriptRow.mediaitem = mediaRow;
-          delete transcriptRow.mediaitem_id;
+          transcriptRow.file = mediaRow;
+          delete transcriptRow.file_id;
         }
       }
       this.prepareRows([transcriptRow]);
@@ -728,7 +730,7 @@ export class DatabaseFunctions {
     }
   }
 
-  public static async getTranscriptByID(id: number): Promise<ProjectTranscriptsGetResult> {
+  public static async getTranscriptByID(id: number): Promise<PreparedTranscriptRow> {
     const selectResult = await DatabaseFunctions.dbManager.query({
       text: 'select * from transcript where id=$1::integer',
       values: [id]
@@ -736,17 +738,17 @@ export class DatabaseFunctions {
 
     if (selectResult.rowCount === 1) {
       const transcriptRow = (selectResult.rows[0] as TranscriptRow);
-      const result: ProjectTranscriptsGetResult = transcriptRow;
+      const result: PreparedTranscriptRow = transcriptRow;
 
-      if (transcriptRow.hasOwnProperty('mediaitem_id') && transcriptRow.mediaitem_id) {
+      if (transcriptRow.hasOwnProperty('file_id') && transcriptRow.file_id) {
         const mediaItemResult = await DatabaseFunctions.dbManager.query({
           text: 'select * from mediaitem where id=$1::integer',
-          values: [transcriptRow.mediaitem_id]
+          values: [transcriptRow.file_id]
         });
 
         if (mediaItemResult.rowCount === 1) {
-          result.mediaitem = mediaItemResult.rows[0] as MediaItemRow;
-          DatabaseFunctions.prepareRows([result.mediaitem]);
+          result.file = mediaItemResult.rows[0] as PreparedFileProjectRow;
+          DatabaseFunctions.prepareRows([result.file]);
         }
       }
 
@@ -756,7 +758,7 @@ export class DatabaseFunctions {
     throw new Error('Could not find a transcript with this ID.')
   }
 
-  public static async getTranscriptsByProjectID(projectID: number): Promise<ProjectTranscriptsGetResult[]> {
+  public static async getTranscriptsByProjectID(projectID: number): Promise<PreparedTranscriptRow[]> {
     const projectSelectResult = await DatabaseFunctions.dbManager.query({
       text: 'select id from project where id=$1::integer',
       values: [projectID]
@@ -768,24 +770,24 @@ export class DatabaseFunctions {
         values: [projectID]
       });
 
-      const results: ProjectTranscriptsGetResult[] = [];
+      const results: PreparedTranscriptRow[] = [];
       if (selectResult.rowCount > 0) {
         for (const row of (selectResult.rows as TranscriptRow[])) {
           const mediaItem = await DatabaseFunctions.dbManager.query({
             text: 'select * from mediaitem where id=$1::integer',
-            values: [row.mediaitem_id]
+            values: [row.file_id]
           });
 
-          const mediaItemRows = mediaItem.rows as MediaItemRow[];
+          const PreparedFileProjectRows = mediaItem.rows as PreparedFileProjectRow[];
           const result = {
             ...row
-          } as ProjectTranscriptsGetResult;
+          } as PreparedTranscriptRow;
 
           if (mediaItem.rowCount === 1) {
-            result.mediaitem = {
-              ...mediaItemRows[0]
+            result.file = {
+              ...PreparedFileProjectRows[0]
             };
-            DatabaseFunctions.prepareRows([result.mediaitem]);
+            DatabaseFunctions.prepareRows([result.file]);
           }
 
           results.push(result);
@@ -821,10 +823,7 @@ export class DatabaseFunctions {
     email?: string,
     password: string,
     loginmethod: string
-  }): Promise<{
-    id: number;
-    accessRights: AccessRight[];
-  }> {
+  }): Promise<PreparedAccountRow> {
     const roles = await this.getRoles();
     const userRole = roles.find(a => a.label === UserRole.user);
 
@@ -848,7 +847,7 @@ export class DatabaseFunctions {
       const id = insertionResult.rows[0].id;
 
       const selectResult = await DatabaseFunctions.dbManager.query({
-        text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, r.label::text as role from account ac full outer join role r ON r.id=ac.role_id where ac.id=$1::integer',
+        text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, role::text as role from account_all ac;',
         values: [
           id
         ]
@@ -858,7 +857,7 @@ export class DatabaseFunctions {
         DatabaseFunctions.prepareRows(selectResult.rows);
 
         return {
-          id: selectResult.rows[0].id,
+          ...selectResult.rows[0] as PreparedAccountRow,
           accessRights: [
             {
               scope: UserRoleScope.global,
@@ -937,14 +936,19 @@ export class DatabaseFunctions {
       .filter(a => a !== null);
   }
 
-  static async listUsers(): Promise<PreparedAccountRow[]> {
+  static async listUsers(): Promise<UserInfoResponseDataItem[]> {
     const selectResult = await DatabaseFunctions.dbManager.query({
       text: OCTRASQLStatements.allUsersWithRoles
     });
 
+    // set username of deleted users
+    selectResult.rows = (selectResult.rows as PreparedAccountRow[]).map(a => ({
+      ...a,
+      username: a.username === `DeletedUser_${a.id}`
+    }));
     DatabaseFunctions.prepareRows(selectResult.rows);
 
-    return selectResult.rows as PreparedAccountRow[];
+    return selectResult.rows as UserInfoResponseDataItem[];
   }
 
   static async removeUserByID(id: number): Promise<void> {
@@ -985,7 +989,7 @@ export class DatabaseFunctions {
     email?: string;
     hash?: string;
     id?: number;
-  }): Promise<PreparedAccountRow> {
+  }): Promise<UserInfoResponseDataItem> {
     let selectResult = null;
 
     const sqlStatement = OCTRASQLStatements.allUsersWithRoles;
@@ -1015,9 +1019,10 @@ export class DatabaseFunctions {
 
     if (selectResult) {
       DatabaseFunctions.prepareRows(selectResult.rows);
-      const row = selectResult.rows[0] as PreparedAccountRow;
+      const row = selectResult.rows[0] as UserInfoResponseDataItem;
       row.accessRights = selectResult.rows[0].user_roles;
 
+      row.username = row.username ?? `DeletedUser_${row.id}`;
       if (selectResult.rowCount > 0) {
         return row;
       }
@@ -1041,7 +1046,7 @@ export class DatabaseFunctions {
   }
 
 
-  static async getUserInfoByUserID(id: number): Promise<PreparedAccountRow> {
+  static async getUserInfoByUserID(id: number): Promise<UserInfoResponseDataItem> {
     const result = await DatabaseFunctions.getUserInfo({id});
 
     if (result) {
@@ -1050,15 +1055,15 @@ export class DatabaseFunctions {
     throw new Error('could not find user');
   }
 
-  static async deliverNewMedia(dataDeliveryRequest: DeliverNewMediaRequest): Promise<ProjectTranscriptsGetResult> {
-    const media = dataDeliveryRequest.media;
+  static async deliverNewMedia(dataDeliveryRequest: DeliverNewMediaRequest): Promise<PreparedTranscriptRow> {
+    const media = dataDeliveryRequest.file;
 
     const mediaInsertResult = await DatabaseFunctions.addMediaItem({
       url: media.url,
       type: media.type,
       size: media.size,
-      originalname: dataDeliveryRequest.media.originalname,
-      filename: dataDeliveryRequest.media.filename,
+      originalname: dataDeliveryRequest.file.filename, // TODO this was an original name, check it
+      filename: dataDeliveryRequest.file.filename,
       project_id: dataDeliveryRequest.project_id,
       metadata: media.metadata,
       session: media.session
@@ -1070,14 +1075,14 @@ export class DatabaseFunctions {
         orgtext: dataDeliveryRequest.orgtext,
         transcript: dataDeliveryRequest.transcript,
         project_id: dataDeliveryRequest.project_id,
-        mediaitem_id: mediaID,
+        file_id: mediaID,
         status: 'DRAFT'
       });
 
       if (transcriptResult.length > 0) {
-        const result = transcriptResult[0] as ProjectTranscriptsGetResult;
-        result.mediaitem = mediaInsertResult[0] as MediaItemRow;
-        DatabaseFunctions.prepareRows([result.mediaitem]);
+        const result = transcriptResult[0] as PreparedTranscriptRow;
+        result.file = mediaInsertResult[0] as PreparedFileProjectRow;
+        DatabaseFunctions.prepareRows([result.file]);
         DatabaseFunctions.prepareRows([result]);
         return result;
       }

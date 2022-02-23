@@ -1,4 +1,4 @@
-import {UserRole} from '../db/database.types';
+import {UserRole} from '../db';
 
 export interface CreateProjectRequest {
   name: string;
@@ -8,7 +8,7 @@ export interface CreateProjectRequest {
   startdate?: string;
   enddate?: string;
   active?: boolean;
-  admin_id?: number;
+  admins: number[];
 }
 
 export interface CreateAppTokenRequest {
@@ -30,7 +30,8 @@ export interface UserRegisterRequest {
   password: string;
 }
 
-export interface AddMediaItemRequest {
+// TODO change this
+export interface AddFileRequest {
   project_id: number;
   url: string;
   type?: string;
@@ -55,7 +56,7 @@ export interface AddToolRequest {
 export interface AddTranscriptRequest {
   pid?: string;
   orgtext?: string;
-  transcript?: string;
+  transcript?: any;
   assessment?: string;
   priority?: string;
   status?: string;
@@ -63,12 +64,12 @@ export interface AddTranscriptRequest {
   creationdate?: string;
   startdate?: string;
   enddate?: string;
-  log?: string;
+  log?: any;
   comment?: string;
   tool_id?: number;
   transcriber_id?: number;
   project_id?: number;
-  mediaitem_id?: number;
+  file_id?: number;
   nexttranscript_id?: number;
 }
 
@@ -82,17 +83,17 @@ export interface AssignUserRoleRequest {
 
 export interface DeliverNewMediaRequest {
   project_id: number;
-  media?: {
+  file?: {
     url: string;
     type?: string;
     size?: number;
     metadata?: any;
     session: string;
-    originalname: string;
+    folder_path: string;
     filename: string;
   },
   orgtext?: string;
-  transcript?: string;
+  transcript?: any;
 }
 
 export interface GetProjectTranscriptsRequest {
@@ -104,10 +105,10 @@ export interface StartAnnotationRequest {
 }
 
 export interface SaveAnnotationRequest {
-  transcript: string,
+  transcript: any,
   comment?: string,
   assessment?: string,
-  log?: string,
+  log?: any,
   tool_id?: string
 }
 

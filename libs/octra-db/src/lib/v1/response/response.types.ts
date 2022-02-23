@@ -4,7 +4,6 @@ import {
   AppTokenRefreshResponseDataItem,
   AppTokenResponseDataItem,
   GuidelinesSaveResponseDataItem,
-  MediaAddResponseDataItem,
   ProjectCreateResponseDataItem,
   ProjectResponseDataItem,
   ProjectTranscriptsGetResponseDataItem,
@@ -12,9 +11,9 @@ import {
   TranscriptAddResponseDataItem,
   TranscriptGetResponseDataItem,
   UserInfoResponseDataItem,
-  UserLoginResponseDataItem,
-  UserRegisterResponseDataItem
+  UserLoginResponseDataItem
 } from './response.objects';
+import {PreparedAccountRow, PreparedFileProjectRow} from '../db';
 
 export interface APIResponse {
   status: 'success' | 'error';
@@ -49,7 +48,7 @@ export interface DeliveryMediaAddResponse extends APIResponse {
 }
 
 export interface MediaAddResponse extends APIResponse {
-  data: MediaAddResponseDataItem;
+  data: PreparedFileProjectRow;
 }
 
 export interface MediaUploadResponse extends APIResponse {
@@ -113,7 +112,7 @@ export interface UserPasswordChangeResponse extends APIResponse {
 
 export interface UserRegisterResponse extends APIResponse {
   token: string;
-  data: UserRegisterResponseDataItem;
+  data: PreparedAccountRow;
 }
 
 export interface UserRemoveResponse extends APIResponse {

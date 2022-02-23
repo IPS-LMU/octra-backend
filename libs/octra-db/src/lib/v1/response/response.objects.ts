@@ -1,6 +1,6 @@
-import {AccessRight, MediaItemRow, UserRole} from '../db';
+import {AccessRight, DatabaseRow, FileMetaData, PreparedFileProjectRow, UserRole} from '../db';
 
-export interface AppTokenChangeResponseDataItem {
+export interface AppTokenChangeResponseDataItem extends DatabaseRow {
   name: string;
   key: string;
   domain?: string;
@@ -8,8 +8,7 @@ export interface AppTokenChangeResponseDataItem {
   registrations?: boolean;
 }
 
-export interface ProjectResponseDataItem {
-  id: number;
+export interface ProjectResponseDataItem extends DatabaseRow {
   name: string;
   shortname?: string;
   description?: string;
@@ -22,8 +21,7 @@ export interface ProjectResponseDataItem {
   transcripts_count_free: number;
 }
 
-export interface AppTokenResponseDataItem {
-  id: number;
+export interface AppTokenResponseDataItem extends DatabaseRow {
   name: string;
   key: string;
   domain?: string;
@@ -31,25 +29,18 @@ export interface AppTokenResponseDataItem {
   registrations?: boolean;
 }
 
-export interface AppTokenRefreshResponseDataItem {
-  name: string;
-  key: string;
-  domain?: string;
-  description?: string;
-  registrations?: boolean;
+export interface AppTokenRefreshResponseDataItem extends AppTokenResponseDataItem {
 }
 
 
-export interface ToolAddResponseDataItem {
-  id: number;
+export interface ToolAddResponseDataItem extends DatabaseRow {
   pid?: string;
   name: string;
   version?: string;
   description?: string;
 }
 
-export interface TranscriptAddResponseDataItem {
-  id: number;
+export interface TranscriptAddResponseDataItem extends DatabaseRow {
   pid?: string;
   orgtext?: string;
   transcript?: string;
@@ -57,7 +48,6 @@ export interface TranscriptAddResponseDataItem {
   priority?: number;
   status?: string;
   code?: string;
-  creationdate?: string;
   startdate?: string;
   enddate?: string;
   log?: string;
@@ -65,20 +55,18 @@ export interface TranscriptAddResponseDataItem {
   tool_id?: number;
   transcriber_id?: number;
   project_id?: number;
-  mediaitem_id?: number;
+  file_id?: number;
   nexttranscript?: number;
 }
 
-export interface MediaAddResponseDataItem {
-  id: number;
+export interface MediaAddResponseDataItem extends DatabaseRow {
   url: string;
   type: string;
   size: number;
   metadata: string;
 }
 
-export interface ProjectCreateResponseDataItem {
-  id: number;
+export interface ProjectCreateResponseDataItem extends DatabaseRow {
   name: string;
   shortname?: string;
   description?: string;
@@ -95,8 +83,7 @@ export interface UserLoginResponseDataItem {
   openURL?: string;
 }
 
-export interface UserRegisterResponseDataItem {
-  id: number;
+export interface UserRegisterResponseDataItem extends DatabaseRow {
 }
 
 export interface GuidelinesSaveResponseDataItem {
@@ -104,8 +91,7 @@ export interface GuidelinesSaveResponseDataItem {
   json: any;
 }
 
-export interface ProjectTranscriptsGetResponseDataItem {
-  id: number;
+export interface ProjectTranscriptsGetResponseDataItem extends DatabaseRow {
   pid?: string;
   orgtext?: string;
   transcript?: string;
@@ -113,15 +99,14 @@ export interface ProjectTranscriptsGetResponseDataItem {
   priority?: number;
   status?: string;
   code?: string;
-  creationdate?: string;
   startdate?: string;
   enddate?: string;
   log?: string;
   comment?: string;
   tool_id?: number;
   transcriber_id?: number;
-  mediaitem_id?: number;
-  mediaitem?: MediaItemRow;
+  file_id?: number;
+  file?: PreparedFileProjectRow;
   nexttranscript?: number;
 }
 
@@ -129,12 +114,11 @@ export interface TranscriptGetResponseDataItem extends ProjectTranscriptsGetResp
   project_id?: number;
 }
 
-export interface UserInfoResponseDataItem {
-  id: number;
+export interface UserInfoResponseDataItem extends DatabaseRow {
   username: string;
   email: string;
+  hash?: string;
   roles?: UserRole[];
-  createdate: string;
   active: boolean;
   training?: string;
   loginmethod: string;
@@ -142,8 +126,7 @@ export interface UserInfoResponseDataItem {
   accessRights: AccessRight[];
 }
 
-export interface AnnotationStartResponseDataItem {
-  id: number;
+export interface AnnotationStartResponseDataItem extends DatabaseRow {
   pid?: string;
   orgtext?: string;
   transcript?: string;
@@ -151,22 +134,21 @@ export interface AnnotationStartResponseDataItem {
   priority?: number;
   status?: string;
   code?: string;
-  creationdate?: string;
   startdate?: string;
   enddate?: string;
   log?: any[];
   comment?: string;
   tool_id?: number;
   transcriber_id?: number;
-  mediaitem_id?: number;
-  mediaitem?: MediaItemResponseDataItem;
+  file_id?: number;
+  file?: PreparedFileProjectRow;
   nexttranscript?: number;
   transcripts_free_count: number;
 }
 
-export interface MediaItemResponseDataItem {
+export interface ProjectFileItemResponseDataItem extends DatabaseRow {
   url: string;
   type: string;
   size: number;
-  metadata: string;
+  metadata: FileMetaData;
 }

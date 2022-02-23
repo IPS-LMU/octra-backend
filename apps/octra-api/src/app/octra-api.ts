@@ -259,7 +259,6 @@ export class OctraApi {
         console.log(`Active APIs:`);
         for (const api of this._activeAPIs) {
           console.log(`|- ${api.information.apiSlug}`);
-          console.log(`\t|- Reference: http://localhost:${this.settings.api.port}/${api.information.apiSlug}/reference`);
 
           console.log(`\t|- API methods (order is equal to routing order)`);
           for (const module of api.modules) {
@@ -268,6 +267,7 @@ export class OctraApi {
               console.log(`\t\t\t- ${command.root}${command.url} => ${command.name} (${command.type})`);
             }
           }
+          console.log(`\n\t|- Reference: http://localhost:${this.settings.api.port}/${api.information.apiSlug}/reference`);
         }
       });
 

@@ -1,6 +1,6 @@
 import {Response} from 'express';
 import {ApiCommand, RequestType} from '../../api.command';
-import {ProjectTranscriptsGetResult, TranscriptGetResponse, UserRole} from '@octra/db';
+import {ProjectTranscriptsGetResponseDataItem, TranscriptGetResponse, UserRole} from '@octra/db';
 import {InternRequest} from '../../../obj/types';
 import {DatabaseFunctions} from '../../../obj/database.functions';
 import {InternalServerError} from '../../../../../obj/http-codes/server.codes';
@@ -78,10 +78,10 @@ export class TranscriptGetCommand extends ApiCommand {
             project_id: {
               type: 'number'
             },
-            mediaitem_id: {
+            file_id: {
               type: 'number'
             },
-            mediaitem: {
+            file: {
               type: 'object',
               properties: {
                 id: {
@@ -120,10 +120,11 @@ export class TranscriptGetCommand extends ApiCommand {
       try {
         answer.data = await DatabaseFunctions.getTranscriptByID(Number(req.params.transcript_id));
 
-        if (answer.data.mediaitem?.url) {
-          answer.data.mediaitem.url = answer.data.mediaitem.url.indexOf('http') > -1 ? answer.data.mediaitem.url
+        if (answer.data.file?.url) {
+          // TODO check session
+          answer.data.file.url = answer.data.file.url.indexOf('http') > -1 ? answer.data.file.url
             : req.pathBuilder.getEncryptedProjectFileURL(
-              Number(req.params.project_id), answer.data.mediaitem.session, Path.basename(answer.data.mediaitem.url)
+              Number(req.params.project_id), 'session', Path.basename(answer.data.file.url)
             );
         }
         this.reduceDataForUser(req, answer)
@@ -154,9 +155,9 @@ export class TranscriptGetCommand extends ApiCommand {
 
     if (tokenData.accessRights.find(a => a.role === UserRole.dataDelivery && a.project_id === answer.data.project_id)) {
       // is data delivery
-      const data = answer.data as ProjectTranscriptsGetResult;
+      const data = answer.data as ProjectTranscriptsGetResponseDataItem;
       delete data.pid;
-      delete data.mediaitem_id;
+      delete data.file_id;
     }
   }
 }
