@@ -60,6 +60,13 @@ $$
     ALTER TABLE mediaitem_id_seq
       RENAME TO file_id_seq;
 
+    RAISE NOTICE '-> Füge uploader_id zu file hinzu...';
+    ALTER TABLE file
+      ADD COLUMN uploader_id bigint;
+
+    ALTER TABLE file
+      ADD CONSTRAINT file_uploader_id_fkey FOREIGN KEY (uploader_id) REFERENCES account (id);
+
     /*
      %%%%%%%%%%%% account person table
      */
@@ -76,7 +83,7 @@ $$
       updatedate   timestamp without time zone DEFAULT NOW()
     );
 
-    CREATE TRIGGER set_timestamp
+    CREATE TRIGGER octra_set_timestamp
       BEFORE UPDATE
       ON account_person
       FOR EACH ROW
@@ -132,7 +139,7 @@ $$
       ADD COLUMN creationdate timestamp without time zone DEFAULT NOW(),
       ADD COLUMN updatedate   timestamp without time zone DEFAULT NOW();
 
-    CREATE TRIGGER set_timestamp
+    CREATE TRIGGER octra_set_timestamp
       BEFORE UPDATE
       ON account
       FOR EACH ROW
@@ -143,7 +150,7 @@ $$
 
     CREATE OR REPLACE VIEW account_all AS
     (
-    SELECT a.id as account_id,
+    SELECT a.id as id,
            p.id as person_id,
            p.username,
            p.email,
@@ -183,7 +190,7 @@ $$
       username   text;
     BEGIN
       FOR account_id, username IN
-        SELECT a.account_id as account_id, a.username
+        SELECT a.id as account_id, a.username
         FROM account_all a
         WHERE a.username = 'draxler_test'
            OR a.username = 'Julian Marius Pömp'
@@ -197,9 +204,10 @@ $$
       ALTER COLUMN scope SET NOT NULL;
 
     RAISE NOTICE '';
-    RAISE NOTICE '-> Entferne admin_id aus project Tabelle...';
+    RAISE NOTICE '-> Entferne admin_id aus project Tabelle und konvertiere configuration zu JSONB...';
     ALTER TABLE project
-      DROP column IF EXISTS admin_id;
+      DROP column IF EXISTS admin_id,
+      ALTER column configuration TYPE json USING configuration::json;
 
     RAISE NOTICE '-> Entferne alle Einträge aus account_role...';
     DELETE from account_role_project;
@@ -302,7 +310,7 @@ $$
     ALTER TABLE file_project
       ADD COLUMN creationdate timestamp without time zone DEFAULT NOW(),
       ADD COLUMN updatedate   timestamp without time zone DEFAULT NOW();
-    CREATE TRIGGER set_timestamp
+    CREATE TRIGGER octra_set_timestamp
       BEFORE UPDATE
       ON file_project
       FOR EACH ROW
@@ -311,7 +319,7 @@ $$
     ALTER TABLE project
       ADD COLUMN creationdate timestamp without time zone DEFAULT NOW(),
       ADD COLUMN updatedate   timestamp without time zone DEFAULT NOW();
-    CREATE TRIGGER set_timestamp
+    CREATE TRIGGER octra_set_timestamp
       BEFORE UPDATE
       ON project
       FOR EACH ROW
@@ -320,7 +328,7 @@ $$
     ALTER TABLE account_role_project
       ADD COLUMN creationdate timestamp without time zone DEFAULT NOW(),
       ADD COLUMN updatedate   timestamp without time zone DEFAULT NOW();
-    CREATE TRIGGER set_timestamp
+    CREATE TRIGGER octra_set_timestamp
       BEFORE UPDATE
       ON account_role_project
       FOR EACH ROW
@@ -329,7 +337,7 @@ $$
     ALTER TABLE apptoken
       ADD COLUMN creationdate timestamp without time zone DEFAULT NOW(),
       ADD COLUMN updatedate   timestamp without time zone DEFAULT NOW();
-    CREATE TRIGGER set_timestamp
+    CREATE TRIGGER octra_set_timestamp
       BEFORE UPDATE
       ON apptoken
       FOR EACH ROW
@@ -338,7 +346,7 @@ $$
     ALTER TABLE option
       ADD COLUMN creationdate timestamp without time zone DEFAULT NOW(),
       ADD COLUMN updatedate   timestamp without time zone DEFAULT NOW();
-    CREATE TRIGGER set_timestamp
+    CREATE TRIGGER octra_set_timestamp
       BEFORE UPDATE
       ON option
       FOR EACH ROW
@@ -347,7 +355,7 @@ $$
     ALTER TABLE role
       ADD COLUMN creationdate timestamp without time zone DEFAULT NOW(),
       ADD COLUMN updatedate   timestamp without time zone DEFAULT NOW();
-    CREATE TRIGGER set_timestamp
+    CREATE TRIGGER octra_set_timestamp
       BEFORE UPDATE
       ON role
       FOR EACH ROW
@@ -357,7 +365,7 @@ $$
       DROP COLUMN creationdate,
       ADD COLUMN creationdate timestamp without time zone DEFAULT NOW(),
       ADD COLUMN updatedate   timestamp without time zone DEFAULT NOW();
-    CREATE TRIGGER set_timestamp
+    CREATE TRIGGER octra_set_timestamp
       BEFORE UPDATE
       ON transcript
       FOR EACH ROW
@@ -366,7 +374,7 @@ $$
     ALTER TABLE tool
       ADD COLUMN creationdate timestamp without time zone DEFAULT NOW(),
       ADD COLUMN updatedate   timestamp without time zone DEFAULT NOW();
-    CREATE TRIGGER set_timestamp
+    CREATE TRIGGER octra_set_timestamp
       BEFORE UPDATE
       ON tool
       FOR EACH ROW
@@ -375,7 +383,7 @@ $$
     ALTER TABLE file
       ADD COLUMN creationdate timestamp without time zone DEFAULT NOW(),
       ADD COLUMN updatedate   timestamp without time zone DEFAULT NOW();
-    CREATE TRIGGER set_timestamp
+    CREATE TRIGGER octra_set_timestamp
       BEFORE UPDATE
       ON file
       FOR EACH ROW
