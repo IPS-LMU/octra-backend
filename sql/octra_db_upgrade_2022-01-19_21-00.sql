@@ -150,8 +150,8 @@ $$
 
     CREATE OR REPLACE VIEW account_all AS
     (
-    SELECT a.id as id,
-           p.id as person_id,
+    SELECT a.id    as id,
+           p.id    as person_id,
            p.username,
            p.email,
            p.loginmethod,
@@ -164,8 +164,9 @@ $$
            a.updatedate
     FROM account as a
            FULL OUTER JOIN account_person p ON a.account_person_id = p.id
-           INNER JOIN role r ON a.role_id = r.id order by a.id
-    );
+           INNER JOIN role r ON a.role_id = r.id
+    order by a.id
+      );
     /*
     %%%%%%%%%%%% role table
     */
@@ -388,6 +389,42 @@ $$
       ON file
       FOR EACH ROW
     EXECUTE PROCEDURE octra_trigger_set_updated_timestamp();
+
+    RAISE NOTICE '-> Erstelle project_all Tabelle...';
+    CREATE OR REPLACE VIEW project_all AS
+    (
+    with account_roles as (
+      select ar.account_id,
+             ar.project_id,
+             r.label as label,
+             r.scope,
+             r.id    as role_id,
+             ar.valid_startdate,
+             ar.valid_enddate
+      from account_role_project ar
+             full outer join role r on ar.role_id = r.id
+      where project_id is not NULL
+    ),
+         project_roles as (
+           select pr.*,
+                  case
+                    when count(ac.id) = 0 then '[]'
+                    else json_agg(json_strip_nulls(json_build_object('account_id', ac.id,
+                                                                     'username', ac.username,
+                                                                     'role', ar.label,
+                                                                     'valid_startdate', ar.valid_startdate,
+                                                                     'valid_enddate', ar.valid_enddate
+                      )))::JSON end as project_admins
+           from project pr
+                  full outer join account_roles ar on pr.id = ar.project_id
+                  full outer join account_all ac on ac.id = ar.account_id
+                  full outer join role r on ar.role_id = r.id
+           where pr.id is not null
+           group by pr.id
+         )
+    select pr.*
+    from project_roles pr
+      );
   END;
 $$;
 COMMIT;
