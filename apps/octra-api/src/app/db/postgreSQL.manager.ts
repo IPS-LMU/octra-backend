@@ -12,6 +12,11 @@ export class PostgreSQLManager extends DBManager {
 
   constructor(dbSettings: IDBConfiguration) {
     super(dbSettings);
+
+    types.setTypeParser(20, (val) => {
+      return Number(val);
+    });
+
     const ssl = this.loadSSLFileContents(dbSettings.ssl);
 
     this.pool = new Pool({
@@ -110,10 +115,17 @@ export class PostgreSQLManager extends DBManager {
 
     if (columns.length > 0) {
       let statement = `${query.tableName}`;
-      const values: any[] = columns.map(a => a.value);
+      const values: any[] = columns.filter(a => a.type !== undefined).map(a => a.value);
       statement += '(' + columns.map(a => a.key).join(', ') + ')';
+      let j = 0;
       statement += ' values(' + columns.map(
-        (a, index) => `$${index + 1}::${a.type}`).join(', ') + ')'
+        (a, index) => {
+          if (!a.type) {
+            return a.value;
+          }
+          j++;
+          return `$${j}${a.type ? '::' + a.type : ''}`;
+        }).join(', ') + ')';
 
       statement = `insert into ${statement}${(idColumn !== '') ? ` returning ${idColumn}` : ''}`;
 

@@ -831,42 +831,44 @@ export class DatabaseFunctions {
       throw new Error('Couldn\'t find user role in role table.');
     }
 
-    const insertAccountQuery = {
-      tableName: 'account',
+    const insertAccountPersonQuery = {
+      tableName: 'account_person',
       columns: [
         DatabaseFunctions.getColumnDefinition('username', 'text', userData.name),
         DatabaseFunctions.getColumnDefinition('email', 'text', userData.email),
         DatabaseFunctions.getColumnDefinition('hash', 'text', userData.password),
-        DatabaseFunctions.getColumnDefinition('loginmethod', 'text', userData.loginmethod),
+        DatabaseFunctions.getColumnDefinition('loginmethod', 'text', userData.loginmethod)
+      ]
+    };
+    const insertAccountQuery = {
+      tableName: 'account',
+      columns: [
+        DatabaseFunctions.getColumnDefinition('account_person_id', undefined, 'currval(\'account_person_id_seq\')'),
         DatabaseFunctions.getColumnDefinition('role_id', 'integer', userRole.id)
       ]
     };
-    const insertionResult = await DatabaseFunctions.dbManager.insert(insertAccountQuery, 'id');
+    //const insertionAccountPersonResult = await DatabaseFunctions.dbManager.insert(insertAccountQuery, 'id');
 
-    if (insertionResult.rowCount === 1 && insertionResult.rows[0].hasOwnProperty('id')) {
-      const id = insertionResult.rows[0].id;
+    const transaction = await DatabaseFunctions.dbManager.transaction([
+      DatabaseFunctions.dbManager.createSQLQueryForInsert(insertAccountPersonQuery, 'id'),
+      DatabaseFunctions.dbManager.createSQLQueryForInsert(insertAccountQuery, '*'),
+      {
+        text: 'select id from account_all where id=currval(\'account_id_seq\')'
+      }
+    ]);
 
-      const selectResult = await DatabaseFunctions.dbManager.query({
-        text: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp, role::text as role from account_all ac;',
-        values: [
-          id
-        ]
-      });
 
-      if (selectResult.rowCount > 0) {
-        DatabaseFunctions.prepareRows(selectResult.rows);
-
-        return {
-          ...selectResult.rows[0] as PreparedAccountRow,
-          accessRights: [
-            {
-              scope: UserRoleScope.global,
-              role: UserRole.user
-            }]
-        };
+    if (transaction.length === 3 && transaction[2][0].hasOwnProperty('id')) {
+      const accountRow = transaction[2][0] as PreparedAccountRow;
+      return {
+        ...accountRow,
+        accessRights: [
+          {
+            scope: UserRoleScope.global,
+            role: UserRole.user
+          }]
       }
     }
-
     throw new Error('Could not create user.');
   }
 
@@ -944,7 +946,7 @@ export class DatabaseFunctions {
     // set username of deleted users
     selectResult.rows = (selectResult.rows as PreparedAccountRow[]).map(a => ({
       ...a,
-      username: a.username === `DeletedUser_${a.id}`
+      username: a.username ?? `DeletedUser_${a.id}`
     }));
     DatabaseFunctions.prepareRows(selectResult.rows);
 
@@ -992,6 +994,7 @@ export class DatabaseFunctions {
   }): Promise<UserInfoResponseDataItem> {
     let selectResult = null;
 
+    // TODO fix get user
     const sqlStatement = OCTRASQLStatements.allUsersWithRoles;
 
     if (data.id && isNumber(data.id)) {
@@ -1034,7 +1037,7 @@ export class DatabaseFunctions {
 
   static async changeUserPassword(id: number, hash: string): Promise<void> {
     const updateResult = await DatabaseFunctions.dbManager.query({
-      text: 'update account set hash=$1::text where id=$2::integer returning id',
+      text: 'update account_person as ap set hash=$1::text from account_all as a_all where a_all.id=$2::integer and ap.id=a_all.person_id returning a_all.id',
       values: [hash, id]
     });
 

@@ -67,10 +67,10 @@ const todoList = {
   },
   project: {
     create: true,
-    get: true,
-    list: true,
-    change: true,
-    remove: true,
+    get: false,
+    list: false,
+    change: false,
+    remove: false,
     transcripts: {
       getAll: false,
       get: false,
