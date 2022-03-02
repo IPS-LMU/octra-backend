@@ -435,6 +435,23 @@ $$
     where pr.id IS NOT NULL
     group by pr.id
     order by pr.id);
+    CREATE OR REPLACE VIEW project_file_all AS
+    (
+    select fp.id,
+           fp.project_id,
+           fp.virtual_filename    as filename,
+           fp.virtual_folder_path as path,
+           f.url,
+           f.type,
+           f.size,
+           f.original_name,
+           f.metadata,
+           f.uploader_id,
+           fp.creationdate,
+           fp.updatedate
+    from file_project fp
+           left join file f on fp.file_id = f.id
+      );
   END;
 $$;
 COMMIT;
