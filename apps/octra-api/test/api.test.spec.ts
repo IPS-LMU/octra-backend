@@ -67,10 +67,10 @@ const todoList = {
   },
   project: {
     create: true,
-    get: false,
-    list: false,
-    change: false,
-    remove: false,
+    get: true,
+    list: true,
+    change: true,
+    remove: true,
     transcripts: {
       getAll: false,
       get: false,
@@ -368,7 +368,7 @@ if (todoList.project.create) {
   it('it should create a project', (done) => {
     const requestData = {
       'name': tempData.project.name,
-      'description': 'aiosdjp askdopasdk oakdspoakdopaküpd akdspkapsdükapüds'
+      'description': 'arrsseiosdjp askdopasdk oakdsspoakdopaküpd akdspkapsdükapüds'
     }
     request
       .post('/v1/projects')
@@ -378,7 +378,6 @@ if (todoList.project.create) {
       .send(requestData)
       .end((err, {body, status}) => {
         checkForErrors(err, body);
-        console.log(`SET PROJECT ID!`);
         expect(status).toBe(200);
         tempData.project.id = body.data.id;
         expect(typeof body.data).toBe('object');

@@ -12,6 +12,7 @@ import {
   OCTRASQLStatements,
   PreparedAccountRow,
   PreparedFileProjectRow,
+  PreparedProjectRow,
   PreparedTranscriptRow,
   ProjectResponseDataItem,
   ProjectRow,
@@ -211,7 +212,7 @@ export class DatabaseFunctions {
     }
   }
 
-  public static async createProject(data: CreateProjectRequest, currentUserID: number): Promise<ProjectRow[]> {
+  public static async createProject(data: CreateProjectRequest, currentUserID: number): Promise<PreparedProjectRow[]> {
     try {
       const startdate = DatabaseFunctions.convertJSONDateTime(data.startdate);
       const enddate = DatabaseFunctions.convertJSONDateTime(data.enddate);
@@ -238,16 +239,19 @@ export class DatabaseFunctions {
             DatabaseFunctions.getColumnDefinition('role_id', 'integer', roles.find(a => a.label === UserRole.projectAdministrator).id, false),
             DatabaseFunctions.getColumnDefinition('project_id', 'integer', insertProjectResult.rows[0].id, false)
           ]
-        }, 'project_id');
+        }, 'account_id');
 
         if (insertProjectRole.rowCount === 0) {
           throw new Error('Can\'t assign user role \'project_admin\'');
         }
-        // TODO reference admins on project change
-        // TODO project_admin festlegen
-
+        const userInfo = await this.getUserInfoByUserID(insertProjectRole.rows[0]['account_id']);
+        insertProjectResult.rows[0]['project_admins'] = [{
+          role: 'project_admin',
+          account_id: userInfo.id,
+          username: userInfo.username
+        }];
         this.prepareRows(insertProjectResult.rows);
-        return insertProjectResult.rows as ProjectRow[];
+        return insertProjectResult.rows as PreparedProjectRow[];
       }
     } catch (e) {
       console.log(e);
@@ -270,6 +274,12 @@ export class DatabaseFunctions {
       });
     }
 
+    // remove account_roles
+    sqlQueries.push({
+      text: 'delete from account_role_project where project_id=$1::integer',
+      values: [id]
+    });
+
     // remove project
     sqlQueries.push({
       text: 'delete from project where id=$1::numeric',
@@ -280,17 +290,17 @@ export class DatabaseFunctions {
     return;
   }
 
-  public static async getProject(id: number): Promise<ProjectRow> {
+  public static async getProject(id: number): Promise<PreparedProjectRow> {
     try {
       const selectQuery = {
-        text: DatabaseFunctions.selectAllStatements.project + ' where id=$1::integer order by id asc',
+        text: OCTRASQLStatements.allProjectsWithRoles + ' where id=$1::integer',
         values: [id]
       };
       const selectResult = await DatabaseFunctions.dbManager.query(selectQuery);
 
       if (selectResult.rowCount === 1) {
         this.prepareRows(selectResult.rows);
-        return selectResult.rows[0] as ProjectRow;
+        return selectResult.rows[0] as PreparedProjectRow;
       }
       throw new Error('insertionResult does not have id');
     } catch (e) {
@@ -317,7 +327,7 @@ export class DatabaseFunctions {
 
       if (updateResult.rowCount === 1) {
         const selectResult = await DatabaseFunctions.dbManager.query({
-          text: DatabaseFunctions.selectAllStatements.project + ' where id=$1::integer',
+          text: 'select * from project_all where id=$1::integer',
           values: [id]
         });
 
@@ -336,32 +346,7 @@ export class DatabaseFunctions {
   public static async listProjects(): Promise<ProjectResponseDataItem[]> {
     try {
       const selectQuery = {
-        text: `with project_admins as (
-          select ar.project_id                        as project_id,
-                 r.label                              as role_id,
-                 json_agg(json_build_object('username', ar.account_id, 'label', r.label, 'scope',
-                                            r.scope)) as user_roles
-          from account ac
-                 full outer join account_role_project ar on ac.id = ar.account_id
-                 inner join project pr on ar.project_id = pr.id
-                 inner join role r on r.id = ar.role_id
-          group by ar.project_id, r.label
-        )
-               select pr.id,
-                      pr.name,
-                      pr.shortname,
-                      pr.startdate,
-                      pr.enddate,
-                      pr.active,
-                      pra.user_roles::text,
-                      count(transcript.id)::integer                                               as transcripts_count,
-                      count(case when transcript.status = 'FREE' then transcript.id end)::integer as transcripts_count_free
-               from transcript
-                      full outer join project pr on transcript.project_id = pr.id
-                      full outer join project_admins pra on pra.project_id = pr.id
-               where pr.id IS NOT NULL
-               group by pr.id, pra.user_roles::text
-               order by pr.id;`
+        text: OCTRASQLStatements.allProjectsWithRoles
       };
       const selectResult = await DatabaseFunctions.dbManager.query(selectQuery);
 

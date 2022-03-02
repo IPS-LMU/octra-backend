@@ -12,5 +12,5 @@ module.exports = {
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../coverage/apps/octra-api',
-  testEnvironment: 'node',
+  testEnvironment: 'node'
 };

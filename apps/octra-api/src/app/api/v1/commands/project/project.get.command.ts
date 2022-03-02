@@ -50,6 +50,9 @@ export class ProjectGetCommand extends ApiCommand {
             },
             active: {
               type: 'boolean'
+            },
+            project_admins: {
+              type: 'array'
             }
           }
         }

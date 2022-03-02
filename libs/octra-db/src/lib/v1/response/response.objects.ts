@@ -1,4 +1,4 @@
-import {AccessRight, DatabaseRow, FileMetaData, PreparedFileProjectRow, UserRole} from '../db';
+import {AccessRight, DatabaseRow, FileMetaData, PreparedFileProjectRow, ProjectAdmin, UserRole} from '../db';
 
 export interface AppTokenChangeResponseDataItem extends DatabaseRow {
   name: string;
@@ -8,7 +8,7 @@ export interface AppTokenChangeResponseDataItem extends DatabaseRow {
   registrations?: boolean;
 }
 
-export interface ProjectResponseDataItem extends DatabaseRow {
+export interface ProjectResponseDataItem extends ProjectCreateResponseDataItem {
   name: string;
   shortname?: string;
   description?: string;
@@ -16,7 +16,7 @@ export interface ProjectResponseDataItem extends DatabaseRow {
   startdate?: string;
   enddate?: string;
   active?: boolean;
-  accessRights?: AccessRight[];
+  project_admins?: ProjectAdmin[];
   transcripts_count: number;
   transcripts_count_free: number;
 }
@@ -74,7 +74,7 @@ export interface ProjectCreateResponseDataItem extends DatabaseRow {
   startdate?: string;
   enddate?: string;
   active?: boolean;
-  accessRights?: AccessRight[]
+  projectAdmins?: ProjectAdmin[]
 }
 
 export interface UserLoginResponseDataItem {

@@ -21,6 +21,13 @@ export interface AccessRight {
   valid_enddate?: string;
 }
 
+export interface ProjectAdmin {
+  account_id: number;
+  username: string;
+  valid_startdate?: string;
+  valid_enddate?: string;
+}
+
 export interface DatabaseRow {
   id: number;
   creationdate: string;
@@ -111,6 +118,10 @@ export interface ProjectRow extends DatabaseRow {
   startdate: string; //timestamp without timezone
   enddate: string; //timestamp without timezone
   active: boolean;
+}
+
+export interface PreparedProjectRow extends ProjectRow {
+  projectAdmins: ProjectAdmin[];
 }
 
 export interface ToolRow extends DatabaseRow {

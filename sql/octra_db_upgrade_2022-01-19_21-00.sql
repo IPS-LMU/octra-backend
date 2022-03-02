@@ -391,13 +391,15 @@ $$
     EXECUTE PROCEDURE octra_trigger_set_updated_timestamp();
 
     RAISE NOTICE '-> Ändere project active Default auf false...';
-    alter table project alter column active set default false;
+    alter table project
+      alter column active set default false;
 
     RAISE NOTICE '-> Erstelle project_all View...';
     CREATE OR REPLACE VIEW project_all AS
     (
     with account_roles as (
       select ar.account_id,
+             ac.username,
              ar.project_id,
              r.label as label,
              r.scope,
@@ -406,28 +408,33 @@ $$
              ar.valid_enddate
       from account_role_project ar
              full outer join role r on ar.role_id = r.id
+             full outer join account_all ac on ar.account_id = ac.id
       where project_id is not NULL
-    ),
-         project_roles as (
-           select pr.*,
-                  case
-                    when count(ac.id) = 0 then '[]'
-                    else json_agg(json_strip_nulls(json_build_object('account_id', ac.id,
-                                                                     'username', ac.username,
-                                                                     'role', ar.label,
-                                                                     'valid_startdate', ar.valid_startdate,
-                                                                     'valid_enddate', ar.valid_enddate
-                      )))::JSON end as project_admins
-           from project pr
-                  full outer join account_roles ar on pr.id = ar.project_id
-                  full outer join account_all ac on ac.id = ar.account_id
-                  full outer join role r on ar.role_id = r.id
-           where pr.id is not null
-           group by pr.id
-         )
-    select pr.*
-    from project_roles pr
-      );
+    )
+    select pr.id,
+           pr.name,
+           pr.shortname,
+           pr.startdate,
+           pr.enddate,
+           pr.active,
+           case
+             when count(ar.account_id) = 0 then null
+             else json_agg(json_strip_nulls(json_build_object('account_id', ar.account_id,
+                                                              'username', ar.username,
+                                                              'role', ar.label,
+                                                              'valid_startdate', ar.valid_startdate,
+                                                              'valid_enddate', ar.valid_enddate
+               )))::JSON end                                                           as project_admins,
+           count(transcript.id)::integer                                               as transcripts_count,
+           count(case when transcript.status = 'FREE' then transcript.id end)::integer as transcripts_count_free,
+           pr.creationdate,
+           pr.updatedate
+    from transcript
+           full outer join project pr on transcript.project_id = pr.id
+           full outer join account_roles ar on pr.id = ar.project_id
+    where pr.id IS NOT NULL
+    group by pr.id
+    order by pr.id);
   END;
 $$;
 COMMIT;

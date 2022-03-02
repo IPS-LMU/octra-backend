@@ -77,6 +77,9 @@ export class ProjectChangeCommand extends ApiCommand {
             },
             active: {
               type: 'boolean'
+            },
+            project_admins: {
+              type: 'array'
             }
           }
         }

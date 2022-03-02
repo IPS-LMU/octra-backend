@@ -54,6 +54,9 @@ export class ProjectListCommand extends ApiCommand {
               active: {
                 type: 'boolean'
               },
+              project_admins: {
+                type: 'array'
+              },
               transcripts_count: {
                 type: 'number',
                 required: true

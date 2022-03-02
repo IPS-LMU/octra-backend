@@ -73,6 +73,10 @@ export class ProjectCreateCommand extends ApiCommand {
             },
             active: {
               type: 'boolean'
+            },
+            project_admins: {
+              type: 'array',
+              required: true
             }
           }
         }
