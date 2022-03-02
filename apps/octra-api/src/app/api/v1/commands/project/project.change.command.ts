@@ -2,7 +2,7 @@ import {ApiCommand, RequestType} from '../api.command';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
-import {CreateProjectRequest, ProjectCreateResponse, UserRole} from '@octra/db';
+import {ChangeProjectRequest, ProjectCreateResponse, UserRole} from '@octra/db';
 
 export class ProjectChangeCommand extends ApiCommand {
   constructor() {
@@ -87,7 +87,7 @@ export class ProjectChangeCommand extends ApiCommand {
   async do(req, res) {
     const answer = ApiCommand.createAnswer() as ProjectCreateResponse;
     const validation = this.validate(req);
-    const body: CreateProjectRequest = req.body;
+    const body: ChangeProjectRequest = req.body;
 
     // do something
     if (validation.length === 0) {

@@ -6,6 +6,7 @@ import {
   AddTranscriptRequest,
   AppTokensRow,
   AssignUserRoleRequest,
+  ChangeProjectRequest,
   CreateProjectRequest,
   DeliverNewMediaRequest,
   OCTRASQLStatements,
@@ -223,8 +224,7 @@ export class DatabaseFunctions {
           DatabaseFunctions.getColumnDefinition('description', 'text', data.description),
           DatabaseFunctions.getColumnDefinition('configuration', 'text', data.configuration),
           DatabaseFunctions.getColumnDefinition('startdate', 'timestamp', startdate),
-          DatabaseFunctions.getColumnDefinition('enddate', 'timestamp', enddate),
-          DatabaseFunctions.getColumnDefinition('active', 'boolean', data.active)
+          DatabaseFunctions.getColumnDefinition('enddate', 'timestamp', enddate)
         ]
       }, '*');
 
@@ -234,8 +234,7 @@ export class DatabaseFunctions {
         const insertProjectRole = await DatabaseFunctions.dbManager.insert({
           tableName: 'account_role_project',
           columns: [
-            // TODO set admins
-            // DatabaseFunctions.getColumnDefinition('account_id', 'integer', data.admin_id ?? currentUserID, false),
+            DatabaseFunctions.getColumnDefinition('account_id', 'integer', data.admin_id ?? currentUserID, false),
             DatabaseFunctions.getColumnDefinition('role_id', 'integer', roles.find(a => a.label === UserRole.projectAdministrator).id, false),
             DatabaseFunctions.getColumnDefinition('project_id', 'integer', insertProjectResult.rows[0].id, false)
           ]
@@ -300,7 +299,7 @@ export class DatabaseFunctions {
     }
   }
 
-  public static async changeProject(id: number, data: CreateProjectRequest): Promise<ProjectRow> {
+  public static async changeProject(id: number, data: ChangeProjectRequest): Promise<ProjectRow> {
     try {
       const updateQuery = {
         tableName: 'project',
@@ -994,7 +993,7 @@ export class DatabaseFunctions {
   }): Promise<UserInfoResponseDataItem> {
     let selectResult = null;
 
-    // TODO fix get user
+    // TODO fix get userx
     const sqlStatement = OCTRASQLStatements.allUsersWithRoles;
 
     if (data.id && isNumber(data.id)) {

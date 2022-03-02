@@ -27,7 +27,7 @@ export class UserListCommand extends ApiCommand {
           type: 'array',
           items: {
             type: 'object',
-            required: ['id', 'username', 'creationdate', 'updatedate', 'active'],
+            required: ['id', 'username', 'creationdate', 'updatedate'],
             properties: {
               id: {
                 type: 'number'

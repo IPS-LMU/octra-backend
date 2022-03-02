@@ -390,7 +390,10 @@ $$
       FOR EACH ROW
     EXECUTE PROCEDURE octra_trigger_set_updated_timestamp();
 
-    RAISE NOTICE '-> Erstelle project_all Tabelle...';
+    RAISE NOTICE '-> Ändere project active Default auf false...';
+    alter table project alter column active set default false;
+
+    RAISE NOTICE '-> Erstelle project_all View...';
     CREATE OR REPLACE VIEW project_all AS
     (
     with account_roles as (

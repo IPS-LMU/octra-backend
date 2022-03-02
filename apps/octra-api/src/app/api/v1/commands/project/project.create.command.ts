@@ -37,9 +37,6 @@ export class ProjectCreateCommand extends ApiCommand {
         },
         enddate: {
           type: 'date-time'
-        },
-        active: {
-          type: 'boolean'
         }
       }
     };

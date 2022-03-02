@@ -7,8 +7,11 @@ export interface CreateProjectRequest {
   configuration?: any;
   startdate?: string;
   enddate?: string;
-  active?: boolean;
-  admins: number[];
+  admin_id: number;
+}
+
+export interface ChangeProjectRequest extends CreateProjectRequest {
+  active: boolean;
 }
 
 export interface CreateAppTokenRequest {
