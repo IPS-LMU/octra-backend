@@ -2,6 +2,7 @@ import {Express, NextFunction, Response} from 'express';
 import * as bodyParser from 'body-parser';
 import {APIV1} from './api/v1/api';
 import * as path from 'path';
+import * as Path from 'path';
 import {ApiCommand} from './api/v1/commands/api.command';
 import {createTerminus} from '@godaddy/terminus';
 import * as ejs from 'ejs';
@@ -276,7 +277,9 @@ export class OctraApi {
         onSignal: () => {
           return new Promise<any>((resolve) => {
             console.log(`\nClose database...`);
-            this.dbManager.close().then(() => {
+            Promise.all([
+              this.dbManager.close(),
+              this.cleanUpFiles()]).then(() => {
               console.log(`Database closed.`);
               resolve(null);
             }).catch((error) => {
@@ -293,6 +296,15 @@ export class OctraApi {
       console.log(`The config file is invalid:`);
       console.log(this.settings.validation.errors.map(a => `-> Error: ${a.stack}`).join('\n'));
       return null;
+    }
+  }
+
+  private async cleanUpFiles() {
+    try {
+      await FileSystemHandler.removeFolder(Path.join(this.settings.api.files.uploadPath, 'temp'));
+      console.log('Removed temp folder successfully');
+    } catch (e) {
+      console.log(`ERROR: ${e}`);
     }
   }
 
