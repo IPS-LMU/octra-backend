@@ -105,7 +105,9 @@
           ],
           "options": {
             "jestConfig": "apps/octra-api/jest.config.js",
-            "passWithNoTests": false
+            "passWithNoTests": false,
+            "bail": true,
+            "runInBand": true
           }
         }
       },
