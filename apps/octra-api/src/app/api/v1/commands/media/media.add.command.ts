@@ -73,9 +73,9 @@ export class MediaAddCommand extends ApiCommand {
     if (validation.length === 0) {
       const body: AddFileRequest = req.body;
       try {
-        const result = await DatabaseFunctions.addMediaItem(body);
-        if (result.length === 1) {
-          answer.data = result[0];
+        const result = await DatabaseFunctions.addFileItem(body);
+        if (result) {
+          answer.data = result as any;
           this.checkAndSendAnswer(res, answer);
           return;
         }

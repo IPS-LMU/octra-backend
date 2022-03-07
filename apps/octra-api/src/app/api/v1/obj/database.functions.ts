@@ -1,6 +1,7 @@
 import {AppConfiguration} from '../../../obj/app-config/app-config';
 import {randomBytes} from 'crypto';
 import {
+  AddFileProjectRequest,
   AddFileRequest,
   AddToolRequest,
   AddTranscriptRequest,
@@ -9,6 +10,7 @@ import {
   ChangeProjectRequest,
   CreateProjectRequest,
   DeliverNewMediaRequest,
+  FileRow,
   OCTRASQLStatements,
   PreparedAccountRow,
   PreparedFileProjectRow,
@@ -38,6 +40,7 @@ export class DatabaseFunctions {
   private static settings: AppConfiguration;
   private static pathBuilder: PathBuilder;
 
+  /*
   private static selectAllStatements = {
     appToken: 'select id::integer, name::text, key::text, domain::text, description::text, registrations::boolean from apptoken',
     account: 'select ac.id::integer, ac.username::text, ac.email::text, ac.loginmethod::text, ac.active::boolean, ac.hash::text, ac.training::text, ac.comment::text, ac.createdate::timestamp from account ac',
@@ -46,6 +49,7 @@ export class DatabaseFunctions {
     tool: 'select id::integer, name::text, version::text, description::text, pid::text from tool',
     transcript: 'select id::integer, pid::text, orgtext::text, transcript::text, assessment::text, priority::integer, status::text, code::text, creationdate::timestamp, startdate::timestamp, enddate::timestamp, log::text, comment::text, tool_id::integer, transcriber_id::integer, project_id::integer, mediaitem_id::integer, nexttranscript_id::integer from transcript'
   };
+   */
 
   constructor() {
   }
@@ -58,7 +62,7 @@ export class DatabaseFunctions {
 
   public static async isValidAppToken(token: string, originHost: string): Promise<void> {
     const selectResult = await DatabaseFunctions.dbManager.query({
-      text: DatabaseFunctions.selectAllStatements.appToken + ' where key=$1::text',
+      text: 'select * from apptoken where key=$1::text',
       values: [token]
     });
 
@@ -94,7 +98,7 @@ export class DatabaseFunctions {
 
   public static async areRegistrationsAllowed(appToken: string): Promise<boolean> {
     const selectResult = await DatabaseFunctions.dbManager.query({
-      text: DatabaseFunctions.selectAllStatements.appToken + ' where key=$1::text',
+      text: 'select * from apptoken where key=$1::text',
       values: [appToken]
     });
 
@@ -130,7 +134,7 @@ export class DatabaseFunctions {
       if (insertionResult.rowCount === 1 && insertionResult.rows[0].hasOwnProperty('id')) {
         const id = insertionResult.rows[0].id;
         const selectResult = await DatabaseFunctions.dbManager.query({
-          text: DatabaseFunctions.selectAllStatements.appToken + ' where id=$1',
+          text: 'select * from apptoken where id=$1',
           values: [id]
         });
 
@@ -166,7 +170,7 @@ export class DatabaseFunctions {
 
       if (updateResult.rowCount === 1) {
         const selectResult = await DatabaseFunctions.dbManager.query({
-          text: DatabaseFunctions.selectAllStatements.appToken + ' where id=$1::integer',
+          text: 'select * from apptoken where id=$1::integer',
           values: [data.id]
         });
 
@@ -196,7 +200,7 @@ export class DatabaseFunctions {
 
       if (updateResult.rowCount === 1) {
         const selectResult = await DatabaseFunctions.dbManager.query({
-          text: DatabaseFunctions.selectAllStatements.appToken + ' where id=$1::integer',
+          text: 'select * from apptoken where id=$1::integer',
           values: [id]
         });
 
@@ -362,48 +366,113 @@ export class DatabaseFunctions {
     }
   }
 
-  public static async addMediaItem(data: AddFileRequest): Promise<PreparedFileProjectRow[]> {
+  public static async getFileItemByHash(hash: string): Promise<FileRow | undefined> {
     try {
       const selectResult = await this.dbManager.query({
-        text: 'select * from mediaitem where project_id=$1::integer and session=$2::text and url=$3::text',
-        values: [data.project_id, data.session, data.url]
+        text: 'select * from file where hash=$1::text',
+        values: [hash]
+      });
+      if (selectResult.rows.length === 1) {
+        this.prepareRows(selectResult.rows);
+        return selectResult.rows[0] as FileRow;
+      }
+      return undefined;
+    } catch (e) {
+      return undefined;
+    }
+  }
+
+  public static async getFileItemByURL(url: string): Promise<FileRow | undefined> {
+    try {
+      const selectResult = await this.dbManager.query({
+        text: 'select * from file where url=$1::text',
+        values: [url]
+      });
+      if (selectResult.rows.length === 1) {
+        this.prepareRows(selectResult.rows);
+        return selectResult.rows[0] as FileRow;
+      }
+      return undefined;
+    } catch (e) {
+      return undefined;
+    }
+  }
+
+  public static async addFileItem(data: AddFileRequest): Promise<FileRow> {
+    try {
+      const insertResult = await this.dbManager.insert({
+        tableName: 'file',
+        columns: [
+          this.getColumnDefinition('url', 'text', data.url, false),
+          this.getColumnDefinition('type', 'text', data.type),
+          this.getColumnDefinition('size', 'integer', data.size),
+          this.getColumnDefinition('uploader_id', 'integer', data.uploader_id),
+          this.getColumnDefinition('original_name', 'text', data.original_name),
+          this.getColumnDefinition('hash', 'text', data.hash),
+          this.getColumnDefinition('metadata', 'json', data.metadata)
+        ]
+      }, '*');
+
+      if (insertResult.rows.length === 1) {
+        this.prepareRows(insertResult.rows);
+        return insertResult.rows[0] as FileRow;
+      }
+      throw new Error('Couldn\'t add file item.');
+    } catch (e) {
+      console.log(e);
+      throw new Error('Couldn\'t add file item.');
+    }
+  }
+
+  // TODO remove this function?
+  public static async addFileProjectItem(data: AddFileProjectRequest): Promise<PreparedFileProjectRow[]> {
+    try {
+      let file_project_row;
+
+      // const check if file_project_item already exists
+      let selectQuery = await this.dbManager.query({
+        text: 'select * from project_file_all where file_id=$1::integer and project_id=$2::integer',
+        values: [data.file_id, data.project_id]
       });
 
-      let mediaitem_row: PreparedFileProjectRow = undefined
-      if (selectResult.rows.length === 1) {
-        mediaitem_row = selectResult.rows[0] as PreparedFileProjectRow;
+      if (selectQuery.rowCount > 0) {
+        file_project_row = selectQuery.rows[0] as PreparedFileProjectRow;
       } else {
         const insertQuery = {
-          tableName: 'mediaitem',
+          tableName: 'file_project',
           columns: [
-            DatabaseFunctions.getColumnDefinition('url', 'text', data.url, false),
-            DatabaseFunctions.getColumnDefinition('type', 'text', data.type),
-            DatabaseFunctions.getColumnDefinition('size', 'integer', data.size),
-            DatabaseFunctions.getColumnDefinition('metadata', 'jsonb', data.metadata),
-            DatabaseFunctions.getColumnDefinition('session', 'text', data.session),
-            DatabaseFunctions.getColumnDefinition('originalname', 'text', data.originalname),
-            DatabaseFunctions.getColumnDefinition('project_id', 'integer', data.project_id)
+            DatabaseFunctions.getColumnDefinition('file_id', 'integer', data.file_id, false),
+            DatabaseFunctions.getColumnDefinition('project_id', 'integer', data.project_id),
+            DatabaseFunctions.getColumnDefinition('virtual_folder_path', 'text', data.virtual_folder_path),
+            DatabaseFunctions.getColumnDefinition('virtual_filename', 'text', data.virtual_filename)
           ]
         };
 
         const insertionResult = await DatabaseFunctions.dbManager.insert(insertQuery, '*');
         if (insertionResult.rowCount === 1 && insertionResult.rows[0].hasOwnProperty('id')) {
-          mediaitem_row = insertionResult.rows[0] as PreparedFileProjectRow;
+          const selectQuery = await this.dbManager.query({
+            text: 'select * from file_project where id=$1::integer',
+            values: [insertionResult.rows[0].id]
+          });
+
+          if (selectQuery.rowCount > 0) {
+            file_project_row = selectQuery.rows[0] as PreparedFileProjectRow;
+          }
         } else {
           throw new Error('insertionResult does not have id');
         }
       }
-
-      this.prepareRows([mediaitem_row]);
-      if (mediaitem_row.url && !(/https?:\/\//g.exec(mediaitem_row.url))) {
-        mediaitem_row.url = this.pathBuilder.getEncryptedProjectFileURL(data.project_id, data.session, data.filename);
+      this.prepareRows([file_project_row]);
+      if (file_project_row.url && !(/https?:\/\//g.exec(file_project_row.url))) {
+        file_project_row.url = this.pathBuilder.getEncryptedProjectFileURL(data.project_id, data.virtual_filename);
       }
 
-      return [mediaitem_row];
+      return [file_project_row];
     } catch (e) {
       console.log(e);
       throw new Error('Could not save a new media item.');
     }
+    throw new Error('Could not save a new media item.');
   }
 
   public static async addTool(data: AddToolRequest): Promise<ToolRow[]> {
@@ -422,7 +491,7 @@ export class DatabaseFunctions {
       if (insertionResult.rowCount === 1 && insertionResult.rows[0].hasOwnProperty('id')) {
         const id = insertionResult.rows[0].id;
         const selectResult = await DatabaseFunctions.dbManager.query({
-          text: DatabaseFunctions.selectAllStatements.tool + ' where id=$1',
+          text: 'select * from tool where id=$1',
           values: [id]
         });
         this.prepareRows(selectResult.rows);
@@ -444,7 +513,7 @@ export class DatabaseFunctions {
         columns: [
           DatabaseFunctions.getColumnDefinition('pid', 'text', data.pid),
           DatabaseFunctions.getColumnDefinition('orgtext', 'text', data.orgtext),
-          DatabaseFunctions.getColumnDefinition('transcript', 'text', data.transcript),
+          DatabaseFunctions.getColumnDefinition('transcript', 'json', data.transcript),
           DatabaseFunctions.getColumnDefinition('assessment', 'text', data.assessment),
           DatabaseFunctions.getColumnDefinition('priority', 'integer', data.priority),
           DatabaseFunctions.getColumnDefinition('status', 'text', data.status),
@@ -461,16 +530,11 @@ export class DatabaseFunctions {
         ]
       };
 
-      const insertionResult = await DatabaseFunctions.dbManager.insert(insertQuery, 'id');
+      const insertionResult = await DatabaseFunctions.dbManager.insert(insertQuery, '*');
 
       if (insertionResult.rowCount === 1 && insertionResult.rows[0].hasOwnProperty('id')) {
-        const id = insertionResult.rows[0].id;
-        const selectResult = await DatabaseFunctions.dbManager.query({
-          text: DatabaseFunctions.selectAllStatements.transcript + ' where id=$1',
-          values: [id]
-        });
-        this.prepareRows(selectResult.rows);
-        return selectResult.rows as TranscriptRow[];
+        this.prepareRows(insertionResult.rows);
+        return insertionResult.rows as TranscriptRow[];
       }
       throw new Error('insertionResult does not have id');
     } catch (e) {
@@ -482,7 +546,11 @@ export class DatabaseFunctions {
   public static async freeAnnotation(projectID: number, transcriptID: number, tokenData: TokenData): Promise<PreparedTranscriptRow> {
     try {
       const selectQuery: SQLQuery = {
-        'text': DatabaseFunctions.selectAllStatements.transcript + ` where project_id=$1::integer and id=$2::integer and status='BUSY'`,
+        'text': `select *
+                 from transcript
+                 where project_id = $1::integer
+                   and id = $2::integer
+                   and status = 'BUSY'`,
         values: [projectID, transcriptID]
       };
 
@@ -509,7 +577,7 @@ export class DatabaseFunctions {
 
       if (transcriptRow.file_id) {
         selectResult = await DatabaseFunctions.dbManager.query({
-          text: DatabaseFunctions.selectAllStatements.mediaitem + ' where id=$1::integer',
+          text: 'select * from file where id=$1::integer',
           values: [
             transcriptRow.file_id
           ]
@@ -576,7 +644,7 @@ export class DatabaseFunctions {
       }
       if (transcriptRow.file_id) {
         selectResult = await DatabaseFunctions.dbManager.query({
-          text: DatabaseFunctions.selectAllStatements.mediaitem + ' where id=$1::integer',
+          text: 'select * from file where id=$1::integer',
           values: [
             transcriptRow.file_id
           ]
@@ -587,7 +655,7 @@ export class DatabaseFunctions {
           const mediaRow = selectResult.rows[0] as PreparedFileProjectRow;
           delete mediaRow.id;
           // TODO remove session
-          mediaRow.url = this.getPublicFileURL(projectID, 'session', mediaRow.url);
+          mediaRow.url = this.getPublicFileURL(projectID, mediaRow.url);
 
           transcriptRow.file = mediaRow;
           delete transcriptRow.file_id;
@@ -606,7 +674,11 @@ export class DatabaseFunctions {
   public static async saveAnnotation(data: SaveAnnotationRequest, projectID: number, transcriptID, tokenData: TokenData): Promise<PreparedTranscriptRow> {
     try {
       const insertQuery: SQLQuery = {
-        'text': DatabaseFunctions.selectAllStatements.transcript + ` where project_id=$1::integer and id=$2::integer and status='BUSY'`,
+        'text': `select *
+                 from transcript
+                 where project_id = $1::integer
+                   and id = $2::integer
+                   and status = 'BUSY'`,
         values: [projectID, transcriptID]
       };
 
@@ -640,7 +712,7 @@ export class DatabaseFunctions {
       // saved
       if (transcriptRow.file_id) {
         selectResult = await DatabaseFunctions.dbManager.query({
-          text: DatabaseFunctions.selectAllStatements.mediaitem + ' where id=$1::integer',
+          text: 'select * from file where id=$1::integer',
           values: [
             transcriptRow.file_id
           ]
@@ -650,7 +722,7 @@ export class DatabaseFunctions {
           // Mediaitem found, add
           const mediaRow = selectResult.rows[0] as PreparedFileProjectRow;
           delete mediaRow.id;
-          mediaRow.url = this.getPublicFileURL(projectID, 'session', mediaRow.url);
+          mediaRow.url = this.getPublicFileURL(projectID, mediaRow.url);
 
           transcriptRow.file = mediaRow;
           delete transcriptRow.file_id;
@@ -668,7 +740,10 @@ export class DatabaseFunctions {
   public static async continueAnnotation(projectID: number, transcriptID: number, tokenData: TokenData): Promise<PreparedTranscriptRow> {
     try {
       const selectQuery: SQLQuery = {
-        'text': DatabaseFunctions.selectAllStatements.transcript + ` where project_id=$1::integer and id=$2::integer`,
+        'text': `select *
+                 from transcript
+                 where project_id = $1::integer
+                   and id = $2::integer`,
         values: [projectID, transcriptID]
       };
 
@@ -690,7 +765,7 @@ export class DatabaseFunctions {
 
       if (transcriptRow.file_id) {
         selectResult = await DatabaseFunctions.dbManager.query({
-          text: DatabaseFunctions.selectAllStatements.mediaitem + ' where id=$1::integer',
+          text: 'select * from file where id=$1::integer',
           values: [
             transcriptRow.file_id
           ]
@@ -700,7 +775,7 @@ export class DatabaseFunctions {
           // Mediaitem found, add
           const mediaRow = selectResult.rows[0] as PreparedFileProjectRow;
           delete mediaRow.id;
-          mediaRow.url = this.getPublicFileURL(projectID, 'session', mediaRow.url);
+          mediaRow.url = this.getPublicFileURL(projectID, mediaRow.url);
 
           transcriptRow.file = mediaRow;
           delete transcriptRow.file_id;
@@ -726,7 +801,7 @@ export class DatabaseFunctions {
 
       if (transcriptRow.hasOwnProperty('file_id') && transcriptRow.file_id) {
         const mediaItemResult = await DatabaseFunctions.dbManager.query({
-          text: 'select * from mediaitem where id=$1::integer',
+          text: 'select * from file where id=$1::integer',
           values: [transcriptRow.file_id]
         });
 
@@ -758,7 +833,7 @@ export class DatabaseFunctions {
       if (selectResult.rowCount > 0) {
         for (const row of (selectResult.rows as TranscriptRow[])) {
           const mediaItem = await DatabaseFunctions.dbManager.query({
-            text: 'select * from mediaitem where id=$1::integer',
+            text: 'select * from file where id=$1::integer',
             values: [row.file_id]
           });
 
@@ -796,7 +871,7 @@ export class DatabaseFunctions {
 
   public static async listAppTokens(): Promise<AppTokensRow[]> {
     const selectResult = await DatabaseFunctions.dbManager.query({
-      text: DatabaseFunctions.selectAllStatements.appToken + ' order by id'
+      text: 'select * from apptoken order by id'
     });
     DatabaseFunctions.prepareRows(selectResult.rows);
     return selectResult.rows as AppTokensRow[];
@@ -1043,17 +1118,11 @@ export class DatabaseFunctions {
   }
 
   static async deliverNewMedia(dataDeliveryRequest: DeliverNewMediaRequest): Promise<PreparedTranscriptRow> {
-    const media = dataDeliveryRequest.file;
-
-    const mediaInsertResult = await DatabaseFunctions.addMediaItem({
-      url: media.url,
-      type: media.type,
-      size: media.size,
-      originalname: dataDeliveryRequest.file.filename, // TODO this was an original name, check it
-      filename: dataDeliveryRequest.file.filename,
-      project_id: dataDeliveryRequest.project_id,
-      metadata: media.metadata,
-      session: media.session
+    const mediaInsertResult = await DatabaseFunctions.addFileProjectItem({
+      virtual_filename: dataDeliveryRequest.file.virtual_filename,
+      virtual_folder_path: '',
+      file_id: dataDeliveryRequest.file.file_id,
+      project_id: dataDeliveryRequest.project_id
     });
 
     if (mediaInsertResult.length > 0) {
@@ -1068,6 +1137,7 @@ export class DatabaseFunctions {
 
       if (transcriptResult.length > 0) {
         const result = transcriptResult[0] as PreparedTranscriptRow;
+        // TODO get prepared file_project
         result.file = mediaInsertResult[0] as PreparedFileProjectRow;
         DatabaseFunctions.prepareRows([result.file]);
         DatabaseFunctions.prepareRows([result]);
@@ -1099,7 +1169,11 @@ export class DatabaseFunctions {
             delete row[col];
           } else if (row.hasOwnProperty(col) && col.indexOf('date') > -1
             && !(row[col] === undefined || row[col] === null)) {
-            row[col] = DateTime.fromSQL(row[col]).toJSON();
+            if (row[col] !== '' && DateTime.fromSQL(row[col]).toJSON()) {
+              row[col] = DateTime.fromSQL(row[col]).toJSON();
+            } else {
+              row[col] = DateTime.fromISO(row[col]).toJSON();
+            }
           } else if (row.hasOwnProperty(col) && col.indexOf('id') > -1
             && !(row[col] === undefined || row[col] === null)) {
             row[col] = Number(row[col]);
@@ -1130,14 +1204,14 @@ export class DatabaseFunctions {
     }) : undefined;
   }
 
-  static getPublicFileURL(projectID: number, session: string, path: string) {
+  static getPublicFileURL(projectID: number, path: string) {
     const regex = /^https?:\/\//g;
     const matches = regex.exec(path);
 
     if (matches !== null) {
       return path;
     } else {
-      return this.pathBuilder.getEncryptedProjectFileURL(projectID, session, path);
+      return this.pathBuilder.getEncryptedUploadURL(projectID, path);
     }
   }
 

@@ -94,6 +94,7 @@ export interface FileRow extends DatabaseRow {
   original_name: string;
   uploader_id?: number;
   metadata: AudioFileMetaData;
+  hash: string;
 }
 
 export interface FileProjectRow extends DatabaseRow {
@@ -104,10 +105,9 @@ export interface FileProjectRow extends DatabaseRow {
 }
 
 export interface PreparedFileProjectRow extends FileRow {
-  file_project_id: number;
   project_id: number;
-  virtual_folder_path: string;
-  virtual_filename: string;
+  path: string;
+  filename: string;
 }
 
 export interface ProjectRow extends DatabaseRow {

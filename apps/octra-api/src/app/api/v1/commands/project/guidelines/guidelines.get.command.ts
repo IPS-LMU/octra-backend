@@ -58,7 +58,7 @@ export class GuidelinesGetCommand extends ApiCommand {
     if (validation.length === 0) {
       try {
         const pathBuilder = new PathBuilder(this.settings.api);
-        const guidelinesPath = pathBuilder.getGuidelinesPath(Number(req.params.project_id));
+        const guidelinesPath = pathBuilder.getAbsoluteGuidelinesPath(Number(req.params.project_id));
         const files = await FileSystemHandler.listFiles(guidelinesPath);
         answer.data = files.map(a => {
           let json;

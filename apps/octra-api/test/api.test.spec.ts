@@ -53,16 +53,16 @@ const todoList = {
     getUsers: true,
     delete: true,
     password: {
-      change: true
+      change: false
     }
   },
   app: {
     tokens: {
-      add: true,
-      change: true,
-      refresh: true,
-      delete: true,
-      getList: true
+      add: false,
+      change: false,
+      refresh: false,
+      delete: false,
+      getList: false
     }
   },
   project: {
@@ -74,7 +74,7 @@ const todoList = {
     transcripts: {
       getAll: false,
       get: false,
-      upload: false
+      upload: true
     }
   },
   media: {
@@ -686,23 +686,26 @@ if (todoList.project.transcripts.getAll) {
 if (todoList.project.transcripts.upload) {
   it('it should upload a transcript and its mediafile', (done) => {
     request
-      .post(`/v1/projects/1049/transcripts/upload`)
+      .post(`/v1/projects/367/transcripts/upload`)
       .set('Content-Type', 'application/x-www-form-urlencoded')
       .attach('data', Buffer.from(JSON.stringify({
-        orgtext: '',
+        orgtext: 'testorg',
+        transcript: {
+          test: 'ok'
+        },
         media: {
-          url: 'https://www.example.com/test.wav',
+          url: 'https://clarin.phonetik.uni-muenchen.de/apps/octra/octra/media/octra_presentation_msu_digital_humanities.wav',
           session: 'test263748'
         }
       }), 'utf-8'), 'data.json')
-      .attach('media', './testfiles/WebTranscribe.wav', 'WebTranscribe.wav')
+      // .attach('media', './testfiles/WebTranscribe.wav', 'WebTranscribe.wav')
       .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
       .set('X-App-Token', appToken)
       .end((err, {body, status}) => {
         checkForErrors(err, body);
         expect(status).toBe(200);
-        tempData.mediaItem.uploadURL = body.data.mediaitem.url;
+        tempData.mediaItem.uploadURL = body.data.file.url;
         tempData.transcript.id = body.data.id;
         expect(typeof body.data).toBe('object');
         done();

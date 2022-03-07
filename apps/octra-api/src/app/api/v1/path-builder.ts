@@ -1,9 +1,13 @@
 import * as Path from 'path';
 import {IAPIConfiguration} from '../../obj/app-config/app-config';
 import * as CryptoJS from 'crypto-js';
+import {DateTime} from 'luxon';
+import * as http from 'http';
+import * as https from 'https';
 
 export class PathBuilder {
-  private readonly uploadPath: string;
+  public readonly uploadPath: string;
+  private readonly projectsPath: string;
   private readonly settings: IAPIConfiguration;
   private readonly urlEncryption: {
     key: CryptoJS.lib.WordArray;
@@ -13,6 +17,7 @@ export class PathBuilder {
   constructor(settings: IAPIConfiguration) {
     this.settings = settings;
     this.uploadPath = settings.files.uploadPath;
+    this.projectsPath = settings.files.projectsPath;
     this.urlEncryption = {
       key: CryptoJS.enc.Utf8.parse(settings.files.urlEncryption.secret),
       iv: CryptoJS.enc.Utf8.parse(settings.files.urlEncryption.salt)
@@ -34,49 +39,74 @@ export class PathBuilder {
     }).toString(CryptoJS.enc.Utf8);
   }
 
-  public getProjectPath(projectID: number) {
-    return Path.join(this.uploadPath, 'projects', `project_${projectID}`);
+  public getProjectFolderPath(projectID: number) {
+    return Path.join(`project_${projectID}`);
   }
 
-  public getProjectSessionPath(projectID: number, sessionName: string) {
-    sessionName = this.sanitizeFileName(sessionName);
-    return Path.join(this.getProjectPath(projectID), `session_${sessionName}`);
+  public getAbsoluteProjectPath(projectID: number) {
+    return Path.join(this.projectsPath, this.getProjectFolderPath(projectID));
   }
 
-  public getGuidelinesPath(projectID: number) {
-    return Path.join(this.getProjectPath(projectID), 'guidelines');
+  public getAbsoluteGuidelinesPath(projectID: number) {
+    return Path.join(this.getAbsoluteProjectPath(projectID), 'guidelines');
   }
 
-  public getEncryptedProjectFileURL(projectId: number, session: string, fileName: string) {
-    return this.settings.url + Path.join('/v1/files/public/', this.encryptFilePath(Path.join('projects', `project_${projectId}`, `session_${session}`)), Path.basename(fileName));
+  public getGuidelinesFolderPath(projectID: number) {
+    return Path.join(this.getProjectFolderPath(projectID), 'guidelines');
+  }
+
+  public getEncryptedProjectFileURL(projectId: number, fileName: string) {
+    return this.settings.url + Path.join('/v1/files/public/', this.encryptFilePath(Path.join(`{projects}`, `project_${projectId}`)), Path.basename(fileName));
+  }
+
+  public getEncryptedUploadURL(projectId: number, fileName: string) {
+    return this.settings.url + Path.join('/v1/files/public/', this.encryptFilePath(Path.join(`{uploads}`, `project_${projectId}`)), Path.basename(fileName));
   }
 
   public getEncryptedGuidelinesFileURL(projectId: number, fileName: string) {
-    return this.settings.url + Path.join('/v1/files/public/', this.encryptFilePath(this.getGuidelinesPath(projectId)), Path.basename(fileName));
+    return this.settings.url + Path.join('/v1/files/public/', this.encryptFilePath(Path.join('{projects}', `project_${projectId}`)), Path.basename(fileName));
   }
 
   public getEncryptedFileURL(filePath: string) {
     return this.settings.url + Path.join('/v1/files/public/', this.encryptFilePath(Path.dirname(filePath)), Path.basename(filePath));
   }
 
-  public sanitizeFileName(baseName: string) {
-    return baseName.replace(/[:&%\\()$/.=?]+/g, "_").replace(/([äÄßüÜöÖ])/g, (g0, g1) => {
-      switch (g1) {
-        case('ü'):
-          return "ue";
-        case('Ü'):
-          return "Ue";
-        case('ä'):
-          return "ae";
-        case('Ä'):
-          return "Ae";
-        case('Ö'):
-          return "Oe";
-        case('ö'):
-          return "oe";
-        case('ß'):
-          return "ss";
+  public getAbsoluteUploadPath() {
+    const now = DateTime.now();
+    const folder = now.setLocale('de').toFormat('yyyy-MM');
+
+    return Path.join(this.uploadPath, `${folder}`)
+  }
+
+  public readPublicURL(publicURL: string) {
+    return publicURL.replace(/((?:{uploads})|(?:{projects}))/g, (g0, g1) => {
+      if (g1 === '{uploads}') {
+        return this.uploadPath;
+      } else if (g1 === '{projects}') {
+        return this.projectsPath;
       }
+      return g1;
+    });
+  }
+
+  public extractFileNameFromURL(url: string) {
+    return url.replace(/.+\/([^/]+)$/g, '$1');
+  }
+
+  public async getInformationFomURL(url: string) {
+    return new Promise<{
+      size: number;
+      type: string;
+    }>((resolve, reject) => {
+      const httpClient = (url.indexOf('https') === 0) ? https : http;
+      httpClient.request(url, {method: 'HEAD'}, (res) => {
+        resolve({
+          size: Number(res.headers['content-length']),
+          type: res.headers['content-type']
+        });
+      }).on('error', (err) => {
+        reject('Can\'t find file from URL.');
+      }).end();
     });
   }
 }

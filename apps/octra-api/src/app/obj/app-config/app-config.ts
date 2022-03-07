@@ -29,6 +29,7 @@ export interface IAPIConfiguration {
   passwordSalt: string,
   files: {
     uploadPath: string,
+    projectsPath: string;
     urlEncryption: {
       secret: string,
       salt: string

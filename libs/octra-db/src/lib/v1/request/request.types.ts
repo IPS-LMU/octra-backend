@@ -1,4 +1,4 @@
-import {UserRole} from '../db';
+import {AudioFileMetaData, UserRole} from '../db';
 
 export interface CreateProjectRequest {
   name: string;
@@ -33,16 +33,21 @@ export interface UserRegisterRequest {
   password: string;
 }
 
-// TODO change this
 export interface AddFileRequest {
-  project_id: number;
   url: string;
+  uploader_id: number;
   type?: string;
   size?: number;
-  metadata?: string;
-  session: string;
-  originalname: string;
-  filename: string;
+  original_name?: string;
+  hash?: string;
+  metadata?: AudioFileMetaData;
+}
+
+export interface AddFileProjectRequest {
+  project_id: number;
+  file_id: number;
+  virtual_folder_path: string;
+  virtual_filename: string;
 }
 
 export interface AddUploadItemRequest {
@@ -88,12 +93,9 @@ export interface DeliverNewMediaRequest {
   project_id: number;
   file?: {
     url: string;
-    type?: string;
-    size?: number;
-    metadata?: any;
-    session: string;
-    folder_path: string;
-    filename: string;
+    file_id: number;
+    virtual_folder_path?: string;
+    virtual_filename: string;
   },
   orgtext?: string;
   transcript?: any;

@@ -11,6 +11,7 @@ import {AppTokenResponseDataItem} from '@octra/db';
 })
 export class AddAppTokenComponent implements OnInit {
   formData: AppTokenResponseDataItem = {
+    creationdate: '', updatedate: '',
     id: 0, key: '', // ignored
     name: '',
     description: '',

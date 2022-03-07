@@ -124,7 +124,7 @@ export class TranscriptGetCommand extends ApiCommand {
           // TODO check session
           answer.data.file.url = answer.data.file.url.indexOf('http') > -1 ? answer.data.file.url
             : req.pathBuilder.getEncryptedProjectFileURL(
-              Number(req.params.project_id), 'session', Path.basename(answer.data.file.url)
+              Number(req.params.project_id), Path.basename(answer.data.file.url)
             );
         }
         this.reduceDataForUser(req, answer)

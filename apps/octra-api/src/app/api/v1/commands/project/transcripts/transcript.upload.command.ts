@@ -8,10 +8,23 @@ import {Validator} from 'jsonschema';
 import * as Path from 'path';
 import * as path from 'path';
 import * as multer from 'multer';
-import {mkdirp, pathExists, readJSONSync} from 'fs-extra';
+import {mkdirp, pathExists, readJSONSync, unlink} from 'fs-extra';
 import {FileSystemHandler} from '../../../filesystem-handler';
 import {isNumber} from '../../../../../obj/functions';
 import {MulterStorageHashing} from '../../../../../obj/multer-storage-hashing';
+
+interface MulterFile {
+  fieldname: string;
+  originalname: string;
+  encoding: string;
+  mimetype: string;
+  destination: string;
+  filename: string;
+  path: string;
+  size: number;
+  hash: string;
+  content?: any;
+}
 
 export class TranscriptUploadCommand extends ApiCommand {
   constructor() {
@@ -64,7 +77,7 @@ export class TranscriptUploadCommand extends ApiCommand {
               type: 'string'
             },
             transcript: {
-              type: 'string'
+              type: 'object'
             },
             assessment: {
               type: 'string'
@@ -120,33 +133,33 @@ export class TranscriptUploadCommand extends ApiCommand {
                   type: 'object',
                   properties: {
                     duration: {
-                      type: "object",
+                      type: 'object',
                       properties: {
                         samples: {
-                          type: "number"
+                          type: 'number'
                         },
                         seconds: {
-                          type: "number"
+                          type: 'number'
                         }
                       }
                     },
                     sampleRate: {
-                      type: "number"
+                      type: 'number'
                     },
                     bitRate: {
-                      type: "number"
+                      type: 'number'
                     },
                     numberOfChannels: {
-                      type: "number"
+                      type: 'number'
                     },
                     container: {
-                      type: "string"
+                      type: 'string'
                     },
                     codec: {
-                      type: "string"
+                      type: 'string'
                     },
                     losless: {
-                      type: "boolean"
+                      type: 'boolean'
                     }
                   }
                 }
@@ -166,8 +179,7 @@ export class TranscriptUploadCommand extends ApiCommand {
       return;
     }
 
-    const currentTime = new Date().toISOString().replace(/[.:]/g, "-").replace("T", "_");
-    const mediaPath = Path.join(this.settings.api.files.uploadPath, 'temp', `temp_${currentTime}_u${req.decoded.id}`);
+    const mediaPath = Path.join(this.settings.api.files.uploadPath, 'temp');
     const storage = new MulterStorageHashing({
       destination: async (req, file, callback) => {
         if (!(await pathExists(mediaPath))) {
@@ -181,9 +193,11 @@ export class TranscriptUploadCommand extends ApiCommand {
 
       // TODO formData values doesn't need to be files
       // TODO generate hash on client side => check it with other function => upload only if hash doesn't exist
-      // TODO function to upload file as hash
       upload.any()(req, res, async (err) => {
         const validation = this.validate(req, req.files);
+        const mediaFile = (req.files as MulterFile[]).find(a => a.fieldname === 'media');
+        const jsonFile = (req.files as MulterFile[]).find(a => a.fieldname === 'data');
+
         if (validation.length === 0) {
           if (err instanceof multer.MulterError) {
             // A Multer error occurred when uploading.
@@ -196,8 +210,6 @@ export class TranscriptUploadCommand extends ApiCommand {
           } else {
             // success
             try {
-              const mediaFile = req.files.find(a => a.fieldname === 'media');
-              const jsonFile = req.files.find(a => a.fieldname === 'data');
               let reqData: DeliverNewMediaRequest = {
                 project_id: req.params.project_id,
                 file: undefined
@@ -206,81 +218,129 @@ export class TranscriptUploadCommand extends ApiCommand {
               if (jsonFile) {
                 reqData = {
                   ...reqData,
-                  ...jsonFile.content
+                  ...(jsonFile as any).content
                 }
               }
 
-              // TODO check if session name is correct
-              // TODO test this cloass
-              const projectFilesPath = req.pathBuilder.getProjectSessionPath(req.params.project_id, jsonFile.content.media.session);
-              await FileSystemHandler.createDirIfNotExists(projectFilesPath);
-              let fileInformation;
-
               let publicURL = undefined;
               if (mediaFile) {
-                //move from temp to project folder
-                await FileSystemHandler.moveFile(Path.join(mediaPath, mediaFile.filename), Path.join(projectFilesPath, mediaFile.filename + Path.extname(mediaFile.originalname)));
-                await FileSystemHandler.removeFolder(mediaPath);
+                const uploadPath = req.pathBuilder.getAbsoluteUploadPath();
+                await FileSystemHandler.createDirIfNotExists(uploadPath);
+                let dbFile = await DatabaseFunctions.getFileItemByHash(mediaFile.hash);
+
+                if (!dbFile) {
+                  const fileExt = Path.extname(mediaFile.originalname);
+                  const newFilePath = Path.join(uploadPath, `${mediaFile.filename}${fileExt}`);
+                  await FileSystemHandler.moveFile(mediaFile.path, newFilePath);
+                  const audioInformation = await FileSystemHandler.readAudioFileInformation(newFilePath);
+                  dbFile = await DatabaseFunctions.addFileItem({
+                    hash: mediaFile.hash,
+                    metadata: audioInformation,
+                    original_name: mediaFile.originalname,
+                    size: mediaFile.size,
+                    type: mediaFile.mimetype,
+                    uploader_id: req.decoded.id,
+                    url: newFilePath
+                      .replace(req.pathBuilder.uploadPath, '')
+                      .replace(/^\//g, '')
+                  });
+                } else {
+                  // remove temp file
+                  await unlink(mediaFile.path);
+                }
+
                 // fill in file information
-                fileInformation = await FileSystemHandler.readFileInformation(Path.join(projectFilesPath, mediaFile.filename + Path.extname(mediaFile.originalname)));
-                const audioInformation = await FileSystemHandler.readAudioFileInformation(Path.join(projectFilesPath, mediaFile.filename + Path.extname(mediaFile.originalname)))
                 reqData.file = {
-                  folder_path: '', // TODO set folderpath
-                  session: jsonFile.content.media.session,
-                  url: mediaFile.filename + Path.extname(mediaFile.originalname),
-                  size: fileInformation.size,
-                  type: fileInformation.type,
-                  filename: mediaFile.filename + Path.extname(mediaFile.originalname), // removed originalname
-                  metadata: audioInformation
+                  virtual_filename: mediaFile.originalname,
+                  virtual_folder_path: '',
+                  file_id: dbFile.id,
+                  url: dbFile.url
                 };
               } else {
+                // no media file uploaded
+                const url = jsonFile.content.media.url;
+                if (!url || url.trim() === '' || !(new RegExp('^https?://').exec(url))) {
+                  throw new Error('Can\'t find url in url property');
+                }
+
                 const regex = new RegExp(`^${Path.join(this.settings.api.url, 'v1/links')}`);
 
-                let originalName = undefined;
-                if (regex.exec(reqData.file.url)) {
-                  reqData.file.url = reqData.file.url.replace(/^.+links\/([\/]+)\/(.+)/g, (g0, g1, g2) => {
-                    originalName = g2;
+                const originalName = req.pathBuilder.extractFileNameFromURL(url);
+                if (regex.exec(url)) {
+                  // is intern link
+                  const relativePath = reqData.file.url.replace(/^.+links\/([\/]+)\/(.+)/g, (g0, g1, g2) => {
                     return `${req.pathBuilder.decryptFilePath(g1)}/${g2}`;
                   });
 
-                  if (!(await pathExists(Path.join(this.settings.uploadPath, reqData.file.url)))) {
-                    ApiCommand.sendError(res, InternalServerError, 'The file referenced by this URL doesn\'t exist.');
+                  let dbFile = await DatabaseFunctions.getFileItemByURL(relativePath);
+                  if (dbFile) {
+                    reqData.file = {
+                      virtual_filename: req.pathBuilder.extractFileNameFromURL(relativePath),
+                      virtual_folder_path: '',
+                      file_id: dbFile.id,
+                      url: dbFile.url
+                    };
+                  } else {
+                    //add fileitem
+                    dbFile = await DatabaseFunctions.addFileItem({
+                      original_name: originalName,
+                      uploader_id: req.decoded.id,
+                      url: relativePath
+                    });
                   }
                 } else {
-                  originalName = reqData.file.url.replace(/.+\/(.+)/g, (g0, g1) => {
-                    return g1;
-                  });
-                  publicURL = reqData.file.url;
+                  let dbFile = await DatabaseFunctions.getFileItemByURL(url);
+                  if (!dbFile) {
+                    //add fileitem
+                    const urlInfo = await req.pathBuilder.getInformationFomURL(url);
+                    dbFile = await DatabaseFunctions.addFileItem({
+                      size: urlInfo.size,
+                      type: urlInfo.type,
+                      original_name: originalName,
+                      uploader_id: req.decoded.id,
+                      url
+                    });
+                  }
+
+                  reqData.file = {
+                    virtual_filename: req.pathBuilder.extractFileNameFromURL(url),
+                    virtual_folder_path: '',
+                    file_id: dbFile.id,
+                    url: dbFile.url
+                  };
                 }
               }
 
               const data = await DatabaseFunctions.deliverNewMedia(reqData);
-
+              delete data.file_id;
               answer.data = {
                 ...data,
                 file: {
                   ...data.file,
-                  url: (publicURL) ? publicURL : data.file.url
+                  url: data.file.url
                 }
               };
+
+              if (jsonFile) {
+                await unlink(jsonFile.path);
+              }
             } catch (e) {
               console.log(e);
+              this.removeMediaFileAndJSON(mediaFile, jsonFile);
               ApiCommand.sendError(res, InternalServerError, e);
-              await FileSystemHandler.removeFolder(mediaPath);
             }
             this.checkAndSendAnswer(res, answer);
           }
         } else {
+          this.removeMediaFileAndJSON(mediaFile, jsonFile);
           ApiCommand.sendError(res, BadRequest, validation);
-          await FileSystemHandler.removeFolder(mediaPath);
         }
       });
     } catch (e) {
       ApiCommand.sendError(res, InternalServerError, e);
-      await FileSystemHandler.removeFolder(mediaPath);
     }
 
-    return;
+    // return;
   }
 
   override validate(req: InternRequest, formData?: any): any[] {
@@ -289,8 +349,6 @@ export class TranscriptUploadCommand extends ApiCommand {
     if (result.length === 0) {
       const mediaFile = formData.find(a => a.fieldname === 'media');
       const jsonFile = formData.find(a => a.fieldname === 'data');
-
-      // TODO transcript mediaitem is a n:1 relation
 
       if (mediaFile) {
         if (path.extname(mediaFile.originalname) !== '.wav') {
@@ -310,24 +368,18 @@ export class TranscriptUploadCommand extends ApiCommand {
               type: 'string'
             },
             transcript: {
-              type: 'string'
+              type: 'object'
             },
             media: {
-              type: "object",
+              type: 'object',
               required: true,
-              properties: {
-                session: {
-                  type: 'string',
-                  pattern: ".{3,60}",
-                  required: true
-                }
-              }
+              properties: {}
             }
           }
         };
 
         if (!mediaFile) {
-          schema.properties["media"].properties["url"] = {
+          schema.properties['media'].properties['url'] = {
             type: 'string',
             required: true,
             pattern: '^https?:\/\/',
@@ -353,5 +405,19 @@ export class TranscriptUploadCommand extends ApiCommand {
     }
 
     return result;
+  }
+
+  private async removeMediaFileAndJSON(mediaFile: any, jsonFile: any) {
+    try {
+      if (mediaFile) {
+        await unlink(mediaFile.path);
+      }
+      if (jsonFile) {
+        await unlink(jsonFile.path);
+      }
+      return;
+    } catch (e) {
+      console.log(`Error: Can't remove mediaFile or JSONFile`);
+    }
   }
 }

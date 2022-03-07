@@ -2,7 +2,7 @@ CREATE OR REPLACE FUNCTION octra_trigger_set_updated_timestamp()
   RETURNS TRIGGER AS
 $$
 BEGIN
-  NEW.updatedate = NOW();
+  NEW.updatedate = NOW()::timestamp;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -235,6 +235,7 @@ $$
     RAISE NOTICE '-> Ändere Typ von file.metadata auf json';
     ALTER TABLE file
       ADD COLUMN IF NOT EXISTS original_name text,
+      ADD COLUMN IF NOT EXISTS hash          text UNIQUE,
       DROP COLUMN metadata,
       ADD COLUMN metadata                    jsonb;
 
@@ -304,8 +305,10 @@ $$
     RAISE NOTICE '-> Ändere mediaitem_id Spalten zu file_id um...';
     ALTER TABLE transcript
       RENAME mediaitem_id TO file_id;
+    UPDATE transcript set file_id=null;
     ALTER TABLE transcript
-      RENAME CONSTRAINT transcription_mediaitem_id_fkey TO transcription_file_id_fkey;
+      DROP CONSTRAINT transcription_mediaitem_id_fkey,
+      ADD CONSTRAINT transcription_file_id_fkey FOREIGN KEY (file_id) REFERENCES file_project (id);
 
     RAISE NOTICE '-> Füge zu allen Tabellen die Spalten creationdate und updatedate hinzu...';
     ALTER TABLE file_project
@@ -435,9 +438,11 @@ $$
     where pr.id IS NOT NULL
     group by pr.id
     order by pr.id);
+
     CREATE OR REPLACE VIEW project_file_all AS
     (
     select fp.id,
+           fp.file_id,
            fp.project_id,
            fp.virtual_filename    as filename,
            fp.virtual_folder_path as path,

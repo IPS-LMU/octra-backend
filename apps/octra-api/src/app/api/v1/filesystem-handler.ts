@@ -5,7 +5,8 @@ import {WriteFileOptions} from 'fs-extra';
 import * as pathFunctions from 'path';
 import * as mime from 'mime';
 import * as mm from 'music-metadata';
-import {removeEmptyAttributes} from "../../obj/functions";
+import {removeEmptyAttributes} from '../../obj/functions';
+import {AudioFileMetaData} from '@octra/db';
 
 export class FileSystemHandler {
   static mkDir(path) {
@@ -133,7 +134,7 @@ export class FileSystemHandler {
     });
   }
 
-  public static async readAudioFileInformation(path: string): Promise<AudioInformation> {
+  public static async readAudioFileInformation(path: string): Promise<AudioFileMetaData> {
     const metadata = await mm.parseFile(path);
     return removeEmptyAttributes({
       bitRate: metadata.format.bitrate,
