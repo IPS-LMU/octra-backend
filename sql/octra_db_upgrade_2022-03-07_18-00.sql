@@ -457,6 +457,18 @@ $$
     from file_project fp
            left join file f on fp.file_id = f.id
       );
+
+    CREATE OR REPLACE VIEW transcript_all AS
+    (
+    select t.*,
+           json_strip_nulls(json_build_object('url', fp.url, 'type', fp.type, 'size', fp.size, 'filename', fp.filename,
+                                              'metadata', fp.metadata))::JSON as file
+    from transcript t
+           full outer join project_file_all fp on t.file_id = fp.id
+    group by t.id, fp.id, fp.file_id, fp.project_id, fp.filename, fp.path, fp.url, fp.type, fp.size, fp.original_name,
+             fp.metadata, fp.uploader_id, fp.creationdate, fp.updatedate
+    order by t.id desc
+      );
   END;
 $$;
 COMMIT;

@@ -799,26 +799,13 @@ export class DatabaseFunctions {
 
   public static async getTranscriptByID(id: number): Promise<PreparedTranscriptRow> {
     const selectResult = await DatabaseFunctions.dbManager.query({
-      text: 'select * from transcript where id=$1::integer',
+      text: 'select * from transcript_all where id=$1::integer',
       values: [id]
     });
 
     if (selectResult.rowCount === 1) {
-      const transcriptRow = (selectResult.rows[0] as TranscriptRow);
-      const result: PreparedTranscriptRow = transcriptRow;
-
-      if (transcriptRow.hasOwnProperty('file_id') && transcriptRow.file_id) {
-        const mediaItemResult = await DatabaseFunctions.dbManager.query({
-          text: 'select * from file where id=$1::integer',
-          values: [transcriptRow.file_id]
-        });
-
-        if (mediaItemResult.rowCount === 1) {
-          result.file = mediaItemResult.rows[0] as PreparedFileProjectRow;
-          DatabaseFunctions.prepareRows([result.file]);
-        }
-      }
-
+      const result: PreparedTranscriptRow = selectResult.rows[0] as PreparedTranscriptRow;
+      result.file.url = this.getPublicFileURL(undefined, result.file.url);
       DatabaseFunctions.prepareRows([result]);
       return result;
     }
@@ -827,40 +814,20 @@ export class DatabaseFunctions {
 
   public static async getTranscriptsByProjectID(projectID: number): Promise<PreparedTranscriptRow[]> {
     const projectSelectResult = await DatabaseFunctions.dbManager.query({
-      text: 'select id from project where id=$1::integer',
+      text: 'select * from transcript_all where project_id=$1::integer',
       values: [projectID]
     });
 
-    if (projectSelectResult.rowCount === 1) {
-      const selectResult = await DatabaseFunctions.dbManager.query({
-        text: 'select * from transcript where project_id=$1::integer order by id',
-        values: [projectID]
-      });
-
-      const results: PreparedTranscriptRow[] = [];
-      if (selectResult.rowCount > 0) {
-        for (const row of (selectResult.rows as TranscriptRow[])) {
-          const mediaItem = await DatabaseFunctions.dbManager.query({
-            text: 'select * from file where id=$1::integer',
-            values: [row.file_id]
-          });
-
-          const PreparedFileProjectRows = mediaItem.rows as PreparedFileProjectRow[];
-          const result = {
-            ...row
-          } as PreparedTranscriptRow;
-
-          if (mediaItem.rowCount === 1) {
-            result.file = {
-              ...PreparedFileProjectRows[0]
-            };
-            DatabaseFunctions.prepareRows([result.file]);
-          }
-
-          results.push(result);
-        }
-      }
+    let results = projectSelectResult.rows as PreparedTranscriptRow[];
+    if (results.length > 0) {
       DatabaseFunctions.prepareRows(results);
+      results = results.map(a => ({
+        ...a,
+        file: {
+          ...a.file,
+          url: this.getPublicFileURL(undefined, a.file.url)
+        }
+      }))
       return results;
     }
     throw new Error(`Can not find a project with ID ${projectID}.`);
@@ -1219,7 +1186,11 @@ export class DatabaseFunctions {
     if (matches !== null) {
       return path;
     } else {
-      return this.pathBuilder.getEncryptedUploadURL(projectID, path);
+      if (projectID) {
+        return this.pathBuilder.getEncryptedProjectFileURL(projectID, path);
+      } else {
+        return this.pathBuilder.getEncryptedUploadURL(path);
+      }
     }
   }
 

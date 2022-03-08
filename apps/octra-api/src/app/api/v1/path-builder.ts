@@ -59,16 +59,13 @@ export class PathBuilder {
     return this.settings.url + Path.join('/v1/files/public/', this.encryptFilePath(Path.join(`{projects}`, `project_${projectId}`)), Path.basename(fileName));
   }
 
-  public getEncryptedUploadURL(projectId: number, fileName: string) {
-    return this.settings.url + Path.join('/v1/files/public/', this.encryptFilePath(Path.join(`{uploads}`, `project_${projectId}`)), Path.basename(fileName));
+  public getEncryptedUploadURL(relativePath: string) {
+    const folder = Path.join(`{uploads}`, relativePath.substring(0, relativePath.lastIndexOf('/')));
+    return this.settings.url + Path.join('/v1/files/public/', this.encryptFilePath(folder), Path.basename(relativePath));
   }
 
   public getEncryptedGuidelinesFileURL(projectId: number, fileName: string) {
     return this.settings.url + Path.join('/v1/files/public/', this.encryptFilePath(Path.join('{projects}', `project_${projectId}`)), Path.basename(fileName));
-  }
-
-  public getEncryptedFileURL(filePath: string) {
-    return this.settings.url + Path.join('/v1/files/public/', this.encryptFilePath(Path.dirname(filePath)), Path.basename(filePath));
   }
 
   public getAbsoluteUploadPath() {

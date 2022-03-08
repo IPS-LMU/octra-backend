@@ -249,6 +249,7 @@ export class TranscriptUploadCommand extends ApiCommand {
                   await unlink(mediaFile.path);
                 }
 
+                publicURL = req.pathBuilder.getEncryptedUploadURL(dbFile.url);
                 // fill in file information
                 reqData.file = {
                   virtual_filename: mediaFile.originalname,
@@ -302,6 +303,7 @@ export class TranscriptUploadCommand extends ApiCommand {
                     });
                   }
 
+                  publicURL = url;
                   reqData.file = {
                     virtual_filename: req.pathBuilder.extractFileNameFromURL(url),
                     virtual_folder_path: '',
@@ -317,7 +319,7 @@ export class TranscriptUploadCommand extends ApiCommand {
                 ...data,
                 file: {
                   ...data.file,
-                  url: data.file.url
+                  url: publicURL
                 }
               };
 

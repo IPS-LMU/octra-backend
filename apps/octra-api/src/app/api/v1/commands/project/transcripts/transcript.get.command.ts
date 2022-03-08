@@ -4,11 +4,10 @@ import {ProjectTranscriptsGetResponseDataItem, TranscriptGetResponse, UserRole} 
 import {InternRequest} from '../../../obj/types';
 import {DatabaseFunctions} from '../../../obj/database.functions';
 import {InternalServerError} from '../../../../../obj/http-codes/server.codes';
-import * as Path from 'path';
 
-export class TranscriptGetCommand extends ApiCommand {
+export class ProjectTranscriptGetCommand extends ApiCommand {
   constructor() {
-    super('getTranscript', '/projects', RequestType.GET, '/:project_id/transcripts/:transcript_id', true,
+    super('getProjectTranscript', '/projects', RequestType.GET, '/:project_id/transcripts/:transcript_id', true,
       [
         UserRole.administrator,
         UserRole.projectAdministrator,
@@ -40,7 +39,7 @@ export class TranscriptGetCommand extends ApiCommand {
               type: 'string'
             },
             transcript: {
-              type: 'string'
+              type: 'object'
             },
             assessment: {
               type: 'string'
@@ -84,10 +83,6 @@ export class TranscriptGetCommand extends ApiCommand {
             file: {
               type: 'object',
               properties: {
-                id: {
-                  type: 'number',
-                  required: true
-                },
                 url: {
                   type: 'string',
                   required: true
@@ -99,7 +94,7 @@ export class TranscriptGetCommand extends ApiCommand {
                   type: 'number'
                 },
                 metadata: {
-                  type: 'string'
+                  type: 'object'
                 }
               }
             },
@@ -119,14 +114,6 @@ export class TranscriptGetCommand extends ApiCommand {
     if (validation.length === 0) {
       try {
         answer.data = await DatabaseFunctions.getTranscriptByID(Number(req.params.transcript_id));
-
-        if (answer.data.file?.url) {
-          // TODO check session
-          answer.data.file.url = answer.data.file.url.indexOf('http') > -1 ? answer.data.file.url
-            : req.pathBuilder.getEncryptedProjectFileURL(
-              Number(req.params.project_id), Path.basename(answer.data.file.url)
-            );
-        }
         this.reduceDataForUser(req, answer)
         this.checkAndSendAnswer(res, answer);
         return;

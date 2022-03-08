@@ -2,7 +2,6 @@ import {ApiCommand, RequestType} from '../api.command';
 import {DatabaseFunctions} from '../../obj/database.functions';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 import {ProjectTranscriptsGetResponse, UserRole} from '@octra/db';
-import * as Path from 'path';
 
 export class ProjectTranscriptsGetCommand extends ApiCommand {
   constructor() {
@@ -39,7 +38,7 @@ export class ProjectTranscriptsGetCommand extends ApiCommand {
                 type: 'string'
               },
               transcript: {
-                type: 'string'
+                type: 'object'
               },
               assessment: {
                 type: 'string'
@@ -83,10 +82,6 @@ export class ProjectTranscriptsGetCommand extends ApiCommand {
               file: {
                 type: 'object',
                 properties: {
-                  id: {
-                    type: 'number',
-                    required: true
-                  },
                   url: {
                     type: 'string',
                     required: true
@@ -97,8 +92,11 @@ export class ProjectTranscriptsGetCommand extends ApiCommand {
                   size: {
                     type: 'number'
                   },
-                  metadata: {
+                  filename: {
                     type: 'string'
+                  },
+                  metadata: {
+                    type: 'object'
                   }
                 }
               },
@@ -119,18 +117,6 @@ export class ProjectTranscriptsGetCommand extends ApiCommand {
     if (validation.length === 0) {
       try {
         answer.data = await DatabaseFunctions.getTranscriptsByProjectID(Number(req.params.id));
-
-        if (answer.data.length > 0) {
-          answer.data = answer.data.map((a) => {
-            if (a.file?.url) {
-              a.file.url = a.file.url.indexOf('http') > -1 ? a.file.url
-                : req.pathBuilder.getEncryptedProjectFileURL(
-                  Number(req.params.project_id), Path.basename(a.file.url)
-                );
-            }
-            return a;
-          });
-        }
         this.checkAndSendAnswer(res, answer);
         return;
       } catch (e) {

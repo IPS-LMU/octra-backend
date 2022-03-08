@@ -50,10 +50,8 @@ export class FileGetCommand extends ApiCommand {
     try {
       let decryptedPath = Path.join(req.pathBuilder.decryptFilePath(req.params.encryptedPath), req.params.fileName);
       decryptedPath = req.pathBuilder.readPublicURL(decryptedPath);
-      const filePath = Path.join(this.settings.uploadPath, decryptedPath);
-
-      if (await pathExists(filePath)) {
-        res.sendFile(filePath);
+      if (await pathExists(decryptedPath)) {
+        res.sendFile(decryptedPath);
       } else {
         res.sendStatus(404);
       }

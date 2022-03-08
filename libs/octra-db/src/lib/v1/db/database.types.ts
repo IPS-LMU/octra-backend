@@ -151,7 +151,6 @@ export interface TranscriptRow extends DatabaseRow {
 }
 
 export interface PreparedTranscriptRow extends TranscriptRow {
-  file_id?: number;
   file?: PreparedFileProjectRow;
   nexttranscript?: number;
   transcripts_free_count?: number;
