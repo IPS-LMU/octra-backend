@@ -3,6 +3,7 @@ import {DatabaseFunctions} from '../../obj/database.functions';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
 import {CreateProjectRequest, ProjectCreateResponse, UserRole} from '@octra/db';
+import {FileSystemHandler} from '../../filesystem-handler';
 
 export class ProjectCreateCommand extends ApiCommand {
   constructor() {
@@ -94,6 +95,7 @@ export class ProjectCreateCommand extends ApiCommand {
       try {
         const result = await DatabaseFunctions.createProject(body, req.decoded.id);
         if (result.length === 1) {
+          await FileSystemHandler.createDirIfNotExists(req.pathBuilder.getAbsoluteProjectPath(result[0].id));
           answer.data = result[0];
           if (answer.data.configuration) {
             try {

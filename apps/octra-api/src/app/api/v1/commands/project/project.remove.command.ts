@@ -24,10 +24,16 @@ export class ProjectRemoveCommand extends ApiCommand {
       type: 'object',
       properties: {
         removeAllReferences: {
-          enum: ['true', 'false']
+          type: 'boolean',
+          required: true
         },
         cutAllReferences: {
-          enum: ['true', 'false']
+          type: 'boolean',
+          required: true
+        },
+        removeProjectFiles: {
+          type: 'boolean',
+          required: true
         }
       }
     };
@@ -51,8 +57,7 @@ export class ProjectRemoveCommand extends ApiCommand {
     // do something
     if (validation.length === 0) {
       const reqData: RemoveProjectRequest = {
-        removeAllReferences: (req.query.removeAllReferences && req.query.removeAllReferences === 'true'),
-        cutAllReferences: (req.query.cutAllReferences && req.query.cutAllReferences === 'true')
+        ...req.body
       }
 
       if (reqData.removeAllReferences && reqData.cutAllReferences) {
@@ -64,7 +69,10 @@ export class ProjectRemoveCommand extends ApiCommand {
         const pathBuilder = new PathBuilder(this.settings.api);
         const projectFolder = pathBuilder.getAbsoluteProjectPath(Number(req.params.id));
         await DatabaseFunctions.removeProject(Number(req.params.id), reqData);
-        await FileSystemHandler.removeFolder(projectFolder);
+
+        if (reqData.removeProjectFiles === true) {
+          await FileSystemHandler.removeFolder(projectFolder);
+        }
         this.checkAndSendAnswer(res, answer);
       } catch (e) {
         ApiCommand.sendError(res, InternalServerError, e);

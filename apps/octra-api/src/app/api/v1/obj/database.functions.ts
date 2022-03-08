@@ -271,9 +271,17 @@ export class DatabaseFunctions {
         text: 'update transcript set project_id=null where project_id=$1::integer',
         values: [id]
       });
+      sqlQueries.push({
+        text: 'update file_project set project_id=null where project_id=$1::integer',
+        values: [id]
+      });
     } else if (requestBody.removeAllReferences) {
       sqlQueries.push({
         text: 'delete from transcript where project_id=$1::integer',
+        values: [id]
+      });
+      sqlQueries.push({
+        text: 'delete from file_project where project_id=$1::integer',
         values: [id]
       });
     }

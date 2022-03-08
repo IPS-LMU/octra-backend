@@ -244,7 +244,7 @@ $$
     (
       id         bigserial NOT NULL,
       file_id    bigint    NOT NULL,
-      project_id bigint    NOT NULL
+      project_id bigint
     );
 
     ALTER TABLE ONLY file_project

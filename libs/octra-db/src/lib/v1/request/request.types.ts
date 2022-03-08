@@ -123,6 +123,7 @@ export interface CreateGuidelinesRequest {
 }
 
 export interface RemoveProjectRequest {
-  removeAllReferences?: boolean;
-  cutAllReferences?: boolean;
+  removeAllReferences: boolean;
+  cutAllReferences: boolean;
+  removeProjectFiles: boolean;
 }

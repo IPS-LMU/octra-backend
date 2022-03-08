@@ -686,7 +686,7 @@ if (todoList.project.transcripts.getAll) {
 if (todoList.project.transcripts.upload) {
   it('it should upload a transcript and its mediafile', (done) => {
     request
-      .post(`/v1/projects/367/transcripts/upload`)
+      .post(`/v1/projects/${tempData.project.id}/transcripts/upload`)
       .set('Content-Type', 'application/x-www-form-urlencoded')
       .attach('data', Buffer.from(JSON.stringify({
         orgtext: 'testorg',
@@ -847,6 +847,11 @@ if (todoList.project.remove) {
       .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('Origin', 'http://localhost:8080')
       .set('X-App-Token', appToken)
+      .send({
+        removeAllReferences: true,
+        cutAllReferences: false,
+        removeProjectFiles: true
+      })
       .end((err, {body, status}) => {
         checkForErrors(err, body);
 
