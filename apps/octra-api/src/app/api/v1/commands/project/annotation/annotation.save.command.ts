@@ -10,7 +10,9 @@ export class AnnotationSaveCommand extends ApiCommand {
   constructor() {
     super('saveAnnotation', '/projects', RequestType.POST, '/:project_id/annotations/:id/save', true,
       [
-        UserRole.transcriber
+        UserRole.user,
+        UserRole.projectAdministrator,
+        UserRole.administrator
       ]);
 
     this._description = 'Saves the transcript and sets its status to \'ANNOTATED\'.';
@@ -47,6 +49,7 @@ export class AnnotationSaveCommand extends ApiCommand {
 
     // relevant for reference creation
     this._responseStructure = {
+      ...this.defaultResponseSchema,
       properties: {
         ...this.defaultResponseSchema.properties,
         data: {
@@ -55,6 +58,9 @@ export class AnnotationSaveCommand extends ApiCommand {
             id: {
               type: 'number',
               required: true
+            },
+            pid: {
+              type: 'string'
             },
             orgtext: {
               type: 'string'
@@ -84,11 +90,7 @@ export class AnnotationSaveCommand extends ApiCommand {
               type: 'date-time'
             },
             log: {
-              type: 'array',
-              items: {
-                type: 'object'
-              },
-              description: 'Array of log items'
+              type: 'array'
             },
             comment: {
               type: 'string'
@@ -96,7 +98,7 @@ export class AnnotationSaveCommand extends ApiCommand {
             tool_id: {
               type: 'number'
             },
-            project_id: {
+            transcriber_id: {
               type: 'number'
             },
             mediaitem: {
@@ -112,8 +114,43 @@ export class AnnotationSaveCommand extends ApiCommand {
                 size: {
                   type: 'number'
                 },
+                session: {
+                  type: 'string',
+                  required: true
+                },
                 metadata: {
-                  type: 'string'
+                  type: 'object',
+                  properties: {
+                    duration: {
+                      type: 'object',
+                      properties: {
+                        samples: {
+                          type: 'number'
+                        },
+                        seconds: {
+                          type: 'number'
+                        }
+                      }
+                    },
+                    sampleRate: {
+                      type: 'number'
+                    },
+                    bitRate: {
+                      type: 'number'
+                    },
+                    numberOfChannels: {
+                      type: 'number'
+                    },
+                    container: {
+                      type: 'string'
+                    },
+                    codec: {
+                      type: 'string'
+                    },
+                    losless: {
+                      type: 'boolean'
+                    }
+                  }
                 }
               }
             }
@@ -144,16 +181,7 @@ export class AnnotationSaveCommand extends ApiCommand {
       try {
         const result = await DatabaseFunctions.saveAnnotation(body, Number(req.params.project_id), req.params.id, tokenData);
         if (result) {
-          try {
-            result.transcript = JSON.parse(result.transcript);
-            result.log = JSON.parse(result.log);
-          } catch (e) {
-            ApiCommand.sendError(res, InternalServerError, e);
-            return;
-          }
           answer.data = result;
-          this.checkAndSendAnswer(res, answer);
-          return;
         }
         this.checkAndSendAnswer(res, answer);
       } catch (e) {

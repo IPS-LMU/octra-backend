@@ -62,7 +62,7 @@ export class ProjectTranscriptsGetCommand extends ApiCommand {
                 type: 'date-time'
               },
               log: {
-                type: 'string'
+                type: 'array'
               },
               comment: {
                 type: 'string'

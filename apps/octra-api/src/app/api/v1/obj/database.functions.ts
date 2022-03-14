@@ -25,6 +25,7 @@ import {
   StartAnnotationRequest,
   ToolRow,
   TranscriptRow,
+  TranscriptStatus,
   UserInfoResponseDataItem,
   UserRole,
   UserRoleScope
@@ -614,12 +615,12 @@ export class DatabaseFunctions {
     try {
       // TODO check next transcript!
       const insertQuery: SQLQuery = {
-        'text': `select transcript.*,
+        'text': `select transcript_all.*,
                         (select count(tr.id)
-                         from transcript as tr
-                         where tr.project_id = transcript.project_id
+                         from transcript_all as tr
+                         where tr.project_id = transcript_all.project_id
                            and tr.status = 'FREE')::integer as transcripts_free_count
-                 from transcript
+                 from transcript_all
                  where project_id = $1::integer
                    and status = 'FREE'
                  order by priority desc`,
@@ -651,24 +652,8 @@ export class DatabaseFunctions {
       if (transcriptRow.transcripts_free_count) {
         transcriptRow.transcripts_free_count--;
       }
-      if (transcriptRow.file_id) {
-        selectResult = await DatabaseFunctions.dbManager.query({
-          text: 'select * from file where id=$1::integer',
-          values: [
-            transcriptRow.file_id
-          ]
-        });
-
-        if (selectResult.rowCount > 0) {
-          // Mediaitem found, add
-          const mediaRow = selectResult.rows[0] as PreparedFileProjectRow;
-          delete mediaRow.id;
-          // TODO remove session
-          mediaRow.url = this.getPublicFileURL(projectID, mediaRow.url);
-
-          transcriptRow.file = mediaRow;
-          delete transcriptRow.file_id;
-        }
+      if (transcriptRow.file?.url) {
+        transcriptRow.file.url = this.getPublicFileURL(projectID, transcriptRow.file.url);
       }
 
       this.prepareRows([transcriptRow]);
@@ -684,7 +669,7 @@ export class DatabaseFunctions {
     try {
       const insertQuery: SQLQuery = {
         'text': `select *
-                 from transcript
+                 from transcript_all
                  where project_id = $1::integer
                    and id = $2::integer
                    and status = 'BUSY'`,
@@ -706,36 +691,33 @@ export class DatabaseFunctions {
           DatabaseFunctions.getColumnDefinition('transcriber_id', 'integer', tokenData.id, false),
           DatabaseFunctions.getColumnDefinition('enddate', '', `(to_timestamp(${Date.now()} / 1000.0))`, false),
           DatabaseFunctions.getColumnDefinition('tool_id', 'integer', data.tool_id, false),
-          DatabaseFunctions.getColumnDefinition('transcript', 'text', JSON.stringify(data.transcript), false),
-          DatabaseFunctions.getColumnDefinition('status', 'text', 'ANNOTATED'),
+          DatabaseFunctions.getColumnDefinition('transcript', 'json', JSON.stringify(data.transcript), false),
+          DatabaseFunctions.getColumnDefinition('status', 'text', TranscriptStatus.annotated),
           DatabaseFunctions.getColumnDefinition('comment', 'text', data.comment),
           DatabaseFunctions.getColumnDefinition('assessment', 'text', data.assessment),
-          DatabaseFunctions.getColumnDefinition('log', 'text', JSON.stringify(data.log))
+          DatabaseFunctions.getColumnDefinition('log', 'json', JSON.stringify(data.log))
         ]
       }, `id=${transcriptRow.id}:: integer`);
 
       if (updateResult.rowCount !== 1) {
         throw new Error(`Can not save annotation with id ${transcriptRow.id}.`);
       }
-      transcriptRow = updateResult.rows[0];
-      // saved
-      if (transcriptRow.file_id) {
-        selectResult = await DatabaseFunctions.dbManager.query({
-          text: 'select * from file where id=$1::integer',
-          values: [
-            transcriptRow.file_id
-          ]
-        });
 
-        if (selectResult.rowCount > 0) {
-          // Mediaitem found, add
-          const mediaRow = selectResult.rows[0] as PreparedFileProjectRow;
-          delete mediaRow.id;
-          mediaRow.url = this.getPublicFileURL(projectID, mediaRow.url);
-
-          transcriptRow.file = mediaRow;
-          delete transcriptRow.file_id;
+      selectResult = await this.dbManager.query({
+        'text': `select *
+                 from transcript_all
+                 where project_id = $1::integer
+                   and id = $2::integer`,
+        values: [projectID, transcriptID]
+      });
+      if (selectResult.rowCount > 0) {
+        transcriptRow = selectResult.rows[0];
+        // saved
+        if (transcriptRow.file?.url) {
+          transcriptRow.file.url = this.getPublicFileURL(projectID, transcriptRow.file.url);
         }
+      } else {
+        throw new Error(`Can not find proper annotation to overwrite.`);
       }
 
       this.prepareRows([transcriptRow]);
@@ -750,7 +732,7 @@ export class DatabaseFunctions {
     try {
       const selectQuery: SQLQuery = {
         'text': `select *
-                 from transcript
+                 from transcript_all
                  where project_id = $1::integer
                    and id = $2::integer`,
         values: [projectID, transcriptID]
@@ -772,23 +754,8 @@ export class DatabaseFunctions {
         throw new Error(`Can not continue transcript with id ${transcriptRow.id} because its status is not equal 'BUSY'`);
       }
 
-      if (transcriptRow.file_id) {
-        selectResult = await DatabaseFunctions.dbManager.query({
-          text: 'select * from file where id=$1::integer',
-          values: [
-            transcriptRow.file_id
-          ]
-        });
-
-        if (selectResult.rowCount > 0) {
-          // Mediaitem found, add
-          const mediaRow = selectResult.rows[0] as PreparedFileProjectRow;
-          delete mediaRow.id;
-          mediaRow.url = this.getPublicFileURL(projectID, mediaRow.url);
-
-          transcriptRow.file = mediaRow;
-          delete transcriptRow.file_id;
-        }
+      if (transcriptRow.file?.url) {
+        transcriptRow.file.url = this.getPublicFileURL(projectID, transcriptRow.file.url);
       }
       this.prepareRows([transcriptRow]);
 

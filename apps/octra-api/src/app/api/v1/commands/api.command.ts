@@ -260,6 +260,7 @@ export abstract class ApiCommand {
 
   public checkAndSendAnswer(res: any, answer: any, authenticated = true) {
     const answerValidation = this.validateAnswer(answer);
+    const url = res.req.baseUrl;
     ApiCommand.setSecurityHeaders(res);
     if (answerValidation.length === 0) {
       // a user must be authenticated to get an positive answer

@@ -10,10 +10,12 @@ export class AnnotationContinueCommand extends ApiCommand {
   constructor() {
     super('continueAnnotation', '/projects', RequestType.POST, '/:project_id/annotations/:id/continue', true,
       [
-        UserRole.transcriber
+        UserRole.user,
+        UserRole.projectAdministrator,
+        UserRole.administrator
       ]);
 
-    this._description = 'Continue an old annotation.';
+    this._description = 'Continue a given annotation by its id.';
     this._acceptedContentType = 'application/json';
     this._responseContentType = 'application/json';
 
@@ -35,7 +37,7 @@ export class AnnotationContinueCommand extends ApiCommand {
               type: 'string'
             },
             transcript: {
-              type: 'string'
+              type: 'object'
             },
             assessment: {
               type: 'string'
@@ -59,7 +61,7 @@ export class AnnotationContinueCommand extends ApiCommand {
               type: 'date-time'
             },
             log: {
-              type: 'string'
+              type: 'array'
             },
             comment: {
               type: 'string'
@@ -98,6 +100,8 @@ export class AnnotationContinueCommand extends ApiCommand {
     const answer = ApiCommand.createAnswer() as TranscriptAddResponse;
     const validation = this.validate(req);
     const tokenData = req.decoded;
+
+    // TODO restrict annotation to list of transcribers if available
 
     if (!req.params.project_id) {
       ApiCommand.sendError(res, BadRequest, 'Missing project_id in URI.');

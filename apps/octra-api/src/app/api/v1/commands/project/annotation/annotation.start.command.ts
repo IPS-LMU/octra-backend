@@ -10,8 +10,9 @@ export class AnnotationStartCommand extends ApiCommand {
   constructor() {
     super('startAnnotation', '/projects', RequestType.POST, '/:project_id/annotations/start', true,
       [
+        UserRole.user,
+        UserRole.projectAdministrator,
         UserRole.administrator,
-        UserRole.transcriber
       ]);
 
     this._description = 'Starts a new annotation.';
@@ -115,6 +116,7 @@ export class AnnotationStartCommand extends ApiCommand {
     const validation = this.validate(req);
     const tokenData = req.decoded;
 
+    // TODO restrict annotation to list of transcribers if available
 
     if (!req.params.project_id) {
       ApiCommand.sendError(res, BadRequest, 'Missing project_id in URI.');
@@ -129,8 +131,7 @@ export class AnnotationStartCommand extends ApiCommand {
         if (result) {
           answer.data = {
             ...result,
-            log: (result.log !== undefined && result.log !== '') ? JSON.parse(result.log) : [],
-            transcript: (result.transcript !== undefined && result.transcript !== '') ? JSON.parse(result.transcript) : undefined,
+            log: result.log ?? [],
             transcripts_free_count: result.transcripts_free_count
           };
           this.checkAndSendAnswer(res, answer);

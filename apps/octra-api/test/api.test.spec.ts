@@ -84,9 +84,9 @@ const todoList = {
     add: true
   },
   annotation: {
-    start: false,
-    continue: false,
-    save: false
+    start: true,
+    continue: true,
+    save: true
   },
   guidelines: {
     save: true,
@@ -465,82 +465,6 @@ if (todoList.tool.add) {
   });
 }
 
-
-if (todoList.annotation.start) {
-  it('it should start a new annotation session', (done) => {
-    const requestData = {
-      tool_id: tempData.tool.id
-    }
-
-    // TODO API call to set transcript jobs to free
-    request
-      .post(`/v1/projects/${tempData.project.id}/annotations/start`)
-      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
-      .set('Origin', 'http://localhost:8080')
-      .set('X-App-Token', appToken)
-      .send(requestData)
-      .end((err, {body, status}) => {
-        checkForErrors(err, body);
-        console.log(body);
-        tempData.transcript.id = body.data.id;
-
-        expect(status).toBe(200);
-        expect(typeof body.data).toBe('object');
-        done();
-      });
-  });
-}
-
-if (todoList.annotation.continue) {
-  it('it should continue an old annotation session', (done) => {
-    const requestData = {
-      project_id: tempData.project.id
-    }
-
-    request
-      .post(`/v1/projects/${tempData.project.id}/annotations/${tempData.transcript.id}/continue`)
-      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
-      .set('Origin', 'http://localhost:8080')
-      .set('X-App-Token', appToken)
-      .send(requestData)
-      .end((err, {body, status}) => {
-        checkForErrors(err, body);
-        console.log(body);
-
-        expect(status).toBe(200);
-        expect(typeof body.data).toBe('object');
-        done();
-      });
-  });
-}
-
-if (todoList.annotation.save) {
-  it('it should save an annotation', (done) => {
-    const requestData = {
-      transcript: {},
-      comment: 'Some comment',
-      assessment: 'OK',
-      log: [],
-      tool_id: 44
-    }
-
-    request
-      .post(`/v1/projects/${tempData.project.id}/annotations/${tempData.transcript.id}/save`)
-      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
-      .set('Origin', 'http://localhost:8080')
-      .set('X-App-Token', appToken)
-      .send(requestData)
-      .end((err, {body, status}) => {
-        checkForErrors(err, body);
-        console.log(body);
-
-        expect(status).toBe(200);
-        expect(typeof body.data).toBe('object');
-        done();
-      });
-  });
-}
-
 if (todoList.project.transcripts.upload) {
   it('it should upload a transcript and its mediafile', (done) => {
     request
@@ -552,7 +476,6 @@ if (todoList.project.transcripts.upload) {
           test: 'ok'
         },
         media: {
-          url: 'https://clarin.phonetik.uni-muenchen.de/apps/octra/octra/media/octra_presentation_msu_digital_humanities.wav',
           session: 'test263748'
         }
       }), 'utf-8'), 'data.json')
@@ -589,6 +512,76 @@ if (todoList.project.transcripts.changeStatus) {
       .end((err, {body, status}) => {
         checkForErrors(err, body);
         expect(status).toBe(200);
+        done();
+      });
+  });
+}
+
+
+if (todoList.annotation.start) {
+  it('it should start a new annotation session', (done) => {
+    const requestData = {
+      tool_id: tempData.tool.id
+    }
+
+    // TODO API call to set transcript jobs to free
+    request
+      .post(`/v1/projects/${tempData.project.id}/annotations/start`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .set('X-App-Token', appToken)
+      .send(requestData)
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
+        console.log(body);
+        tempData.transcript.id = body.data.id;
+
+        expect(status).toBe(200);
+        expect(typeof body.data).toBe('object');
+        done();
+      });
+  });
+}
+
+if (todoList.annotation.continue) {
+  it('it should continue an old annotation session', (done) => {
+    request
+      .post(`/v1/projects/${tempData.project.id}/annotations/${tempData.transcript.id}/continue`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .set('X-App-Token', appToken)
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
+        console.log(body);
+
+        expect(status).toBe(200);
+        expect(typeof body.data).toBe('object');
+        done();
+      });
+  });
+}
+
+if (todoList.annotation.save) {
+  it('it should save an annotation', (done) => {
+    const requestData = {
+      transcript: {},
+      comment: 'Some comment',
+      assessment: 'OK',
+      log: [],
+      tool_id: 44
+    }
+
+    request
+      .post(`/v1/projects/${tempData.project.id}/annotations/${tempData.transcript.id}/save`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .set('X-App-Token', appToken)
+      .send(requestData)
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
+        console.log(body);
+        expect(status).toBe(200);
+        expect(typeof body.data).toBe('object');
         done();
       });
   });
