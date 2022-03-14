@@ -27,13 +27,14 @@ export class UserListCommand extends ApiCommand {
           type: 'array',
           items: {
             type: 'object',
-            required: ['id', 'username', 'creationdate', 'updatedate'],
             properties: {
               id: {
-                type: 'number'
+                type: 'number',
+                required: true
               },
               username: {
-                type: 'string'
+                type: 'string',
+                required: true
               },
               roles: {
                 type: 'array',
@@ -42,10 +43,12 @@ export class UserListCommand extends ApiCommand {
                 }
               },
               creationdate: {
-                type: 'string'
+                type: 'string',
+                required: true
               },
               updatedate: {
-                type: 'string'
+                type: 'string',
+                required: true
               },
               active: {
                 type: 'boolean'
@@ -63,10 +66,10 @@ export class UserListCommand extends ApiCommand {
                 type: 'array',
                 items: {
                   type: 'object',
-                  required: ['role', 'scope'],
                   properties: {
                     role: {
-                      type: 'string'
+                      type: 'string',
+                      required: true
                     },
                     project_id: {
                       type: 'number'
@@ -75,7 +78,8 @@ export class UserListCommand extends ApiCommand {
                       type: 'string'
                     },
                     scope: {
-                      type: 'string'
+                      type: 'string',
+                      required: true
                     }
                   }
                 }

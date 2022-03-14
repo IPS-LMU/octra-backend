@@ -146,6 +146,7 @@
                 <div class="card command">
                     <div class="card-body">
                         <p>Each response makes use of the same JSON schema:</p>
+                        <%- printJSONTable(apiDefaultResponseSchema) %>
                         <textarea style="min-height:200px;"
                                   readonly><%= apiDefaultResponseSchema %></textarea>
                         <div class="alert alert-info">
@@ -279,8 +280,7 @@
                                                     <% } %>
                                                     :<br/>
                                                     </span>
-                                                    <textarea
-                                                            readonly><%= commands[i].commands[j]._requestStructure %></textarea>
+                                                    <%- printJSONTable(commands[i].commands[j]._requestStructure) %>
                                                 </td>
                                             </tr>
                                         <% } %>
@@ -288,8 +288,7 @@
                                             <tr>
                                                 <td colspan="2">
                                                     <span class="label">Response Schema:</span><br>
-                                                    <textarea
-                                                            readonly><%= commands[i].commands[j]._responseStructure %></textarea>
+                                                    <%- printJSONTable(commands[i].commands[j]._responseStructure) %>
                                                 </td>
                                             </tr>
                                         <% } %>

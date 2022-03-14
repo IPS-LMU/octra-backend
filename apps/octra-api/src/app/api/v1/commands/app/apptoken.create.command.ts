@@ -42,13 +42,14 @@ export class AppTokenCreateCommand extends ApiCommand {
         ...this.defaultResponseSchema.properties,
         data: {
           type: 'object',
-          required: ['name', 'key'],
           properties: {
             name: {
-              type: 'string'
+              type: 'string',
+              required: true
             },
             key: {
-              type: 'string'
+              type: 'string',
+              required: true
             },
             domain: {
               type: 'string'

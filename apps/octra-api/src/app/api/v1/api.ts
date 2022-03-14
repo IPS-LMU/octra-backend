@@ -11,6 +11,7 @@ import {CommandModule} from './commands/command.module';
 import {DBManager} from '../../db/db.manager';
 import {ApiCommand} from './commands/api.command';
 import {PathBuilder} from './path-builder';
+import {Schema} from 'jsonschema';
 
 export class APIV1 {
   get modules(): CommandModule[] {
@@ -77,8 +78,8 @@ export class APIV1 {
     }).map((a) => {
       return {
         ...a,
-        _requestStructure: JSON.stringify(a._requestStructure, null, 2),
-        _responseStructure: JSON.stringify(a._responseStructure, null, 2),
+        _requestStructure: a._requestStructure,
+        _responseStructure: a._responseStructure,
         _url: `/${this.information.apiSlug}${a._root}${a._url}`
       }
     });
@@ -124,7 +125,10 @@ export class APIV1 {
       // const fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
       res.render(`api/${this.information.apiSlug}/index.ejs`, {
         commands: groupedCommands,
-        apiDefaultResponseSchema: JSON.stringify(new SampleCommand().defaultResponseSchema, null, 2),
+        printJSONTable: (json: Schema) => {
+          return this.printJSONTable(json)
+        },
+        apiDefaultResponseSchema: new SampleCommand().defaultResponseSchema,
         apiInformation: this.information,
         appSettings: settings,
         url: settings.api.url
@@ -133,4 +137,78 @@ export class APIV1 {
 
     app.use(`/${this.information.apiSlug}`, v1Router);
   }
+
+  private printJSONTable(json: Schema) {
+    let result = `
+<table class="table table-sm table-bordered json-table">
+  <thead class="thead-light">
+  <tr>
+  <th class="fit">JSON path</th>
+  <th class="fit text-center">Required</th>
+  <th class="fit text-center">Type</th>
+  <th>Description</th>
+  </tr>
+  </thead>
+  <tbody>{{row}}</tbody>
+</table>`;
+
+    const flatJSON = this.flattenJSON(json).filter(a => a.path !== undefined);
+    flatJSON.sort((a, b) => {
+      if (a.required === 'required' && b.required === '') {
+        if (a.path > b.path) {
+          return 1;
+        }
+        return -1;
+      } else if (a.required === 'required' && b.required === 'required') {
+        if (a.path > b.path) {
+          return 1;
+        }
+        return 0;
+      }
+      return 1;
+    });
+
+    for (const jsonElement of flatJSON) {
+      result = result.replace(`{{row}}`, `
+<tr><td class="json-path fit">${jsonElement.path}</td><td class="json-required fit"><code>${jsonElement.required}</code></td><td class="json-type fit">${jsonElement.type}</td><td class="json-description">${jsonElement.description}</td></tr>
+{{row}}`)
+    }
+
+    if (flatJSON.length === 0) {
+      result = result.replace(`{{row}}`, `
+<tr><td colspan="5" class="text-center">No params found.</td></tr>`)
+    }
+
+    result = result.replace('{{row}}', '');
+    return result;
+  }
+
+  private flattenJSON = (json: Schema, path = '') => {
+    let results = [];
+
+    if (!json || (!json.properties && !json.items)) {
+      return results;
+    }
+
+    if (json.items) {
+      // is array
+      results = results.concat(this.flattenJSON(json.items as Schema, path));
+    } else {
+      for (const jsonAttr of Object.keys(json.properties)) {
+        const jsonElement = json.properties[jsonAttr];
+        if (jsonElement) {
+          const attr = (jsonElement.type === 'array') ? `[${jsonAttr}]` : jsonAttr;
+          const currentPath = [path, attr].filter(a => a !== '').join('.');
+          results.push({
+            path: currentPath,
+            type: jsonElement.type ?? '',
+            required: jsonElement.required ? 'required' : '',
+            description: jsonElement.description ?? ''
+          });
+          results = results.concat(this.flattenJSON(jsonElement, currentPath));
+        }
+      }
+    }
+    return results;
+  };
 }

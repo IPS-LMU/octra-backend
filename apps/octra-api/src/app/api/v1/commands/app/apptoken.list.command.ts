@@ -26,16 +26,18 @@ export class AppTokenListCommand extends ApiCommand {
           type: 'array',
           items: {
             type: 'object',
-            required: ['id', 'name', 'key'],
             properties: {
               id: {
-                type: 'number'
+                type: 'number',
+                required: true
               },
               name: {
-                type: 'string'
+                type: 'string',
+                required: true
               },
               key: {
-                type: 'string'
+                type: 'string',
+                required: true
               },
               domain: {
                 type: 'string'

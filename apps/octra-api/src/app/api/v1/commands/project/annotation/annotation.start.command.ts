@@ -10,6 +10,7 @@ export class AnnotationStartCommand extends ApiCommand {
   constructor() {
     super('startAnnotation', '/projects', RequestType.POST, '/:project_id/annotations/start', true,
       [
+        UserRole.administrator,
         UserRole.transcriber
       ]);
 
@@ -127,6 +128,7 @@ export class AnnotationStartCommand extends ApiCommand {
           this.checkAndSendAnswer(res, answer);
           return;
         }
+        // return empty message if no new transcript
         this.checkAndSendAnswer(res, answer);
       } catch (e) {
         console.log(e);

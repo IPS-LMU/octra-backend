@@ -25,11 +25,11 @@ export class UserAssignRolesCommand extends ApiCommand {
           type: 'array',
           items: {
             type: 'object',
-            required: ['role'],
             properties: {
               role: {
                 type: 'string',
-                enum: ['administrator', 'transcriber', 'data_delivery', 'project_admin']
+                enum: ['administrator', 'transcriber', 'data_delivery', 'project_admin'],
+                required: true
               },
               project_id: {
                 type: 'number'

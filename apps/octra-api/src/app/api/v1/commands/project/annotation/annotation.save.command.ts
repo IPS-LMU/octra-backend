@@ -19,12 +19,12 @@ export class AnnotationSaveCommand extends ApiCommand {
 
     // relevant for reference creation
     this._requestStructure = {
-      required: ['transcript'],
       properties: {
         ...this.defaultRequestSchema.properties,
         transcript: {
           type: 'object',
-          description: 'AnnotJSON as JSON object'
+          description: 'AnnotJSON as JSON object',
+          required: true
         },
         comment: {
           type: 'string'

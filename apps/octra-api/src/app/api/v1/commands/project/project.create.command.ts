@@ -77,7 +77,26 @@ export class ProjectCreateCommand extends ApiCommand {
             },
             project_admins: {
               type: 'array',
-              required: true
+              required: true,
+              items: {
+                type: 'object',
+                properties: {
+                  account_id: {
+                    type: 'number',
+                    required: true
+                  },
+                  username: {
+                    type: 'string',
+                    required: true
+                  },
+                  valid_startdate: {
+                    type: 'date-time'
+                  },
+                  valid_enddate: {
+                    type: 'date-time'
+                  }
+                }
+              }
             }
           }
         }

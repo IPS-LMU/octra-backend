@@ -52,7 +52,26 @@ export class ProjectGetCommand extends ApiCommand {
               type: 'boolean'
             },
             project_admins: {
-              type: 'array'
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  account_id: {
+                    type: 'number',
+                    required: true
+                  },
+                  username: {
+                    type: 'string',
+                    required: true
+                  },
+                  valid_startdate: {
+                    type: 'date-time'
+                  },
+                  valid_enddate: {
+                    type: 'date-time'
+                  }
+                }
+              }
             }
           }
         }

@@ -82,7 +82,7 @@ const todoList = {
     add: true
   },
   annotation: {
-    start: false,
+    start: true,
     continue: false,
     save: false
   },
@@ -471,6 +471,7 @@ if (todoList.annotation.start) {
       tool_id: tempData.tool.id
     }
 
+    // TODO API call to set transcript jobs to free
     request
       .post(`/v1/projects/${tempData.project.id}/annotations/start`)
       .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)

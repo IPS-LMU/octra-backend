@@ -280,3 +280,27 @@ main {
 .dropdown-submenu .dropdown-item:hover {
   color: black;
 }
+
+.json-table {
+  margin-top: 10px;
+}
+
+.json-table td,
+.json-table th {
+  font-size: 0.8rem;
+}
+
+.json-table tbody tr td {
+  font-size: 0.8rem;
+}
+
+.table td.fit,
+.table th.fit {
+  white-space: nowrap;
+  width: 1%;
+}
+
+.json-type,
+.json-required {
+  text-align: center;
+}
