@@ -18,6 +18,7 @@ import {
   PreparedTranscriptRow,
   ProjectResponseDataItem,
   ProjectRow,
+  ProjectTranscriptsChangeStatusRequestItem,
   RemoveProjectRequest,
   RolesRow,
   SaveAnnotationRequest,
@@ -810,6 +811,31 @@ export class DatabaseFunctions {
       return result;
     }
     throw new Error('Could not find a transcript with this ID.')
+  }
+
+  public static async changeTranscriptsStatus(data: ProjectTranscriptsChangeStatusRequestItem[]): Promise<void> {
+    const sqlStatements: SQLQuery[] = [];
+
+    for (const operation of data) {
+      if (operation.listOfIds.length === 0) {
+        throw new Error('Length of listOfIds is 0.')
+      }
+      const ids = operation.listOfIds.join(',');
+      sqlStatements.push({
+        text: `update transcript
+               set status=$1::text
+               where id = any ('{${ids}}'::int[])`,
+        values: [operation.status]
+      });
+    }
+
+    const transaction = await this.dbManager.transaction(sqlStatements);
+
+    if (transaction.length > 0) {
+      return;
+    }
+
+    throw new Error('Can\'t update status of given ids.')
   }
 
   public static async getTranscriptsByProjectID(projectID: number): Promise<PreparedTranscriptRow[]> {

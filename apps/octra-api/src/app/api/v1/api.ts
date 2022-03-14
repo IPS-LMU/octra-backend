@@ -186,12 +186,34 @@ export class APIV1 {
   private flattenJSON = (json: Schema, path = '') => {
     let results = [];
 
-    if (!json || (!json.properties && !json.items)) {
+    if (!json) {
+      return results;
+    }
+
+    if ((!json.properties && !json.items)) {
+      // basis type
+      results.push({
+        path: path,
+        type: json.type,
+        required: json.required ? 'required' : '',
+        description: json.description ?? ''
+      });
       return results;
     }
 
     if (json.items) {
       // is array
+      if (path === '') {
+        results.push({
+          path: `(parent)`,
+          type: json.type,
+          required: json.required ? 'required' : '',
+          description: 'The payload is type of array.'
+        });
+      }
+      if ((json.items as any).type !== 'object' && (json.items as any).type !== 'array') {
+        path = [path].filter(a => a !== '').join('.');
+      }
       results = results.concat(this.flattenJSON(json.items as Schema, path));
     } else {
       for (const jsonAttr of Object.keys(json.properties)) {
@@ -199,12 +221,16 @@ export class APIV1 {
         if (jsonElement) {
           const attr = (jsonElement.type === 'array') ? `[${jsonAttr}]` : jsonAttr;
           const currentPath = [path, attr].filter(a => a !== '').join('.');
-          results.push({
-            path: currentPath,
-            type: jsonElement.type ?? '',
-            required: jsonElement.required ? 'required' : '',
-            description: jsonElement.description ?? ''
-          });
+
+          if (jsonElement.type === 'array') {
+            results.push({
+              path: currentPath,
+              type: jsonElement.type ?? '',
+              required: jsonElement.required ? 'required' : '',
+              description: jsonElement.description ?? ''
+            });
+          }
+
           results = results.concat(this.flattenJSON(jsonElement, currentPath));
         }
       }

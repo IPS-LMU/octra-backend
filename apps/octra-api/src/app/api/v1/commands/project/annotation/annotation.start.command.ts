@@ -19,7 +19,15 @@ export class AnnotationStartCommand extends ApiCommand {
     this._responseContentType = 'application/json';
 
     // relevant for reference creation
-    this._requestStructure = {};
+    this._requestStructure = {
+      type: 'object',
+      properties: {
+        tool_id: {
+          type: 'number',
+          required: true
+        }
+      }
+    };
 
     // relevant for reference creation
     this._responseStructure = {

@@ -12,6 +12,13 @@ export enum UserRoleScope {
   project = 'project'
 }
 
+export enum TranscriptStatus {
+  draft = 'DRAFT',
+  free = 'FREE',
+  annotated = 'ANNOTATED',
+  postponed = 'POSTPONED'
+}
+
 export interface AccessRight {
   role: UserRole;
   scope: UserRoleScope;

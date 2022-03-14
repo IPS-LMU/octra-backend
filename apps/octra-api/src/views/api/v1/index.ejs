@@ -147,8 +147,6 @@
                     <div class="card-body">
                         <p>Each response makes use of the same JSON schema:</p>
                         <%- printJSONTable(apiDefaultResponseSchema) %>
-                        <textarea style="min-height:200px;"
-                                  readonly><%= apiDefaultResponseSchema %></textarea>
                         <div class="alert alert-info">
                             "message" contains an error message if "status" is "error". Otherwise it
                             contains messages for developer only.

@@ -2,12 +2,13 @@
 import {OctraApi} from '../src/app/octra-api';
 
 import * as supertest from 'supertest';
+import {ProjectTranscriptsChangeStatusRequestItem, TranscriptStatus} from '@octra/db';
 import path = require('path');
 
 const relPath = path.join(__dirname, '..', 'src', 'config.json');
 const app = new OctraApi().init('production', relPath);
 const request = supertest(app);
-jest.setTimeout(30000)
+// jest.setTimeout(30000)
 
 const tempData = {
   apptoken: {
@@ -75,14 +76,15 @@ const todoList = {
     transcripts: {
       getAll: true,
       get: true,
-      upload: true
+      upload: true,
+      changeStatus: true
     }
   },
   tool: {
     add: true
   },
   annotation: {
-    start: true,
+    start: false,
     continue: false,
     save: false
   },
@@ -467,7 +469,6 @@ if (todoList.tool.add) {
 if (todoList.annotation.start) {
   it('it should start a new annotation session', (done) => {
     const requestData = {
-      project_id: tempData.project.id,
       tool_id: tempData.tool.id
     }
 
@@ -565,6 +566,29 @@ if (todoList.project.transcripts.upload) {
         tempData.mediaItem.uploadURL = body.data.file.url;
         tempData.transcript.id = body.data.id;
         expect(typeof body.data).toBe('object');
+        done();
+      });
+  });
+}
+
+if (todoList.project.transcripts.changeStatus) {
+  it('it should change status for each transcript id', (done) => {
+    const payload: ProjectTranscriptsChangeStatusRequestItem[] = [
+      {
+        status: TranscriptStatus.free,
+        listOfIds: [tempData.transcript.id]
+      }
+    ];
+
+    request
+      .put(`/v1/projects/${tempData.project.id}/transcripts/status/`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .set('X-App-Token', appToken)
+      .send(payload)
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
+        expect(status).toBe(200);
         done();
       });
   });

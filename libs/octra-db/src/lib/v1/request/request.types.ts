@@ -1,4 +1,4 @@
-import {AudioFileMetaData, UserRole} from '../db';
+import {AudioFileMetaData, TranscriptStatus, UserRole} from '../db';
 
 export interface CreateProjectRequest {
   name: string;
@@ -126,4 +126,9 @@ export interface RemoveProjectRequest {
   removeAllReferences: boolean;
   cutAllReferences: boolean;
   removeProjectFiles: boolean;
+}
+
+export interface ProjectTranscriptsChangeStatusRequestItem {
+  status: TranscriptStatus;
+  listOfIds: number[];
 }
