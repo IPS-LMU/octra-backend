@@ -128,6 +128,7 @@ export class APIV1 {
         printJSONTable: (json: Schema) => {
           return this.printJSONTable(json)
         },
+        getHTTPMethodBadge: this.getHTTPMethodBadge,
         apiDefaultResponseSchema: new SampleCommand().defaultResponseSchema,
         apiInformation: this.information,
         appSettings: settings,
@@ -186,7 +187,7 @@ export class APIV1 {
   private flattenJSON = (json: Schema, path = '') => {
     let results = [];
 
-    if (!json) {
+    if (!json || Object.keys(json).length === 0) {
       return results;
     }
 
@@ -237,4 +238,28 @@ export class APIV1 {
     }
     return results;
   };
+
+  private getHTTPMethodBadge = (method: string, inNav = false) => {
+    let className = '';
+    const additionalClasses = inNav ? 'p-1 pl-2 pr-2 ml-1 text-sm nav-badge' : 'p-2';
+    switch (method) {
+      case ('GET'):
+        className = 'bg-info text-light';
+        break;
+
+      case ('POST'):
+        className = 'bg-dark text-light';
+        break;
+
+      case ('PUT'):
+        className = 'bg-warning';
+        break;
+
+      case ('DELETE'):
+        className = 'bg-danger text-light';
+        break;
+    }
+
+    return `<span class="badge rounded-pill ${className} ${additionalClasses}" style="text-decoration: none; text-underline: none;">${method.toUpperCase()}</span>`
+  }
 }

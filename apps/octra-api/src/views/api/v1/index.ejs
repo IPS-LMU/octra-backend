@@ -68,7 +68,7 @@
                                     <li>
                                         <a class="dropdown-item" href="#<%= commands[i].commands[j].name %>"
                                            data-hash="<%= commands[i].commands[j]._name %>">
-                                            <%= commands[i].commands[j]._name %>(<%= commands[i].commands[j].type %>)
+                                            <%= commands[i].commands[j]._name %> <%- getHTTPMethodBadge(commands[i].commands[j]._type, true) %>
                                         </a>
                                     </li>
                                 <% } %>
@@ -125,7 +125,7 @@
                                 <% for(var j = 0; j < commands[i].commands.length; j++){ %>
                                     <a class="nav-link" data-hash="<%= commands[i].commands[j]._name %>"
                                        href="#<%= commands[i].commands[j]._name %>"><%= commands[i].commands[j]._name %>
-                                        (<%= commands[i].commands[j]._type %>)</a>
+                                                    <%- getHTTPMethodBadge(commands[i].commands[j]._type, true) %></a>
                                 <% } %>
                             </nav>
                         </div>
@@ -229,14 +229,14 @@
                                     <table class="table">
                                         <% if (commands[i].commands[j]._allowedUserRoles.length > 0) { %>
                                             <tr>
-                                                <td class="label">
+                                                <td class="label align-middle">
                                                     Allowed user roles:
                                                 </td>
                                                 <td><%= commands[i].commands[j]._allowedUserRoles.join(', ') %></td>
                                             </tr>
                                         <% } %>
                                         <tr>
-                                            <td class="label">
+                                            <td class="label align-middle">
                                                 URL:
                                             </td>
                                             <td><code><%= url %><%= commands[i].commands[j]._url %></code></td>
@@ -248,22 +248,22 @@
                                             <td><p><%= commands[i].commands[j]._description %></p></td>
                                         </tr>
                                         <tr>
-                                            <td class="label">Method:</td>
+                                            <td class="label align-middle">Method:</td>
                                             <td>
-                                                <span class="badge rounded-pill bg-secondary"><%= commands[i].commands[j]._type %></span>
+                                                    <%- getHTTPMethodBadge(commands[i].commands[j]._type) %>
                                             </td>
                                         </tr>
                                         <% if (commands[i].commands[j]._requestStructure && commands[i].commands[j]._requestStructure !== '{}') { %>
                                             <% if (commands[i].commands[j]._acceptedContentType) { %>
                                                 <tr>
-                                                    <td class="label">Request Content Type:</td>
+                                                    <td class="label align-middle">Request Content Type:</td>
                                                     <td><%= commands[i].commands[j]._acceptedContentType %></td>
                                                 </tr>
                                             <% } %>
                                         <% } %>
                                         <% if (commands[i].commands[j]._responseStructure && commands[i].commands[j]._responseStructure !== "{}") { %>
                                             <tr>
-                                                <td class="label">Response Content Type:</td>
+                                                <td class="label align-middle">Response Content Type:</td>
                                                 <td><%= commands[i].commands[j]._responseContentType %></td>
                                             </tr>
                                         <% } %>

@@ -37,7 +37,7 @@ export class TranscriptGetCommand extends ApiCommand {
               type: 'string'
             },
             transcript: {
-              type: 'string'
+              type: 'json'
             },
             assessment: {
               type: 'string'
@@ -61,7 +61,7 @@ export class TranscriptGetCommand extends ApiCommand {
               type: 'date-time'
             },
             log: {
-              type: 'string'
+              type: 'array'
             },
             comment: {
               type: 'string'

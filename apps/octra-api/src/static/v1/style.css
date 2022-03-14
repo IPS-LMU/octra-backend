@@ -304,3 +304,12 @@ main {
 .json-required {
   text-align: center;
 }
+
+table tbody tr td {
+  vertical-align: middle;
+}
+
+.nav-badge {
+  font-size: 0.6rem;
+  line-height: 0.8rem;
+}
