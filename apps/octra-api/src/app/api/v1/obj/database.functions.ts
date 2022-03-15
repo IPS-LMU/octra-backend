@@ -893,7 +893,7 @@ export class DatabaseFunctions {
       }))
       return results;
     }
-    throw new Error(`Can not find a project with ID ${projectID}.`);
+    return [];
   }
 
   public static async removeAppToken(id: number): Promise<void> {

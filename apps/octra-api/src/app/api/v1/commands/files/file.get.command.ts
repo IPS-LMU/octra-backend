@@ -58,5 +58,6 @@ export class FileGetCommand extends ApiCommand {
     } catch (e) {
       FileGetCommand.sendError(res, 400, 'Bad Request.');
     }
+    return;
   }
 }
