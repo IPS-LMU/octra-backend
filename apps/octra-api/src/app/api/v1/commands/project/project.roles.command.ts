@@ -6,7 +6,7 @@ import {AssignProjectUserRolesRequestItem, UserRole} from '@octra/db';
 
 export class ProjectAssignUserRolesCommand extends ApiCommand {
   constructor() {
-    super('assignProjectUserRoles', '/projects', RequestType.POST, '/:id/roles', true,
+    super('assignProjectUserRoles', '/projects', RequestType.POST, '/:project_id/roles', true,
       [
         UserRole.administrator,
         UserRole.projectAdministrator
@@ -51,13 +51,13 @@ export class ProjectAssignUserRolesCommand extends ApiCommand {
 
     // do something
     if (validation.length === 0) {
-      if (!req.params.id) {
-        ApiCommand.sendError(res, InternalServerError, 'Missing id in URL.');
+      if (!req.params.project_id) {
+        ApiCommand.sendError(res, InternalServerError, 'Missing project_id in URL.');
         return;
       }
 
       try {
-        answer.data = await DatabaseFunctions.assignUserRolesProject(req.params.id, body);
+        answer.data = await DatabaseFunctions.assignUserRolesProject(req.params.project_id, body);
         this.checkAndSendAnswer(res, answer);
         return;
       } catch (e) {

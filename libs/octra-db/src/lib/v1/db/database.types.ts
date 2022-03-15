@@ -4,6 +4,11 @@ export enum ProjectUserRole {
   dataDelivery = 'data_delivery',
 }
 
+export enum GlobalUserRole {
+  administrator = 'administrator',
+  user = 'user'
+}
+
 export enum UserRole {
   administrator = 'administrator',
   transcriber = 'transcriber',

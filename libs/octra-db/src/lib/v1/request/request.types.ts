@@ -1,4 +1,4 @@
-import {AudioFileMetaData, TranscriptStatus, UserRole} from '../db';
+import {AudioFileMetaData, GlobalUserRole, TranscriptStatus} from '../db';
 
 export interface CreateProjectRequest {
   name: string;
@@ -83,10 +83,7 @@ export interface AddTranscriptRequest {
 
 export interface AssignUserRoleRequest {
   accountID: number;
-  roles: {
-    role: UserRole,
-    project_id?: number
-  }[];
+  role: GlobalUserRole;
 }
 
 export interface DeliverNewMediaRequest {

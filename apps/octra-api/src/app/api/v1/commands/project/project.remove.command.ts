@@ -10,7 +10,7 @@ import {PathBuilder} from '../../path-builder';
 
 export class ProjectRemoveCommand extends ApiCommand {
   constructor() {
-    super('removeProject', '/projects', RequestType.DELETE, '/:id/', true,
+    super('removeProject', '/projects', RequestType.DELETE, '/:project_id/', true,
       [
         UserRole.administrator
       ]);
@@ -50,8 +50,8 @@ export class ProjectRemoveCommand extends ApiCommand {
     const answer = ApiCommand.createAnswer();
     const validation = this.validate(req);
 
-    if (!req.params.id) {
-      ApiCommand.sendError(res, BadRequest, 'Missing id parameter in URI.');
+    if (!req.params.project_id) {
+      ApiCommand.sendError(res, BadRequest, 'Missing project_id parameter in URI.');
       return;
     }
     // do something
@@ -67,8 +67,8 @@ export class ProjectRemoveCommand extends ApiCommand {
 
       try {
         const pathBuilder = new PathBuilder(this.settings.api);
-        const projectFolder = pathBuilder.getAbsoluteProjectPath(Number(req.params.id));
-        await DatabaseFunctions.removeProject(Number(req.params.id), reqData);
+        const projectFolder = pathBuilder.getAbsoluteProjectPath(Number(req.params.project_id));
+        await DatabaseFunctions.removeProject(Number(req.params.project_id), reqData);
 
         if (reqData.removeProjectFiles === true) {
           await FileSystemHandler.removeFolder(projectFolder);

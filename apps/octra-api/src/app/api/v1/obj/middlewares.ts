@@ -72,8 +72,10 @@ export const verifyUserRole = (req: InternRequest, res: Response, command: ApiCo
               if (req.params.project_id && isNumber(req.params.project_id)) {
                 const project_id = Number(req.params.project_id);
                 const isProjectAdmin = foundOnes.find(a => a.role === UserRole.projectAdministrator && a.project_id === project_id) !== undefined;
+                const isTranscriber = foundOnes.find(a => a.role === UserRole.transcriber && a.project_id === project_id) !== undefined;
+                const isDataDelivery = foundOnes.find(a => a.role === UserRole.dataDelivery && a.project_id === project_id) !== undefined;
 
-                if (isProjectAdmin) {
+                if (isProjectAdmin || isTranscriber || isDataDelivery) {
                   callback();
                 } else {
                   ApiCommand.sendError(res, 401, 'You don\'t have access rights to use this function.');

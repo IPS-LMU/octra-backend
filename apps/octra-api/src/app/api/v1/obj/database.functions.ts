@@ -981,26 +981,18 @@ export class DatabaseFunctions {
       values: [data.accountID]
     });
 
-    for (const role of data.roles) {
-      const roleEntry = rolesTable.find(a => a.label === role.role);
+    const roleEntry = rolesTable.find(a => a.label === data.role.toString());
 
-      if (roleEntry) {
-        const roleID = roleEntry.id;
-        if (roleEntry.scope === 'general') {
-          queries.push({
-            text: 'update account set role_id=$1::integer where id=$2::integer',
-            values: [roleID, data.accountID]
-          });
-        } else {
-          queries.push({
-            text: 'insert into account_role_project(account_id, role_id, project_id) values($1::integer, $2::integer, $3::integer)',
-            values: [data.accountID, roleID, role.project_id]
-          });
-        }
-
-      } else {
-        throw new Error(`Could not find role '${role}'`);
+    if (roleEntry) {
+      const roleID = roleEntry.id;
+      if (roleEntry.scope === 'general') {
+        queries.push({
+          text: 'update account set role_id=$1::integer where id=$2::integer',
+          values: [roleID, data.accountID]
+        });
       }
+    } else {
+      throw new Error(`Could not find role '${data.role}'`);
     }
 
     try {

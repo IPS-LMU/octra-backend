@@ -191,12 +191,16 @@ export class TranscriptUploadCommand extends ApiCommand {
     const upload = multer({storage: storage});
     try {
 
-      // TODO formData values doesn't need to be files
-      // TODO generate hash on client side => check it with other function => upload only if hash doesn't exist
       upload.any()(req, res, async (err) => {
         const validation = this.validate(req, req.files);
         const mediaFile = (req.files as MulterFile[]).find(a => a.fieldname === 'media');
         const jsonFile = (req.files as MulterFile[]).find(a => a.fieldname === 'data');
+
+        if (!(/.+(\.wav)/g).exec(mediaFile.originalname)) {
+          this.removeMediaFileAndJSON(mediaFile, jsonFile);
+          ApiCommand.sendError(res, BadRequest, 'Only WAVE files supported.');
+          return;
+        }
 
         if (validation.length === 0) {
           if (err instanceof multer.MulterError) {

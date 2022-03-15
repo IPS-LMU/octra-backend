@@ -155,11 +155,8 @@ if (todoList.user.login) {
 if (todoList.user.assign) {
   it('it should assign user roles', (done) => {
     const requestData = {
-      roles: [{
-        role: 'data_delivery',
-        project_id: 977
-      }]
-    }
+      role: 'user'
+    };
     request
       .post(`/v1/users/${tempData.user.id}/roles`)
       .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
@@ -384,7 +381,7 @@ if (todoList.project.create) {
 if (todoList.project.roles.assign) {
   it('it should assign user roles for a given project', (done) => {
     const requestData = [{
-      userID: 798,
+      userID: tempData.user.id,
       role: 'project_admin'
     }];
 

@@ -11,7 +11,7 @@ export class UserAssignRolesCommand extends ApiCommand {
       [
         UserRole.administrator
       ]);
-    this._description = 'Assign user role for given account id.';
+    this._description = 'Assign global user role for given account id.';
     this._acceptedContentType = 'application/json';
     this._responseContentType = 'application/json';
 
@@ -21,21 +21,8 @@ export class UserAssignRolesCommand extends ApiCommand {
       type: 'object',
       properties: {
         ...this.defaultRequestSchema.properties,
-        roles: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              role: {
-                type: 'string',
-                enum: ['administrator', 'transcriber', 'data_delivery', 'project_admin'],
-                required: true
-              },
-              project_id: {
-                type: 'number'
-              }
-            }
-          },
+        role: {
+          enum: ['administrator', 'user'],
           required: true
         }
       }

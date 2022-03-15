@@ -5,9 +5,10 @@ import {ProjectTranscriptsGetResponse, UserRole} from '@octra/db';
 
 export class ProjectTranscriptsGetCommand extends ApiCommand {
   constructor() {
-    super('getProjectTranscripts', '/projects', RequestType.GET, '/:id/transcripts', true,
+    super('getProjectTranscripts', '/projects', RequestType.GET, '/:project_id/transcripts', true,
       [
         UserRole.administrator,
+        UserRole.projectAdministrator,
         UserRole.dataDelivery
       ]);
 
@@ -115,8 +116,12 @@ export class ProjectTranscriptsGetCommand extends ApiCommand {
     const validation = this.validate(req);
     // do something
     if (validation.length === 0) {
+      if (!req.params.project_id) {
+        ApiCommand.sendError(res, InternalServerError, 'Missing project_id in URL.');
+        return;
+      }
       try {
-        answer.data = await DatabaseFunctions.getTranscriptsByProjectID(Number(req.params.id));
+        answer.data = await DatabaseFunctions.getTranscriptsByProjectID(Number(req.params.project_id));
         this.checkAndSendAnswer(res, answer);
         return;
       } catch (e) {

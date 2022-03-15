@@ -6,7 +6,7 @@ import {ChangeProjectRequest, ProjectCreateResponse, UserRole} from '@octra/db';
 
 export class ProjectChangeCommand extends ApiCommand {
   constructor() {
-    super('changeProject', '/projects', RequestType.PUT, '/:id', true,
+    super('changeProject', '/projects', RequestType.PUT, '/:project_id', true,
       [
         UserRole.administrator,
         UserRole.projectAdministrator
@@ -113,12 +113,12 @@ export class ProjectChangeCommand extends ApiCommand {
 
     // do something
     if (validation.length === 0) {
-      if (!req.params.id) {
+      if (!req.params.project_id) {
         ApiCommand.sendError(res, InternalServerError, 'Missing id in URL.');
         return;
       }
       try {
-        answer.data = await DatabaseFunctions.changeProject(req.params.id, body);
+        answer.data = await DatabaseFunctions.changeProject(req.params.project_id, body);
 
         if (answer.data.configuration) {
           try {
