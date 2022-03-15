@@ -78,6 +78,9 @@ const todoList = {
       get: true,
       upload: true,
       changeStatus: true
+    },
+    roles: {
+      assign: true
     }
   },
   tool: {
@@ -373,6 +376,48 @@ if (todoList.project.create) {
         expect(status).toBe(200);
         tempData.project.id = body.data.id;
         expect(typeof body.data).toBe('object');
+        done();
+      });
+  });
+}
+
+if (todoList.project.roles.assign) {
+  it('it should assign user roles for a given project', (done) => {
+    const requestData = [{
+      userID: 798,
+      role: 'project_admin'
+    }];
+
+    request
+      .post(`/v1/projects/${tempData.project.id}/roles/`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .set('X-App-Token', appToken)
+      .send(requestData)
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
+        expect(status).toBe(200);
+        done();
+      });
+  });
+}
+
+if (todoList.project.roles.assign) {
+  it('it should change the user role of a specific user for a given project', (done) => {
+    const requestData = [{
+      userID: 798,
+      role: 'transcriber'
+    }];
+
+    request
+      .post(`/v1/projects/${tempData.project.id}/roles/`)
+      .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .set('X-App-Token', appToken)
+      .send(requestData)
+      .end((err, {body, status}) => {
+        checkForErrors(err, body);
+        expect(status).toBe(200);
         done();
       });
   });

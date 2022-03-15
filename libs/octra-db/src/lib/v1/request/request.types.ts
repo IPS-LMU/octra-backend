@@ -132,3 +132,10 @@ export interface ProjectTranscriptsChangeStatusRequestItem {
   status: TranscriptStatus;
   listOfIds: number[];
 }
+
+export interface AssignProjectUserRolesRequestItem {
+  userID: number;
+  role: string;
+  valid_startdate?: string;
+  valid_enddate?: string;
+}

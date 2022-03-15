@@ -6,6 +6,7 @@ import {
   AddToolRequest,
   AddTranscriptRequest,
   AppTokensRow,
+  AssignProjectUserRolesRequestItem,
   AssignUserRoleRequest,
   ChangeProjectRequest,
   CreateProjectRequest,
@@ -251,7 +252,7 @@ export class DatabaseFunctions {
           throw new Error('Can\'t assign user role \'project_admin\'');
         }
         const userInfo = await this.getUserInfoByUserID(insertProjectRole.rows[0]['account_id']);
-        insertProjectResult.rows[0]['project_admins'] = [{
+        insertProjectResult.rows[0]['account_roles'] = [{
           role: 'project_admin',
           account_id: userInfo.id,
           username: userInfo.username
@@ -351,6 +352,75 @@ export class DatabaseFunctions {
       } else {
         throw new Error('Update project failed');
       }
+    } catch (e) {
+      console.log(e);
+      throw new Error('Can\'t update project');
+    }
+  }
+
+  public static async assignUserRolesProject(projectID: number, data: AssignProjectUserRolesRequestItem[]): Promise<void> {
+    try {
+      const ids = data.map(a => a.userID);
+      const selectProjectRolesQuery = await this.dbManager.query({
+        text: `select arp.*, r."label" as role
+               from account_role_project as arp
+                      left join "role" r on arp.role_id = r.id
+               where arp.account_id = any ('{${ids.join(',')}}'::int[])
+                 and arp.project_id = $1::integer
+               order by arp.id desc`,
+        values: [projectID]
+      });
+
+      const roles = ((await this.dbManager.query({
+        text: 'select id, label from role'
+      })).rows as any).map(a => ({
+        id: a.id,
+        role: a.label
+      }));
+
+      const dbProjectRoles = (selectProjectRolesQuery.rows as any).map(a => ({
+        userID: a.account_id,
+        role: a.role,
+        valid_startdate: a.valid_startdate,
+        valid_enddate: a.valid_enddate
+      })) as AssignProjectUserRolesRequestItem[];
+
+      const sqlQueries: SQLQuery[] = [];
+
+      for (const entry of data) {
+        const role = roles.find(a => a.role === entry.role);
+
+        if (!role) {
+          throw new Error(`Can't find role id of role "${entry.role}"`);
+        }
+
+        if (dbProjectRoles.find(a => a.userID === entry.userID)) {
+          // change role
+          sqlQueries.push({
+            text: `update account_role_project
+                   set role_id=$1::int
+                   where project_id = $2::int
+                     and account_id = $3::int
+                   returning *`,
+            values: [role.id, projectID, entry.userID]
+          });
+        } else {
+          // add role
+          sqlQueries.push(this.dbManager.createSQLQueryForInsert({
+            tableName: 'account_role_project',
+            columns: [
+              this.getColumnDefinition('account_id', 'integer', entry.userID, false),
+              this.getColumnDefinition('role_id', 'integer', role.id, false),
+              this.getColumnDefinition('project_id', 'integer', projectID, false),
+              this.getColumnDefinition('valid_startdate', 'string', entry.valid_startdate),
+              this.getColumnDefinition('valid_enddate', 'string', entry.valid_enddate)
+            ]
+          }, '*'));
+        }
+      }
+
+      await this.dbManager.transaction(sqlQueries);
+      return;
     } catch (e) {
       console.log(e);
       throw new Error('Can\'t update project');

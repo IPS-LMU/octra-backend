@@ -1,3 +1,9 @@
+export enum ProjectUserRole {
+  transcriber = 'transcriber',
+  projectAdministrator = 'project_admin',
+  dataDelivery = 'data_delivery',
+}
+
 export enum UserRole {
   administrator = 'administrator',
   transcriber = 'transcriber',
@@ -21,16 +27,9 @@ export enum TranscriptStatus {
 
 export interface AccessRight {
   role: UserRole;
-  scope: UserRoleScope;
+  scope?: UserRoleScope;
   project_id?: number;
   project_name?: string;
-  valid_startdate?: string;
-  valid_enddate?: string;
-}
-
-export interface ProjectAdmin {
-  account_id: number;
-  username: string;
   valid_startdate?: string;
   valid_enddate?: string;
 }
@@ -128,7 +127,7 @@ export interface ProjectRow extends DatabaseRow {
 }
 
 export interface PreparedProjectRow extends ProjectRow {
-  projectAdmins: ProjectAdmin[];
+  projectAdmins: AccessRight[];
 }
 
 export interface ToolRow extends DatabaseRow {

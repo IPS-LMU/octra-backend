@@ -14,6 +14,7 @@ import {GuidelinesSaveCommand} from './guidelines/guidelines.save.command';
 import {TranscriptUploadCommand} from './transcripts/transcript.upload.command';
 import {ProjectTranscriptGetCommand} from './transcripts/transcript.get.command';
 import {ProjectTranscriptsChangeStatusCommand} from './transcripts/transcript.change.status.command';
+import {ProjectAssignUserRolesCommand} from './project.roles.command';
 
 export class ProjectModule extends CommandModule {
   constructor() {
@@ -25,6 +26,7 @@ export class ProjectModule extends CommandModule {
       new ProjectGetCommand(),
       new ProjectChangeCommand(),
       new ProjectListCommand(),
+      new ProjectAssignUserRolesCommand(),
       new AnnotationStartCommand(),
       new AnnotationSaveCommand(),
       new AnnotationFreeCommand(),

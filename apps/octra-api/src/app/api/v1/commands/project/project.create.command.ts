@@ -75,7 +75,7 @@ export class ProjectCreateCommand extends ApiCommand {
             active: {
               type: 'boolean'
             },
-            project_admins: {
+            account_roles: {
               type: 'array',
               required: true,
               items: {

@@ -427,7 +427,7 @@ $$
                                                               'role', ar.label,
                                                               'valid_startdate', ar.valid_startdate,
                                                               'valid_enddate', ar.valid_enddate
-               )))::JSON end                                                           as project_admins,
+               )))::JSON end                                                           as account_roles,
            count(transcript.id)::integer                                               as transcripts_count,
            count(case when transcript.status = 'FREE' then transcript.id end)::integer as transcripts_count_free,
            pr.creationdate,
