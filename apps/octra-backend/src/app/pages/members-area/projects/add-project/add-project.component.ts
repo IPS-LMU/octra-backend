@@ -5,7 +5,7 @@ import {deLocale} from 'ngx-bootstrap/locale';
 import {DateTime} from 'luxon';
 import {ModalsService} from '../../../../modals/modals.service';
 import {ActivatedRoute, Router} from '@angular/router';
-import {CreateProjectRequest, GuidelinesSaveResponseDataItem} from '@octra/db';
+import {ChangeProjectRequest, GuidelinesSaveResponseDataItem} from '@octra/db';
 import {UserDropdownComponent} from '../../../../components/user-dropdown/user-dropdown.component';
 import {OctraAPIService} from '@octra/ngx-octra-api';
 
@@ -17,15 +17,15 @@ import {OctraAPIService} from '@octra/ngx-octra-api';
 export class AddProjectComponent implements OnInit {
   isEditPage = false;
   editingID = -1;
-  formData: CreateProjectRequest = {
+  formData: ChangeProjectRequest = {
     name: '',
     shortname: '',
     description: '',
     configuration: null,
     startdate: '',
     enddate: '',
-    active: true,
-    admin_id: undefined
+    active: false,
+    admin_id: -1
   };
 
   private guidelines: GuidelinesSaveResponseDataItem[] = [];
@@ -62,7 +62,7 @@ export class AddProjectComponent implements OnInit {
           this.api.getGuidelines(this.editingID)
         ]).then(([project, guidelines]) => {
           // read project
-          this.formData = project;
+          this.formData = project as any;
           this.isEditPage = true;
           this.projectSchedule.start = (this.formData.startdate && this.formData.startdate !== '') ?
             DateTime.fromISO(this.formData.startdate).toJSDate() : undefined;
@@ -97,7 +97,7 @@ export class AddProjectComponent implements OnInit {
     if (this.formData.enddate === '') {
       delete this.formData.enddate;
     }
-    this.formData.admin_id = (this.formData.admin_id === null) ? undefined : this.formData.admin_id;
+    this.formData.admin_id = (this.formData.admin_id === null) ? -1 : this.formData.admin_id;
 
     if (!this.isEditPage) {
       this.api.createProject(this.formData).then((projectResponse) => {
@@ -135,7 +135,7 @@ export class AddProjectComponent implements OnInit {
       this.formData.admin_id = user.id;
       this.adminSelectionLabel = `Selected project administrator: ${user.username}`;
     } else {
-      this.formData.admin_id = undefined;
+      this.formData.admin_id = -1;
       this.adminSelectionLabel = 'Select project administrator';
     }
   }

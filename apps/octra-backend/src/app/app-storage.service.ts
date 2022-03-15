@@ -61,7 +61,9 @@ export class AppStorageService {
               this.windowChecker = -1;
               closed = true;
 
-              this.api.retrieveTokenFromWindow(result.openWindowURL as any).then(() => {
+              this.api.retrieveTokenFromWindow(result.openWindowURL as any).then((token) => {
+                this._webToken = token;
+                this._authType = type;
                 this.router.navigate(['/loading']);
               }).catch((error) => {
                 console.error(error);
