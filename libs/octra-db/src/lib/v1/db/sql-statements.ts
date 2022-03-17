@@ -13,13 +13,13 @@ export const OCTRASQLStatements = {
                   json_agg(json_strip_nulls(json_build_object('project_id', ar.project_id,
                                                               'role', ar.label,
                                                               'project_name', pr.name,
-                                                              'scope', ar.scope))) as user_roles
+                                                              'scope', ar.scope))) as access_rights
            from account_roles as ar
                   full outer join project pr on pr.id = ar.project_id
            group by ar.id
          ),
          account_rows as (
-           select ac.*, ur.user_roles
+           select ac.*, ur.access_rights
            from account_all ac
                   left join user_roles ur on ur.id = ac.id
          )

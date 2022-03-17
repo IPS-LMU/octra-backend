@@ -36,12 +36,6 @@ export class UserListCommand extends ApiCommand {
                 type: 'string',
                 required: true
               },
-              roles: {
-                type: 'array',
-                items: {
-                  type: 'string'
-                }
-              },
               creationdate: {
                 type: 'string',
                 required: true
@@ -64,6 +58,7 @@ export class UserListCommand extends ApiCommand {
               },
               accessRights: {
                 type: 'array',
+                required: true,
                 items: {
                   type: 'object',
                   properties: {

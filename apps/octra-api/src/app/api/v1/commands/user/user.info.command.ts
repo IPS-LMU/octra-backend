@@ -31,13 +31,17 @@ export class UserInfoCommand extends ApiCommand {
             username: {
               type: 'string'
             },
-            roles: {
+            accessRrights: {
               type: 'array',
+              required: true,
               items: {
                 type: 'string'
               }
             },
-            createdate: {
+            creationdate: {
+              type: 'string'
+            },
+            updatedate: {
               type: 'string'
             },
             active: {

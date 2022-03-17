@@ -14,7 +14,7 @@ import {
   SaveAnnotationRequest,
   TranscriptGetResponseDataItem,
   UserInfoResponseDataItem,
-  UserRole
+  UserLoginResponse
 } from '@octra/db';
 
 @Injectable({
@@ -52,45 +52,22 @@ export class OctraAPIService {
    * @param name
    * @param password
    */
-  public loginUser(type: 'local' | 'shibboleth', name?: string, password?: string): Promise<{
-    openWindowURL?: string;
-    user?: {
-      name: string;
-      email: string;
-      roles: UserRole[];
-      jwt: string;
-    }
-  }> {
+  public loginUser = (type: 'local' | 'shibboleth', name?: string, password?: string): Promise<UserLoginResponse> => {
     console.log(`LOGIN TEST`);
-    return new Promise<{
-      openWindowURL?: string;
-      user?: {
-        name: string;
-        email: string;
-        roles: UserRole[];
-        jwt: string;
-      }
-    }>((resolve, reject) => {
+    return new Promise<UserLoginResponse>((resolve, reject) => {
       this.http.post(`${this.apiURL}/users/login`, {
         type, name, password
       }, {
         headers: this.getHeaders(false)
-      }).toPromise().then((result: any) => {
+      }).toPromise<any>().then((result) => {
         this._authenticated = result.authenticated;
         if (result.authenticated) {
           this._webToken = result.token;
-          resolve({
-            user: {
-              name: result.username,
-              email: result.email,
-              roles: result.role,
-              jwt: result.token
-            }
-          });
+          resolve(result);
         } else if (result.data.openURL && result.data.openURL.trim() !== '') {
-          resolve({
-            openWindowURL: result.data.openURL
-          });
+          resolve(result);
+        } else {
+          reject('Can\'t read login response');
         }
       }).catch((error) => {
         reject((error.error?.message) ? error.error.message : error.message);
@@ -141,7 +118,7 @@ export class OctraAPIService {
   }
 
   public removeAppToken(id: number): Promise<void> {
-    return this.delete<any>(`${this.apiURL}/app/tokens/${id}`, true);
+    return this.delete<any>(`/app/tokens/${id}`, true);
   }
 
   public getProject(id: number): Promise<ProjectResponseDataItem> {
@@ -317,16 +294,16 @@ export class OctraAPIService {
 
   private getHeaders(needsJWT: boolean) {
     let headers: {
-      Authorization: string;
-      'x-access-token'?: string;
+      Authorization?: string;
+      'X-App-token': string;
     } = {
-      Authorization: `Bearer ${this.appToken}`
+      'X-App-token': this.appToken
     };
 
     if (needsJWT) {
       headers = {
         ...headers,
-        'x-access-token': this._webToken
+        Authorization: `Bearer ${this._webToken}`
       }
     }
 

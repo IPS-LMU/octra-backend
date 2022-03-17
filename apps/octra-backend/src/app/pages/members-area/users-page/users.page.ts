@@ -1,5 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {OctraAPIService} from '@octra/ngx-octra-api';
+import {UserInfoResponseDataItem, UserRoleScope} from '@octra/db';
 
 @Component({
   selector: 'ocb-users',
@@ -7,20 +8,23 @@ import {OctraAPIService} from '@octra/ngx-octra-api';
   styleUrls: ['./users.page.css']
 })
 export class UsersPage implements OnInit {
-  public transcripts: any[];
+  public users: UserInfoResponseDataItem[];
 
   constructor(private api: OctraAPIService) {
-    this.transcripts = [];
+    this.users = [];
   }
 
   ngOnInit(): void {
     this.api.listUsers().then((result) => {
       console.log(`result`);
       console.log(result);
-      this.transcripts = result;
+      this.users = result;
     }).catch((error) => {
       console.error(error);
     });
   }
 
+  getGlobalRole(user: UserInfoResponseDataItem) {
+    return user.accessRights.find(a => a.scope === UserRoleScope.general)?.role;
+  }
 }

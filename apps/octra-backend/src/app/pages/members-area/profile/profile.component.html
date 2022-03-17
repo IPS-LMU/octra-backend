@@ -5,18 +5,15 @@
     <tbody>
     <tr>
       <td>Username:</td>
-      <td>{{appStorage.user.name}}</td>
+      <td>{{appStorage.user?.username}}</td>
     </tr>
     <tr>
       <td>Associated roles:</td>
-      <td>{{appStorage.user.roles | join: {
-        separator: ','
-      }
-        }}</td>
+      <td><!-- TODO IMPLEMENT --></td>
     </tr>
     <tr>
       <td>E-mail:</td>
-      <td>{{appStorage.user.email}}</td>
+      <td>{{appStorage.user?.email}}</td>
     </tr>
     </tbody>
   </table>

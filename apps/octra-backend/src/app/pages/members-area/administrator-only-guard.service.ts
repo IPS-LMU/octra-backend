@@ -14,7 +14,7 @@ export class AdministratorOnlyGuard implements CanActivate {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
     if (this.appStorage.initialized) {
-      if (this.appStorage.user.roles.find(a => a === 'administrator') !== undefined) {
+      if (this.appStorage.user?.accessRights.find(a => a.role === 'administrator') !== undefined) {
         return true;
       } else {
         console.log(`not admin!`);

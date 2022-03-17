@@ -31,13 +31,34 @@ export class UserCurrentInfoCommand extends ApiCommand {
             username: {
               type: 'string'
             },
-            roles: {
+
+            accessRights: {
               type: 'array',
+              required: true,
               items: {
-                type: 'string'
+                type: 'object',
+                properties: {
+                  role: {
+                    type: 'string',
+                    required: true
+                  },
+                  project_id: {
+                    type: 'number'
+                  },
+                  project_name: {
+                    type: 'string'
+                  },
+                  scope: {
+                    type: 'string',
+                    required: true
+                  }
+                }
               }
             },
-            createdate: {
+            creationdate: {
+              type: 'string'
+            },
+            updatedate: {
               type: 'string'
             },
             active: {

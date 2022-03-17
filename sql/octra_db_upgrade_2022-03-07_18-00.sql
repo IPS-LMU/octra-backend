@@ -417,6 +417,8 @@ $$
     select pr.id,
            pr.name,
            pr.shortname,
+           pr.description,
+           pr.configuration,
            pr.startdate,
            pr.enddate,
            pr.active,

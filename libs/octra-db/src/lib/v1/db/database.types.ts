@@ -19,7 +19,7 @@ export enum UserRole {
 }
 
 export enum UserRoleScope {
-  global = 'global',
+  general = 'general',
   project = 'project'
 }
 

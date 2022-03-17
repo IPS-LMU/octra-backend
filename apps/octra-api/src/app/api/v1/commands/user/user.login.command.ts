@@ -49,12 +49,58 @@ export class UserLoginCommand extends ApiCommand {
           ...this.defaultResponseSchema.properties.data,
           properties: {
             ...this.defaultResponseSchema.properties.data.properties,
-            // TODO why is id needed?
-            id: {
-              type: 'number'
-            },
-            name: {
-              type: 'string'
+            user: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'number',
+                  required: true
+                },
+                username: {
+                  type: 'string'
+                },
+                accessRights: {
+                  type: 'array',
+                  required: true,
+                  items: {
+                    type: 'object',
+                    properties: {
+                      role: {
+                        type: 'string',
+                        required: true
+                      },
+                      project_id: {
+                        type: 'number'
+                      },
+                      project_name: {
+                        type: 'string'
+                      },
+                      scope: {
+                        type: 'string',
+                        required: true
+                      }
+                    }
+                  }
+                },
+                creationdate: {
+                  type: 'string'
+                },
+                updatedate: {
+                  type: 'string'
+                },
+                active: {
+                  type: 'boolean'
+                },
+                training: {
+                  type: 'string'
+                },
+                loginmethod: {
+                  type: 'string'
+                },
+                comment: {
+                  type: 'string'
+                }
+              }
             },
             openURL: {
               type: 'string'
@@ -112,7 +158,7 @@ export class UserLoginCommand extends ApiCommand {
           expiresIn: 86400 // expires in 24 hours
         });
         answer.data = {
-          id, name: username
+          user: userData
         };
         this.checkAndSendAnswer(res, answer, false);
       } catch (e) {

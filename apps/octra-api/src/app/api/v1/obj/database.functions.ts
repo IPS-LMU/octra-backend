@@ -332,7 +332,7 @@ export class DatabaseFunctions {
           DatabaseFunctions.getColumnDefinition('name', 'text', data.name),
           DatabaseFunctions.getColumnDefinition('shortname', 'text', data.shortname),
           DatabaseFunctions.getColumnDefinition('description', 'text', data.description),
-          DatabaseFunctions.getColumnDefinition('configuration', 'text', data.configuration),
+          DatabaseFunctions.getColumnDefinition('configuration', 'json', data.configuration),
           DatabaseFunctions.getColumnDefinition('startdate', 'timestamp', data.startdate),
           DatabaseFunctions.getColumnDefinition('enddate', 'timestamp', data.enddate),
           DatabaseFunctions.getColumnDefinition('active', 'boolean', data.active)
@@ -961,7 +961,7 @@ export class DatabaseFunctions {
         ...accountRow,
         accessRights: [
           {
-            scope: UserRoleScope.global,
+            scope: UserRoleScope.general,
             role: UserRole.user
           }]
       }
@@ -1032,11 +1032,17 @@ export class DatabaseFunctions {
       text: OCTRASQLStatements.allUsersWithRoles
     });
 
+
     // set username of deleted users
-    selectResult.rows = (selectResult.rows as PreparedAccountRow[]).map(a => ({
-      ...a,
-      username: a.username ?? `DeletedUser_${a.id}`
-    }));
+    selectResult.rows = (selectResult.rows as PreparedAccountRow[]).map(a => {
+      const result = {
+        ...a,
+        username: a.username ?? `DeletedUser_${a.id}`,
+        accessRights: a['access_rights']
+      };
+      delete result['access_rights'];
+      return result;
+    });
     DatabaseFunctions.prepareRows(selectResult.rows);
 
     return selectResult.rows as UserInfoResponseDataItem[];
@@ -1082,8 +1088,6 @@ export class DatabaseFunctions {
     id?: number;
   }): Promise<UserInfoResponseDataItem> {
     let selectResult = null;
-
-    // TODO fix get userx
     const sqlStatement = OCTRASQLStatements.allUsersWithRoles;
 
     if (data.id && isNumber(data.id)) {
@@ -1112,9 +1116,9 @@ export class DatabaseFunctions {
     if (selectResult) {
       DatabaseFunctions.prepareRows(selectResult.rows);
       const row = selectResult.rows[0] as UserInfoResponseDataItem;
-      row.accessRights = selectResult.rows[0].user_roles;
-
       row.username = row.username ?? `DeletedUser_${row.id}`;
+      row.accessRights = row['access_rights'];
+      delete row['access_rights'];
       if (selectResult.rowCount > 0) {
         return row;
       }

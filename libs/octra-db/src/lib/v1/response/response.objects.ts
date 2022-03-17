@@ -1,4 +1,4 @@
-import {AccessRight, DatabaseRow, FileMetaData, PreparedFileProjectRow, UserRole} from '../db';
+import {AccessRight, DatabaseRow, FileMetaData, PreparedFileProjectRow} from '../db';
 
 export interface AppTokenChangeResponseDataItem extends DatabaseRow {
   name: string;
@@ -78,8 +78,7 @@ export interface ProjectCreateResponseDataItem extends DatabaseRow {
 }
 
 export interface UserLoginResponseDataItem {
-  id?: number;
-  name?: string;
+  user?: UserInfoResponseDataItem,
   openURL?: string;
 }
 
@@ -118,7 +117,6 @@ export interface UserInfoResponseDataItem extends DatabaseRow {
   username: string;
   email: string;
   hash?: string;
-  roles?: UserRole[];
   active: boolean;
   training?: string;
   loginmethod: string;
