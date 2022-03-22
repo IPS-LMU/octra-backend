@@ -3,6 +3,7 @@ import {DatabaseFunctions} from '../../obj/database.functions';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
 import {UserListResponse, UserRole} from '@octra/db';
+import {UserInfoSchema} from './user.json.schema';
 
 export class UserListCommand extends ApiCommand {
   constructor() {
@@ -25,62 +26,7 @@ export class UserListCommand extends ApiCommand {
         ...this.defaultResponseSchema.properties,
         data: {
           type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              id: {
-                type: 'number',
-                required: true
-              },
-              username: {
-                type: 'string',
-                required: true
-              },
-              creationdate: {
-                type: 'string',
-                required: true
-              },
-              updatedate: {
-                type: 'string',
-                required: true
-              },
-              active: {
-                type: 'boolean'
-              },
-              loginmethod: {
-                type: 'string'
-              },
-              training: {
-                type: 'string'
-              },
-              comment: {
-                type: 'string'
-              },
-              accessRights: {
-                type: 'array',
-                required: true,
-                items: {
-                  type: 'object',
-                  properties: {
-                    role: {
-                      type: 'string',
-                      required: true
-                    },
-                    project_id: {
-                      type: 'number'
-                    },
-                    project_name: {
-                      type: 'string'
-                    },
-                    scope: {
-                      type: 'string',
-                      required: true
-                    }
-                  }
-                }
-              }
-            }
-          }
+          items: UserInfoSchema
         }
       }
     };

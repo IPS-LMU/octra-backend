@@ -3,6 +3,7 @@ import {DatabaseFunctions} from '../../obj/database.functions';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
 import {UserInfoResponse, UserRole} from '@octra/db';
+import {UserInfoSchema} from './user.json.schema';
 
 export class UserInfoCommand extends ApiCommand {
   constructor() {
@@ -22,42 +23,7 @@ export class UserInfoCommand extends ApiCommand {
     this._responseStructure = {
       properties: {
         ...this.defaultResponseSchema.properties,
-        data: {
-          type: 'object',
-          properties: {
-            id: {
-              type: 'number'
-            },
-            username: {
-              type: 'string'
-            },
-            accessRrights: {
-              type: 'array',
-              required: true,
-              items: {
-                type: 'string'
-              }
-            },
-            creationdate: {
-              type: 'string'
-            },
-            updatedate: {
-              type: 'string'
-            },
-            active: {
-              type: 'boolean'
-            },
-            training: {
-              type: 'string'
-            },
-            loginmethod: {
-              type: 'string'
-            },
-            comment: {
-              type: 'string'
-            }
-          }
-        }
+        data: UserInfoSchema
       }
     };
   }

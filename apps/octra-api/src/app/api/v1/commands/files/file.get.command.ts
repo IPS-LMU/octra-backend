@@ -18,31 +18,12 @@ export class FileGetCommand extends ApiCommand {
     this._responseContentType = '';
 
     // relevant for reference creation
-    this._requestStructure = {
-      type: 'object',
-      required: true,
-      properties: {
-        link: {
-          type: 'string',
-          required: true
-        }
-      }
-    };
+    this._requestStructure = {};
 
     // relevant for reference creation
     this._responseStructure = {
-      properties: {
-        ...this.defaultResponseSchema.properties,
-        data: {
-          type: 'object',
-          properties: {
-            url: {
-              type: 'string',
-              required: true
-            }
-          }
-        }
-      }
+      type: 'file',
+      description: 'The file is directly served. If the file doesn\'t exists, this API call returns 404 error.'
     };
   }
 

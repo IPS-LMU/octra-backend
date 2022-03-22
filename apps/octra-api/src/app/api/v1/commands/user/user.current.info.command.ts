@@ -4,6 +4,7 @@ import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
 import {UserCurrentInfoResponse} from '@octra/db';
 import {TokenData} from '../../obj/types';
+import {UserInfoSchema} from './user.json.schema';
 
 export class UserCurrentInfoCommand extends ApiCommand {
   constructor() {
@@ -21,60 +22,7 @@ export class UserCurrentInfoCommand extends ApiCommand {
     this._responseStructure = {
       properties: {
         ...this.defaultResponseSchema.properties,
-        data: {
-          type: 'object',
-          properties: {
-            id: {
-              type: 'number',
-              required: true
-            },
-            username: {
-              type: 'string'
-            },
-
-            accessRights: {
-              type: 'array',
-              required: true,
-              items: {
-                type: 'object',
-                properties: {
-                  role: {
-                    type: 'string',
-                    required: true
-                  },
-                  project_id: {
-                    type: 'number'
-                  },
-                  project_name: {
-                    type: 'string'
-                  },
-                  scope: {
-                    type: 'string',
-                    required: true
-                  }
-                }
-              }
-            },
-            creationdate: {
-              type: 'string'
-            },
-            updatedate: {
-              type: 'string'
-            },
-            active: {
-              type: 'boolean'
-            },
-            training: {
-              type: 'string'
-            },
-            loginmethod: {
-              type: 'string'
-            },
-            comment: {
-              type: 'string'
-            }
-          }
-        }
+        data: UserInfoSchema
       }
     };
   }

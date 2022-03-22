@@ -4,6 +4,7 @@ import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
 import {CreateProjectRequest, ProjectCreateResponse, UserRole} from '@octra/db';
 import {FileSystemHandler} from '../../filesystem-handler';
+import {ProjectSchema} from './project.json.schema';
 
 export class ProjectCreateCommand extends ApiCommand {
   constructor() {
@@ -46,60 +47,7 @@ export class ProjectCreateCommand extends ApiCommand {
     this._responseStructure = {
       properties: {
         ...this.defaultResponseSchema.properties,
-        data: {
-          type: 'object',
-          properties: {
-            id: {
-              type: 'number',
-              required: true
-            },
-            name: {
-              type: 'string',
-              required: true
-            },
-            shortname: {
-              type: 'string'
-            },
-            description: {
-              type: 'string'
-            },
-            configuration: {
-              type: 'object'
-            },
-            startdate: {
-              type: 'date-time'
-            },
-            enddate: {
-              type: 'date-time'
-            },
-            active: {
-              type: 'boolean'
-            },
-            account_roles: {
-              type: 'array',
-              required: true,
-              items: {
-                type: 'object',
-                properties: {
-                  account_id: {
-                    type: 'number',
-                    required: true
-                  },
-                  username: {
-                    type: 'string',
-                    required: true
-                  },
-                  valid_startdate: {
-                    type: 'date-time'
-                  },
-                  valid_enddate: {
-                    type: 'date-time'
-                  }
-                }
-              }
-            }
-          }
-        }
+        data: ProjectSchema
       }
     };
   }

@@ -4,6 +4,7 @@ import {ProjectTranscriptsGetResponseDataItem, TranscriptGetResponse, UserRole} 
 import {InternRequest} from '../../../obj/types';
 import {DatabaseFunctions} from '../../../obj/database.functions';
 import {InternalServerError} from '../../../../../obj/http-codes/server.codes';
+import {TranscriptSchema} from './transcript.json.schema';
 
 export class ProjectTranscriptGetCommand extends ApiCommand {
   constructor() {
@@ -25,84 +26,7 @@ export class ProjectTranscriptGetCommand extends ApiCommand {
     this._responseStructure = {
       properties: {
         ...this.defaultResponseSchema.properties,
-        data: {
-          type: 'object',
-          properties: {
-            id: {
-              type: 'number',
-              required: true
-            },
-            pid: {
-              type: 'string'
-            },
-            orgtext: {
-              type: 'string'
-            },
-            transcript: {
-              type: 'object'
-            },
-            assessment: {
-              type: 'string'
-            },
-            priority: {
-              type: 'number'
-            },
-            status: {
-              type: 'string'
-            },
-            code: {
-              type: 'string'
-            },
-            creationdate: {
-              type: 'date-time'
-            },
-            startdate: {
-              type: 'date-time'
-            },
-            enddate: {
-              type: 'date-time'
-            },
-            log: {
-              type: 'array'
-            },
-            comment: {
-              type: 'string'
-            },
-            tool_id: {
-              type: 'number'
-            },
-            transcriber_id: {
-              type: 'number'
-            },
-            project_id: {
-              type: 'number'
-            },
-            file_id: {
-              type: 'number'
-            },
-            file: {
-              type: 'object',
-              properties: {
-                url: {
-                  type: 'string',
-                  required: true
-                },
-                type: {
-                  type: 'string'
-                },
-                size: {
-                  type: 'number'
-                },
-                metadata: {
-                  type: 'object'
-                }
-              }
-            },
-            nexttranscript: {
-              type: 'number'
-            }
-          }
-        }
+        data: TranscriptSchema
       }
     };
   }

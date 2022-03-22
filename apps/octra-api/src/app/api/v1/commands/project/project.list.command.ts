@@ -3,6 +3,7 @@ import {DatabaseFunctions} from '../../obj/database.functions';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
 import {ProjectListResponse, UserRole} from '@octra/db';
+import {ProjectSchema} from './project.json.schema';
 
 export class ProjectListCommand extends ApiCommand {
   constructor() {
@@ -25,67 +26,7 @@ export class ProjectListCommand extends ApiCommand {
         ...this.defaultResponseSchema.properties,
         data: {
           type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              id: {
-                type: 'number',
-                required: true
-              },
-              name: {
-                type: 'string',
-                required: true
-              },
-              shortname: {
-                type: 'string'
-              },
-              description: {
-                type: 'string'
-              },
-              configuration: {
-                type: 'object'
-              },
-              startdate: {
-                type: 'date-time'
-              },
-              enddate: {
-                type: 'date-time'
-              },
-              active: {
-                type: 'boolean'
-              },
-              account_roles: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    account_id: {
-                      type: 'number',
-                      required: true
-                    },
-                    username: {
-                      type: 'string',
-                      required: true
-                    },
-                    valid_startdate: {
-                      type: 'date-time'
-                    },
-                    valid_enddate: {
-                      type: 'date-time'
-                    }
-                  }
-                }
-              },
-              transcripts_count: {
-                type: 'number',
-                required: true
-              },
-              transcripts_count_free: {
-                type: 'number',
-                required: true
-              }
-            }
-          }
+          items: ProjectSchema
         }
       }
     };

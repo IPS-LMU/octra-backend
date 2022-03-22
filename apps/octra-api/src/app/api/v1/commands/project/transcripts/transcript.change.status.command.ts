@@ -64,6 +64,7 @@ export class ProjectTranscriptsChangeStatusCommand extends ApiCommand {
         answer.data = await DatabaseFunctions.changeTranscriptsStatus(reqBody);
         this.reduceDataForUser(req, answer)
         delete answer.data;
+        // TODO change transcript should return new values
         this.checkAndSendAnswer(res, answer);
         return;
       } catch (e) {

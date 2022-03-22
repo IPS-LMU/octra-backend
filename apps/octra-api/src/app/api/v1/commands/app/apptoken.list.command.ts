@@ -3,6 +3,7 @@ import {DatabaseFunctions} from '../../obj/database.functions';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 import {AppTokenListResponse, UserRole} from '@octra/db';
+import {ApptokenSchema} from './apptoken.json.schema';
 
 export class AppTokenListCommand extends ApiCommand {
   constructor() {
@@ -24,32 +25,7 @@ export class AppTokenListCommand extends ApiCommand {
         ...this.defaultResponseSchema.properties,
         data: {
           type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              id: {
-                type: 'number',
-                required: true
-              },
-              name: {
-                type: 'string',
-                required: true
-              },
-              key: {
-                type: 'string',
-                required: true
-              },
-              domain: {
-                type: 'string'
-              },
-              description: {
-                type: 'string'
-              },
-              registrations: {
-                type: 'boolean'
-              }
-            }
-          }
+          items: ApptokenSchema
         }
       }
     };

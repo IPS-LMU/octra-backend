@@ -3,6 +3,7 @@ import {DatabaseFunctions} from '../../obj/database.functions';
 import {InternalServerError} from '../../../../obj/http-codes/server.codes';
 import {BadRequest} from '../../../../obj/http-codes/client.codes';
 import {AppTokenChangeResponse, CreateAppTokenRequest, UserRole} from '@octra/db';
+import {ApptokenSchema} from './apptoken.json.schema';
 
 export class AppTokenChangeCommand extends ApiCommand {
   constructor() {
@@ -39,28 +40,7 @@ export class AppTokenChangeCommand extends ApiCommand {
     this._responseStructure = {
       properties: {
         ...this.defaultResponseSchema.properties,
-        data: {
-          type: 'object',
-          properties: {
-            name: {
-              type: 'string',
-              required: true
-            },
-            key: {
-              type: 'string',
-              required: true
-            },
-            domain: {
-              type: 'string'
-            },
-            description: {
-              type: 'string'
-            },
-            registrations: {
-              type: 'boolean'
-            }
-          }
-        }
+        data: ApptokenSchema
       }
     };
   }

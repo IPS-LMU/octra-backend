@@ -5,6 +5,7 @@ import {BadRequest} from '../../../../obj/http-codes/client.codes';
 import {UserLoginRequest, UserLoginResponse} from '@octra/db';
 import {OK} from '../../../../obj/http-codes/success.codes';
 import {TokenData} from '../../obj/types';
+import {UserInfoSchema} from './user.json.schema';
 
 export class UserLoginCommand extends ApiCommand {
 
@@ -49,59 +50,7 @@ export class UserLoginCommand extends ApiCommand {
           ...this.defaultResponseSchema.properties.data,
           properties: {
             ...this.defaultResponseSchema.properties.data.properties,
-            user: {
-              type: 'object',
-              properties: {
-                id: {
-                  type: 'number',
-                  required: true
-                },
-                username: {
-                  type: 'string'
-                },
-                accessRights: {
-                  type: 'array',
-                  required: true,
-                  items: {
-                    type: 'object',
-                    properties: {
-                      role: {
-                        type: 'string',
-                        required: true
-                      },
-                      project_id: {
-                        type: 'number'
-                      },
-                      project_name: {
-                        type: 'string'
-                      },
-                      scope: {
-                        type: 'string',
-                        required: true
-                      }
-                    }
-                  }
-                },
-                creationdate: {
-                  type: 'string'
-                },
-                updatedate: {
-                  type: 'string'
-                },
-                active: {
-                  type: 'boolean'
-                },
-                training: {
-                  type: 'string'
-                },
-                loginmethod: {
-                  type: 'string'
-                },
-                comment: {
-                  type: 'string'
-                }
-              }
-            },
+            user: UserInfoSchema,
             openURL: {
               type: 'string'
             }

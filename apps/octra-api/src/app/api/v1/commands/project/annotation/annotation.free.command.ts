@@ -5,6 +5,7 @@ import {InternalServerError} from '../../../../../obj/http-codes/server.codes';
 import {BadRequest} from '../../../../../obj/http-codes/client.codes';
 import {InternRequest} from '../../../obj/types';
 import {Response} from 'express';
+import {AnnotationSchema} from './annotation.json.schema';
 
 export class AnnotationFreeCommand extends ApiCommand {
   constructor() {
@@ -24,75 +25,7 @@ export class AnnotationFreeCommand extends ApiCommand {
     this._responseStructure = {
       properties: {
         ...this.defaultResponseSchema.properties,
-        data: {
-          type: 'object',
-          properties: {
-            id: {
-              type: 'number',
-              required: true
-            },
-            orgtext: {
-              type: 'string'
-            },
-            transcript: {
-              type: 'object'
-            },
-            assessment: {
-              type: 'string'
-            },
-            priority: {
-              type: 'number'
-            },
-            status: {
-              type: 'string'
-            },
-            code: {
-              type: 'string'
-            },
-            creationdate: {
-              type: 'date-time'
-            },
-            startdate: {
-              type: 'date-time'
-            },
-            enddate: {
-              type: 'date-time'
-            },
-            log: {
-              type: 'array',
-              items: {
-                type: 'object'
-              }
-            },
-            comment: {
-              type: 'string'
-            },
-            tool_id: {
-              type: 'number'
-            },
-            project_id: {
-              type: 'number'
-            },
-            mediaitem: {
-              type: 'object',
-              properties: {
-                url: {
-                  type: 'string',
-                  required: true
-                },
-                type: {
-                  type: 'string'
-                },
-                size: {
-                  type: 'number'
-                },
-                metadata: {
-                  type: 'string'
-                }
-              }
-            }
-          }
-        }
+        data: AnnotationSchema
       }
     };
   }

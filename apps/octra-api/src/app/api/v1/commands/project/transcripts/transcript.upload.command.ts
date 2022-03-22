@@ -12,6 +12,7 @@ import {mkdirp, pathExists, readJSONSync, unlink} from 'fs-extra';
 import {FileSystemHandler} from '../../../filesystem-handler';
 import {isNumber} from '../../../../../obj/functions';
 import {MulterStorageHashing} from '../../../../../obj/multer-storage-hashing';
+import {TranscriptUploadSchema} from './transcript.json.schema';
 
 interface MulterFile {
   fieldname: string;
@@ -63,110 +64,7 @@ export class TranscriptUploadCommand extends ApiCommand {
       ...this.defaultResponseSchema,
       properties: {
         ...this.defaultResponseSchema.properties,
-        data: {
-          type: 'object',
-          properties: {
-            id: {
-              type: 'number',
-              required: true
-            },
-            pid: {
-              type: 'string'
-            },
-            orgtext: {
-              type: 'string'
-            },
-            transcript: {
-              type: 'object'
-            },
-            assessment: {
-              type: 'string'
-            },
-            priority: {
-              type: 'number'
-            },
-            status: {
-              type: 'string'
-            },
-            code: {
-              type: 'string'
-            },
-            creationdate: {
-              type: 'date-time'
-            },
-            startdate: {
-              type: 'date-time'
-            },
-            enddate: {
-              type: 'date-time'
-            },
-            log: {
-              type: 'array'
-            },
-            comment: {
-              type: 'string'
-            },
-            tool_id: {
-              type: 'number'
-            },
-            transcriber_id: {
-              type: 'number'
-            },
-            mediaitem: {
-              type: 'object',
-              properties: {
-                url: {
-                  type: 'string',
-                  required: true
-                },
-                type: {
-                  type: 'string'
-                },
-                size: {
-                  type: 'number'
-                },
-                session: {
-                  type: 'string',
-                  required: true
-                },
-                metadata: {
-                  type: 'object',
-                  properties: {
-                    duration: {
-                      type: 'object',
-                      properties: {
-                        samples: {
-                          type: 'number'
-                        },
-                        seconds: {
-                          type: 'number'
-                        }
-                      }
-                    },
-                    sampleRate: {
-                      type: 'number'
-                    },
-                    bitRate: {
-                      type: 'number'
-                    },
-                    numberOfChannels: {
-                      type: 'number'
-                    },
-                    container: {
-                      type: 'string'
-                    },
-                    codec: {
-                      type: 'string'
-                    },
-                    losless: {
-                      type: 'boolean'
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
+        data: TranscriptUploadSchema
       }
     };
   }

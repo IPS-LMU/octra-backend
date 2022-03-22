@@ -153,7 +153,7 @@ if (todoList.user.login) {
       'password': 'Test123'
     }, ({body}) => {
       expect(typeof body.data).toBe('object');
-      tempData.admin.id = body.data.id;
+      tempData.admin.id = body.data.user.id;
       tempData.admin.jwtToken = body.token;
     }, undefined);
   });
@@ -176,7 +176,7 @@ if (todoList.user.loginNormal) {
       'password': 'Password12345'
     }, ({body}) => {
       expect(typeof body.data).toBe('object');
-      tempData.user.id = body.data.id;
+      tempData.user.id = body.data.user.id;
       tempData.user.jwtToken = body.token;
     }, undefined);
   });
