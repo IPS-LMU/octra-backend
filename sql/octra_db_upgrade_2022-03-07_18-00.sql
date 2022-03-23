@@ -397,50 +397,6 @@ $$
     alter table project
       alter column active set default false;
 
-    RAISE NOTICE '-> Erstelle project_all View...';
-    CREATE OR REPLACE VIEW project_all AS
-    (
-    with account_roles as (
-      select ar.account_id,
-             ac.username,
-             ar.project_id,
-             r.label as label,
-             r.scope,
-             r.id    as role_id,
-             ar.valid_startdate,
-             ar.valid_enddate
-      from account_role_project ar
-             full outer join role r on ar.role_id = r.id
-             full outer join account_all ac on ar.account_id = ac.id
-      where project_id is not NULL
-    )
-    select pr.id,
-           pr.name,
-           pr.shortname,
-           pr.description,
-           pr.configuration,
-           pr.startdate,
-           pr.enddate,
-           pr.active,
-           case
-             when count(ar.account_id) = 0 then null
-             else json_agg(json_strip_nulls(json_build_object('account_id', ar.account_id,
-                                                              'username', ar.username,
-                                                              'role', ar.label,
-                                                              'valid_startdate', ar.valid_startdate,
-                                                              'valid_enddate', ar.valid_enddate
-               )))::JSON end                                                           as account_roles,
-           count(transcript.id)::integer                                               as transcripts_count,
-           count(case when transcript.status = 'FREE' then transcript.id end)::integer as transcripts_count_free,
-           pr.creationdate,
-           pr.updatedate
-    from transcript
-           full outer join project pr on transcript.project_id = pr.id
-           full outer join account_roles ar on pr.id = ar.project_id
-    where pr.id IS NOT NULL
-    group by pr.id
-    order by pr.id);
-
     CREATE OR REPLACE VIEW project_file_all AS
     (
     select fp.id,
@@ -460,17 +416,100 @@ $$
            left join file f on fp.file_id = f.id
       );
 
-    CREATE OR REPLACE VIEW transcript_all AS
+    ALTER TABLE transcript
+      RENAME TO task;
+    ALTER TABLE task
+      DROP COLUMN transcript,
+      DROP COLUMN transcriber_id,
+      ADD COLUMN worker_id   BIGINT
+        CONSTRAINT task_worker_id_fkey REFERENCES account (id),
+      DROP COLUMN nexttranscript_id,
+      DROP COLUMN file_id,
+      ADD COLUMN nexttask_id BIGINT
+        CONSTRAINT task_nexttask_id_fkey REFERENCES task (id),
+      ADD COLUMN type        text;
+
+    CREATE TABLE task_input_output
+    (
+      id              bigserial NOT NULL,
+      task_id         bigint    NOT NULL
+        CONSTRAINT task_input_output_task_id_fkey REFERENCES task (id),
+      file_project_id bigint
+        CONSTRAINT task_input_output_file_project_id_fkey REFERENCES file_project (id),
+      type            text      NOT NULL,
+      creator_type    text      NOT NULL,
+      label           text      NOT NULL,
+      description     text,
+      filename        text,
+      url             text,
+      content         JSON
+    );
+    ALTER TABLE task_input_output
+      ADD CONSTRAINT task_input_output_id_pkey PRIMARY KEY (id);
+
+    CREATE OR REPLACE VIEW task_all AS
     (
     select t.*,
-           json_strip_nulls(json_build_object('url', fp.url, 'type', fp.type, 'size', fp.size, 'filename', fp.filename,
-                                              'metadata', fp.metadata))::JSON as file
-    from transcript t
-           full outer join project_file_all fp on t.file_id = fp.id
-    group by t.id, fp.id, fp.file_id, fp.project_id, fp.filename, fp.path, fp.url, fp.type, fp.size, fp.original_name,
-             fp.metadata, fp.uploader_id, fp.creationdate, fp.updatedate
+           json_agg(
+             json_strip_nulls(
+               case
+                 when tio.type = 'input'
+                   then (case
+                           when tio.file_project_id is null
+                             then json_build_object('url', tio.url, 'type', tio.type, 'filename', tio.filename, 'label', tio.label, 'creator_type', tio.creator_type, 'description', tio.description, 'content', tio.content)::JSON
+                           else json_build_object('url', fp.url, 'type', fp.type, 'filename', fp.filename, 'label', tio.label, 'creator_type', tio.creator_type, 'description', tio.description, 'metadata',fp.metadata)::JSON
+                   end)
+                 else '{}'::JSON
+                 end)) as inputs
+    from task t
+           full outer join task_input_output tio on t.id = tio.task_id
+           full outer join project_file_all fp on tio.file_project_id = fp.id
+    group by t.id
     order by t.id desc
       );
+
+    RAISE NOTICE '-> Erstelle project_all View...';
+    CREATE OR REPLACE VIEW project_all AS
+    (
+    with account_roles as (
+      select ar.account_id,
+             ac.username,
+             ar.project_id,
+             r.label as label,
+             r.scope,
+             r.id    as role_id,
+             ar.valid_startdate,
+             ar.valid_enddate
+      from account_role_project ar
+             full outer join role r on ar.role_id = r.id
+             full outer join account_all ac on ar.account_id = ac.id
+      where project_id is not NULL
+    )
+    select pr.id,
+           pr.name,
+           pr.description,
+           pr.configuration,
+           pr.startdate,
+           pr.enddate,
+           pr.active,
+           case
+             when count(ar.account_id) = 0 then null
+             else json_agg(json_strip_nulls(json_build_object('account_id', ar.account_id,
+                                                              'username', ar.username,
+                                                              'role', ar.label,
+                                                              'valid_startdate', ar.valid_startdate,
+                                                              'valid_enddate', ar.valid_enddate
+               )))::JSON end                                                           as account_roles,
+           count(task.id)::integer                                               as tasks_count,
+           count(case when task.status = 'FREE' then task.id end)::integer as tasks_count_free,
+           pr.creationdate,
+           pr.updatedate
+    from task
+           full outer join project pr on task.project_id = pr.id
+           full outer join account_roles ar on pr.id = ar.project_id
+    where pr.id IS NOT NULL
+    group by pr.id
+    order by pr.id);
   END;
 $$;
 COMMIT;
