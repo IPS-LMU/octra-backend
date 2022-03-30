@@ -2,7 +2,7 @@
 import {OctraApi} from '../src/app/octra-api';
 
 import * as supertest from 'supertest';
-import {TranscriptStatus} from '@octra/db';
+import {TaskStatus} from '@octra/db';
 import path = require('path');
 
 const relPath = path.join(__dirname, '..', 'src', 'config.json');
@@ -11,6 +11,18 @@ const request = supertest(app);
 jest.setTimeout(30000)
 
 const doTest = (command, reqMethod, jwtToken, done, requestData, callback, addMethods) => {
+  let method = '';
+
+  if (reqMethod === request.get) {
+    method = 'GET';
+  } else if (reqMethod === request.post) {
+    method = 'POST';
+  } else if (reqMethod === request.put) {
+    method = 'PUT';
+  } else if (reqMethod === request.delete) {
+    method = 'DELETE';
+  }
+
   let req = reqMethod(command)
     .set('X-App-Token', `${appToken}`)
     .set('Origin', 'http://localhost:8080');
@@ -28,7 +40,7 @@ const doTest = (command, reqMethod, jwtToken, done, requestData, callback, addMe
   }
 
   req.end((err, {body, status}) => {
-    checkForErrors(err, body);
+    checkForErrors(err, body, method, command);
     expect(body.status).toBe('success');
     callback({body, status});
     done();
@@ -78,7 +90,7 @@ const todoList = {
     getUserInfo: true,
     getCurrentInfo: true,
     getUsers: true,
-    delete: true,
+    delete: false,
     password: {
       change: true
     }
@@ -98,7 +110,7 @@ const todoList = {
     list: true,
     change: true,
     remove: true,
-    transcripts: {
+    tasks: {
       getAll: true,
       get: true,
       upload: true,
@@ -113,6 +125,7 @@ const todoList = {
   },
   annotation: {
     start: true,
+    free: true,
     continue: true,
     save: true
   },
@@ -347,32 +360,32 @@ if (todoList.tool.add) {
   });
 }
 
-if (todoList.project.transcripts.upload) {
+if (todoList.project.tasks.upload) {
   it('it should upload a transcript and its mediafile', (done) => {
-    doTest(`/v1/projects/${tempData.project.id}/transcripts/upload`, request.post, tempData.admin.jwtToken, done, undefined, ({body}) => {
-      tempData.mediaItem.uploadURL = body.data.file.url;
+    doTest(`/v1/projects/${tempData.project.id}/tasks/upload`, request.post, tempData.admin.jwtToken, done, undefined, ({body}) => {
+      tempData.mediaItem.uploadURL = body.data.inputs[0].url;
       tempData.transcript.id = body.data.id;
       expect(typeof body.data).toBe('object');
     }, (req) => {
-      return req.attach('data', Buffer.from(JSON.stringify({
+      return req.field('properties', JSON.stringify({
         orgtext: 'testorg',
-        transcript: {
-          test: 'ok'
-        },
         media: {
           session: 'test263748'
         }
-      }), 'utf-8'), 'data.json')
-        .attach('media', './testfiles/WebTranscribe.wav', 'WebTranscribe.wav');
+      }))
+        .field('transcript', JSON.stringify({
+          test: 'ok'
+        }))
+        .attach('input', './testfiles/WebTranscribe.wav', 'WebTranscribe.wav');
     });
   });
 }
 
-if (todoList.project.transcripts.changeStatus) {
+if (todoList.project.tasks.changeStatus) {
   it('it should change status for each transcript id', (done) => {
-    doTest(`/v1/projects/${tempData.project.id}/transcripts/status/`, request.put, tempData.admin.jwtToken, done, [
+    doTest(`/v1/projects/${tempData.project.id}/tasks/status/`, request.put, tempData.admin.jwtToken, done, [
       {
-        status: TranscriptStatus.free,
+        status: TaskStatus.free,
         listOfIds: [tempData.transcript.id]
       }
     ], ({body}) => {
@@ -380,6 +393,29 @@ if (todoList.project.transcripts.changeStatus) {
   });
 }
 
+
+if (todoList.annotation.start) {
+  it('it should start a new annotation session', (done) => {
+    doTest(`/v1/projects/${tempData.project.id}/annotations/start`, request.post, tempData.admin.jwtToken, done, {
+      tool_id: tempData.tool.id
+    }, ({body}) => {
+      console.log(body);
+      expect(typeof body.data).toBe('object');
+      tempData.transcript.id = body.data.id;
+    }, undefined);
+  });
+}
+
+if (todoList.annotation.free) {
+  it('it should free an annotation session', (done) => {
+    doTest(`/v1/projects/${tempData.project.id}/annotations/${tempData.transcript.id}/free`, request.post, tempData.admin.jwtToken, done, {
+      tool_id: tempData.tool.id
+    }, ({body}) => {
+      console.log(body);
+      expect(typeof body.data).toBe('object');
+    }, undefined);
+  });
+}
 
 if (todoList.annotation.start) {
   it('it should start a new annotation session', (done) => {
@@ -415,19 +451,19 @@ if (todoList.annotation.save) {
   });
 }
 
-if (todoList.project.transcripts.getAll) {
-  it('it should list an array of transcripts for a given project', (done) => {
-    doTest(`/v1/projects/${tempData.project.id}/transcripts`, request.get, tempData.admin.jwtToken, done, undefined, ({body}) => {
-      log(`list of ${body.data.length} transcripts for project ${tempData.project.name}`);
+if (todoList.project.tasks.getAll) {
+  it('it should list an array of tasks for a given project', (done) => {
+    doTest(`/v1/projects/${tempData.project.id}/tasks`, request.get, tempData.admin.jwtToken, done, undefined, ({body}) => {
+      log(`list of ${body.data.length} tasks for project ${tempData.project.name}`);
     }, undefined);
   });
 }
 
 /*
-if (todoList.project.transcripts.get) {
+if (todoList.project.tasks.get) {
   it('it should get an transcript by id', (done) => {
     request
-      .get(`/v1/transcripts/${tempData.transcript.id}`)
+      .get(`/v1/tasks/${tempData.transcript.id}`)
       .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
       .set('X-App-Token', appToken)
       .set('Origin', 'http://localhost:8080')
@@ -444,18 +480,18 @@ if (todoList.project.transcripts.get) {
 
 */
 
-if (todoList.project.transcripts.get) {
+if (todoList.project.tasks.get) {
   it('it should retrieve a transcript and its mediafile from project id', (done) => {
-    doTest(`/v1/projects/${tempData.project.id}/transcripts/${tempData.transcript.id}/`, request.get, tempData.admin.jwtToken, done, undefined, ({body}) => {
-      tempData.mediaItem.url = body.data.file.url;
+    doTest(`/v1/projects/${tempData.project.id}/tasks/${tempData.transcript.id}/`, request.get, tempData.admin.jwtToken, done, undefined, ({body}) => {
+      tempData.mediaItem.url = body.data.inputs[0].url;
       expect(typeof body.data).toBe('object');
     }, undefined);
   });
 }
 
-if (todoList.project.transcripts.getAll) {
-  it('it should retrieve all transcripts from project id by admin', (done) => {
-    doTest(`/v1/projects/${tempData.project.id}/transcripts/`, request.get, tempData.admin.jwtToken, done, undefined, ({body}) => {
+if (todoList.project.tasks.getAll) {
+  it('it should retrieve all tasks from project id by admin', (done) => {
+    doTest(`/v1/projects/${tempData.project.id}/tasks/`, request.get, tempData.admin.jwtToken, done, undefined, ({body}) => {
       expect(typeof body.data).toBe('object');
     }, undefined);
   });
@@ -484,7 +520,7 @@ if (todoList.guidelines.get) {
 }
 
 if (todoList.files.get) {
-  it('it should retrieve a file from transcripts upload', (done) => {
+  it('it should retrieve a file from tasks upload', (done) => {
     request
       .get(tempData.mediaItem.uploadURL.replace('http://localhost:8080', ''))
       .set('Authorization', `Bearer ${tempData.admin.jwtToken}`)
@@ -515,9 +551,9 @@ if (todoList.user.delete) {
 if (todoList.project.remove) {
   it('it should remove a project', (done) => {
     doTest(`/v1/projects/${tempData.project.id}`, request.delete, tempData.admin.jwtToken, done, {
-      removeAllReferences: true,
-      cutAllReferences: false,
-      removeProjectFiles: true
+      removeAllReferences: false,
+      cutAllReferences: true,
+      removeProjectFiles: false
     }, ({body}) => {
       console.log(body);
     }, undefined);
@@ -536,7 +572,7 @@ function logJSON(json) {
 }
 
 
-function checkForErrors(err, body) {
+function checkForErrors(err, body, reqMethod, command) {
   // console.log(body);
   // expect(err).toBeUndefined();
   if (err) {

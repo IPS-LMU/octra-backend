@@ -1,4 +1,4 @@
-import {AudioFileMetaData, GlobalUserRole, TranscriptStatus} from '../db';
+import {AudioFileMetaData, GlobalUserRole, TaskStatus} from '../db';
 
 export interface CreateProjectRequest {
   name: string;
@@ -61,10 +61,9 @@ export interface AddToolRequest {
   pid?: string;
 }
 
-export interface AddTranscriptRequest {
+export interface AddTaskRequest {
   pid?: string;
   orgtext?: string;
-  transcript?: any;
   assessment?: string;
   priority?: string;
   status?: string;
@@ -78,7 +77,9 @@ export interface AddTranscriptRequest {
   transcriber_id?: number;
   project_id?: number;
   file_id?: number;
-  nexttranscript_id?: number;
+  worker_id?: number;
+  nexttask_id?: number;
+  type: string;
 }
 
 export interface AssignUserRoleRequest {
@@ -95,6 +96,7 @@ export interface DeliverNewMediaRequest {
     virtual_filename: string;
   },
   orgtext?: string;
+  log: any;
   transcript?: any;
 }
 
@@ -126,7 +128,7 @@ export interface RemoveProjectRequest {
 }
 
 export interface ProjectTranscriptsChangeStatusRequestItem {
-  status: TranscriptStatus;
+  status: TaskStatus;
   listOfIds: number[];
 }
 

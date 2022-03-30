@@ -55,7 +55,7 @@ export class AnnotationFreeCommand extends ApiCommand {
           answer.data = {
             ...result,
             log: (result.log !== undefined && result.log !== '') ? JSON.parse(result.log) : [],
-            transcripts_free_count: result.transcripts_free_count
+            tasks_count_free: result.tasks_count_free
           };
           this.checkAndSendAnswer(res, answer);
 

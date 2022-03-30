@@ -1,44 +1,69 @@
 import {Response} from 'express';
 import {ApiCommand, RequestType} from '../../api.command';
-import {ProjectTranscriptsGetResponseDataItem, TranscriptGetResponse, UserRole} from '@octra/db';
+import {
+  ProjectTranscriptsChangeStatusRequestItem,
+  ProjectTranscriptsGetResponseDataItem,
+  TranscriptGetResponse,
+  UserRole
+} from '@octra/db';
 import {InternRequest} from '../../../obj/types';
 import {DatabaseFunctions} from '../../../obj/database.functions';
 import {InternalServerError} from '../../../../../obj/http-codes/server.codes';
-import {TranscriptSchema} from './transcript.json.schema';
 
-export class ProjectTranscriptGetCommand extends ApiCommand {
+export class ProjectTranscriptsChangeStatusCommand extends ApiCommand {
   constructor() {
-    super('getProjectTranscript', '/projects', RequestType.GET, '/:project_id/transcripts/:transcript_id', true,
+    super('changeStatusOfTasks', '/projects', RequestType.PUT, '/:project_id/tasks/status', true,
       [
         UserRole.administrator,
-        UserRole.projectAdministrator,
-        UserRole.dataDelivery
+        UserRole.projectAdministrator
       ]);
 
-    this._description = 'Returns a transcript object by transcript ID and project ID.';
+    this._description = 'Changes the status of a list of transcript IDs.';
     this._acceptedContentType = 'application/json';
     this._responseContentType = 'application/json';
 
     // relevant for reference creation
-    this._requestStructure = {};
+    this._requestStructure = {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          status: {
+            type: 'string',
+            required: true,
+            enum: ['DRAFT', 'ANNOTATED', 'FREE', 'BUSY', 'POSTPONED']
+          },
+          listOfIds: {
+            type: 'array',
+            items: {
+              type: 'number',
+              required: true
+            }
+          }
+        }
+      }
+    };
 
     // relevant for reference creation
     this._responseStructure = {
       properties: {
-        ...this.defaultResponseSchema.properties,
-        data: TranscriptSchema
+        ...this.defaultResponseSchema.properties
       }
     };
+    delete this._responseStructure.properties.data;
   }
 
   async do(req: InternRequest, res: Response) {
-    const answer = ApiCommand.createAnswer() as TranscriptGetResponse;
+    const answer = ApiCommand.createAnswer();
     const validation = this.validate(req);
+    const reqBody = req.body as ProjectTranscriptsChangeStatusRequestItem[];
+
     // do something
     if (validation.length === 0) {
       try {
-        answer.data = await DatabaseFunctions.getTranscriptByID(Number(req.params.transcript_id));
+        answer.data = await DatabaseFunctions.changeTranscriptsStatus(reqBody);
         this.reduceDataForUser(req, answer)
+        delete answer.data;
         this.checkAndSendAnswer(res, answer);
         return;
       } catch (e) {
@@ -68,7 +93,6 @@ export class ProjectTranscriptGetCommand extends ApiCommand {
       // is data delivery
       const data = answer.data as ProjectTranscriptsGetResponseDataItem;
       delete data.pid;
-      delete data.file_id;
     }
   }
 }

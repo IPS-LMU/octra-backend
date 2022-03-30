@@ -456,11 +456,30 @@ $$
                  when tio.type = 'input'
                    then (case
                            when tio.file_project_id is null
-                             then json_build_object('url', tio.url, 'type', tio.type, 'filename', tio.filename, 'label', tio.label, 'creator_type', tio.creator_type, 'description', tio.description, 'content', tio.content)::JSON
-                           else json_build_object('url', fp.url, 'type', fp.type, 'filename', fp.filename, 'label', tio.label, 'creator_type', tio.creator_type, 'description', tio.description, 'metadata',fp.metadata)::JSON
+                             then json_build_object('url', tio.url, 'type', tio.type, 'filename', tio.filename, 'label',
+                                                    tio.label, 'creator_type', tio.creator_type, 'description',
+                                                    tio.description, 'content', tio.content)::JSON
+                           else json_build_object('url', fp.url, 'type', fp.type, 'filename', fp.filename, 'label',
+                                                  tio.label, 'creator_type', tio.creator_type, 'description',
+                                                  tio.description, 'metadata', fp.metadata)::JSON
+                   end)
+                 else '{}'
+                 end)) as inputs,
+           json_agg(
+             json_strip_nulls(
+               case
+                 when tio.type = 'output'
+                   then (case
+                           when tio.file_project_id is null
+                             then json_build_object('url', tio.url, 'type', tio.type, 'filename', tio.filename, 'label',
+                                                    tio.label, 'creator_type', tio.creator_type, 'description',
+                                                    tio.description, 'content', tio.content)::JSON
+                           else json_build_object('url', fp.url, 'type', fp.type, 'filename', fp.filename, 'label',
+                                                  tio.label, 'creator_type', tio.creator_type, 'description',
+                                                  tio.description, 'metadata', fp.metadata)::JSON
                    end)
                  else '{}'::JSON
-                 end)) as inputs
+                 end)) as outputs
     from task t
            full outer join task_input_output tio on t.id = tio.task_id
            full outer join project_file_all fp on tio.file_project_id = fp.id
@@ -499,8 +518,8 @@ $$
                                                               'role', ar.label,
                                                               'valid_startdate', ar.valid_startdate,
                                                               'valid_enddate', ar.valid_enddate
-               )))::JSON end                                                           as account_roles,
-           count(task.id)::integer                                               as tasks_count,
+               )))::JSON end                                               as account_roles,
+           count(task.id)::integer                                         as tasks_count,
            count(case when task.status = 'FREE' then task.id end)::integer as tasks_count_free,
            pr.creationdate,
            pr.updatedate

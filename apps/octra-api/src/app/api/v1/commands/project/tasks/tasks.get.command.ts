@@ -2,11 +2,11 @@ import {ApiCommand, RequestType} from '../../api.command';
 import {DatabaseFunctions} from '../../../obj/database.functions';
 import {InternalServerError} from '../../../../../obj/http-codes/server.codes';
 import {ProjectTranscriptsGetResponse, UserRole} from '@octra/db';
-import {TranscriptSchema} from './transcript.json.schema';
+import {TaskSchema} from './task.json.schema';
 
-export class TranscriptsGetCommand extends ApiCommand {
+export class TasksGetCommand extends ApiCommand {
   constructor() {
-    super('getProjectTranscripts', '/projects', RequestType.GET, '/:project_id/transcripts', true,
+    super('getProjectTasks', '/projects', RequestType.GET, '/:project_id/tasks', true,
       [
         UserRole.administrator,
         UserRole.projectAdministrator,
@@ -26,7 +26,7 @@ export class TranscriptsGetCommand extends ApiCommand {
         ...this.defaultResponseSchema.properties,
         data: {
           type: 'array',
-          items: TranscriptSchema
+          items: TaskSchema
         }
       }
     };
@@ -42,7 +42,7 @@ export class TranscriptsGetCommand extends ApiCommand {
         return;
       }
       try {
-        answer.data = await DatabaseFunctions.getTranscriptsByProjectID(Number(req.params.project_id));
+        answer.data = await DatabaseFunctions.getTasksByProjectID(Number(req.params.project_id));
         this.checkAndSendAnswer(res, answer);
         return;
       } catch (e) {
@@ -55,3 +55,4 @@ export class TranscriptsGetCommand extends ApiCommand {
     return;
   }
 }
+

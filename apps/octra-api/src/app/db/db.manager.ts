@@ -41,6 +41,8 @@ export abstract class DBManager {
 
   abstract createSQLQueryForInsert(query: ParameterizedQuery, idColumn: string): SQLQuery;
 
+  abstract createSQLQueryForUpdate(query: ParameterizedQuery, where: string): SQLQuery;
+
   abstract close(): Promise<void>;
 
   protected constructor(dbSettings: IDBConfiguration) {

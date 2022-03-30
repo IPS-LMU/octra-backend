@@ -23,7 +23,7 @@ export enum UserRoleScope {
   project = 'project'
 }
 
-export enum TranscriptStatus {
+export enum TaskStatus {
   draft = 'DRAFT',
   free = 'FREE',
   annotated = 'ANNOTATED',
@@ -142,27 +142,43 @@ export interface ToolRow extends DatabaseRow {
   pid?: string;
 }
 
-export interface TranscriptRow extends DatabaseRow {
+export interface TaskRow extends TaskProperties, DatabaseRow {
+  log?: any; // TODO define structure
+}
+
+export interface TaskProperties {
   pid?: string;
   orgtext?: string;
-  transcript?: string; // TODO define AnnotJSON
   assessment?: string;
   priority?: number;
   status?: string;
   code?: string;
   startdate?: string;
   enddate?: string;
-  log?: any; // TODO define structure
   comment?: string;
   tool_id?: number;
-  transcriber_id?: number;
   project_id?: number;
-  file_id?: number;
-  nexttranscript_id?: number;
+  admin_comment?: string;
+  worker_id?: number;
+  nexttask_id?: number;
+  type: 'annotation';
 }
 
-export interface PreparedTranscriptRow extends TranscriptRow {
-  file?: PreparedFileProjectRow;
-  nexttranscript?: number;
-  transcripts_free_count?: number;
+export interface PreparedTaskRow extends TaskRow {
+  inputs: TaskInputOutputRow[];
+  outputs: TaskInputOutputRow[];
+  tasks_count_free?: number;
+  tasks_count?: number;
+}
+
+export interface TaskInputOutputRow {
+  task_id?: number;
+  file_project_id?: number;
+  type: 'input' | 'output';
+  creator_type: 'uploader' | 'annotator';
+  label: string;
+  description?: string;
+  filename?: string;
+  url?: string;
+  content?: string;
 }

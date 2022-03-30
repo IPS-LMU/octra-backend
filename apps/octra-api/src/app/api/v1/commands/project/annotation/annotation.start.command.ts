@@ -44,7 +44,6 @@ export class AnnotationStartCommand extends ApiCommand {
     const answer = ApiCommand.createAnswer() as AnnotationStartResponse;
     const validation = this.validate(req);
     const tokenData = req.decoded;
-
     // TODO restrict annotation to list of transcribers if available
 
     if (!req.params.project_id) {
@@ -61,7 +60,7 @@ export class AnnotationStartCommand extends ApiCommand {
           answer.data = {
             ...result,
             log: result.log ?? [],
-            transcripts_free_count: result.transcripts_free_count
+            tasks_count_free: result.tasks_count_free ?? 0
           };
           this.checkAndSendAnswer(res, answer);
           return;

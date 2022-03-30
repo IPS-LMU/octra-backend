@@ -4,7 +4,6 @@ import {
   AddFileProjectRequest,
   AddFileRequest,
   AddToolRequest,
-  AddTranscriptRequest,
   AppTokensRow,
   AssignProjectUserRolesRequestItem,
   AssignUserRoleRequest,
@@ -16,7 +15,7 @@ import {
   PreparedAccountRow,
   PreparedFileProjectRow,
   PreparedProjectRow,
-  PreparedTranscriptRow,
+  PreparedTaskRow,
   ProjectResponseDataItem,
   ProjectRow,
   ProjectTranscriptsChangeStatusRequestItem,
@@ -24,9 +23,10 @@ import {
   RolesRow,
   SaveAnnotationRequest,
   StartAnnotationRequest,
+  TaskInputOutputRow,
+  TaskProperties,
+  TaskStatus,
   ToolRow,
-  TranscriptRow,
-  TranscriptStatus,
   UserInfoResponseDataItem,
   UserRole,
   UserRoleScope
@@ -271,7 +271,7 @@ export class DatabaseFunctions {
 
     if (requestBody.cutAllReferences) {
       sqlQueries.push({
-        text: 'update transcript set project_id=null where project_id=$1::integer',
+        text: 'update task set project_id=null where project_id=$1::integer',
         values: [id]
       });
       sqlQueries.push({
@@ -280,11 +280,15 @@ export class DatabaseFunctions {
       });
     } else if (requestBody.removeAllReferences) {
       sqlQueries.push({
-        text: 'delete from transcript where project_id=$1::integer',
+        text: 'delete from task_input_output where task_id in (select id from task where project_id=$1::integer)',
         values: [id]
       });
       sqlQueries.push({
         text: 'delete from file_project where project_id=$1::integer',
+        values: [id]
+      });
+      sqlQueries.push({
+        text: 'delete from task where project_id=$1::integer',
         values: [id]
       });
     }
@@ -584,37 +588,65 @@ export class DatabaseFunctions {
     }
   }
 
-  public static async addTranscript(data: AddTranscriptRequest): Promise<TranscriptRow[]> {
-    const startdate = DatabaseFunctions.convertJSONDateTime(data.startdate);
-    const enddate = DatabaseFunctions.convertJSONDateTime(data.enddate);
+  public static async addTask(properties: TaskProperties, inputs: TaskInputOutputRow[], log: any): Promise<PreparedTaskRow[]> {
+    const startdate = DatabaseFunctions.convertJSONDateTime(properties.startdate);
+    const enddate = DatabaseFunctions.convertJSONDateTime(properties.enddate);
     try {
-      const insertQuery = {
-        tableName: 'transcript',
-        columns: [
-          DatabaseFunctions.getColumnDefinition('pid', 'text', data.pid),
-          DatabaseFunctions.getColumnDefinition('orgtext', 'text', data.orgtext),
-          DatabaseFunctions.getColumnDefinition('transcript', 'json', data.transcript),
-          DatabaseFunctions.getColumnDefinition('assessment', 'text', data.assessment),
-          DatabaseFunctions.getColumnDefinition('priority', 'integer', data.priority),
-          DatabaseFunctions.getColumnDefinition('status', 'text', data.status),
-          DatabaseFunctions.getColumnDefinition('code', 'text', data.code),
-          DatabaseFunctions.getColumnDefinition('startdate', 'timestamp', startdate),
-          DatabaseFunctions.getColumnDefinition('enddate', 'timestamp', enddate),
-          DatabaseFunctions.getColumnDefinition('log', 'text', data.log),
-          DatabaseFunctions.getColumnDefinition('comment', 'text', data.comment),
-          DatabaseFunctions.getColumnDefinition('tool_id', 'integer', data.tool_id),
-          DatabaseFunctions.getColumnDefinition('transcriber_id', 'integer', data.transcriber_id),
-          DatabaseFunctions.getColumnDefinition('project_id', 'integer', data.project_id),
-          DatabaseFunctions.getColumnDefinition('file_id', 'integer', data.file_id),
-          DatabaseFunctions.getColumnDefinition('nexttranscript_id', 'integer', data.nexttranscript_id)
-        ]
-      };
+      const transactionQueries = [
+        this.dbManager.createSQLQueryForInsert({
+          tableName: 'task',
+          columns: [
+            DatabaseFunctions.getColumnDefinition('pid', 'text', properties.pid),
+            DatabaseFunctions.getColumnDefinition('orgtext', 'text', properties.orgtext),
+            DatabaseFunctions.getColumnDefinition('assessment', 'text', properties.assessment),
+            DatabaseFunctions.getColumnDefinition('priority', 'integer', properties.priority),
+            DatabaseFunctions.getColumnDefinition('status', 'text', properties.status),
+            DatabaseFunctions.getColumnDefinition('code', 'text', properties.code),
+            DatabaseFunctions.getColumnDefinition('startdate', 'timestamp', startdate),
+            DatabaseFunctions.getColumnDefinition('enddate', 'timestamp', enddate),
+            DatabaseFunctions.getColumnDefinition('log', 'json', log),
+            DatabaseFunctions.getColumnDefinition('comment', 'text', properties.comment),
+            DatabaseFunctions.getColumnDefinition('tool_id', 'integer', properties.tool_id),
+            DatabaseFunctions.getColumnDefinition('worker_id', 'integer', properties.worker_id),
+            DatabaseFunctions.getColumnDefinition('project_id', 'integer', properties.project_id),
+            DatabaseFunctions.getColumnDefinition('nexttask_id', 'integer', properties.nexttask_id),
+            DatabaseFunctions.getColumnDefinition('type', 'text', properties.type)
+          ]
+        }, 'id')
+      ];
 
-      const insertionResult = await DatabaseFunctions.dbManager.insert(insertQuery, '*');
+      for (const input of inputs) {
+        transactionQueries.push(this.dbManager.createSQLQueryForInsert({
+          tableName: 'task_input_output',
+          columns: [
+            DatabaseFunctions.getColumnDefinition('task_id', undefined, 'currval(\'transcription_id_seq\')'),
+            DatabaseFunctions.getColumnDefinition('file_project_id', 'integer', input.file_project_id),
+            DatabaseFunctions.getColumnDefinition('type', 'text', 'input', false),
+            DatabaseFunctions.getColumnDefinition('creator_type', 'text', input.creator_type, false),
+            DatabaseFunctions.getColumnDefinition('label', 'text', input.label, false),
+            DatabaseFunctions.getColumnDefinition('description', 'text', input.description),
+            DatabaseFunctions.getColumnDefinition('filename', 'timestamp', input.filename),
+            DatabaseFunctions.getColumnDefinition('url', 'timestamp', input.url),
+            DatabaseFunctions.getColumnDefinition('content', 'json', input.content)
+          ]
+        }, '*'));
+      }
 
-      if (insertionResult.rowCount === 1 && insertionResult.rows[0].hasOwnProperty('id')) {
-        this.prepareRows(insertionResult.rows);
-        return insertionResult.rows as TranscriptRow[];
+      const insertionResults = await DatabaseFunctions.dbManager.transaction(transactionQueries);
+
+      if (insertionResults.length > 0) {
+        const selectResult = await this.dbManager.query({
+          text: `select *
+                 from task_all
+                 where id = $1::integer`,
+          values: [insertionResults[0][0].id]
+        });
+
+        if (selectResult.rows.length > 0) {
+          selectResult.rows = this.prepareTaskRows(selectResult.rows as PreparedTaskRow[]);
+          return selectResult.rows as PreparedTaskRow[];
+        }
+        throw new Error(`Can't find created task.`);
       }
       throw new Error('insertionResult does not have id');
     } catch (e) {
@@ -623,74 +655,71 @@ export class DatabaseFunctions {
   }
 
 
-  public static async freeAnnotation(projectID: number, transcriptID: number, tokenData: TokenData): Promise<PreparedTranscriptRow> {
+  public static async freeAnnotation(projectID: number, taskID: number, tokenData: TokenData): Promise<PreparedTaskRow> {
     try {
       const selectQuery: SQLQuery = {
         'text': `select *
-                 from transcript
+                 from task
                  where project_id = $1::integer
                    and id = $2::integer
-                   and status = 'BUSY'`,
-        values: [projectID, transcriptID]
+                   and status = 'BUSY'
+                   and worker_id = $3::integer`,
+        values: [projectID, taskID, tokenData.id]
       };
 
       let selectResult = await DatabaseFunctions.dbManager.query(selectQuery);
 
       if (selectResult.rowCount < 1) {
-        throw new Error(`Can not free annotation ${transcriptID} because it either not busy or not found.`);
+        throw new Error(`Can not free annotation ${taskID} because it either not busy, not found or you don't have the access rights to reset its status.`);
       }
 
-      const transcriptRow = selectResult.rows[0] as PreparedTranscriptRow;
+      let taskRow = selectResult.rows[0] as PreparedTaskRow;
 
       // Set transcript status to BUSY and set transcriber_id, set start date, tool_id
       const updateResult = await DatabaseFunctions.dbManager.query({
-        text: `update transcript
+        text: `update task
                set status='FREE',
-                   transcriber_id=null
-               where id = ${transcriptRow.id}:: integer`
+                   worker_id=null
+               where id = ${taskRow.id}:: integer`
       });
 
       if (updateResult.rowCount !== 1) {
-        throw new Error(`Can not free annotation ${transcriptID}: update failed.`);
+        throw new Error(`Can not free annotation ${taskID}: update failed.`);
       }
       // status set to BUSY
 
-      if (transcriptRow.file_id) {
-        selectResult = await DatabaseFunctions.dbManager.query({
-          text: 'select * from file where id=$1::integer',
-          values: [
-            transcriptRow.file_id
-          ]
-        });
+      taskRow = (await this.dbManager.query({
+        text: `select *
+               from task_all
+               where id = $1::integer`,
+        values: [taskID]
+      })).rows[0] as PreparedTaskRow;
 
-        if (selectResult.rowCount > 0) {
-          // Mediaitem found, add
-          const projectFileRow = selectResult.rows[0] as PreparedFileProjectRow;
-          delete projectFileRow.id;
+      const freeRows = await this.dbManager.query({
+        text: `select id
+               from task
+               where status = 'FREE'
+                 and project_id = $1::integer`,
+        values: [projectID]
+      });
 
-          transcriptRow.file = projectFileRow;
-          delete transcriptRow.file_id;
-        }
-      }
-
-      this.prepareRows([transcriptRow]);
-
-      return transcriptRow;
+      taskRow.tasks_count_free = freeRows.rowCount;
+      taskRow = this.prepareTaskRows([taskRow])[0];
+      this.prepareRows([taskRow]);
+      return taskRow;
     } catch (e) {
       throw e;
     }
+
+    return undefined;
   }
 
-  public static async startAnnotation(data: StartAnnotationRequest, projectID: number, tokenData: TokenData): Promise<PreparedTranscriptRow> {
+  public static async startAnnotation(data: StartAnnotationRequest, projectID: number, tokenData: TokenData): Promise<PreparedTaskRow> {
     try {
       // TODO check next transcript!
       const insertQuery: SQLQuery = {
-        'text': `select transcript_all.*,
-                        (select count(tr.id)
-                         from transcript_all as tr
-                         where tr.project_id = transcript_all.project_id
-                           and tr.status = 'FREE')::integer as transcripts_free_count
-                 from transcript_all
+        'text': `select *
+                 from task_all
                  where project_id = $1::integer
                    and status = 'FREE'
                  order by priority desc`,
@@ -703,106 +732,116 @@ export class DatabaseFunctions {
         return null;
       }
 
-      const transcriptRow = selectResult.rows[0] as PreparedTranscriptRow;
+      let taskRow = selectResult.rows[0] as PreparedTaskRow;
 
       // Set transcript status to BUSY and set transcriber_id, set start date, tool_id
       const updateResult = await DatabaseFunctions.dbManager.query({
-        text: `update transcript
+        text: `update task
                set status='BUSY',
-                   transcriber_id=${tokenData.id}::integer,
+                   worker_id=${tokenData.id}::integer,
                    startdate=(to_timestamp(${Date.now()} / 1000.0))
-               where id = ${transcriptRow.id}:: integer`
+               where id = ${taskRow.id}:: integer`
       });
 
       if (updateResult.rowCount !== 1) {
-        throw new Error(`Can not set status to BUSY of transcript with id ${transcriptRow.id}.`);
+        throw new Error(`Can not set status to BUSY of transcript with id ${taskRow.id}.`);
       }
       // status set to BUSY
 
-      if (transcriptRow.transcripts_free_count) {
-        transcriptRow.transcripts_free_count--;
-      }
-      if (transcriptRow.file?.url) {
-        transcriptRow.file.url = this.getPublicFileURL(projectID, transcriptRow.file.url);
-      }
-
-      this.prepareRows([transcriptRow]);
-
-      return transcriptRow;
+      taskRow.tasks_count_free = selectResult.rows.length - 1;
+      taskRow = this.prepareTaskRows([taskRow])[0];
+      return taskRow;
     } catch (e) {
       throw e;
     }
+
+    return undefined;
   }
 
 
-  public static async saveAnnotation(data: SaveAnnotationRequest, projectID: number, transcriptID, tokenData: TokenData): Promise<PreparedTranscriptRow> {
+  public static async saveAnnotation(data: SaveAnnotationRequest, projectID: number, taskID, tokenData: TokenData): Promise<PreparedTaskRow> {
     try {
-      const insertQuery: SQLQuery = {
+      const selectQuery: SQLQuery = {
         'text': `select *
-                 from transcript_all
+                 from task_all
                  where project_id = $1::integer
                    and id = $2::integer
                    and status = 'BUSY'`,
-        values: [projectID, transcriptID]
+        values: [projectID, taskID]
       };
 
-      let selectResult = await DatabaseFunctions.dbManager.query(insertQuery);
+      let selectResult = await DatabaseFunctions.dbManager.query(selectQuery);
 
       if (selectResult.rowCount < 1) {
         throw new Error(`Can not find proper annotation to overwrite.`);
       }
 
-      let transcriptRow = selectResult.rows[0] as PreparedTranscriptRow;
+      let taskRow = selectResult.rows[0] as PreparedTaskRow;
 
-      // Set transcript status to BUSY and set transcriber_id, set start date, tool_id
-      const updateResult = await DatabaseFunctions.dbManager.update({
-        tableName: 'transcript',
-        columns: [
-          DatabaseFunctions.getColumnDefinition('transcriber_id', 'integer', tokenData.id, false),
-          DatabaseFunctions.getColumnDefinition('enddate', '', `(to_timestamp(${Date.now()} / 1000.0))`, false),
-          DatabaseFunctions.getColumnDefinition('tool_id', 'integer', data.tool_id, false),
-          DatabaseFunctions.getColumnDefinition('transcript', 'json', JSON.stringify(data.transcript), false),
-          DatabaseFunctions.getColumnDefinition('status', 'text', TranscriptStatus.annotated),
-          DatabaseFunctions.getColumnDefinition('comment', 'text', data.comment),
-          DatabaseFunctions.getColumnDefinition('assessment', 'text', data.assessment),
-          DatabaseFunctions.getColumnDefinition('log', 'json', JSON.stringify(data.log))
-        ]
-      }, `id=${transcriptRow.id}:: integer`);
-
-      if (updateResult.rowCount !== 1) {
-        throw new Error(`Can not save annotation with id ${transcriptRow.id}.`);
+      const transactions = [
+        this.dbManager.createSQLQueryForUpdate({
+          tableName: 'task',
+          columns: [
+            DatabaseFunctions.getColumnDefinition('worker_id', 'integer', tokenData.id, false),
+            DatabaseFunctions.getColumnDefinition('enddate', '', `(to_timestamp(${Date.now()} / 1000.0))`, false),
+            DatabaseFunctions.getColumnDefinition('tool_id', 'integer', data.tool_id, false),
+            DatabaseFunctions.getColumnDefinition('status', 'text', TaskStatus.annotated),
+            DatabaseFunctions.getColumnDefinition('comment', 'text', data.comment),
+            DatabaseFunctions.getColumnDefinition('assessment', 'text', data.assessment),
+            DatabaseFunctions.getColumnDefinition('log', 'json', JSON.stringify(data.log))
+          ]
+        }, `id=${taskRow.id}:: integer`),
+        this.dbManager.createSQLQueryForInsert({
+          tableName: 'task_input_output',
+          columns: [
+            DatabaseFunctions.getColumnDefinition('task_id', 'integer', taskID, false),
+            DatabaseFunctions.getColumnDefinition('type', 'text', 'output', false),
+            DatabaseFunctions.getColumnDefinition('creator_type', 'text', 'annotator', false),
+            DatabaseFunctions.getColumnDefinition('label', 'text', 'transcript', false),
+            DatabaseFunctions.getColumnDefinition('content', 'json', JSON.stringify(data.transcript), false)
+          ]
+        }, '*')
+      ]
+      const updateResult = await this.dbManager.transaction(transactions);
+      if (updateResult.length < 1) {
+        throw new Error(`Can not save annotation with id ${taskRow.id}.`);
       }
 
       selectResult = await this.dbManager.query({
         'text': `select *
-                 from transcript_all
+                 from task_all
                  where project_id = $1::integer
                    and id = $2::integer`,
-        values: [projectID, transcriptID]
+        values: [projectID, taskID]
       });
       if (selectResult.rowCount > 0) {
-        transcriptRow = selectResult.rows[0];
+        taskRow = selectResult.rows[0] as PreparedTaskRow;
+        selectResult = await this.dbManager.query({
+          'text': `select *
+                   from task_all
+                   where project_id = $1::integer
+                     and status = 'FREE'`,
+          values: [projectID]
+        });
+        taskRow.tasks_count_free = selectResult.rowCount;
         // saved
-        if (transcriptRow.file?.url) {
-          transcriptRow.file.url = this.getPublicFileURL(projectID, transcriptRow.file.url);
-        }
       } else {
         throw new Error(`Can not find proper annotation to overwrite.`);
       }
 
-      this.prepareRows([transcriptRow]);
-
-      return transcriptRow;
+      taskRow = this.prepareTaskRows([taskRow])[0];
+      return taskRow;
     } catch (e) {
       throw e;
     }
+    return undefined;
   }
 
-  public static async continueAnnotation(projectID: number, transcriptID: number, tokenData: TokenData): Promise<PreparedTranscriptRow> {
+  public static async continueAnnotation(projectID: number, transcriptID: number, tokenData: TokenData): Promise<PreparedTaskRow> {
     try {
       const selectQuery: SQLQuery = {
         'text': `select *
-                 from transcript_all
+                 from task_all
                  where project_id = $1::integer
                    and id = $2::integer`,
         values: [projectID, transcriptID]
@@ -814,37 +853,34 @@ export class DatabaseFunctions {
         return null;
       }
 
-      const transcriptRow = selectResult.rows[0] as PreparedTranscriptRow;
+      let taskRow = selectResult.rows[0] as PreparedTaskRow;
 
-      if (transcriptRow.transcriber_id !== tokenData.id) {
-        throw new Error(`Can not continue transcript with id ${transcriptRow.id} because the transcriber IDs are not equal.`);
+      if (taskRow.worker_id !== tokenData.id) {
+        throw new Error(`Can not continue transcript with id ${taskRow.id} because the transcriber IDs are not equal.`);
       }
 
-      if (transcriptRow.status !== 'BUSY') {
-        throw new Error(`Can not continue transcript with id ${transcriptRow.id} because its status is not equal 'BUSY'`);
+      if (taskRow.status !== 'BUSY') {
+        throw new Error(`Can not continue transcript with id ${taskRow.id} because its status is not equal 'BUSY'`);
       }
 
-      if (transcriptRow.file?.url) {
-        transcriptRow.file.url = this.getPublicFileURL(projectID, transcriptRow.file.url);
-      }
-      this.prepareRows([transcriptRow]);
-
-      return transcriptRow;
+      taskRow = this.prepareTaskRows([taskRow])[0];
+      return taskRow;
     } catch (e) {
       throw e;
     }
+
+    return undefined;
   }
 
-  public static async getTranscriptByID(id: number): Promise<PreparedTranscriptRow> {
+  public static async getTaskByID(id: number): Promise<PreparedTaskRow> {
     const selectResult = await DatabaseFunctions.dbManager.query({
-      text: 'select * from transcript_all where id=$1::integer',
+      text: 'select * from task_all where id=$1::integer',
       values: [id]
     });
 
     if (selectResult.rowCount === 1) {
-      const result: PreparedTranscriptRow = selectResult.rows[0] as PreparedTranscriptRow;
-      result.file.url = this.getPublicFileURL(undefined, result.file.url);
-      DatabaseFunctions.prepareRows([result]);
+      let result: PreparedTaskRow = selectResult.rows[0] as PreparedTaskRow;
+      result = this.prepareTaskRows([result])[0];
       return result;
     }
     throw new Error('Could not find a transcript with this ID.')
@@ -859,7 +895,7 @@ export class DatabaseFunctions {
       }
       const ids = operation.listOfIds.join(',');
       sqlStatements.push({
-        text: `update transcript
+        text: `update task
                set status=$1::text
                where id = any ('{${ids}}'::int[])`,
         values: [operation.status]
@@ -875,22 +911,15 @@ export class DatabaseFunctions {
     throw new Error('Can\'t update status of given ids.')
   }
 
-  public static async getTranscriptsByProjectID(projectID: number): Promise<PreparedTranscriptRow[]> {
+  public static async getTasksByProjectID(projectID: number): Promise<PreparedTaskRow[]> {
     const projectSelectResult = await DatabaseFunctions.dbManager.query({
-      text: 'select * from transcript_all where project_id=$1::integer',
+      text: 'select * from task_all where project_id=$1::integer',
       values: [projectID]
     });
 
-    let results = projectSelectResult.rows as PreparedTranscriptRow[];
+    let results = projectSelectResult.rows as PreparedTaskRow[];
     if (results.length > 0) {
-      DatabaseFunctions.prepareRows(results);
-      results = results.map(a => ({
-        ...a,
-        file: {
-          ...a.file,
-          url: this.getPublicFileURL(undefined, a.file.url)
-        }
-      }))
+      results = this.prepareTaskRows(results);
       return results;
     }
     return [];
@@ -1052,7 +1081,7 @@ export class DatabaseFunctions {
     try {
       await DatabaseFunctions.dbManager.transaction([
         {
-          text: 'update transcript set transcriber_id=null where transcriber_id=$1::integer',
+          text: 'update task set worker_id=null where worker_id=$1::integer',
           values: [id]
         },
         {
@@ -1151,7 +1180,7 @@ export class DatabaseFunctions {
     throw new Error('could not find user');
   }
 
-  static async deliverNewMedia(dataDeliveryRequest: DeliverNewMediaRequest): Promise<PreparedTranscriptRow> {
+  static async createTask(dataDeliveryRequest: DeliverNewMediaRequest): Promise<PreparedTaskRow> {
     const mediaInsertResult = await DatabaseFunctions.addFileProjectItem({
       virtual_filename: dataDeliveryRequest.file.virtual_filename,
       virtual_folder_path: '',
@@ -1161,21 +1190,29 @@ export class DatabaseFunctions {
 
     if (mediaInsertResult.length > 0) {
       const mediaID = mediaInsertResult[0].id;
-      const transcriptResult = await DatabaseFunctions.addTranscript({
+      // TODO add task
+      const transcriptResult = await DatabaseFunctions.addTask({
         orgtext: dataDeliveryRequest.orgtext,
-        transcript: dataDeliveryRequest.transcript,
         project_id: dataDeliveryRequest.project_id,
-        file_id: mediaID,
+        type: 'annotation',
         status: 'DRAFT'
-      });
+      }, [
+        {
+          type: 'input',
+          creator_type: 'uploader',
+          label: 'audio',
+          file_project_id: mediaID
+        },
+        {
+          type: 'input',
+          creator_type: 'uploader',
+          label: 'transcript',
+          content: dataDeliveryRequest.transcript
+        }
+      ], dataDeliveryRequest.log);
 
       if (transcriptResult.length > 0) {
-        const result = transcriptResult[0] as PreparedTranscriptRow;
-        // TODO get prepared file_project
-        result.file = mediaInsertResult[0] as PreparedFileProjectRow;
-        DatabaseFunctions.prepareRows([result.file]);
-        DatabaseFunctions.prepareRows([result]);
-        return result;
+        return transcriptResult[0] as PreparedTaskRow;
       }
 
       throw new Error('Could not save transcript entry.')
@@ -1239,18 +1276,54 @@ export class DatabaseFunctions {
   }
 
   static getPublicFileURL(projectID: number, path: string) {
-    const regex = /^https?:\/\//g;
-    const matches = regex.exec(path);
+    if (path) {
+      const regex = /^https?:\/\//g;
+      const matches = regex.exec(path);
 
-    if (matches !== null) {
-      return path;
-    } else {
-      if (projectID) {
-        return this.pathBuilder.getEncryptedProjectFileURL(projectID, path);
+      if (matches !== null) {
+        return path;
       } else {
-        return this.pathBuilder.getEncryptedUploadURL(path);
+        if (projectID) {
+          return this.pathBuilder.getEncryptedProjectFileURL(projectID, path);
+        } else {
+          return this.pathBuilder.getEncryptedUploadURL(path);
+        }
       }
     }
+    return undefined;
+  }
+
+  static prepareTaskRows(rows: PreparedTaskRow[]): PreparedTaskRow[] {
+    rows = DatabaseFunctions.prepareRows(rows);
+    const prepareInputOutputArray = (array: any[]) => {
+      if (!array || array.length < 1 || array === [{}]) {
+        return [];
+      }
+
+      return this.prepareRows(array.map(b => {
+        if (b && Object.keys(b).length > 0) {
+          const result = {
+            ...b,
+            url: this.getPublicFileURL(undefined, b.url)
+          };
+
+          if (b.file) {
+            b.file = {
+              ...b.file,
+              url: this.getPublicFileURL(undefined, b.file?.url)
+            };
+          }
+          return result;
+        }
+        return undefined;
+      })).filter(a => a !== undefined);
+    }
+    rows = rows.map(a => ({
+      ...a,
+      inputs: prepareInputOutputArray(a.inputs),
+      outputs: prepareInputOutputArray(a.outputs),
+    }))
+    return rows;
   }
 
 }

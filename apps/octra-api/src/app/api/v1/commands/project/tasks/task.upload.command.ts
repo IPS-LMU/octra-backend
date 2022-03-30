@@ -8,11 +8,11 @@ import {Validator} from 'jsonschema';
 import * as Path from 'path';
 import * as path from 'path';
 import * as multer from 'multer';
-import {mkdirp, pathExists, readJSONSync, unlink} from 'fs-extra';
+import {mkdirp, pathExists, unlink} from 'fs-extra';
 import {FileSystemHandler} from '../../../filesystem-handler';
 import {isNumber} from '../../../../../obj/functions';
 import {MulterStorageHashing} from '../../../../../obj/multer-storage-hashing';
-import {TranscriptUploadSchema} from './transcript.json.schema';
+import {TaskUploadSchema} from './task.json.schema';
 
 interface MulterFile {
   fieldname: string;
@@ -27,9 +27,9 @@ interface MulterFile {
   content?: any;
 }
 
-export class TranscriptUploadCommand extends ApiCommand {
+export class TaskUploadCommand extends ApiCommand {
   constructor() {
-    super('uploadTranscriptData', '/projects', RequestType.POST, '/:project_id/transcripts/upload', true,
+    super('uploadTaskData', '/projects', RequestType.POST, '/:project_id/tasks/upload', true,
       [
         UserRole.administrator,
         UserRole.projectAdministrator,
@@ -37,9 +37,9 @@ export class TranscriptUploadCommand extends ApiCommand {
       ]
     );
 
-    this._description = 'Uploads a transcript with an media file for a given project. ' +
-      'This request is made via form data: You have to add at least a media file or an transcript file (text file). ' +
-      'You can add both, too.You can append the media file with a "media" field and the transcript with a "data" field.';
+    this._description = `Uploads the inputs (files) and properties (JSON) to the server and creates a new task with the
+    type specified in the properties. The task gets the status "DRAFT" automatically. In order to mark this task for processing
+    you should change its status to "FREE" using the changeStatusOfTasks() API call.`;
     this._acceptedContentType = 'multipart/form-data';
     this._responseContentType = 'application/json';
 
@@ -47,16 +47,29 @@ export class TranscriptUploadCommand extends ApiCommand {
     this._requestStructure = {
       type: 'array',
       required: true,
-      items: {
-        type: 'object',
-        minItems: 1,
-        properties: {
-          fieldname: {
-            type: 'string',
-            required: true
+      items: [
+        {
+          type: 'object',
+          required: true,
+          description: 'The audio file',
+          properties: {
+            fieldname: {
+              type: 'string',
+              pattern: 'input',
+              required: true
+            },
+            originalname: {
+              type: 'string',
+              pattern: '.*\.wav$',
+              required: true
+            },
+            hash: {
+              type: 'string',
+              required: true
+            }
           }
         }
-      }
+      ]
     };
 
     // relevant for reference creation
@@ -64,7 +77,7 @@ export class TranscriptUploadCommand extends ApiCommand {
       ...this.defaultResponseSchema,
       properties: {
         ...this.defaultResponseSchema.properties,
-        data: TranscriptUploadSchema
+        data: TaskUploadSchema
       }
     };
   }
@@ -73,7 +86,7 @@ export class TranscriptUploadCommand extends ApiCommand {
     const answer = ApiCommand.createAnswer() as DeliveryMediaAddResponse;
 
     if (!req.params.project_id || !isNumber(req.params.project_id)) {
-      TranscriptUploadCommand.sendError(res, 400, 'project_id must be of type number.');
+      TaskUploadCommand.sendError(res, 400, 'project_id must be of type number.');
       return;
     }
 
@@ -89,13 +102,17 @@ export class TranscriptUploadCommand extends ApiCommand {
     const upload = multer({storage: storage});
     try {
 
-      upload.any()(req, res, async (err) => {
+      upload.array('input')(req, res, async (err) => {
+        req.body.properties = req.body?.properties ? JSON.parse(req.body.properties) : undefined;
+        req.body.transcript = req.body?.transcript ? JSON.parse(req.body.transcript) : undefined;
+
         const validation = this.validate(req, req.files);
-        const mediaFile = (req.files as MulterFile[]).find(a => a.fieldname === 'media');
-        const jsonFile = (req.files as MulterFile[]).find(a => a.fieldname === 'data');
+        const mediaFile = (req.files as MulterFile[]).find(a => a.fieldname === 'input');
+        const taskProperties = req.body.properties;
+        const taskTranscript = req.body.transcript;
 
         if (!(/.+(\.wav)/g).exec(mediaFile.originalname)) {
-          this.removeMediaFileAndJSON(mediaFile, jsonFile);
+          await this.removeTempFiles(req.files);
           ApiCommand.sendError(res, BadRequest, 'Only WAVE files supported.');
           return;
         }
@@ -103,26 +120,29 @@ export class TranscriptUploadCommand extends ApiCommand {
         if (validation.length === 0) {
           if (err instanceof multer.MulterError) {
             // A Multer error occurred when uploading.
-            ApiCommand.sendError(res, InternalServerError, 'Could not upload transcript.');
+            ApiCommand.sendError(res, InternalServerError, 'Could not upload task.');
             await FileSystemHandler.removeFolder(mediaPath);
           } else if (err) {
             // An unknown error occurred when uploading.
-            ApiCommand.sendError(res, InternalServerError, 'Could not upload transcript.');
+            ApiCommand.sendError(res, InternalServerError, 'Could not upload task.');
             await FileSystemHandler.removeFolder(mediaPath);
           } else {
             // success
             try {
               let reqData: DeliverNewMediaRequest = {
                 project_id: req.params.project_id,
+                log: undefined,
                 file: undefined
               }
 
-              if (jsonFile) {
+              if (taskProperties) {
                 reqData = {
                   ...reqData,
-                  ...(jsonFile as any).content
+                  ...taskProperties,
+                  transcript: taskTranscript
                 }
               }
+              // TODO continue here, adapt adding transcript to inputs table and connect it to the new task
 
               let publicURL = undefined;
               if (mediaFile) {
@@ -161,7 +181,7 @@ export class TranscriptUploadCommand extends ApiCommand {
                 };
               } else {
                 // no media file uploaded
-                const url = jsonFile.content.media.url;
+                const url = taskProperties.media.url;
                 if (!url || url.trim() === '' || !(new RegExp('^https?://').exec(url))) {
                   throw new Error('Can\'t find url in url property');
                 }
@@ -215,28 +235,18 @@ export class TranscriptUploadCommand extends ApiCommand {
                 }
               }
 
-              const data = await DatabaseFunctions.deliverNewMedia(reqData);
-              delete data.file_id;
-              answer.data = {
-                ...data,
-                file: {
-                  ...data.file,
-                  url: publicURL
-                }
-              };
+              const data = await DatabaseFunctions.createTask(reqData);
 
-              if (jsonFile) {
-                await unlink(jsonFile.path);
-              }
+              answer.data = data;
             } catch (e) {
               console.log(e);
-              this.removeMediaFileAndJSON(mediaFile, jsonFile);
+              await this.removeTempFiles(req.files);
               ApiCommand.sendError(res, InternalServerError, e);
             }
             this.checkAndSendAnswer(res, answer);
           }
         } else {
-          this.removeMediaFileAndJSON(mediaFile, jsonFile);
+          await this.removeTempFiles(req.files);
           ApiCommand.sendError(res, BadRequest, validation);
         }
       });
@@ -251,8 +261,8 @@ export class TranscriptUploadCommand extends ApiCommand {
     const result = super.validate(req, formData);
 
     if (result.length === 0) {
-      const mediaFile = formData.find(a => a.fieldname === 'media');
-      const jsonFile = formData.find(a => a.fieldname === 'data');
+      const mediaFile = formData.find(a => a.fieldname === 'input');
+      const jsonFile = req.body?.transcript;
 
       if (mediaFile) {
         if (path.extname(mediaFile.originalname) !== '.wav') {
@@ -265,25 +275,23 @@ export class TranscriptUploadCommand extends ApiCommand {
       }
 
       if (formData.length > 0 && jsonFile) {
-        // TODO we need global instances of schemas
-        let schema = {
+        let bodySchema = {
+          type: 'object',
           properties: {
-            orgtext: {
-              type: 'string'
+            properties: {
+              type: 'object',
+              required: true
             },
             transcript: {
-              type: 'object'
-            },
-            media: {
+              // TODO add AnnotJSON schema to schema constants and add it here
               type: 'object',
-              required: true,
-              properties: {}
+              required: true
             }
           }
         };
 
         if (!mediaFile) {
-          schema.properties['media'].properties['url'] = {
+          bodySchema.properties.properties['media'].properties['url'] = {
             type: 'string',
             required: true,
             pattern: '^https?:\/\/',
@@ -292,8 +300,7 @@ export class TranscriptUploadCommand extends ApiCommand {
         }
 
         const validator = new Validator();
-        jsonFile.content = readJSONSync(jsonFile.path);
-        const validationResult = validator.validate(jsonFile.content, schema);
+        const validationResult = validator.validate(req.body, bodySchema);
         if (!validationResult.valid) {
           result.push({
             section: 'Request payload',
@@ -311,13 +318,10 @@ export class TranscriptUploadCommand extends ApiCommand {
     return result;
   }
 
-  private async removeMediaFileAndJSON(mediaFile: any, jsonFile: any) {
+  private async removeTempFiles(mediaFiles: MulterFile[]) {
     try {
-      if (mediaFile) {
+      for (const mediaFile of mediaFiles) {
         await unlink(mediaFile.path);
-      }
-      if (jsonFile) {
-        await unlink(jsonFile.path);
       }
       return;
     } catch (e) {

@@ -1,70 +1,44 @@
 import {Response} from 'express';
 import {ApiCommand, RequestType} from '../../api.command';
-import {
-  ProjectTranscriptsChangeStatusRequestItem,
-  ProjectTranscriptsGetResponseDataItem,
-  TranscriptGetResponse,
-  UserRole
-} from '@octra/db';
+import {ProjectTranscriptsGetResponseDataItem, TranscriptGetResponse, UserRole} from '@octra/db';
 import {InternRequest} from '../../../obj/types';
 import {DatabaseFunctions} from '../../../obj/database.functions';
 import {InternalServerError} from '../../../../../obj/http-codes/server.codes';
+import {TaskSchema} from './task.json.schema';
 
-export class ProjectTranscriptsChangeStatusCommand extends ApiCommand {
+export class ProjectTranscriptGetCommand extends ApiCommand {
   constructor() {
-    super('changeStatusOfTranscripts', '/projects', RequestType.PUT, '/:project_id/transcripts/status', true,
+    super('getProjectTask', '/projects', RequestType.GET, '/:project_id/tasks/:transcript_id', true,
       [
         UserRole.administrator,
-        UserRole.projectAdministrator
+        UserRole.projectAdministrator,
+        UserRole.dataDelivery
       ]);
 
-    this._description = 'Changes the status of a list of transcript IDs.';
+    this._description = 'Returns a transcript object by transcript ID and project ID.';
     this._acceptedContentType = 'application/json';
     this._responseContentType = 'application/json';
 
     // relevant for reference creation
-    this._requestStructure = {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          status: {
-            type: 'string',
-            required: true,
-            enum: ['DRAFT', 'ANNOTATED', 'FREE', 'BUSY', 'POSTPONED']
-          },
-          listOfIds: {
-            type: 'array',
-            items: {
-              type: 'number',
-              required: true
-            }
-          }
-        }
-      }
-    };
+    this._requestStructure = {};
 
     // relevant for reference creation
     this._responseStructure = {
       properties: {
-        ...this.defaultResponseSchema.properties
+        ...this.defaultResponseSchema.properties,
+        data: TaskSchema
       }
     };
-    delete this._responseStructure.properties.data;
   }
 
   async do(req: InternRequest, res: Response) {
-    const answer = ApiCommand.createAnswer();
+    const answer = ApiCommand.createAnswer() as TranscriptGetResponse;
     const validation = this.validate(req);
-    const reqBody = req.body as ProjectTranscriptsChangeStatusRequestItem[];
-
     // do something
     if (validation.length === 0) {
       try {
-        answer.data = await DatabaseFunctions.changeTranscriptsStatus(reqBody);
+        answer.data = await DatabaseFunctions.getTaskByID(Number(req.params.transcript_id));
         this.reduceDataForUser(req, answer)
-        delete answer.data;
-        // TODO change transcript should return new values
         this.checkAndSendAnswer(res, answer);
         return;
       } catch (e) {
@@ -94,7 +68,6 @@ export class ProjectTranscriptsChangeStatusCommand extends ApiCommand {
       // is data delivery
       const data = answer.data as ProjectTranscriptsGetResponseDataItem;
       delete data.pid;
-      delete data.file_id;
     }
   }
 }
