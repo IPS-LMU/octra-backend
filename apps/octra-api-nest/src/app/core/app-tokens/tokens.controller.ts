@@ -1,5 +1,5 @@
 import {Controller, Delete, Get, Post, Put} from '@nestjs/common';
-import {Public} from '../public.decorator';
+import {Public} from '../../public.decorator';
 
 @Controller('app')
 export class TokensController {

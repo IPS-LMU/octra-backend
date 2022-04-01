@@ -120,7 +120,8 @@
             "main": "apps/octra-api-nest/src/main.ts",
             "tsConfig": "apps/octra-api-nest/tsconfig.app.json",
             "assets": [
-              "apps/octra-api-nest/src/assets"
+              "apps/octra-api-nest/src/assets",
+              "apps/octra-api-nest/src/config.json"
             ],
             "port": 5321
           },

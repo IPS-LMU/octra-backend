@@ -2,21 +2,27 @@ import {Module} from '@nestjs/common';
 
 import {AppController} from './app.controller';
 import {AppService} from './app.service';
-import {AuthModule} from './auth';
-import {UsersModule} from './users/users.module';
-import {TokensController} from './app-tokens';
-import {ToolsController} from './tools';
-import {ProjectsController} from './projects';
-import {FilesController} from './files';
-import {AppTokensModule} from './app-tokens/app-tokens.module';
-import {FilesModule} from './files/files.module';
-import {ProjectsModule} from './projects/projects.module';
-import {ToolsModule} from './tools/tools.module';
+import {AuthModule} from './core/auth';
+import {UsersModule} from './core/users/users.module';
+import {TokensController} from './core/app-tokens';
+import {ToolsController} from './core/tools';
+import {ProjectsController} from './core/projects';
+import {FilesController} from './core/files';
+import {AppTokensModule} from './core/app-tokens/app-tokens.module';
+import {FilesModule} from './core/files/files.module';
+import {ProjectsModule} from './core/projects/projects.module';
+import {ToolsModule} from './core/tools/tools.module';
 import {APP_GUARD} from '@nestjs/core';
-import {JwtAuthGuard} from './auth/jwt-auth.guard';
+import {JwtAuthGuard} from './core/auth/jwt-auth.guard';
+import {ConfigModule} from '@nestjs/config';
+import configuration from './config/configuration';
 
 @Module({
-  imports: [AuthModule, AppTokensModule, FilesModule, UsersModule, ProjectsModule, ToolsModule],
+  imports: [AuthModule, AppTokensModule, FilesModule, UsersModule, ProjectsModule, ToolsModule, ConfigModule.forRoot({
+    load: [configuration],
+    ignoreEnvFile: true,
+    isGlobal: true
+  })],
   controllers: [AppController, TokensController, FilesController, ProjectsController, ToolsController],
   providers: [
     AppService,
