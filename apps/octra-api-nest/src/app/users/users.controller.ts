@@ -1,4 +1,5 @@
-import {Controller, Delete, Get, Post} from '@nestjs/common';
+import {Controller, Delete, Get, Post, UseGuards} from '@nestjs/common';
+import {JwtAuthGuard} from '../auth/jwt-auth.guard';
 
 @Controller('users')
 export class UsersController {
@@ -8,6 +9,7 @@ export class UsersController {
     return 'Implementation needed';
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('current')
   getCurrentUserInformation(): string {
     // TODO implement function
@@ -36,18 +38,7 @@ export class UsersController {
   getUserInformation(): string {
     // TODO implement function
     return 'Implementation needed';
-  }
-
-  @Post('login')
-  loginUser(): string {
-    // TODO implement function
-    return 'Implementation needed';
-  }
-
-  @Post('register')
-  registerUser(): string {
-    // TODO implement function
-    return 'Implementation needed';
+    1
   }
 
   @Delete(':id')

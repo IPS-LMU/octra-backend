@@ -1,9 +1,11 @@
 import {Controller, Delete, Get, Post, Put} from '@nestjs/common';
+import {Public} from '../public.decorator';
 
 @Controller('app')
 export class TokensController {
+  @Public()
   @Get('tokens')
-  listAppTokens(): string {
+  async listAppTokens(): Promise<string> {
     // TODO implement function
     return 'Implementation needed';
   }
