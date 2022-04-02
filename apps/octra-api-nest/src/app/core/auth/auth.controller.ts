@@ -1,8 +1,10 @@
-import {Body, Controller, Post} from '@nestjs/common';
-import {UserLoginDto} from '../users/dto';
+import {Body, Controller, Post, Req, UseGuards} from '@nestjs/common';
 import {AuthService} from './auth.service';
 import {Public} from '../../public.decorator';
 import {ConfigService} from '@nestjs/config';
+import {UserRegisterDto} from '@octra/octra-api-types';
+import {Request} from 'express';
+import {LocalAuthGuard} from './local-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -10,14 +12,15 @@ export class AuthController {
   }
 
   @Public()
+  @UseGuards(LocalAuthGuard)
   @Post('login')
-  login(@Body() loginUserDto: UserLoginDto): any {
+  login(@Req() req: Request): any {
     console.log('test authorized')
-    return this.authService.login(loginUserDto);
+    return this.authService.login(req.user);
   }
 
   @Post('register')
-  register(): string {
+  register(@Body() registerUserDto: UserRegisterDto): string {
     // TODO implement function
     return 'Implementation needed';
   }

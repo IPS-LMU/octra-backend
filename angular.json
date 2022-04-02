@@ -169,6 +169,35 @@
       },
       "tags": []
     },
+    "octra-api-types": {
+      "root": "libs/octra-api-types",
+      "sourceRoot": "libs/octra-api-types/src",
+      "projectType": "library",
+      "architect": {
+        "lint": {
+          "builder": "@nrwl/linter:eslint",
+          "outputs": [
+            "{options.outputFile}"
+          ],
+          "options": {
+            "lintFilePatterns": [
+              "libs/octra-api-types/**/*.ts"
+            ]
+          }
+        },
+        "test": {
+          "builder": "@nrwl/jest:jest",
+          "outputs": [
+            "coverage/libs/octra-api-types"
+          ],
+          "options": {
+            "jestConfig": "libs/octra-api-types/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      },
+      "tags": []
+    },
     "octra-backend": {
       "projectType": "application",
       "root": "apps/octra-backend",
@@ -177,7 +206,9 @@
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
-          "outputs": ["{options.outputPath}"],
+          "outputs": [
+            "{options.outputPath}"
+          ],
           "options": {
             "outputPath": "dist/apps/octra-backend",
             "index": "apps/octra-backend/src/index.html",

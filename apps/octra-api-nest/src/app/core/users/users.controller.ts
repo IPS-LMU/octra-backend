@@ -1,17 +1,16 @@
-import {Controller, Delete, Get, Post, UseGuards} from '@nestjs/common';
-import {JwtAuthGuard} from '../auth/jwt-auth.guard';
+import {Controller, Delete, Get, Post, Req} from '@nestjs/common';
+import {Request} from 'express';
 
 @Controller('users')
 export class UsersController {
   @Get()
-  listUsers(): string {
+  listUsers(@Req() req: Request): string {
     // TODO implement function
     return 'Implementation needed';
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get('current')
-  getCurrentUserInformation(): string {
+  getCurrentUserInformation(@Req() req: Request): string {
     // TODO implement function
     return 'Implementation needed';
   }
