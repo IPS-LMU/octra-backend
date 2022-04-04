@@ -1,36 +1,39 @@
-import {Controller, Delete, Get, Post, Put} from '@nestjs/common';
+import {Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put} from '@nestjs/common';
 import {Public} from '../../public.decorator';
+import {AppTokensService} from './app-tokens.service';
+import {AppTokenCreateDto, AppTokenDto} from '@octra/octra-api-types';
+import {AppToken} from './app-tokens.entity';
 
 @Controller('app')
 export class TokensController {
+  constructor(private readonly appTokensService: AppTokensService) {
+  }
+
   @Public()
   @Get('tokens')
-  async listAppTokens(): Promise<string> {
-    // TODO implement function
-    return 'Implementation needed';
+  async listAppTokens(): Promise<AppTokenDto[]> {
+    return this.appTokensService.getAll();
   }
 
   @Post('tokens')
-  createAppToken(): string {
-    // TODO implement function
-    return 'Implementation needed';
+  async createAppToken(@Body() token: AppTokenCreateDto): Promise<AppTokenDto> {
+    return this.appTokensService.createAppToken(token);
   }
 
   @Put('tokens/:id')
-  changeAppToken(): string {
-    // TODO implement function
-    return 'Implementation needed';
+  changeAppToken(@Body() token: AppTokenDto, @Param('id', ParseIntPipe) id: number): Promise<void> {
+    return this.appTokensService.updateAppToken(id, token);
   }
 
-  @Get('tokens/:id/refresh')
-  refreshAppToken(): string {
-    // TODO implement function
-    return 'Implementation needed';
+  @Public()
+  @Put('tokens/:id/refresh')
+  async refreshAppToken(@Param('id', ParseIntPipe) id: number): Promise<AppToken> {
+    return this.appTokensService.refreshAppToken(id);
   }
 
+  @Public()
   @Delete('tokens/:id')
-  removeAppToken(): string {
-    // TODO implement function
-    return 'Implementation needed';
+  async removeAppToken(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    return this.appTokensService.removeAppToken(id);
   }
 }

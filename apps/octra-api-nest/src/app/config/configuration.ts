@@ -4,7 +4,7 @@ import {Validator} from 'jsonschema';
 import {AppConfigurationSchema} from './app-config.schema';
 import {environment} from '../../environments/environment';
 
-export type DBType = 'PostgreSQL'; // currently PostgreSQL only
+export type DBType = 'postgres'; // currently PostgreSQL only
 
 export interface IAppConfiguration {
   version: string;
@@ -51,20 +51,27 @@ export interface IDBSSLConfiguration {
   cert?: string;
 }
 
-export default () => {
-  let configPath = '';
-  if (environment.production === false) {
-    configPath = join(__dirname, 'config.json');
-  } else {
-    configPath = join(dirname(process.execPath), 'config.json');
-  }
-  console.log(`Load config file from ${configPath}...`)
-  const validator = new Validator();
-  const json = fs.readJSONSync(configPath, 'utf8');
-  const validation = validator.validate(json, AppConfigurationSchema);
+export class Configuration {
+  private static configuration: IAppConfiguration;
 
-  if (!validation.valid) {
-    throw new Error(`Validation configuration errors found:\n->${validation.errors.map(a => `${a.path}: ${a.message}`).join('\n-> ')}`)
+  public static getInstance() {
+    if (!this.configuration) {
+      let configPath = '';
+      if (environment.production === false) {
+        configPath = join(__dirname, 'config.json');
+      } else {
+        configPath = join(dirname(process.execPath), 'config.json');
+      }
+      console.log(`Load config file from ${configPath}...`)
+      const validator = new Validator();
+      const json = fs.readJSONSync(configPath, 'utf8');
+      const validation = validator.validate(json, AppConfigurationSchema);
+
+      if (!validation.valid) {
+        throw new Error(`Validation configuration errors found:\n->${validation.errors.map(a => `${a.path}: ${a.message}`).join('\n-> ')}`)
+      }
+      this.configuration = json;
+    }
+    return this.configuration;
   }
-  return json as IAppConfiguration;
-};
+}

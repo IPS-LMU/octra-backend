@@ -17,7 +17,7 @@ export const AppConfigurationSchema: Schema = {
         },
         dbType: {
           type: 'string',
-          enum: ['PostgreSQL'],
+          enum: ['postgres'],
           required: true
         },
         dbHost: {
