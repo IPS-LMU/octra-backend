@@ -4,6 +4,7 @@ module.exports = {
   globals: {
     'ts-jest': {
       tsconfig: '<rootDir>/tsconfig.spec.json',
+      bail: 1
     },
   },
   testEnvironment: 'node',
@@ -11,5 +12,5 @@ module.exports = {
     '^.+\\.[tj]s$': 'ts-jest',
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
-  coverageDirectory: '../../coverage/apps/octra-api-nest-e2e',
+  coverageDirectory: '../../coverage/apps/octra-api-nest-e2e'
 };

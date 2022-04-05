@@ -15,8 +15,4 @@ export class AppService {
       this._executionPath = __dirname;
     }
   }
-
-  getData(): { message: string } {
-    return {message: 'Welcome to octra-api-nest!'};
-  }
 }

@@ -1,6 +1,8 @@
 import {Controller, Delete, Get, Post, Req} from '@nestjs/common';
 import {Request} from 'express';
+import {ApiTags} from '@nestjs/swagger';
 
+@ApiTags('Users')
 @Controller('users')
 export class UsersController {
   @Get()

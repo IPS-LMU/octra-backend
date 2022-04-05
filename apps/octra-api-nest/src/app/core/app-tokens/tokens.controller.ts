@@ -1,8 +1,11 @@
 import {Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put} from '@nestjs/common';
 import {AppTokensService} from './app-tokens.service';
-import {AppTokenCreateDto, AppTokenDto} from '@octra/octra-api-types';
 import {AppToken} from './app-tokens.entity';
+import {AppTokenCreateDto, AppTokenDto} from './app-token.dto';
+import {ApiBearerAuth, ApiTags} from '@nestjs/swagger';
 
+@ApiTags('App tokens')
+@ApiBearerAuth()
 @Controller('app')
 export class TokensController {
   constructor(private readonly appTokensService: AppTokensService) {

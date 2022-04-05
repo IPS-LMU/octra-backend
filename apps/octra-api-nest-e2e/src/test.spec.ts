@@ -1,7 +1,10 @@
 import {Test, TestingModule} from '@nestjs/testing';
 import * as request from 'supertest';
 import {AppModule} from '../../octra-api-nest/src/app/app.module';
-import {AppTokenCreateDto, AppTokenDto, AuthDto} from '@octra/octra-api-types';
+import {AuthDto} from '../../octra-api-nest/src/app/core/auth/auth.dto';
+import {AppTokenCreateDto, AppTokenDto} from '../../octra-api-nest/src/app/core/app-tokens/app-token.dto';
+import {BadRequestException, ValidationPipe} from '@nestjs/common';
+import {ValidationError} from 'class-validator';
 
 const tempData = {
   apptoken: {
@@ -66,6 +69,14 @@ describe('OCTRA Nest API (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(new ValidationPipe({
+      transform: true,
+      disableErrorMessages: false,
+      exceptionFactory: (validationErrors: ValidationError[] = []) => {
+        console.error(JSON.stringify(validationErrors, null, 2));
+        return new BadRequestException(validationErrors);
+      }
+    }));
     await app.init();
   });
 
