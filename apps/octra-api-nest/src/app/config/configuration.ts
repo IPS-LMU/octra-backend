@@ -58,7 +58,11 @@ export class Configuration {
     if (!this.configuration) {
       let configPath = '';
       if (environment.production === false) {
-        configPath = join(__dirname, 'config.json');
+        if (process.env.NODE_ENV && process.env.NODE_ENV === 'test') {
+          configPath = join(__dirname, '../../', 'config.json');
+        } else {
+          configPath = join(__dirname, 'config.json');
+        }
       } else {
         configPath = join(dirname(process.execPath), 'config.json');
       }

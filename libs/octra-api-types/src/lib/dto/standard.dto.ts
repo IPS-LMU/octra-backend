@@ -1,5 +1,5 @@
 export class StandardDto {
-  id: number;
+  id?: number;
 }
 
 export class StandardWithTimeDto extends StandardDto {

@@ -42,7 +42,8 @@ const config = Configuration.getInstance();
       password: config.database.dbPassword,
       database: config.database.dbName,
       synchronize: false,
-      entities: [AppToken]
+      entities: [AppToken],
+      keepConnectionAlive: true
     })
   ],
   controllers: [AppController, TokensController, FilesController, ProjectsController, ToolsController],
