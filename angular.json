@@ -136,6 +136,11 @@
                   "with": "apps/octra-api-nest/src/environments/environment.prod.ts"
                 }
               ]
+            },
+            "dev": {
+              "optimization": true,
+              "extractLicenses": true,
+              "inspect": false
             }
           }
         },

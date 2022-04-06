@@ -32,7 +32,7 @@ export class TokensController {
   }
 
   @Delete('tokens/:id')
-  async removeAppToken(@Param('id', ParseIntPipe) id: number): Promise<void> {
+  async removeAppToken(@Param('id') id: number): Promise<void> {
     return this.appTokensService.removeAppToken(id);
   }
 }

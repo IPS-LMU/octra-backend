@@ -1,8 +1,9 @@
-import {Controller, Delete, Get, Post, Req} from '@nestjs/common';
+import {Controller, Delete, Get, Param, Post, Req} from '@nestjs/common';
 import {Request} from 'express';
-import {ApiTags} from '@nestjs/swagger';
+import {ApiBearerAuth, ApiTags} from '@nestjs/swagger';
 
 @ApiTags('Users')
+@ApiBearerAuth()
 @Controller('users')
 export class UsersController {
   @Get()
@@ -18,7 +19,7 @@ export class UsersController {
   }
 
   @Post(':id/roles')
-  assignUserRoles(): string {
+  assignUserRoles(@Param('id') id: number): string {
     // TODO implement function
     return 'Implementation needed';
   }
@@ -36,14 +37,13 @@ export class UsersController {
   }
 
   @Get(':id')
-  getUserInformation(): string {
+  getUserInformation(@Param('id') id: number): string {
     // TODO implement function
     return 'Implementation needed';
-    1
   }
 
   @Delete(':id')
-  removeUser(): string {
+  removeUser(@Param('id') id: number): string {
     // TODO implement function
     return 'Implementation needed';
   }
