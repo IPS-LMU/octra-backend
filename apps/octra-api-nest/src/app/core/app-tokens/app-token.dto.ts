@@ -1,19 +1,21 @@
 import {StandardWithTimeDto} from '../standard.dto';
-import {ApiProperty, ApiPropertyOptional, OmitType} from '@nestjs/swagger';
+import {OmitType} from '@nestjs/swagger';
+import {IsNotEmpty} from 'class-validator';
 
 export class AppTokenDto extends StandardWithTimeDto {
-  @ApiProperty()
+  @IsNotEmpty()
   name: string;
-  @ApiProperty()
+  @IsNotEmpty()
   key: string;
-  @ApiPropertyOptional()
   domain?: string;
-  @ApiPropertyOptional()
   description?: string;
-  @ApiPropertyOptional()
   registrations?: boolean;
 }
 
 export class AppTokenCreateDto extends OmitType(AppTokenDto,
   ['id', 'creationdate', 'updatedate'] as const) {
+}
+
+export class AppTokenChangeDto extends OmitType(AppTokenDto,
+  ['id', 'creationdate', 'updatedate', 'key'] as const) {
 }

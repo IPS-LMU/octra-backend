@@ -38,6 +38,14 @@ export interface IAPIConfiguration {
       salt: string
     }
   },
+  'reference': {
+    'enabled': boolean,
+    'protection': {
+      'enabled': boolean,
+      'username': string,
+      'password': string
+    }
+  },
   shibboleth: {
     secret: string,
     windowURL: string
