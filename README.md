@@ -1,4 +1,13 @@
-# Overview
+# OCTRA Backend - mono repository
+
+---
+**!Please notice: This project is under big reconstruction. A lot of work is in progress like refactoring and moving to
+NestJS. At the moment the documentation is deprecated and it is going to be updated as soon as the implementation of the
+backend has been finished.**
+
+---
+
+## Overview
 
 This repository is a mono-repository created with Nx. It contains all projects related to the OCTRA backend (server
 side).
@@ -11,7 +20,7 @@ OCTRA-API
 </td>
 <td>API for communication with the OCTRA-Database.</td>
 <td>
-<a href="https://github.com/IPS-LMU/octra-backend/tree/main/apps/octra-api/">more information</a>
+<a href="https://github.com/IPS-LMU/octra-backend/tree/main/apps/octra-api-nest/">more information</a>
 </td>
 </tr>
 <tr>
