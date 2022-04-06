@@ -28,6 +28,9 @@ async function bootstrap() {
       .setDescription('API for connecting OCTRA Backend to OCTRA')
       .setVersion('0.2.0')
       .addBearerAuth()
+      .addSecurity('roles', {
+        type: 'http'
+      })
       .build();
     let redocOptions: RedocOptions = {
       title: 'OCTRA API',

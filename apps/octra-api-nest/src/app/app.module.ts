@@ -18,6 +18,7 @@ import {ConfigModule} from '@nestjs/config';
 import {Configuration} from './config/configuration';
 import {TypeOrmModule} from '@nestjs/typeorm';
 import {AppToken} from './core/app-tokens/app-tokens.entity';
+import {RolesGuard} from './roles.guard';
 
 const config = Configuration.getInstance();
 
@@ -52,6 +53,10 @@ const config = Configuration.getInstance();
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
     }
   ],
 })

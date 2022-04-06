@@ -1,4 +1,5 @@
 import {Injectable} from '@nestjs/common';
+import {UserRole} from '@octra/octra-api-types';
 
 export type User = any;
 
@@ -8,12 +9,14 @@ export class UsersService {
     {
       userId: 1,
       username: 'john',
-      password: 'changeme',
+      password: 'john',
+      roles: [UserRole.administrator]
     },
     {
       userId: 2,
       username: 'maria',
-      password: 'guess',
+      password: 'maria',
+      roles: [UserRole.user]
     },
   ];
 
