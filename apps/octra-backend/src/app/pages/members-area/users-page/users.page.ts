@@ -3,7 +3,7 @@ import {OctraAPIService} from '@octra/ngx-octra-api';
 import {UserInfoResponseDataItem, UserRoleScope} from '@octra/db';
 
 @Component({
-  selector: 'ocb-users',
+  selector: 'ocb-account',
   templateUrl: './users.page.html',
   styleUrls: ['./users.page.css']
 })

@@ -5,7 +5,7 @@ import {Router} from '@angular/router';
 import {OctraAPIService} from '@octra/ngx-octra-api';
 
 @Component({
-  selector: 'ocb-app-tokens',
+  selector: 'ocb-app-token',
   templateUrl: './apptokens.component.html',
   styleUrls: ['./apptokens.component.css']
 })

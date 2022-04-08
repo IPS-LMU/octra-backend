@@ -22,7 +22,7 @@ export const MEMBERSAREA_ROUTES: Route[] = [
     path: 'projects', component: ProjectsComponent, canActivate: [APIInitializeGuard, AdministratorOnlyGuard]
   },
   {
-    path: 'projects/add', component: AddProjectComponent, canActivate: [APIInitializeGuard, AdministratorOnlyGuard]
+    path: 'project/add', component: AddProjectComponent, canActivate: [APIInitializeGuard, AdministratorOnlyGuard]
   },
   {
     path: 'apptokens/add', component: AddAppTokenComponent, canActivate: [APIInitializeGuard, AdministratorOnlyGuard]

@@ -1,8 +1,8 @@
 import {Test, TestingModule} from '@nestjs/testing';
 import * as request from 'supertest';
 import {AppModule} from '../../octra-api-nest/src/app/app.module';
-import {AuthDto} from '../../octra-api-nest/src/app/core/auth/auth.dto';
-import {AppTokenCreateDto, AppTokenDto} from '../../octra-api-nest/src/app/core/app-tokens/app-token.dto';
+import {AuthDto} from '../../octra-api-nest/src/app/core/authentication/auth.dto';
+import {AppTokenCreateDto, AppTokenDto} from '../../octra-api-nest/src/app/core/app-token/app-token.dto';
 import {BadRequestException, ValidationPipe} from '@nestjs/common';
 import {ValidationError} from 'class-validator';
 
@@ -81,11 +81,11 @@ describe('OCTRA Nest API (e2e)', () => {
   });
 
   describe('Authentication', () => {
-    it('/auth/login (POST)', () => {
+    it('/authentication/login (POST)', () => {
       return request(app.getHttpServer())
         .post('/auth/login').send({
-          'username': 'john',
-          'password': 'changeme'
+          'username': 'Julian',
+          'password': 'Test123'
         }).expect(201).then(({body}: { body: AuthDto }) => {
           tempData.user.jwtToken = body.access_token;
         })

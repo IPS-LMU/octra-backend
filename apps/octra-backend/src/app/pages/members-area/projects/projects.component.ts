@@ -5,7 +5,7 @@ import {Router} from '@angular/router';
 import {OctraAPIService} from '@octra/ngx-octra-api';
 
 @Component({
-  selector: 'ocb-projects',
+  selector: 'ocb-project',
   templateUrl: './projects.component.html',
   styleUrls: ['./projects.component.css']
 })
@@ -37,7 +37,7 @@ export class ProjectsComponent implements OnInit {
           /* TODO add project admins
           if (project.admin_id) {
             console.log(`look for admin ${project.admin_id}`);
-            const project_admin = this.users.find(a => a.id === project.admin_id);
+            const project_admin = this.account.find(a => a.id === project.admin_id);
             delete project.admin_id;
             (project as any).administrator = (project_admin) ? project_admin.username : 'NA';
           } else {
@@ -54,7 +54,7 @@ export class ProjectsComponent implements OnInit {
   }
 
   onProjectEdit(project: any) {
-    this.router.navigate(['members/projects/add'], {
+    this.router.navigate(['members/project/add'], {
       queryParams: {
         edit: project.id
       }

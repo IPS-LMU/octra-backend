@@ -103,7 +103,7 @@ export class AddProjectComponent implements OnInit {
       this.api.createProject(this.formData).then((projectResponse) => {
         this.api.saveGuidelines(projectResponse.id, this.guidelines).then(() => {
           this.modalService.openSuccessModal('Project created', 'The project was created successfully').then(() => {
-            this.router.navigate(['members/projects']);
+            this.router.navigate(['members/project']);
           });
         }).catch((error) => {
           this.modalService.openErrorModal('Guidelines not saved', error);
@@ -117,7 +117,7 @@ export class AddProjectComponent implements OnInit {
       this.api.changeProject(this.editingID, this.formData).then(() => {
         this.api.saveGuidelines(this.editingID, this.guidelines).then(() => {
           this.modalService.openSuccessModal('Project changed', 'The project was changed successfully').then(() => {
-            this.router.navigate(['members/projects']);
+            this.router.navigate(['members/project']);
           });
         }).catch((error) => {
           this.modalService.openErrorModal('Guidelines not saved', error);

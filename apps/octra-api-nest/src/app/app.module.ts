@@ -2,34 +2,34 @@ import {Module} from '@nestjs/common';
 
 import {AppController} from './app.controller';
 import {AppService} from './app.service';
-import {AuthModule} from './core/auth';
-import {UsersModule} from './core/users/users.module';
-import {TokensController} from './core/app-tokens';
-import {ToolsController} from './core/tools';
-import {ProjectsController} from './core/projects';
+import {AuthModule} from './core/authentication';
+import {ACCOUNT_ENTITIES, AccountModule} from './core/account/account.module';
+import {AppTokenController} from './core/app-token';
+import {ToolController} from './core/tool';
+import {ProjectController} from './core/project';
 import {FilesController} from './core/files';
-import {AppTokensModule} from './core/app-tokens/app-tokens.module';
+import {AppTokenModule} from './core/app-token/app-token.module';
 import {FilesModule} from './core/files/files.module';
-import {ProjectsModule} from './core/projects/projects.module';
-import {ToolsModule} from './core/tools/tools.module';
+import {ProjectModule} from './core/project/project.module';
+import {ToolModule} from './core/tool/tool.module';
 import {APP_GUARD} from '@nestjs/core';
-import {JwtAuthGuard} from './core/auth/jwt-auth.guard';
+import {JwtAuthGuard} from './core/authentication/jwt-auth.guard';
 import {ConfigModule} from '@nestjs/config';
 import {Configuration} from './config/configuration';
 import {TypeOrmModule} from '@nestjs/typeorm';
-import {AppToken} from './core/app-tokens/app-tokens.entity';
-import {RolesGuard} from './roles.guard';
+import {AppToken} from './core/app-token/app-token.entity';
+import {RolesGuard} from './core/authorization/roles.guard';
 
 const config = Configuration.getInstance();
 
 @Module({
   imports: [
     AuthModule,
-    AppTokensModule,
+    AppTokenModule,
     FilesModule,
-    UsersModule,
-    ProjectsModule,
-    ToolsModule,
+    AccountModule,
+    ProjectModule,
+    ToolModule,
     ConfigModule.forRoot({
       load: [() => (config)],
       ignoreEnvFile: true,
@@ -43,11 +43,11 @@ const config = Configuration.getInstance();
       password: config.database.dbPassword,
       database: config.database.dbName,
       synchronize: false,
-      entities: [AppToken],
+      entities: [AppToken, ...ACCOUNT_ENTITIES],
       keepConnectionAlive: true
     })
   ],
-  controllers: [AppController, TokensController, FilesController, ProjectsController, ToolsController],
+  controllers: [AppController, AppTokenController, FilesController, ProjectController, ToolController],
   providers: [
     AppService,
     {

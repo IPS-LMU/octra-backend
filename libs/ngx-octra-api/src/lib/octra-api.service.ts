@@ -130,11 +130,11 @@ export class OctraAPIService {
   }
 
   public listUsers(): Promise<UserInfoResponseDataItem[]> {
-    return this.get('/users/', true);
+    return this.get('/account/', true);
   }
 
   public listProjects(): Promise<ProjectResponseDataItem[]> {
-    return this.get('/projects/', true);
+    return this.get('/project/', true);
   }
 
   public createProject(projectData: CreateProjectRequest): Promise<ProjectResponseDataItem> {
@@ -157,14 +157,14 @@ export class OctraAPIService {
   }
 
   public changeMyPassword(oldPassword: string, password: string): Promise<void> {
-    return this.put('/users/password', {
+    return this.put('/account/password', {
       oldPassword,
       password
     }, true);
   }
 
   public getCurrentUserInformation(): Promise<UserInfoResponseDataItem> {
-    return this.get('/users/current', true);
+    return this.get('/account/current', true);
   }
 
   public changeProject(id: number, requestData: CreateProjectRequest): Promise<void> {
