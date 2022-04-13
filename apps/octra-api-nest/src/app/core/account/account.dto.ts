@@ -1,6 +1,7 @@
 import {StandardWithTimeDto} from '../standard.dto';
 import {IsNotEmpty} from 'class-validator';
 import {UserRole, UserRoleScope} from '@octra/db';
+import {Account} from './entities/account.entity';
 
 export class RoleDto {
   @IsNotEmpty()
@@ -24,4 +25,9 @@ export class AccountDto extends StandardWithTimeDto {
   roles: RoleDto[];
   last_login?: string;
   registrations?: boolean;
+
+  constructor(partial: Partial<Account>) {
+    super();
+    Object.assign(this, partial);
+  }
 }

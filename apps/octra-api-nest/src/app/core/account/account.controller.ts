@@ -3,6 +3,7 @@ import {Request} from 'express';
 import {ApiBearerAuth, ApiTags} from '@nestjs/swagger';
 import {Roles} from '../../../../role.decorator';
 import {UserRole} from '@octra/octra-api-types';
+import {Account} from './entities/account.entity';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -10,9 +11,9 @@ import {UserRole} from '@octra/octra-api-types';
 export class AccountController {
   @Roles(UserRole.administrator)
   @Get()
-  listUsers(@Req() req: Request): string {
+  listUsers(@Req() req: Request): Account[] {
     // TODO implement function
-    return 'Implementation needed';
+    return undefined
   }
 
   @Get('current')

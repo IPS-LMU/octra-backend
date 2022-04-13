@@ -1,22 +1,9 @@
-import {
-  Body,
-  ClassSerializerInterceptor,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  ParseIntPipe,
-  Post,
-  Put,
-  Request,
-  UseInterceptors
-} from '@nestjs/common';
+import {Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put} from '@nestjs/common';
 import {AppTokenService} from './app-token.service';
-import {AppToken} from './app-token.entity';
 import {AppTokenChangeDto, AppTokenCreateDto, AppTokenDto} from './app-token.dto';
 import {ApiBearerAuth, ApiTags} from '@nestjs/swagger';
-import {Roles} from '../../../../role.decorator';
 import {UserRole} from '@octra/octra-api-types';
+import {CombinedRoles} from '../../../combine.decorators';
 
 @ApiTags('App tokens')
 @ApiBearerAuth()
@@ -30,12 +17,10 @@ export class AppTokenController {
    *
    * Allowed user roles: <code>administrator</code>
    */
-  @Roles(UserRole.administrator)
-  @UseInterceptors(ClassSerializerInterceptor)
+  @CombinedRoles(UserRole.administrator)
   @Get('tokens')
-  async listAppTokens(@Request() req): Promise<AppTokenDto[]> {
-    const t = req.user;
-    return (await this.appTokensService.getAll()).map(a => (new AppToken(a)));
+  async listAppTokens(): Promise<AppTokenDto[]> {
+    return (await this.appTokensService.getAll()).map(a => (new AppTokenDto(a)));
   }
 
   /**
@@ -43,10 +28,10 @@ export class AppTokenController {
    *
    * Allowed user roles: <code>administrator</code>
    */
-  @Roles(UserRole.administrator)
+  @CombinedRoles(UserRole.administrator)
   @Post('tokens')
   async createAppToken(@Body() token: AppTokenCreateDto): Promise<AppTokenDto> {
-    return this.appTokensService.createAppToken(token);
+    return new AppTokenDto(await this.appTokensService.createAppToken(token));
   }
 
   /**
@@ -54,7 +39,7 @@ export class AppTokenController {
    *
    * Allowed user roles: <code>administrator</code>
    */
-  @Roles(UserRole.administrator)
+  @CombinedRoles(UserRole.administrator)
   @Put('tokens/:id')
   changeAppToken(@Body() token: AppTokenChangeDto, @Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.appTokensService.updateAppToken(id, token);
@@ -65,10 +50,10 @@ export class AppTokenController {
    *
    * Allowed user roles: <code>administrator</code>
    */
-  @Roles(UserRole.administrator)
+  @CombinedRoles(UserRole.administrator)
   @Put('tokens/:id/refresh')
-  async refreshAppToken(@Param('id', ParseIntPipe) id: number): Promise<AppToken> {
-    return this.appTokensService.refreshAppToken(id);
+  async refreshAppToken(@Param('id', ParseIntPipe) id: number): Promise<AppTokenDto> {
+    return new AppTokenDto(await this.appTokensService.refreshAppToken(id));
   }
 
   /**
@@ -76,7 +61,7 @@ export class AppTokenController {
    *
    * Allowed user roles: <code>administrator</code>
    */
-  @Roles(UserRole.administrator)
+  @CombinedRoles(UserRole.administrator)
   @Delete('tokens/:id')
   async removeAppToken(@Param('id') id: number): Promise<void> {
     return this.appTokensService.removeAppToken(id);

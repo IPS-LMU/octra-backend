@@ -4,7 +4,7 @@ import {AppToken} from './app-token.entity';
 import {Repository} from 'typeorm';
 import {randomBytes} from 'crypto';
 import {removeNullAttributes} from '../../functions';
-import {AppTokenChangeDto, AppTokenCreateDto, AppTokenDto} from './app-token.dto';
+import {AppTokenChangeDto, AppTokenCreateDto} from './app-token.dto';
 
 @Injectable()
 export class AppTokenService {
@@ -14,11 +14,11 @@ export class AppTokenService {
   ) {
   }
 
-  async getAll(): Promise<AppTokenDto[]> {
+  async getAll(): Promise<AppToken[]> {
     return await this.tokenRepository.find();
   }
 
-  async createAppToken(appToken: AppTokenCreateDto): Promise<AppTokenDto> {
+  async createAppToken(appToken: AppTokenCreateDto): Promise<AppToken> {
     return removeNullAttributes(await this.tokenRepository.save(appToken));
   }
 
