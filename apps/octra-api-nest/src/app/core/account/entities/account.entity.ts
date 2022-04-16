@@ -29,6 +29,11 @@ export class Account extends StandardEntityWithTimestamps {
   @DbAwareColumn()
   comment: string;
 
+  @DbAwareColumn({
+    type: 'bigint'
+  })
+  role_id: number;
+
   @OneToOne(() => Role, {
     eager: true
   })

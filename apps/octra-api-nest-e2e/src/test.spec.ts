@@ -5,6 +5,8 @@ import {AuthDto} from '../../octra-api-nest/src/app/core/authentication/auth.dto
 import {AppTokenCreateDto, AppTokenDto} from '../../octra-api-nest/src/app/core/app-token/app-token.dto';
 import {BadRequestException, ValidationPipe} from '@nestjs/common';
 import {ValidationError} from 'class-validator';
+import {AssignRoleDto, ChangePasswordDto} from '../../octra-api-nest/src/app/core/account/account.dto';
+import {UserRole} from '@octra/db';
 
 const tempData = {
   apptoken: {
@@ -40,22 +42,22 @@ const tempData = {
 };
 let app;
 
-const authGet = (url: string, isAdmin = false) => {
+const authGet = (url: string, isAdmin = true) => {
   return request(app.getHttpServer()).get(url).auth(
     isAdmin ? tempData.admin.jwtToken : tempData.user.jwtToken
     , {type: 'bearer'});
 }
-const authPost = (url: string, data: any, isAdmin = false) => {
+const authPost = (url: string, data: any, isAdmin = true) => {
   return request(app.getHttpServer()).post(url).auth(
     isAdmin ? tempData.admin.jwtToken : tempData.user.jwtToken
     , {type: 'bearer'}).send(data);
 }
-const authPut = (url: string, data: any, isAdmin = false) => {
+const authPut = (url: string, data: any, isAdmin = true) => {
   return request(app.getHttpServer()).put(url).auth(
     isAdmin ? tempData.admin.jwtToken : tempData.user.jwtToken
     , {type: 'bearer'}).send(data);
 }
-const authDelete = (url: string, isAdmin = false) => {
+const authDelete = (url: string, isAdmin = true) => {
   return request(app.getHttpServer()).delete(url).auth(
     isAdmin ? tempData.admin.jwtToken : tempData.user.jwtToken
     , {type: 'bearer'});
@@ -85,9 +87,9 @@ describe('OCTRA Nest API (e2e)', () => {
       return request(app.getHttpServer())
         .post('/auth/login').send({
           'username': 'Julian',
-          'password': 'Test123'
+          'password': 'Test1234'
         }).expect(201).then(({body}: { body: AuthDto }) => {
-          tempData.user.jwtToken = body.access_token;
+          tempData.admin.jwtToken = body.access_token;
         })
     });
   })
@@ -134,5 +136,69 @@ describe('OCTRA Nest API (e2e)', () => {
       return authDelete(`/app/tokens/${tempData.apptoken.addedID}`).expect(200);
     });
   })
+});
 
+describe('Accounts', () => {
+  it('/account/ (GET)', () => {
+    return authGet('/account/').expect(200).then(({body}) => {
+      if (!Array.isArray(body)) {
+        throw new Error('Body must be of type array.');
+      }
+    })
+  });
+  it('/account/current (GET)', () => {
+    return authGet('/account/current').expect(200).then(({body}) => {
+      if (body === undefined) {
+        throw new Error('Body must be of type array.');
+      }
+    })
+  });
+
+  it('/account/:id/roles (PUT)', () => {
+    return authPut(`/account/444/roles`, {
+      general: UserRole.user,
+      projects: [
+        {
+          project_id: 801,
+          roles: [
+            {
+              role: UserRole.dataDelivery
+            }
+          ]
+        },
+        {
+          project_id: 813,
+          roles: [
+            {
+              role: UserRole.dataDelivery
+            }
+          ]
+        }
+      ]
+    } as AssignRoleDto, true).expect(200).then(({body}) => {
+      if (!Array.isArray(body.projects)) {
+        throw new Error('Body must be of type array.');
+      }
+    })
+  });
+
+  it('/account/password (PUT)', () => {
+    return authPut('/account/password', {
+      oldPassword: 'Test1234',
+      newPassword: 'Test1234'
+    } as ChangePasswordDto).expect(200);
+  });
+
+  it('/account/hash (GET)', () => {
+    return request(app.getHttpServer()).get('/account/hash?b07e7c6156b937d17d55362793052f225571764e7f6cf2a15742a534319ee7c6').expect(200);
+  });
+
+
+  it('/account/:id (GET)', () => {
+    return authGet(`/account/444`).expect(200).then(({body}) => {
+      if (body === undefined) {
+        throw new Error('Body must be of type array.');
+      }
+    });
+  });
 });

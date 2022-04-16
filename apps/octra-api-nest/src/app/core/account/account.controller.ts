@@ -1,56 +1,117 @@
-import {Controller, Delete, Get, Param, Post, Req} from '@nestjs/common';
+import {
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
+  Post,
+  Put,
+  Query,
+  Req,
+  UseInterceptors
+} from '@nestjs/common';
 import {Request} from 'express';
-import {ApiBearerAuth, ApiTags} from '@nestjs/swagger';
-import {Roles} from '../../../../role.decorator';
+import {ApiBearerAuth, ApiResponse, ApiTags} from '@nestjs/swagger';
 import {UserRole} from '@octra/octra-api-types';
-import {Account} from './entities/account.entity';
+import {AccountDto, AssignRoleDto, ChangePasswordDto} from './account.dto';
+import {CombinedRoles} from '../../../combine.decorators';
+import {AccountService} from './account.service';
+import {InternRequest} from '../../obj/types';
+import {Public} from '../authorization/public.decorator';
+import {removeNullAttributes} from '../../functions';
 
-@ApiTags('Users')
+@ApiTags('Accounts')
 @ApiBearerAuth()
 @Controller('account')
 export class AccountController {
-  @Roles(UserRole.administrator)
+  constructor(private accountService: AccountService) {
+  }
+
+  /**
+   * returns a list of existing accounts.
+   *
+   * Allowed user roles: <code>administrator</code>
+   */
+  @CombinedRoles(UserRole.administrator)
   @Get()
-  listUsers(@Req() req: Request): Account[] {
-    // TODO implement function
-    return undefined
+  async listUsers(@Req() req: Request): Promise<AccountDto[]> {
+    return (await this.accountService.getAll()).map(a => new AccountDto(a));
   }
 
+  /**
+   * returns information about the own account.
+   *
+   * Allowed user roles: <code>administrator</code>
+   */
   @Get('current')
-  getCurrentUserInformation(@Req() req: Request): string {
-    // TODO implement function
-    return 'Implementation needed';
+  async getCurrentUserInformation(@Req() req: InternRequest): Promise<AccountDto> {
+    return new AccountDto(await this.accountService.getUser(req.user.userId));
   }
 
-  @Roles(UserRole.administrator)
-  @Post(':id/roles')
-  assignUserRoles(@Param('id') id: number): string {
-    // TODO implement function
-    return 'Implementation needed';
+  /**
+   * changes the roles of a user with a specific ID.
+   *
+   * Allowed user roles: <code>administrator</code>
+   */
+  @CombinedRoles(UserRole.administrator)
+  @Put(':id/roles')
+  async assignUserRoles(@Param('id', ParseIntPipe) id: number, @Body() assignDto: AssignRoleDto): Promise<AssignRoleDto> {
+    return this.accountService.assignUserRoles(id, assignDto);
   }
 
-  @Post('password')
-  changeMyPassword(): string {
-    // TODO implement function
-    return 'Implementation needed';
+  /**
+   * changes the password of the current account.
+   */
+  @UseInterceptors(ClassSerializerInterceptor)
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Old password does not match the password from the database.'
+  })
+  @ApiResponse({status: HttpStatus.NOT_FOUND, description: 'Can\'t find the account with the specified ID.'})
+  @Put('password')
+  async changeMyPassword(@Req() req: InternRequest, @Body() changePasswordDto: ChangePasswordDto): Promise<void> {
+    return this.accountService.changePassword(req.user.userId, changePasswordDto);
   }
 
+  /**
+   * searches an account with a given hash. Only needed if the hash is used as uuid (e.g. for Shibboleth).
+   */
+  @Public()
+  @UseInterceptors(ClassSerializerInterceptor)
   @Get('hash')
-  existsWithHash(): string {
-    // TODO implement function
-    return 'Implementation needed';
+  async existsWithHash(@Query() hash: string): Promise<boolean> {
+    return (await this.accountService.findAccountByHash(hash) !== undefined);
   }
 
-  @Roles(UserRole.administrator)
+  /**
+   * returns information about a specific account.
+   *
+   * Allowed user roles: <code>administrator</code>
+   */
+  @CombinedRoles(UserRole.administrator)
   @Get(':id')
-  getUserInformation(@Param('id') id: number): string {
-    // TODO implement function
-    return 'Implementation needed';
+  async getUserInformation(@Param('id') id: number): Promise<AccountDto | undefined> {
+    return removeNullAttributes(new AccountDto(await this.accountService.findAccountByID(id)));
   }
 
-  @Roles(UserRole.administrator)
+  @CombinedRoles(UserRole.administrator)
   @Delete(':id')
   removeUser(@Param('id') id: number): string {
+    // TODO implement function
+    return 'Implementation needed';
+  }
+
+  /**
+   * creates a new account.
+   *
+   * Allowed user roles: <code>administrator</code>
+   */
+  @CombinedRoles(UserRole.administrator)
+  @Post('')
+  createUser(): string {
     // TODO implement function
     return 'Implementation needed';
   }

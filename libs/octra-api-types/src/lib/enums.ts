@@ -6,7 +6,8 @@ export enum ProjectUserRole {
 
 export enum GlobalUserRole {
   administrator = 'administrator',
-  user = 'user'
+  user = 'user',
+  public = 'public'
 }
 
 export enum UserRole {

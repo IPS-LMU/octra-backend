@@ -40,7 +40,7 @@ async function bootstrap() {
       tagGroups: [
         {
           name: 'v1',
-          tags: ['Authentication', 'Users', 'App tokens', 'Projects', 'Tools', 'Files']
+          tags: ['Authentication', 'Accounts', 'App tokens', 'Projects', 'Tools', 'Files']
         }
       ]
     };

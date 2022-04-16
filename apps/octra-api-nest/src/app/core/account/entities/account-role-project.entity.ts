@@ -2,13 +2,14 @@ import {AfterLoad, Entity, JoinColumn, ManyToOne, OneToOne} from 'typeorm';
 import {Account} from './account.entity';
 import {DbAwareColumn} from '../../../obj/decorators';
 import {StandardEntityWithTimestamps} from '../../../obj/entities';
+import {UserRole, UserRoleScope} from '@octra/octra-api-types';
 
 @Entity('role')
 export class Role extends StandardEntityWithTimestamps {
   @DbAwareColumn({
     type: 'text'
   })
-  label?: string
+  label?: UserRole
 
   @DbAwareColumn({
     type: 'text'
@@ -19,7 +20,7 @@ export class Role extends StandardEntityWithTimestamps {
     type: 'text',
     nullable: false
   })
-  scope: string;
+  scope: UserRoleScope;
 }
 
 @Entity({name: 'account_role_project'})
@@ -28,6 +29,11 @@ export class AccountRoleProject extends StandardEntityWithTimestamps {
     type: 'bigint'
   })
   account_id?: number;
+
+  @DbAwareColumn({
+    type: 'bigint'
+  })
+  role_id: number;
 
   @OneToOne(() => Role, {eager: true})
   @JoinColumn({
@@ -61,5 +67,10 @@ export class AccountRoleProject extends StandardEntityWithTimestamps {
   @AfterLoad()
   _convertNumerics() {
     this.id = parseInt(this.id as any);
+  }
+
+  constructor(partial: Partial<AccountRoleProject>) {
+    super();
+    Object.assign(this, partial);
   }
 }

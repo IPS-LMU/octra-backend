@@ -16,3 +16,13 @@ export function removeNullAttributes<T>(obj: T): T {
   }
   return obj;
 }
+
+export function removeProperties(obj: any, properties: string[]) {
+  const keys = Object.keys(obj);
+  for (const property of properties) {
+    if (keys.find(a => a === property)) {
+      delete obj[property];
+    }
+  }
+  return obj;
+}
