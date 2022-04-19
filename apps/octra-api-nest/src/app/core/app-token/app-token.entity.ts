@@ -2,8 +2,8 @@ import {CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn} from
 import {DbAwareColumn} from '../../obj/decorators';
 
 @Entity({name: 'apptoken'})
-export class AppToken {
-  constructor(partial: Partial<AppToken>) {
+export class AppTokenEntity {
+  constructor(partial: Partial<AppTokenEntity>) {
     Object.assign(this, partial);
   }
 

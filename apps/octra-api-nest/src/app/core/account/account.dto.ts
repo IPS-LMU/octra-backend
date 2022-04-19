@@ -1,9 +1,9 @@
 import {StandardWithTimeDto} from '../standard.dto';
 import {IsNotEmpty} from 'class-validator';
 import {UserRole, UserRoleScope} from '@octra/db';
-import {Account} from './entities/account.entity';
+import {AccountEntity} from './entities/account.entity';
 import {Transform, Type} from 'class-transformer';
-import {AccountRoleProject, Role} from './entities/account-role-project.entity';
+import {AccountRoleProjectEntity, RoleEntity} from './entities/account-role-project.entity';
 import {removeProperties} from '../../functions';
 import {OmitType, PartialType} from '@nestjs/swagger';
 
@@ -17,7 +17,7 @@ export class RoleDto {
   valid_startdate?: string;
   valid_enddate?: string;
 
-  constructor(partial: Partial<AccountRoleProject>) {
+  constructor(partial: Partial<AccountRoleProjectEntity>) {
     let newObj: RoleDto = partial as any;
 
     newObj = {
@@ -37,7 +37,7 @@ export class AssignUserRoleDto extends PartialType(
   @IsNotEmpty()
   role: UserRole;
 
-  constructor(partial: Partial<AccountRoleProject>) {
+  constructor(partial: Partial<AccountRoleProjectEntity>) {
     super();
     let newObj: RoleDto = partial as any;
 
@@ -85,13 +85,13 @@ export class AccountDto extends StandardWithTimeDto {
 
   @IsNotEmpty()
   @Transform(({value}) => value.label)
-  generalRole: Role;
+  generalRole: RoleEntity;
   @Type(() => AssignUserRoleDto)
   projectRoles: AssignUserRoleDto[];
   last_login?: string;
   registrations?: boolean;
 
-  constructor(partial: Partial<Account>) {
+  constructor(partial: Partial<AccountEntity>) {
     super();
     let newObj: AccountDto = partial as any;
 

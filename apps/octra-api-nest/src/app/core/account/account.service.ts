@@ -1,8 +1,8 @@
 import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
 import {Connection, Repository} from 'typeorm';
 import {InjectRepository} from '@nestjs/typeorm';
-import {Account, AccountPerson} from './entities/account.entity';
-import {AccountRoleProject, Role} from './entities/account-role-project.entity';
+import {AccountEntity, AccountPersonEntity} from './entities/account.entity';
+import {AccountRoleProjectEntity, RoleEntity} from './entities/account-role-project.entity';
 import {AssignRoleDto, AssignRoleProjectDto, AssignUserRoleDto, ChangePasswordDto} from './account.dto';
 import {UserRoleScope} from '@octra/octra-api-types';
 import {removeNullAttributes} from '../../functions';
@@ -12,18 +12,18 @@ import {ConfigService} from '@nestjs/config';
 @Injectable()
 export class AccountService {
   constructor(
-    @InjectRepository(Account)
-    private accountRepository: Repository<Account>,
-    @InjectRepository(AccountPerson)
-    private accountPersonRepository: Repository<AccountPerson>,
-    @InjectRepository(AccountRoleProject)
-    private accountRoleProjectRepository: Repository<AccountRoleProject>,
+    @InjectRepository(AccountEntity)
+    private accountRepository: Repository<AccountEntity>,
+    @InjectRepository(AccountPersonEntity)
+    private accountPersonRepository: Repository<AccountPersonEntity>,
+    @InjectRepository(AccountRoleProjectEntity)
+    private accountRoleProjectRepository: Repository<AccountRoleProjectEntity>,
     private connection: Connection,
     private configService: ConfigService
   ) {
   }
 
-  async findAccountByName(username: string): Promise<Account | undefined> {
+  async findAccountByName(username: string): Promise<AccountEntity | undefined> {
     const t = await this.accountRepository.find({
       where: {
         account_person: {
@@ -35,7 +35,7 @@ export class AccountService {
     return t[0];
   }
 
-  async findAccountByHash(hash: string): Promise<Account | undefined> {
+  async findAccountByHash(hash: string): Promise<AccountEntity | undefined> {
     const t = await this.accountRepository.find({
       where: {
         account_person: {
@@ -47,18 +47,18 @@ export class AccountService {
     return (t.length > 0) ? t[0] : undefined;
   }
 
-  async findAccountByID(id: number): Promise<Account | undefined> {
+  async findAccountByID(id: number): Promise<AccountEntity | undefined> {
     const t = await this.accountRepository.find({
       id
     });
     return (t.length > 0) ? t[0] : undefined;
   }
 
-  async getAll(): Promise<Account[]> {
+  async getAll(): Promise<AccountEntity[]> {
     return await this.accountRepository.find();
   }
 
-  async getUser(id: number): Promise<Account> {
+  async getUser(id: number): Promise<AccountEntity> {
     return await this.accountRepository.findOne({
       id
     });
@@ -71,12 +71,12 @@ export class AccountService {
     let projectIDs;
 
     try {
-      const roles = await queryRunner.manager.find<Role>(Role);
+      const roles = await queryRunner.manager.find<RoleEntity>(RoleEntity);
 
       // save global user role if exists
       if (roleDto.general) {
         const newRole = roles.find(a => a.scope === UserRoleScope.general && a.label === roleDto.general).id;
-        const t = await queryRunner.manager.update<Account>(Account, {
+        const t = await queryRunner.manager.update<AccountEntity>(AccountEntity, {
           id
         }, {
           role_id: newRole
@@ -91,7 +91,7 @@ export class AccountService {
 
       // remove all roles from each project
       for (const project_id of projectIDs) {
-        await queryRunner.manager.delete(AccountRoleProject, {
+        await queryRunner.manager.delete(AccountRoleProjectEntity, {
           account_id: id,
           project_id
         });
@@ -100,7 +100,7 @@ export class AccountService {
       // add project roles
       for (const project of roleDto.projects) {
         for (const role of project.roles) {
-          await queryRunner.manager.insert(AccountRoleProject, new AccountRoleProject({
+          await queryRunner.manager.insert(AccountRoleProjectEntity, new AccountRoleProjectEntity({
             account_id: id,
             role_id: roles.find(a => a.scope === UserRoleScope.project && a.label === role.role).id,
             project_id: project.project_id,
@@ -155,6 +155,42 @@ export class AccountService {
     } else {
       throw new HttpException('Can\'t find account with this id', HttpStatus.NOT_FOUND);
     }
+  }
+
+  async removeAccount(id: number): Promise<void> {
+    /*
+    try {
+      await DatabaseFunctions.dbManager.transaction([
+        {
+          text: 'update task set worker_id=null where worker_id=$1::integer',
+          values: [id]
+        },
+        {
+          text: 'delete from account_role_project where account_id=$1::integer',
+          values: [id]
+        },
+        {
+          text: 'delete from account where id=$1::integer',
+          values: [id]
+        }
+      ]);
+    } catch (e) {
+      throw new Error(`Could not remove user account.}.`);
+    }
+     */
+    const queryRunner = this.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+    } catch (err) {
+      // since we have errors lets rollback the changes we made
+      await queryRunner.rollbackTransaction();
+    } finally {
+      // you need to release a queryRunner which was manually instantiated
+      await queryRunner.release();
+    }
+
   }
 
   private getPasswordHash(password: string): string {

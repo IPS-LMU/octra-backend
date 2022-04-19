@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
-import {AppToken} from './app-token.entity';
+import {AppTokenEntity} from './app-token.entity';
 import {Repository} from 'typeorm';
 import {randomBytes} from 'crypto';
 import {removeNullAttributes} from '../../functions';
@@ -9,16 +9,16 @@ import {AppTokenChangeDto, AppTokenCreateDto} from './app-token.dto';
 @Injectable()
 export class AppTokenService {
   constructor(
-    @InjectRepository(AppToken)
-    private tokenRepository: Repository<AppToken>
+    @InjectRepository(AppTokenEntity)
+    private tokenRepository: Repository<AppTokenEntity>
   ) {
   }
 
-  async getAll(): Promise<AppToken[]> {
+  async getAll(): Promise<AppTokenEntity[]> {
     return await this.tokenRepository.find();
   }
 
-  async createAppToken(appToken: AppTokenCreateDto): Promise<AppToken> {
+  async createAppToken(appToken: AppTokenCreateDto): Promise<AppTokenEntity> {
     return removeNullAttributes(await this.tokenRepository.save(appToken));
   }
 
@@ -32,7 +32,7 @@ export class AppTokenService {
     return;
   }
 
-  async refreshAppToken(id: number): Promise<AppToken> {
+  async refreshAppToken(id: number): Promise<AppTokenEntity> {
     const key = await this.generateAppToken();
     await this.tokenRepository.update(id, {
       key

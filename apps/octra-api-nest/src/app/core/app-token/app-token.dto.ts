@@ -1,7 +1,7 @@
 import {StandardWithTimeDto} from '../standard.dto';
 import {OmitType} from '@nestjs/swagger';
 import {IsNotEmpty} from 'class-validator';
-import {AppToken} from './app-token.entity';
+import {AppTokenEntity} from './app-token.entity';
 
 export class AppTokenDto extends StandardWithTimeDto {
   @IsNotEmpty()
@@ -12,7 +12,7 @@ export class AppTokenDto extends StandardWithTimeDto {
   description?: string;
   registrations?: boolean;
 
-  constructor(importFromDB?: Partial<AppToken>) {
+  constructor(importFromDB?: Partial<AppTokenEntity>) {
     super();
     if (importFromDB) {
       Object.assign(this, importFromDB);

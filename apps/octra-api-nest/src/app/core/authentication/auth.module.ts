@@ -9,12 +9,12 @@ import {jwtConstants} from './auth.constants';
 import {JwtStrategy} from './jwt.strategy';
 import {AccountService} from '../account';
 import {TypeOrmModule} from '@nestjs/typeorm';
-import {Account, AccountPerson} from '../account/entities/account.entity';
-import {AccountRoleProject} from '../account/entities/account-role-project.entity';
+import {AccountEntity, AccountPersonEntity} from '../account/entities/account.entity';
+import {AccountRoleProjectEntity} from '../account/entities/account-role-project.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([AccountPerson, Account, AccountRoleProject]),
+    TypeOrmModule.forFeature([AccountPersonEntity, AccountEntity, AccountRoleProjectEntity]),
     AccountModule, PassportModule, JwtModule.register({
       secret: jwtConstants.secret,
       signOptions: {expiresIn: '60s'},

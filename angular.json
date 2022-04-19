@@ -184,6 +184,75 @@
       },
       "tags": []
     },
+    "octra-api-nest-e2e": {
+      "root": "apps/octra-api-nest-e2e",
+      "sourceRoot": "apps/octra-api-nest-e2e/src",
+      "projectType": "application",
+      "architect": {
+        "build": {
+          "builder": "@nrwl/node:webpack",
+          "outputs": [
+            "{options.outputPath}"
+          ],
+          "options": {
+            "outputPath": "dist/apps/octra-api-nest-e2e",
+            "main": "apps/octra-api-nest-e2e/src/main.ts",
+            "tsConfig": "apps/octra-api-nest-e2e/tsconfig.app.json",
+            "assets": [
+              "apps/octra-api-nest-e2e/src/assets"
+            ]
+          },
+          "configurations": {
+            "production": {
+              "optimization": true,
+              "extractLicenses": true,
+              "inspect": false,
+              "fileReplacements": [
+                {
+                  "replace": "apps/octra-api-nest-e2e/src/environments/environment.ts",
+                  "with": "apps/octra-api-nest-e2e/src/environments/environment.prod.ts"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "builder": "@nrwl/node:node",
+          "options": {
+            "buildTarget": "octra-api-nest-e2e:build"
+          }
+        },
+        "lint": {
+          "builder": "@nrwl/linter:eslint",
+          "outputs": [
+            "{options.outputFile}"
+          ],
+          "options": {
+            "lintFilePatterns": [
+              "apps/octra-api-nest-e2e/**/*.ts"
+            ]
+          }
+        },
+        "test": {
+          "builder": "@nrwl/jest:jest",
+          "outputs": [
+            "coverage/apps/octra-api-nest-e2e"
+          ],
+          "options": {
+            "jestConfig": "apps/octra-api-nest-e2e/jest.config.js",
+            "passWithNoTests": true
+          }
+        },
+        "e2e": {
+          "builder": "@nrwl/jest:jest",
+          "options": {
+            "jestConfig": "apps/octra-api-nest-e2e/jest.config.js",
+            "tsConfig": "apps/octra-api-nest-e2e/tsconfig.spec.json"
+          }
+        }
+      },
+      "tags": []
+    },
     "octra-api-types": {
       "root": "libs/octra-api-types",
       "sourceRoot": "libs/octra-api-types/src",
@@ -377,75 +446,6 @@
             "assets": [
               "libs/octra-db/*.md"
             ]
-          }
-        }
-      },
-      "tags": []
-    },
-    "octra-api-nest-e2e": {
-      "root": "apps/octra-api-nest-e2e",
-      "sourceRoot": "apps/octra-api-nest-e2e/src",
-      "projectType": "application",
-      "architect": {
-        "build": {
-          "builder": "@nrwl/node:webpack",
-          "outputs": [
-            "{options.outputPath}"
-          ],
-          "options": {
-            "outputPath": "dist/apps/octra-api-nest-e2e",
-            "main": "apps/octra-api-nest-e2e/src/main.ts",
-            "tsConfig": "apps/octra-api-nest-e2e/tsconfig.app.json",
-            "assets": [
-              "apps/octra-api-nest-e2e/src/assets"
-            ]
-          },
-          "configurations": {
-            "production": {
-              "optimization": true,
-              "extractLicenses": true,
-              "inspect": false,
-              "fileReplacements": [
-                {
-                  "replace": "apps/octra-api-nest-e2e/src/environments/environment.ts",
-                  "with": "apps/octra-api-nest-e2e/src/environments/environment.prod.ts"
-                }
-              ]
-            }
-          }
-        },
-        "serve": {
-          "builder": "@nrwl/node:node",
-          "options": {
-            "buildTarget": "octra-api-nest-e2e:build"
-          }
-        },
-        "lint": {
-          "builder": "@nrwl/linter:eslint",
-          "outputs": [
-            "{options.outputFile}"
-          ],
-          "options": {
-            "lintFilePatterns": [
-              "apps/octra-api-nest-e2e/**/*.ts"
-            ]
-          }
-        },
-        "test": {
-          "builder": "@nrwl/jest:jest",
-          "outputs": [
-            "coverage/apps/octra-api-nest-e2e"
-          ],
-          "options": {
-            "jestConfig": "apps/octra-api-nest-e2e/jest.config.js",
-            "passWithNoTests": true
-          }
-        },
-        "e2e": {
-          "builder": "@nrwl/jest:jest",
-          "options": {
-            "jestConfig": "apps/octra-api-nest-e2e/jest.config.js",
-            "tsConfig": "apps/octra-api-nest-e2e/tsconfig.spec.json"
           }
         }
       },

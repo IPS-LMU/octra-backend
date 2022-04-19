@@ -7,6 +7,7 @@ import {BadRequestException, ValidationPipe} from '@nestjs/common';
 import {ValidationError} from 'class-validator';
 import {AssignRoleDto, ChangePasswordDto} from '../../octra-api-nest/src/app/core/account/account.dto';
 import {UserRole} from '@octra/db';
+import {ProjectRequestDto} from '../../octra-api-nest/src/app/core/project/project.dto';
 
 const tempData = {
   apptoken: {
@@ -200,5 +201,36 @@ describe('Accounts', () => {
         throw new Error('Body must be of type array.');
       }
     });
+  });
+});
+
+
+describe('Projects', () => {
+  it('/projects/ (GET)', () => {
+    return authGet('/projects/').expect(200).then(({body}) => {
+      if (!Array.isArray(body)) {
+        throw new Error('Body must be of type array.');
+      }
+    })
+  });
+
+  tempData.project.name = 'TestProject_' + Date.now();
+  it('/projects/ (POST)', () => {
+    return authPost('/projects/', {
+      'name': tempData.project.name,
+      shortname: `${tempData.project.name}_short`,
+      'description': 'arrsseiosdjp askdospasdk oakdsspoakdopaküpd akdspkapsdükapüds'
+    } as ProjectRequestDto).expect(201).then(({body}) => {
+      if (!body) {
+        throw new Error('Body must be of type array.');
+      }
+      tempData.project.id = body.id;
+    }).catch((e) => {
+      throw Error(e);
+    });
+  });
+
+  it('/projects/:id (DELETE)', () => {
+    return authDelete(`/projects/${tempData.project.id}`).expect(200);
   });
 });

@@ -4,7 +4,7 @@ import {JwtService} from '@nestjs/jwt';
 import {SHA256} from 'crypto-js';
 import {ConfigService} from '@nestjs/config';
 import {JWTPayload} from './jwt.types';
-import {Account} from '../account/entities/account.entity';
+import {AccountEntity} from '../account/entities/account.entity';
 import {RoleDto} from '../account/account.dto';
 
 @Injectable()
@@ -23,7 +23,7 @@ export class AuthService {
     return null;
   }
 
-  async login(user: Account) {
+  async login(user: AccountEntity) {
     const payload: JWTPayload = {
       username: user.account_person.username,
       roles: [

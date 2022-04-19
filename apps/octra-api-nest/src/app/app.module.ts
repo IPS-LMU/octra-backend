@@ -10,14 +10,14 @@ import {ProjectController} from './core/project';
 import {FilesController} from './core/files';
 import {AppTokenModule} from './core/app-token/app-token.module';
 import {FilesModule} from './core/files/files.module';
-import {ProjectModule} from './core/project/project.module';
-import {ToolModule} from './core/tool/tool.module';
+import {PROJECT_ENTITIES, ProjectModule} from './core/project/project.module';
+import {TOOL_ENTITIES, ToolModule} from './core/tool/tool.module';
 import {APP_GUARD} from '@nestjs/core';
 import {JwtAuthGuard} from './core/authentication/jwt-auth.guard';
 import {ConfigModule} from '@nestjs/config';
 import {Configuration} from './config/configuration';
 import {TypeOrmModule} from '@nestjs/typeorm';
-import {AppToken} from './core/app-token/app-token.entity';
+import {AppTokenEntity} from './core/app-token/app-token.entity';
 import {RolesGuard} from './core/authorization/roles.guard';
 
 const config = Configuration.getInstance();
@@ -43,7 +43,7 @@ const config = Configuration.getInstance();
       password: config.database.dbPassword,
       database: config.database.dbName,
       synchronize: false,
-      entities: [AppToken, ...ACCOUNT_ENTITIES],
+      entities: [AppTokenEntity, ...ACCOUNT_ENTITIES, ...PROJECT_ENTITIES, ...TOOL_ENTITIES],
       keepConnectionAlive: true
     })
   ],

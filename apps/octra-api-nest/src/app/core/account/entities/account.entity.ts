@@ -1,10 +1,10 @@
 import {Entity, JoinColumn, OneToMany, OneToOne} from 'typeorm';
 import {DbAwareColumn} from '../../../obj/decorators/';
-import {AccountRoleProject, Role} from './account-role-project.entity';
+import {AccountRoleProjectEntity, RoleEntity} from './account-role-project.entity';
 import {StandardEntity, StandardEntityWithTimestamps} from '../../../obj/entities';
 
 @Entity({name: 'account_person'})
-export class AccountPerson extends StandardEntity {
+export class AccountPersonEntity extends StandardEntity {
   @DbAwareColumn()
   username?: string;
 
@@ -22,7 +22,7 @@ export class AccountPerson extends StandardEntity {
 }
 
 @Entity({name: 'account'})
-export class Account extends StandardEntityWithTimestamps {
+export class AccountEntity extends StandardEntityWithTimestamps {
   @DbAwareColumn()
   training: string;
 
@@ -34,28 +34,28 @@ export class Account extends StandardEntityWithTimestamps {
   })
   role_id: number;
 
-  @OneToOne(() => Role, {
+  @OneToOne(() => RoleEntity, {
     eager: true
   })
   @JoinColumn({
     name: 'role_id'
   })
-  generalRole: Role;
+  generalRole: RoleEntity;
 
-  @OneToMany(() => AccountRoleProject, (accountRoleProject) => accountRoleProject.account, {
+  @OneToMany(() => AccountRoleProjectEntity, (accountRoleProject) => accountRoleProject.account, {
     eager: true
   })
   @JoinColumn({referencedColumnName: 'account_id'})
-  roles: AccountRoleProject[];
+  roles: AccountRoleProjectEntity[];
 
   @DbAwareColumn()
   last_login?: string;
 
-  @OneToOne(() => AccountPerson, {
+  @OneToOne(() => AccountPersonEntity, {
     eager: true
   })
   @JoinColumn({
     name: 'account_person_id'
   })
-  account_person: AccountPerson;
+  account_person: AccountPersonEntity;
 }

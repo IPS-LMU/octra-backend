@@ -3,7 +3,7 @@
  * This is only a minimal backend to get started.
  */
 
-import {Logger, ValidationPipe} from '@nestjs/common';
+import {Logger} from '@nestjs/common';
 import {NestFactory} from '@nestjs/core';
 
 import {AppModule} from './app/app.module';
@@ -13,6 +13,7 @@ import {DocumentBuilder, SwaggerModule} from '@nestjs/swagger';
 import {RedocModule, RedocOptions} from 'nestjs-redoc';
 import * as fs from 'fs';
 import {environment} from './environments/environment';
+import {CustomValidationPipe} from './app/obj/pipes/custom-validation.pipe';
 
 async function bootstrap() {
   const globalPrefix = 'v1';
@@ -42,7 +43,8 @@ async function bootstrap() {
           name: 'v1',
           tags: ['Authentication', 'Accounts', 'App tokens', 'Projects', 'Tools', 'Files']
         }
-      ]
+      ],
+      requiredPropsFirst: true
     };
 
     if (config.reference.protection) {
@@ -64,13 +66,11 @@ async function bootstrap() {
     await RedocModule.setup('/v1/reference', app, document, redocOptions);
   }
 
-  app.useGlobalPipes(new ValidationPipe({
-    transform: true
-  }));
+  app.useGlobalPipes(new CustomValidationPipe());
 
   await app.listen(port);
   Logger.log(
-    `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`
+    `🚀 Application is running on: http://localhost:${port}/${globalPrefix}/reference`
   );
 }
 

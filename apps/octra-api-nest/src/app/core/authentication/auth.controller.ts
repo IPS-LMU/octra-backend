@@ -4,7 +4,7 @@ import {Public} from '../authorization/public.decorator';
 import {LocalAuthGuard} from './local-auth.guard';
 import {AuthLoginDto, AuthRegisterDto} from './auth.dto';
 import {ApiBody, ApiExtraModels, ApiTags} from '@nestjs/swagger';
-import {Account} from '../account/entities/account.entity';
+import {AccountEntity} from '../account/entities/account.entity';
 
 @ApiTags('Authentication')
 @ApiExtraModels(AuthLoginDto)
@@ -51,7 +51,7 @@ export class AuthController {
   @Public()
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  login(@Req() req: { user: Account }): any {
+  login(@Req() req: { user: AccountEntity }): any {
     return this.authService.login(req.user);
   }
 

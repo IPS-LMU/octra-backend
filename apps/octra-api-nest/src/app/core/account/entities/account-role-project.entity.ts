@@ -1,11 +1,11 @@
 import {AfterLoad, Entity, JoinColumn, ManyToOne, OneToOne} from 'typeorm';
-import {Account} from './account.entity';
+import {AccountEntity} from './account.entity';
 import {DbAwareColumn} from '../../../obj/decorators';
 import {StandardEntityWithTimestamps} from '../../../obj/entities';
 import {UserRole, UserRoleScope} from '@octra/octra-api-types';
 
 @Entity('role')
-export class Role extends StandardEntityWithTimestamps {
+export class RoleEntity extends StandardEntityWithTimestamps {
   @DbAwareColumn({
     type: 'text'
   })
@@ -24,7 +24,7 @@ export class Role extends StandardEntityWithTimestamps {
 }
 
 @Entity({name: 'account_role_project'})
-export class AccountRoleProject extends StandardEntityWithTimestamps {
+export class AccountRoleProjectEntity extends StandardEntityWithTimestamps {
   @DbAwareColumn({
     type: 'bigint'
   })
@@ -35,12 +35,12 @@ export class AccountRoleProject extends StandardEntityWithTimestamps {
   })
   role_id: number;
 
-  @OneToOne(() => Role, {eager: true})
+  @OneToOne(() => RoleEntity, {eager: true})
   @JoinColumn({
     name: 'role_id',
     referencedColumnName: 'id'
   })
-  role: Role;
+  role: RoleEntity;
 
   @DbAwareColumn({
     type: 'bigint'
@@ -57,19 +57,19 @@ export class AccountRoleProject extends StandardEntityWithTimestamps {
   })
   valid_enddate?: string;
 
-  @ManyToOne(() => Account)
+  @ManyToOne(() => AccountEntity)
   @JoinColumn({
     name: 'account_id',
     referencedColumnName: 'id'
   })
-  account: Account;
+  account: AccountEntity;
 
   @AfterLoad()
   _convertNumerics() {
     this.id = parseInt(this.id as any);
   }
 
-  constructor(partial: Partial<AccountRoleProject>) {
+  constructor(partial: Partial<AccountRoleProjectEntity>) {
     super();
     Object.assign(this, partial);
   }
