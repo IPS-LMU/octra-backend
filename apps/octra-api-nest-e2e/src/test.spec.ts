@@ -46,26 +46,39 @@ const tempData = {
   }
 };
 let app;
+const appToken = 'a810c2e6e76774fadf03d8edd1fc9d1954cc27d6';
 
 const authGet = (url: string, isAdmin = true) => {
-  return request(app.getHttpServer()).get(url).auth(
-    isAdmin ? tempData.admin.jwtToken : tempData.user.jwtToken
-    , {type: 'bearer'});
+  return request(app.getHttpServer()).get(url)
+    .set('X-App-Token', `${appToken}`)
+    .set('Origin', 'http://localhost:8080')
+    .auth(
+      isAdmin ? tempData.admin.jwtToken : tempData.user.jwtToken
+      , {type: 'bearer'}).send();
 }
 const authPost = (url: string, data: any, isAdmin = true) => {
-  return request(app.getHttpServer()).post(url).auth(
-    isAdmin ? tempData.admin.jwtToken : tempData.user.jwtToken
-    , {type: 'bearer'}).send(data);
+  return request(app.getHttpServer()).post(url)
+    .set('X-App-Token', `${appToken}`)
+    .set('Origin', 'http://localhost:8080')
+    .auth(
+      isAdmin ? tempData.admin.jwtToken : tempData.user.jwtToken
+      , {type: 'bearer'}).send(data);
 }
 const authPut = (url: string, data: any, isAdmin = true) => {
-  return request(app.getHttpServer()).put(url).auth(
-    isAdmin ? tempData.admin.jwtToken : tempData.user.jwtToken
-    , {type: 'bearer'}).send(data);
+  return request(app.getHttpServer()).put(url)
+    .set('X-App-Token', `${appToken}`)
+    .set('Origin', 'http://localhost:8080')
+    .auth(
+      isAdmin ? tempData.admin.jwtToken : tempData.user.jwtToken
+      , {type: 'bearer'}).send(data);
 }
 const authDelete = (url: string, data: any, isAdmin = true) => {
-  return request(app.getHttpServer()).delete(url).auth(
-    isAdmin ? tempData.admin.jwtToken : tempData.user.jwtToken
-    , {type: 'bearer'}).send(data);
+  return request(app.getHttpServer()).delete(url)
+    .set('X-App-Token', `${appToken}`)
+    .set('Origin', 'http://localhost:8080')
+    .auth(
+      isAdmin ? tempData.admin.jwtToken : tempData.user.jwtToken
+      , {type: 'bearer'}).send(data);
 }
 
 describe('OCTRA Nest API (e2e)', () => {
@@ -93,7 +106,10 @@ describe('OCTRA Nest API (e2e)', () => {
         .post('/auth/login').send({
           'username': 'Julian',
           'password': 'Test1234'
-        }).expect(201).then(({body}: { body: AuthDto }) => {
+        })
+        .set('X-App-Token', `${appToken}`)
+        .set('Origin', 'http://localhost:8080')
+        .expect(201).then(({body}: { body: AuthDto }) => {
           tempData.admin.jwtToken = body.access_token;
         })
     });
@@ -195,7 +211,11 @@ describe('Accounts', () => {
   });
 
   it('/account/hash (GET)', () => {
-    return request(app.getHttpServer()).get('/account/hash?b07e7c6156b937d17d55362793052f225571764e7f6cf2a15742a534319ee7c6').expect(200);
+    return request(app.getHttpServer())
+      .get('/account/hash?b07e7c6156b937d17d55362793052f225571764e7f6cf2a15742a534319ee7c6')
+      .set('X-App-Token', `${appToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .expect(200);
   });
 
 

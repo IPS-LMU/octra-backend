@@ -19,6 +19,7 @@ import {Configuration} from './config/configuration';
 import {TypeOrmModule} from '@nestjs/typeorm';
 import {AppTokenEntity} from './core/app-token/app-token.entity';
 import {RolesGuard} from './core/authorization/roles.guard';
+import {AppTokenOriginGuard} from './obj/guards/app-token-origin.guard';
 
 const config = Configuration.getInstance();
 
@@ -50,6 +51,10 @@ const config = Configuration.getInstance();
   controllers: [AppController, AppTokenController, FilesController, ProjectController, ToolController],
   providers: [
     AppService,
+    {
+      provide: APP_GUARD,
+      useClass: AppTokenOriginGuard,
+    },
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

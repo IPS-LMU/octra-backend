@@ -40,6 +40,35 @@ export class AppTokenService {
     return (removeNullAttributes(await this.tokenRepository.findOne(id)));
   }
 
+  async isValidAppToken(token: string, originHost: string): Promise<boolean> {
+    const tokenRow = await this.tokenRepository.findOne({
+      where: {
+        key: token
+      }
+    });
+
+    if (tokenRow) {
+      if (tokenRow.domain) {
+        const domainEntry = tokenRow.domain.replace(/\s+/g, '');
+
+        if (domainEntry !== '') {
+          let valid;
+          if (tokenRow.domain.indexOf(',') > -1) {
+            // multiple domains
+            const domains = domainEntry.split(',');
+            valid = domains.filter(a => a !== '').findIndex(a => a === originHost) > -1;
+          } else {
+            // one domain
+            valid = tokenRow.domain.trim() === originHost;
+          }
+          return valid;
+        }
+      }
+    }
+
+    return false;
+  }
+
   private async generateAppToken(): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       randomBytes(20, function (err, buffer) {
