@@ -18,6 +18,7 @@ import {
 } from '../../octra-api-nest/src/app/core/project/project.dto';
 import {AccountRole} from '@octra/octra-api-types';
 import {ToolCreateRequestDto, ToolDto} from '../../octra-api-nest/src/app/core/tool/tool.dto';
+import {GuidelinesDto} from '../../octra-api-nest/src/app/core/project/guidelines/guidelines.dto';
 
 const tempData = {
   apptoken: {
@@ -286,7 +287,7 @@ describe('Projects', () => {
     return authPost('/projects/', {
       'name': tempData.project.name,
       shortname: `${tempData.project.name}_short`,
-      'description': 'arrsseiosdjsp askdossspssasdks sossaskdsspossaskdopaküpsd akdspkapsdükapüds'
+      'description': 'arrsseiosdjsp asskdossspssasdks sossaskdsspossaskdopaküpsd akdspkapsdükapüds'
     } as ProjectRequestDto).expect(201).then(({body}) => {
       if (!body) {
         throw new Error('Body must be of type array.');
@@ -316,6 +317,23 @@ describe('Projects', () => {
       accountID: 459,
       role: AccountRole.projectAdministrator
     }] as ProjectAssignRolesRequestDto[]).expect((a) => a.status === 200 || a.status === 201)
+  });
+
+  it('/projects/:id/guidelines (PUT)', () => {
+    return authPut(`/projects/${tempData.project.id}/guidelines`, [{
+      language: 'de',
+      json: {
+        test: 'ok'
+      }
+    }] as GuidelinesDto[]).expect(200);
+  });
+
+  it('/projects/:id/guidelines (GET)', () => {
+    return authGet(`/projects/${tempData.project.id}/guidelines`).expect(200).then(({body}) => {
+      if (!Array.isArray(body)) {
+        throw new Error(`Body must be of type array.`)
+      }
+    });
   });
 
   it('/projects/:id (DELETE)', () => {
