@@ -3,7 +3,7 @@ import {ProjectService} from './project.service';
 import {CombinedRoles} from '../../../combine.decorators';
 import {UserRole} from '@octra/octra-api-types';
 import {removeNullAttributes} from '../../functions';
-import {ProjectDto, ProjectRequestDto} from './project.dto';
+import {ProjectAssignRolesRequestDto, ProjectDto, ProjectRemoveRequestDto, ProjectRequestDto} from './project.dto';
 import {ApiBearerAuth, ApiTags} from '@nestjs/swagger';
 
 @ApiTags('Projects')
@@ -24,6 +24,24 @@ export class ProjectController {
   @Get('')
   async listProjects(): Promise<ProjectDto[]> {
     return removeNullAttributes(await this.projectService.listProjects()).map(a => new ProjectDto(a));
+  }
+
+  @CombinedRoles(UserRole.administrator)
+  @Get(':id')
+  async getProject(@Param('id', ParseIntPipe) id: number): Promise<ProjectDto> {
+    return removeNullAttributes<ProjectDto>(new ProjectDto(await this.projectService.getProject(id)));
+  }
+
+  @CombinedRoles(UserRole.administrator)
+  @Get(':id/roles')
+  async getProjectRoles(@Param('id', ParseIntPipe) id: number): Promise<any> {
+    return removeNullAttributes(await this.projectService.getProjectRoles(id));
+  }
+
+  @CombinedRoles(UserRole.administrator, UserRole.projectAdministrator)
+  @Post(':id/roles')
+  async assignProjectRoles(@Param('id', ParseIntPipe) id: number, @Body() dto: ProjectAssignRolesRequestDto[]): Promise<void> {
+    return removeNullAttributes(await this.projectService.assignProjectRoles(id, dto));
   }
 
   /**
@@ -55,7 +73,7 @@ export class ProjectController {
    */
   @CombinedRoles(UserRole.administrator)
   @Delete(':id')
-  async removeProject(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    return this.projectService.removeProject(id);
+  async removeProject(@Param('id', ParseIntPipe) id: number, @Body() dto: ProjectRemoveRequestDto): Promise<void> {
+    return this.projectService.removeProject(id, dto);
   }
 }

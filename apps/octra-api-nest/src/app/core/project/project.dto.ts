@@ -1,7 +1,8 @@
-import {IsNotEmpty} from 'class-validator';
+import {IsBoolean, IsNotEmpty, IsNumber, IsString} from 'class-validator';
 import {StandardWithTimeDto} from '../standard.dto';
 import {removeProperties} from '../../functions';
 import {ApiHideProperty} from '@nestjs/swagger';
+import {UserRole} from '@octra/octra-api-types';
 
 export class ProjectRequestDto extends StandardWithTimeDto {
   @IsNotEmpty()
@@ -36,4 +37,26 @@ export class ProjectDto extends StandardWithTimeDto {
     super();
     Object.assign(this, partial);
   }
+}
+
+export class ProjectAssignRolesRequestDto {
+  @IsNotEmpty()
+  @IsNumber()
+  accountID: number;
+  @IsNotEmpty()
+  @IsString()
+  role: UserRole;
+}
+
+export class ProjectRemoveRequestDto {
+  // TODO implement custom validator for one of
+  @IsNotEmpty()
+  @IsBoolean()
+  removeAllReferences: boolean;
+  @IsNotEmpty()
+  @IsBoolean()
+  cutAllReferences: boolean;
+  @IsNotEmpty()
+  @IsBoolean()
+  removeProjectFiles: boolean;
 }

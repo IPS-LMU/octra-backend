@@ -6,8 +6,12 @@ import {AppTokenCreateDto, AppTokenDto} from '../../octra-api-nest/src/app/core/
 import {BadRequestException, ValidationPipe} from '@nestjs/common';
 import {ValidationError} from 'class-validator';
 import {AssignRoleDto, ChangePasswordDto} from '../../octra-api-nest/src/app/core/account/account.dto';
-import {UserRole} from '@octra/db';
-import {ProjectRequestDto} from '../../octra-api-nest/src/app/core/project/project.dto';
+import {
+  ProjectAssignRolesRequestDto,
+  ProjectRemoveRequestDto,
+  ProjectRequestDto
+} from '../../octra-api-nest/src/app/core/project/project.dto';
+import {UserRole} from '@octra/octra-api-types';
 
 const tempData = {
   apptoken: {
@@ -58,10 +62,10 @@ const authPut = (url: string, data: any, isAdmin = true) => {
     isAdmin ? tempData.admin.jwtToken : tempData.user.jwtToken
     , {type: 'bearer'}).send(data);
 }
-const authDelete = (url: string, isAdmin = true) => {
+const authDelete = (url: string, data: any, isAdmin = true) => {
   return request(app.getHttpServer()).delete(url).auth(
     isAdmin ? tempData.admin.jwtToken : tempData.user.jwtToken
-    , {type: 'bearer'});
+    , {type: 'bearer'}).send(data);
 }
 
 describe('OCTRA Nest API (e2e)', () => {
@@ -134,7 +138,7 @@ describe('OCTRA Nest API (e2e)', () => {
     });
 
     it('/app/tokens/:id (DELETE)', () => {
-      return authDelete(`/app/tokens/${tempData.apptoken.addedID}`).expect(200);
+      return authDelete(`/app/tokens/${tempData.apptoken.addedID}`, undefined).expect(200);
     });
   })
 });
@@ -219,7 +223,7 @@ describe('Projects', () => {
     return authPost('/projects/', {
       'name': tempData.project.name,
       shortname: `${tempData.project.name}_short`,
-      'description': 'arrsseiosdjp askdospasdk oakdsspoakdopaküpd akdspkapsdükapüds'
+      'description': 'arrsseiosdjsp askdospssasdks sossakdsspossaskdopaküpsd akdspkapsdükapüds'
     } as ProjectRequestDto).expect(201).then(({body}) => {
       if (!body) {
         throw new Error('Body must be of type array.');
@@ -230,7 +234,32 @@ describe('Projects', () => {
     });
   });
 
+  it('/projects/:id (GET)', () => {
+    return authGet(`/projects/${tempData.project.id}`).expect(200).then(({body}) => {
+        const t = '';
+      }
+    )
+  });
+
+  it('/projects/:id/roles (GET)', () => {
+    return authGet(`/projects/${tempData.project.id}/roles`).expect(200).then(({body}) => {
+        const t = '';
+      }
+    )
+  });
+
+  it('/projects/:id/roles (POST)', () => {
+    return authPost(`/projects/${tempData.project.id}/roles`, [{
+      accountID: 459,
+      role: UserRole.projectAdministrator
+    }] as ProjectAssignRolesRequestDto[]).expect((a) => a.status === 200 || a.status === 201)
+  });
+
   it('/projects/:id (DELETE)', () => {
-    return authDelete(`/projects/${tempData.project.id}`).expect(200);
+    return authDelete(`/projects/${tempData.project.id}`, {
+      cutAllReferences: false,
+      removeAllReferences: true,
+      removeProjectFiles: true
+    } as ProjectRemoveRequestDto).expect(200);
   });
 });

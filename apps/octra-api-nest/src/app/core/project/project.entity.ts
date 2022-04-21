@@ -1,6 +1,7 @@
-import {Entity} from 'typeorm';
+import {Entity, JoinColumn, OneToMany} from 'typeorm';
 import {DbAwareColumn} from '../../obj/decorators';
 import {StandardEntityWithTimestamps} from '../../obj/entities';
+import {AccountRoleProjectEntity} from '../account/entities/account-role-project.entity';
 
 @Entity({name: 'project'})
 export class ProjectEntity extends StandardEntityWithTimestamps {
@@ -33,4 +34,11 @@ export class ProjectEntity extends StandardEntityWithTimestamps {
     type: 'boolean'
   })
   active: boolean;
+
+  @OneToMany(() => AccountRoleProjectEntity, (accountRole) => accountRole.project)
+  @JoinColumn({
+    name: 'id',
+    referencedColumnName: 'project_id'
+  })
+  roles: AccountRoleProjectEntity[];
 }

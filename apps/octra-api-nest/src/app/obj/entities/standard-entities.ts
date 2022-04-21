@@ -1,4 +1,4 @@
-import {AfterLoad, CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn} from 'typeorm';
+import {CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn} from 'typeorm';
 import {DbAwareColumn} from '../decorators';
 
 export abstract class StandardEntity {
@@ -6,11 +6,6 @@ export abstract class StandardEntity {
     type: 'bigint'
   })
   id: number;
-
-  @AfterLoad()
-  _convertNumerics() {
-    this.id = parseInt(this.id as any);
-  }
 }
 
 export abstract class StandardEntityWithTimestamps extends StandardEntity {
