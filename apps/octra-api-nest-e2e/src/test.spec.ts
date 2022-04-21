@@ -286,7 +286,7 @@ describe('Projects', () => {
     return authPost('/projects/', {
       'name': tempData.project.name,
       shortname: `${tempData.project.name}_short`,
-      'description': 'arrsseiosdjsp askdosspssasdks sossakdsspossaskdopaküpsd akdspkapsdükapüds'
+      'description': 'arrsseiosdjsp askdossspssasdks sossaskdsspossaskdopaküpsd akdspkapsdükapüds'
     } as ProjectRequestDto).expect(201).then(({body}) => {
       if (!body) {
         throw new Error('Body must be of type array.');

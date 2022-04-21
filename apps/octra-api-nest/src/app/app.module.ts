@@ -20,6 +20,7 @@ import {TypeOrmModule} from '@nestjs/typeorm';
 import {AppTokenEntity} from './core/app-token/app-token.entity';
 import {RolesGuard} from './core/authorization/roles.guard';
 import {AppTokenOriginGuard} from './obj/guards/app-token-origin.guard';
+import {ThrottlerGuard, ThrottlerModule} from '@nestjs/throttler';
 
 const config = Configuration.getInstance();
 
@@ -46,7 +47,11 @@ const config = Configuration.getInstance();
       synchronize: false,
       entities: [AppTokenEntity, ...ACCOUNT_ENTITIES, ...PROJECT_ENTITIES, ...TOOL_ENTITIES],
       keepConnectionAlive: true
-    })
+    }),
+    ThrottlerModule.forRoot({
+      ttl: 60,
+      limit: 10,
+    }),
   ],
   controllers: [AppController, AppTokenController, FilesController, ProjectController, ToolController],
   providers: [
@@ -62,7 +67,12 @@ const config = Configuration.getInstance();
     {
       provide: APP_GUARD,
       useClass: RolesGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard
     }
+
   ],
 })
 export class AppModule {

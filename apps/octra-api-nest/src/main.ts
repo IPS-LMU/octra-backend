@@ -14,11 +14,13 @@ import {RedocModule, RedocOptions} from 'nestjs-redoc';
 import * as fs from 'fs';
 import {environment} from './environments/environment';
 import {CustomValidationPipe} from './app/obj/pipes/custom-validation.pipe';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const globalPrefix = 'v1';
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix(globalPrefix);
+  app.use(helmet());
   const configService = app.get(ConfigService);
   const config = configService.get<IAPIConfiguration>('api');
   const port = config.port;

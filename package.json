@@ -63,6 +63,7 @@
     "@nestjs/passport": "^8.2.1",
     "@nestjs/platform-express": "^8.4.3",
     "@nestjs/swagger": "^5.2.1",
+    "@nestjs/throttler": "^2.0.1",
     "@nestjs/typeorm": "^8.0.3",
     "@nrwl/angular": "13.9.7",
     "@popperjs/core": "^2.11.2",
@@ -79,6 +80,7 @@
     "del": "^6.0.0",
     "express": "4.17.2",
     "fs-extra": "^10.0.1",
+    "helmet": "^5.0.2",
     "highlight.js": "^11.4.0",
     "holderjs": "^2.9.9",
     "jquery": "3.5.1",
@@ -164,4 +166,3 @@
     "typescript": "4.5.5"
   }
 }
-
