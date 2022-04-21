@@ -5,13 +5,18 @@ import {AuthDto} from '../../octra-api-nest/src/app/core/authentication/auth.dto
 import {AppTokenCreateDto, AppTokenDto} from '../../octra-api-nest/src/app/core/app-token/app-token.dto';
 import {BadRequestException, ValidationPipe} from '@nestjs/common';
 import {ValidationError} from 'class-validator';
-import {AssignRoleDto, ChangePasswordDto} from '../../octra-api-nest/src/app/core/account/account.dto';
+import {
+  AccountDto,
+  AccountRegisterRequestDto,
+  AssignRoleDto,
+  ChangePasswordDto
+} from '../../octra-api-nest/src/app/core/account/account.dto';
 import {
   ProjectAssignRolesRequestDto,
   ProjectRemoveRequestDto,
   ProjectRequestDto
 } from '../../octra-api-nest/src/app/core/project/project.dto';
-import {UserRole} from '@octra/octra-api-types';
+import {AccountRole} from '@octra/octra-api-types';
 
 const tempData = {
   apptoken: {
@@ -82,7 +87,6 @@ const authDelete = (url: string, data: any, isAdmin = true) => {
 }
 
 describe('OCTRA Nest API (e2e)', () => {
-
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule]
@@ -111,6 +115,25 @@ describe('OCTRA Nest API (e2e)', () => {
         .set('Origin', 'http://localhost:8080')
         .expect(201).then(({body}: { body: AuthDto }) => {
           tempData.admin.jwtToken = body.access_token;
+          tempData.admin.id = body.account_id;
+        })
+    });
+  })
+
+  tempData.user.name = `TestAccount_${Date.now()}`;
+  tempData.user.email = `test_${Date.now()}@email.com`;
+  describe('Registration', () => {
+    it('/account/register (POST)', () => {
+      return request(app.getHttpServer())
+        .post('/account/register').send({
+          'name': tempData.user.name,
+          'password': 'Test1234',
+          'email': tempData.user.email
+        } as AccountRegisterRequestDto)
+        .set('X-App-Token', `${appToken}`)
+        .set('Origin', 'http://localhost:8080')
+        .expect(201).then(({body}: { body: AccountDto }) => {
+          tempData.user.id = body.id;
         })
     });
   })
@@ -177,13 +200,13 @@ describe('Accounts', () => {
 
   it('/account/:id/roles (PUT)', () => {
     return authPut(`/account/444/roles`, {
-      general: UserRole.user,
+      general: AccountRole.user,
       projects: [
         {
           project_id: 801,
           roles: [
             {
-              role: UserRole.dataDelivery
+              role: AccountRole.dataDelivery
             }
           ]
         },
@@ -191,7 +214,7 @@ describe('Accounts', () => {
           project_id: 813,
           roles: [
             {
-              role: UserRole.dataDelivery
+              role: AccountRole.dataDelivery
             }
           ]
         }
@@ -243,7 +266,7 @@ describe('Projects', () => {
     return authPost('/projects/', {
       'name': tempData.project.name,
       shortname: `${tempData.project.name}_short`,
-      'description': 'arrsseiosdjsp askdospssasdks sossakdsspossaskdopaküpsd akdspkapsdükapüds'
+      'description': 'arrsseiosdjsp askdosspssasdks sossakdsspossaskdopaküpsd akdspkapsdükapüds'
     } as ProjectRequestDto).expect(201).then(({body}) => {
       if (!body) {
         throw new Error('Body must be of type array.');
@@ -271,7 +294,7 @@ describe('Projects', () => {
   it('/projects/:id/roles (POST)', () => {
     return authPost(`/projects/${tempData.project.id}/roles`, [{
       accountID: 459,
-      role: UserRole.projectAdministrator
+      role: AccountRole.projectAdministrator
     }] as ProjectAssignRolesRequestDto[]).expect((a) => a.status === 200 || a.status === 201)
   });
 

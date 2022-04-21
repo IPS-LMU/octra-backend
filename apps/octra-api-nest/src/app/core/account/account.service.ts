@@ -3,8 +3,14 @@ import {Connection, Repository} from 'typeorm';
 import {InjectRepository} from '@nestjs/typeorm';
 import {AccountEntity, AccountPersonEntity} from './entities/account.entity';
 import {AccountRoleProjectEntity, RoleEntity} from './entities/account-role-project.entity';
-import {AssignRoleDto, AssignRoleProjectDto, AssignUserRoleDto, ChangePasswordDto} from './account.dto';
-import {UserRoleScope} from '@octra/octra-api-types';
+import {
+  AccountRegisterRequestDto,
+  AssignAccountRoleDto,
+  AssignRoleDto,
+  AssignRoleProjectDto,
+  ChangePasswordDto
+} from './account.dto';
+import {AccountRoleScope} from '@octra/octra-api-types';
 import {removeNullAttributes} from '../../functions';
 import {SHA256} from 'crypto-js';
 import {ConfigService} from '@nestjs/config';
@@ -18,6 +24,8 @@ export class AccountService {
     private accountPersonRepository: Repository<AccountPersonEntity>,
     @InjectRepository(AccountRoleProjectEntity)
     private accountRoleProjectRepository: Repository<AccountRoleProjectEntity>,
+    @InjectRepository(RoleEntity)
+    private roleEntityRepository: Repository<RoleEntity>,
     private connection: Connection,
     private configService: ConfigService
   ) {
@@ -58,13 +66,13 @@ export class AccountService {
     return await this.accountRepository.find();
   }
 
-  async getUser(id: number): Promise<AccountEntity> {
+  async getAccount(id: number): Promise<AccountEntity> {
     return await this.accountRepository.findOne({
       id
     });
   }
 
-  async assignUserRoles(id: number, roleDto: AssignRoleDto): Promise<AssignRoleDto> {
+  async assignAccountRoles(id: number, roleDto: AssignRoleDto): Promise<AssignRoleDto> {
     const queryRunner = this.connection.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -75,13 +83,7 @@ export class AccountService {
 
       // save global user role if exists
       if (roleDto.general) {
-        const newRole = roles.find(a => a.scope === UserRoleScope.general && a.label === roleDto.general).id;
-        const t = await queryRunner.manager.update<AccountEntity>(AccountEntity, {
-          id
-        }, {
-          role_id: newRole
-        })
-        const t1 = '';
+        const newRole = roles.find(a => a.scope === AccountRoleScope.general && a.label === roleDto.general).id;
       }
 
       // remove
@@ -102,7 +104,7 @@ export class AccountService {
         for (const role of project.roles) {
           await queryRunner.manager.insert(AccountRoleProjectEntity, new AccountRoleProjectEntity({
             account_id: id,
-            role_id: roles.find(a => a.scope === UserRoleScope.project && a.label === role.role).id,
+            role_id: roles.find(a => a.scope === AccountRoleScope.project && a.label === role.role).id,
             project_id: project.project_id,
             valid_startdate: role.valid_startdate,
             valid_enddate: role.valid_enddate
@@ -123,7 +125,7 @@ export class AccountService {
         general: account.generalRole.label,
         projects: removeNullAttributes(projectIDs.map(a => new AssignRoleProjectDto({
           project_id: a,
-          roles: account.roles.filter(b => b.project_id === a).map(b => new AssignUserRoleDto(b))
+          roles: account.roles.filter(b => b.project_id === a).map(b => new AssignAccountRoleDto(b))
         })))
       });
     } catch (err) {
@@ -191,6 +193,26 @@ export class AccountService {
       await queryRunner.release();
     }
 
+  }
+
+  async createAccount(dto: AccountRegisterRequestDto): Promise<AccountEntity> {
+    const role = await this.roleEntityRepository.findOne({
+      where: {
+        label: 'user',
+        scope: 'general'
+      }
+    });
+
+    const result = await this.accountRepository.save({
+      role_id: role.id,
+      account_person: {
+        username: dto.name,
+        password: this.getPasswordHash(dto.password),
+        email: dto.email
+      }
+    });
+
+    return this.accountRepository.findOne(result.id);
   }
 
   private getPasswordHash(password: string): string {

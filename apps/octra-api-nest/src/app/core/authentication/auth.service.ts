@@ -6,6 +6,7 @@ import {ConfigService} from '@nestjs/config';
 import {JWTPayload} from './jwt.types';
 import {AccountEntity} from '../account/entities/account.entity';
 import {RoleDto} from '../account/account.dto';
+import {AuthDto} from './auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -23,7 +24,7 @@ export class AuthService {
     return null;
   }
 
-  async login(user: AccountEntity) {
+  async login(user: AccountEntity): Promise<AuthDto> {
     const payload: JWTPayload = {
       username: user.account_person.username,
       roles: [
@@ -39,7 +40,8 @@ export class AuthService {
       sub: user.id
     };
     return {
-      access_token: this.jwtService.sign(payload)
+      access_token: this.jwtService.sign(payload),
+      account_id: user.id
     }
   }
 

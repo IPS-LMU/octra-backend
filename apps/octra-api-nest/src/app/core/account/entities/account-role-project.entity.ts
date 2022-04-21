@@ -2,7 +2,7 @@ import {AfterLoad, Entity, JoinColumn, ManyToOne, OneToOne} from 'typeorm';
 import {AccountEntity} from './account.entity';
 import {DbAwareColumn} from '../../../obj/decorators';
 import {StandardEntityWithTimestamps} from '../../../obj/entities';
-import {UserRole, UserRoleScope} from '@octra/octra-api-types';
+import {AccountRole, AccountRoleScope} from '@octra/octra-api-types';
 import {ProjectEntity} from '../../project/project.entity';
 
 @Entity('role')
@@ -10,7 +10,7 @@ export class RoleEntity extends StandardEntityWithTimestamps {
   @DbAwareColumn({
     type: 'text'
   })
-  label?: UserRole
+  label?: AccountRole
 
   @DbAwareColumn({
     type: 'text'
@@ -21,7 +21,7 @@ export class RoleEntity extends StandardEntityWithTimestamps {
     type: 'text',
     nullable: false
   })
-  scope: UserRoleScope;
+  scope: AccountRoleScope;
 }
 
 @Entity({name: 'account_role_project'})

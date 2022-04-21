@@ -1,17 +1,17 @@
 import {StandardWithTimeDto} from '../standard.dto';
 import {IsNotEmpty} from 'class-validator';
-import {UserRole, UserRoleScope} from '@octra/db';
 import {AccountEntity} from './entities/account.entity';
 import {Transform, Type} from 'class-transformer';
 import {AccountRoleProjectEntity, RoleEntity} from './entities/account-role-project.entity';
 import {removeProperties} from '../../functions';
 import {OmitType, PartialType} from '@nestjs/swagger';
+import {AccountRole, AccountRoleScope} from '@octra/octra-api-types';
 
 export class RoleDto {
   @IsNotEmpty()
-  role: UserRole;
+  role: AccountRole;
   @IsNotEmpty()
-  scope: UserRoleScope;
+  scope: AccountRoleScope;
   project_id?: number;
   project_name?: string;
   valid_startdate?: string;
@@ -31,11 +31,11 @@ export class RoleDto {
   }
 }
 
-export class AssignUserRoleDto extends PartialType(
+export class AssignAccountRoleDto extends PartialType(
   OmitType(RoleDto, ['project_id', 'project_name', 'scope'] as const)
 ) {
   @IsNotEmpty()
-  role: UserRole;
+  role: AccountRole;
 
   constructor(partial: Partial<AccountRoleProjectEntity>) {
     super();
@@ -55,7 +55,7 @@ export class AssignUserRoleDto extends PartialType(
 export class AssignRoleProjectDto {
   project_id: number;
   @Type(() => RoleDto)
-  roles: AssignUserRoleDto[];
+  roles: AssignAccountRoleDto[];
 
   constructor(partial: Partial<AssignRoleProjectDto>) {
     Object.assign(this, partial);
@@ -63,7 +63,7 @@ export class AssignRoleProjectDto {
 }
 
 export class AssignRoleDto {
-  general?: UserRole;
+  general?: AccountRole;
   projects?: AssignRoleProjectDto[];
 
   constructor(partial: Partial<AssignRoleDto>) {
@@ -86,8 +86,8 @@ export class AccountDto extends StandardWithTimeDto {
   @IsNotEmpty()
   @Transform(({value}) => value.label)
   generalRole: RoleEntity;
-  @Type(() => AssignUserRoleDto)
-  projectRoles: AssignUserRoleDto[];
+  @Type(() => AssignAccountRoleDto)
+  projectRoles: AssignAccountRoleDto[];
   last_login?: string;
   registrations?: boolean;
 
@@ -117,4 +117,12 @@ export class ChangePasswordDto {
 export class ExistsWithHashDto {
   @IsNotEmpty()
   hash: string;
+}
+
+export class AccountRegisterRequestDto extends StandardWithTimeDto {
+  @IsNotEmpty()
+  name: string;
+  @IsNotEmpty()
+  password: string;
+  email: string;
 }

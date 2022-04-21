@@ -1,7 +1,7 @@
 import {Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put} from '@nestjs/common';
 import {ProjectService} from './project.service';
 import {CombinedRoles} from '../../../combine.decorators';
-import {UserRole} from '@octra/octra-api-types';
+import {AccountRole} from '@octra/octra-api-types';
 import {removeNullAttributes} from '../../functions';
 import {ProjectAssignRolesRequestDto, ProjectDto, ProjectRemoveRequestDto, ProjectRequestDto} from './project.dto';
 import {ApiBearerAuth, ApiTags} from '@nestjs/swagger';
@@ -20,25 +20,25 @@ export class ProjectController {
    *
    * Allowed user roles: <code>administrator</code>
    */
-  @CombinedRoles(UserRole.administrator)
+  @CombinedRoles(AccountRole.administrator)
   @Get('')
   async listProjects(): Promise<ProjectDto[]> {
     return removeNullAttributes(await this.projectService.listProjects()).map(a => new ProjectDto(a));
   }
 
-  @CombinedRoles(UserRole.administrator)
+  @CombinedRoles(AccountRole.administrator)
   @Get(':id')
   async getProject(@Param('id', ParseIntPipe) id: number): Promise<ProjectDto> {
     return removeNullAttributes<ProjectDto>(new ProjectDto(await this.projectService.getProject(id)));
   }
 
-  @CombinedRoles(UserRole.administrator)
+  @CombinedRoles(AccountRole.administrator)
   @Get(':id/roles')
   async getProjectRoles(@Param('id', ParseIntPipe) id: number): Promise<any> {
     return removeNullAttributes(await this.projectService.getProjectRoles(id));
   }
 
-  @CombinedRoles(UserRole.administrator, UserRole.projectAdministrator)
+  @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator)
   @Post(':id/roles')
   async assignProjectRoles(@Param('id', ParseIntPipe) id: number, @Body() dto: ProjectAssignRolesRequestDto[]): Promise<void> {
     return removeNullAttributes(await this.projectService.assignProjectRoles(id, dto));
@@ -49,7 +49,7 @@ export class ProjectController {
    *
    * Allowed user roles: <code>administrator</code>
    */
-  @CombinedRoles(UserRole.administrator)
+  @CombinedRoles(AccountRole.administrator)
   @Post('')
   async createProject(@Body() dto: ProjectRequestDto): Promise<ProjectDto> {
     return removeNullAttributes(new ProjectDto(await this.projectService.createProject(dto)));
@@ -60,7 +60,7 @@ export class ProjectController {
    *
    * Allowed user roles: <code>administrator</code>
    */
-  @CombinedRoles(UserRole.administrator)
+  @CombinedRoles(AccountRole.administrator)
   @Put(':id')
   async changeProject(@Param('id', ParseIntPipe) id: number, @Body() dto: ProjectRequestDto): Promise<ProjectDto> {
     return removeNullAttributes(new ProjectDto(await this.projectService.changeProject(id, dto)));
@@ -71,7 +71,7 @@ export class ProjectController {
    *
    * Allowed user roles: <code>administrator</code>
    */
-  @CombinedRoles(UserRole.administrator)
+  @CombinedRoles(AccountRole.administrator)
   @Delete(':id')
   async removeProject(@Param('id', ParseIntPipe) id: number, @Body() dto: ProjectRemoveRequestDto): Promise<void> {
     return this.projectService.removeProject(id, dto);

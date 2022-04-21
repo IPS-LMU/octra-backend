@@ -1,8 +1,8 @@
 import {applyDecorators, ClassSerializerInterceptor, SerializeOptions, UseInterceptors} from '@nestjs/common';
-import {UserRole} from '@octra/octra-api-types';
+import {AccountRole} from '@octra/octra-api-types';
 import {Roles} from '../role.decorator';
 
-export function CombinedRoles(...roles: UserRole[]) {
+export function CombinedRoles(...roles: AccountRole[]) {
   return applyDecorators(
     Roles(...roles),
     SerializeOptions({

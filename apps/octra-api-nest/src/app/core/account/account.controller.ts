@@ -15,8 +15,8 @@ import {
 } from '@nestjs/common';
 import {Request} from 'express';
 import {ApiBearerAuth, ApiResponse, ApiTags} from '@nestjs/swagger';
-import {UserRole} from '@octra/octra-api-types';
-import {AccountDto, AssignRoleDto, ChangePasswordDto} from './account.dto';
+import {AccountRole} from '@octra/octra-api-types';
+import {AccountDto, AccountRegisterRequestDto, AssignRoleDto, ChangePasswordDto} from './account.dto';
 import {CombinedRoles} from '../../../combine.decorators';
 import {AccountService} from './account.service';
 import {InternRequest} from '../../obj/types';
@@ -35,7 +35,7 @@ export class AccountController {
    *
    * Allowed user roles: <code>administrator</code>
    */
-  @CombinedRoles(UserRole.administrator)
+  @CombinedRoles(AccountRole.administrator)
   @Get()
   async listUsers(@Req() req: Request): Promise<AccountDto[]> {
     return (await this.accountService.getAll()).map(a => new AccountDto(a));
@@ -47,8 +47,8 @@ export class AccountController {
    * Allowed user roles: <code>administrator</code>
    */
   @Get('current')
-  async getCurrentUserInformation(@Req() req: InternRequest): Promise<AccountDto> {
-    return new AccountDto(await this.accountService.getUser(req.user.userId));
+  async getCurrentAccountInformation(@Req() req: InternRequest): Promise<AccountDto> {
+    return new AccountDto(await this.accountService.getAccount(req.user.userId));
   }
 
   /**
@@ -56,10 +56,10 @@ export class AccountController {
    *
    * Allowed user roles: <code>administrator</code>
    */
-  @CombinedRoles(UserRole.administrator)
+  @CombinedRoles(AccountRole.administrator)
   @Put(':id/roles')
-  async assignUserRoles(@Param('id', ParseIntPipe) id: number, @Body() assignDto: AssignRoleDto): Promise<AssignRoleDto> {
-    return this.accountService.assignUserRoles(id, assignDto);
+  async assignAccountRoles(@Param('id', ParseIntPipe) id: number, @Body() assignDto: AssignRoleDto): Promise<AssignRoleDto> {
+    return this.accountService.assignAccountRoles(id, assignDto);
   }
 
   /**
@@ -91,13 +91,13 @@ export class AccountController {
    *
    * Allowed user roles: <code>administrator</code>
    */
-  @CombinedRoles(UserRole.administrator)
+  @CombinedRoles(AccountRole.administrator)
   @Get(':id')
-  async getUserInformation(@Param('id') id: number): Promise<AccountDto | undefined> {
+  async getAccountInformation(@Param('id') id: number): Promise<AccountDto | undefined> {
     return removeNullAttributes(new AccountDto(await this.accountService.findAccountByID(id)));
   }
 
-  @CombinedRoles(UserRole.administrator)
+  @CombinedRoles(AccountRole.administrator)
   @Delete(':id')
   removeUser(@Param('id') id: number): string {
     // TODO implement function
@@ -109,10 +109,17 @@ export class AccountController {
    *
    * Allowed user roles: <code>administrator</code>
    */
-  @CombinedRoles(UserRole.administrator)
+  @CombinedRoles(AccountRole.administrator)
   @Post('')
-  createUser(): string {
+  createAccount(): string {
     // TODO implement function
     return 'Implementation needed';
+  }
+
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Public()
+  @Post('register')
+  async registerAccount(@Body() dto: AccountRegisterRequestDto): Promise<AccountDto> {
+    return removeNullAttributes(new AccountDto(await this.accountService.createAccount(dto)));
   }
 }

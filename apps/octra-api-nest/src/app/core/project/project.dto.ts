@@ -2,7 +2,7 @@ import {IsBoolean, IsNotEmpty, IsNumber, IsString} from 'class-validator';
 import {StandardWithTimeDto} from '../standard.dto';
 import {removeProperties} from '../../functions';
 import {ApiHideProperty} from '@nestjs/swagger';
-import {UserRole} from '@octra/octra-api-types';
+import {AccountRole} from '@octra/octra-api-types';
 
 export class ProjectRequestDto extends StandardWithTimeDto {
   @IsNotEmpty()
@@ -45,7 +45,7 @@ export class ProjectAssignRolesRequestDto {
   accountID: number;
   @IsNotEmpty()
   @IsString()
-  role: UserRole;
+  role: AccountRole;
 }
 
 export class ProjectRemoveRequestDto {

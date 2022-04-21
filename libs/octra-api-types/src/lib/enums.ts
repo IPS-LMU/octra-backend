@@ -10,7 +10,7 @@ export enum GlobalUserRole {
   public = 'public'
 }
 
-export enum UserRole {
+export enum AccountRole {
   administrator = 'administrator',
   transcriber = 'transcriber',
   projectAdministrator = 'project_admin',
@@ -19,7 +19,7 @@ export enum UserRole {
   user = 'user'
 }
 
-export enum UserRoleScope {
+export enum AccountRoleScope {
   general = 'general',
   project = 'project'
 }
