@@ -17,6 +17,7 @@ import {
   ProjectRequestDto
 } from '../../octra-api-nest/src/app/core/project/project.dto';
 import {AccountRole} from '@octra/octra-api-types';
+import {ToolCreateRequestDto, ToolDto} from '../../octra-api-nest/src/app/core/tool/tool.dto';
 
 const tempData = {
   apptoken: {
@@ -104,6 +105,24 @@ describe('OCTRA Nest API (e2e)', () => {
     await app.init();
   });
 
+  describe('Registration', () => {
+    tempData.user.name = `TestAccount_${Date.now()}`;
+    tempData.user.email = `test_${Date.now()}@email.com`;
+    it('/account/register (POST)', () => {
+      return request(app.getHttpServer())
+        .post('/account/register').send({
+          'name': tempData.user.name,
+          'password': 'Test1234',
+          'email': tempData.user.email
+        } as AccountRegisterRequestDto)
+        .set('X-App-Token', `${appToken}`)
+        .set('Origin', 'http://localhost:8080')
+        .expect(201).then(({body}: { body: AccountDto }) => {
+          tempData.user.id = body.id;
+        })
+    });
+  })
+
   describe('Authentication', () => {
     it('/authentication/login (POST)', () => {
       return request(app.getHttpServer())
@@ -120,21 +139,22 @@ describe('OCTRA Nest API (e2e)', () => {
     });
   })
 
-  tempData.user.name = `TestAccount_${Date.now()}`;
-  tempData.user.email = `test_${Date.now()}@email.com`;
-  describe('Registration', () => {
-    it('/account/register (POST)', () => {
-      return request(app.getHttpServer())
-        .post('/account/register').send({
-          'name': tempData.user.name,
-          'password': 'Test1234',
-          'email': tempData.user.email
-        } as AccountRegisterRequestDto)
-        .set('X-App-Token', `${appToken}`)
-        .set('Origin', 'http://localhost:8080')
-        .expect(201).then(({body}: { body: AccountDto }) => {
-          tempData.user.id = body.id;
-        })
+  describe('Tools', () => {
+    it('/tool/ (POST)', () => {
+      return authPost('/tool', {
+        name: `Tool_${Date.now()}`,
+        version: '1.0.0',
+        description: 'some description'
+      } as ToolCreateRequestDto)
+        .expect(201).then(({body}: { body: ToolDto }) => {
+          if (typeof body !== 'object') {
+            throw new Error('Body must be of type object.');
+          }
+        });
+    });
+    it('/tool/ (DELETE)', () => {
+      return authDelete(`/tool/${tempData.tool.id}`, undefined)
+        .expect(200);
     });
   })
 
