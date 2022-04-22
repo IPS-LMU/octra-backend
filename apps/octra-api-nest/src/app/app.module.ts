@@ -21,6 +21,7 @@ import {AppTokenEntity} from './core/app-token/app-token.entity';
 import {RolesGuard} from './core/authorization/roles.guard';
 import {AppTokenOriginGuard} from './obj/guards/app-token-origin.guard';
 import {ThrottlerGuard, ThrottlerModule} from '@nestjs/throttler';
+import {ShutdownService} from './shutdown.service';
 
 const config = Configuration.getInstance();
 
@@ -56,6 +57,7 @@ const config = Configuration.getInstance();
   controllers: [AppController, AppTokenController, FilesController, ProjectController, ToolController],
   providers: [
     AppService,
+    ShutdownService,
     {
       provide: APP_GUARD,
       useClass: AppTokenOriginGuard,

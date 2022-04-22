@@ -71,6 +71,7 @@ const authPost = (url: string, data: any, isAdmin = true) => {
       isAdmin ? tempData.admin.jwtToken : tempData.user.jwtToken
       , {type: 'bearer'}).send(data);
 }
+
 const authPut = (url: string, data: any, isAdmin = true) => {
   return request(app.getHttpServer()).put(url)
     .set('X-App-Token', `${appToken}`)
@@ -287,7 +288,7 @@ describe('Projects', () => {
     return authPost('/projects/', {
       'name': tempData.project.name,
       shortname: `${tempData.project.name}_short`,
-      'description': 'arrsseiosdjsp asskdossspssasdks sossaskdsspossaskdopaküpsd akdspkapsdükapüds'
+      'description': 'arrsseiosdjsp asskdosssspssasdks sossaskdsspossaskdopaküpsd akdspkapsdükapüds'
     } as ProjectRequestDto).expect(201).then(({body}) => {
       if (!body) {
         throw new Error('Body must be of type array.');
@@ -334,6 +335,30 @@ describe('Projects', () => {
         throw new Error(`Body must be of type array.`)
       }
     });
+  });
+
+
+  it('/projects/:id/tasks (POST)', () => {
+    return request(app.getHttpServer()).post(`/projects/${tempData.project.id}/tasks/upload`)
+      .set('X-App-Token', `${appToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .field('properties', JSON.stringify({
+        orgtext: 'testorg',
+        media: {
+          session: 'test263748'
+        }
+      }))
+      .field('transcript', JSON.stringify({
+        test: 'ok'
+      }))
+      .attach('inputs', './testfiles/WebTranscribe.wav', 'WebTranscribe.wav')
+      .auth(tempData.admin.jwtToken, {type: 'bearer'})
+      .expect(201)
+      .then((a) => {
+        const t = '';
+      }).catch((e) => {
+        const t = '';
+      });
   });
 
   it('/projects/:id (DELETE)', () => {
