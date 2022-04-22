@@ -1,16 +1,17 @@
 module.exports = {
-  displayName: 'octra-api',
-  preset: '../../jest.preset.js',
+  displayName: 'octra-api-nest-e2e',
+
   globals: {
     'ts-jest': {
       tsconfig: '<rootDir>/tsconfig.spec.json',
+      bail: 1,
     },
   },
-  testMatch: ['**/?(*.)+(spec|test).+(ts|tsx|js)'],
+  testEnvironment: 'node',
   transform: {
     '^.+\\.[tj]s$': 'ts-jest',
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
-  coverageDirectory: '../../coverage/apps/octra-api',
-  testEnvironment: 'node'
+  coverageDirectory: '../../coverage/apps/octra-api-nest-e2e',
+  preset: '../../jest.preset.ts',
 };

@@ -26,7 +26,7 @@
           "builder": "@nrwl/jest:jest",
           "outputs": ["coverage/libs/ngx-octra-api"],
           "options": {
-            "jestConfig": "libs/ngx-octra-api/jest.config.js",
+            "jestConfig": "libs/ngx-octra-api/jest.config.ts",
             "passWithNoTests": true
           }
         },
@@ -96,7 +96,7 @@
             "coverage/apps/octra-api"
           ],
           "options": {
-            "jestConfig": "apps/octra-api/jest.config.js",
+            "jestConfig": "apps/octra-api/jest.config.ts",
             "passWithNoTests": false,
             "bail": true,
             "runInBand": true
@@ -177,7 +177,7 @@
             "coverage/apps/octra-api-nest"
           ],
           "options": {
-            "jestConfig": "apps/octra-api-nest/jest.config.js",
+            "jestConfig": "apps/octra-api-nest/jest.config.ts",
             "passWithNoTests": true
           }
         }
@@ -239,7 +239,7 @@
             "coverage/apps/octra-api-nest-e2e"
           ],
           "options": {
-            "jestConfig": "apps/octra-api-nest-e2e/jest.config.js",
+            "jestConfig": "apps/octra-api-nest-e2e/jest.config.ts",
             "passWithNoTests": true
           }
         },
@@ -275,7 +275,7 @@
             "coverage/libs/octra-api-types"
           ],
           "options": {
-            "jestConfig": "libs/octra-api-types/jest.config.js",
+            "jestConfig": "libs/octra-api-types/jest.config.ts",
             "passWithNoTests": true
           }
         }
@@ -377,7 +377,7 @@
           "builder": "@nrwl/jest:jest",
           "outputs": ["coverage/apps/octra-backend"],
           "options": {
-            "jestConfig": "apps/octra-backend/jest.config.js",
+            "jestConfig": "apps/octra-backend/jest.config.ts",
             "passWithNoTests": true
           }
         }
@@ -429,7 +429,7 @@
           "builder": "@nrwl/jest:jest",
           "outputs": ["coverage/libs/octra-db"],
           "options": {
-            "jestConfig": "libs/octra-db/jest.config.js",
+            "jestConfig": "libs/octra-db/jest.config.ts",
             "passWithNoTests": true
           }
         },
