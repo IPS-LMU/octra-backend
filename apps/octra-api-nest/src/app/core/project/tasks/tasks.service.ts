@@ -1,6 +1,5 @@
-import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
+import {Injectable} from '@nestjs/common';
 import {AppService} from '../../../app.service';
-import * as Path from 'path';
 import {unlink} from 'fs-extra';
 import {Express} from 'express';
 import {InternRequest} from '../../../obj/types';
@@ -9,9 +8,8 @@ import {InjectRepository} from '@nestjs/typeorm';
 import {Repository} from 'typeorm';
 import {FileEntity} from '../../files/file.entity';
 import {TaskEntity} from '../task.entity';
-import {FileSystemHandler} from '../../../obj/filesystem-handler';
-import {MulterHashedFile} from '../../../obj/multer-storage-hashing';
 import {FileCreateDto} from '../../files/file.dto';
+import {TaskUploadDto} from './task.dto';
 
 interface ReqData {
   project_id: string;
@@ -36,7 +34,8 @@ export class TasksService {
               private fileRepository: Repository<FileEntity>) {
   }
 
-  async uploadTaskData(inputs: MulterHashedFile[], req: InternRequest) {
+  async uploadTaskData(body: TaskUploadDto, req: InternRequest) {
+    /*
     if (inputs.length !== 1) {
       await this.removeTempFiles(inputs);
       throw new HttpException('number of inputs must be bigger than 0', HttpStatus.BAD_REQUEST);
@@ -161,6 +160,9 @@ export class TasksService {
       }
     }
     return reqData;
+
+     */
+    return undefined;
   }
 
   private async removeTempFiles(mediaFiles: Express.Multer.File[]) {

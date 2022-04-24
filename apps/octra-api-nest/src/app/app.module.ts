@@ -53,7 +53,7 @@ const config = Configuration.getInstance();
     ThrottlerModule.forRoot({
       ttl: 60,
       limit: 10,
-    }),
+    })
   ],
   controllers: [AppController, AppTokenController, FilesController, ProjectController, ToolController],
   providers: [

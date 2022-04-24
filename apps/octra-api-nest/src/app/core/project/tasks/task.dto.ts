@@ -1,10 +1,15 @@
-import {Transform} from 'class-transformer';
-import {IsNotEmpty, IsString} from 'class-validator';
+import {Transform, Type} from 'class-transformer';
+import {IsEnum, IsNotEmpty, ValidateNested} from 'class-validator';
+import {FileSystemStoredFile, HasMimeType, IsFiles} from 'nestjs-form-data';
+
+export enum TaskType {
+  'annotation' = 'annotation'
+}
 
 export class TaskProperties {
-  @IsString()
+  @IsEnum(TaskType)
   @IsNotEmpty()
-  type: 'annotation';
+  type: 'string';
   pid?: string;
   orgtext?: string;
   assessment?: string;
@@ -26,15 +31,23 @@ export class TaskProperties {
 }
 
 export class TaskUploadDto {
-  okKlappt: string;
-
   @Transform(({value}) => {
     return new TaskProperties(JSON.parse(value));
   })
+  @Type(() => TaskProperties)
+  @ValidateNested()
   properties: TaskProperties;
 
   @Transform(({value}) => {
     return JSON.parse(value)
   })
   transcript: any;
+
+
+  @Transform(({value}) => {
+    return (value !== undefined && !Array.isArray(value)) ? [value] : value;
+  })
+  @IsFiles()
+  @HasMimeType(['audio/wave'], {each: true})
+  inputs: FileSystemStoredFile[];
 }

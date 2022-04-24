@@ -342,9 +342,8 @@ describe('Projects', () => {
     return request(app.getHttpServer()).post(`/projects/${tempData.project.id}/tasks/upload`)
       .set('X-App-Token', `${appToken}`)
       .set('Origin', 'http://localhost:8080')
-      .field('okKlappt', 'asdas')
       .field('properties', JSON.stringify({
-        type: '',
+        type: 'annotation',
         orgtext: 'testorg',
         media: {
           session: 'test263748'
@@ -356,11 +355,6 @@ describe('Projects', () => {
       .attach('inputs', './testfiles/WebTranscribe.wav', 'WebTranscribe.wav')
       .auth(tempData.admin.jwtToken, {type: 'bearer'})
       .expect(201)
-      .then((a) => {
-        const t = '';
-      }).catch((e) => {
-        const t = '';
-      });
   });
 
   it('/projects/:id (DELETE)', () => {
