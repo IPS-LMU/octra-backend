@@ -2,7 +2,7 @@ import {Test, TestingModule} from '@nestjs/testing';
 import * as request from 'supertest';
 import {AppModule} from '../../octra-api-nest/src/app/app.module';
 import {AuthDto} from '../../octra-api-nest/src/app/core/authentication/auth.dto';
-import {AppTokenCreateDto, AppTokenDto} from '../../octra-api-nest/src/app/core/app-token/app-token.dto';
+import {AppTokenDto} from '../../octra-api-nest/src/app/core/app-token/app-token.dto';
 import {BadRequestException, ValidationPipe} from '@nestjs/common';
 import {ValidationError} from 'class-validator';
 import {
@@ -170,7 +170,7 @@ describe('OCTRA Nest API (e2e)', () => {
     });
 
     it('/app/tokens (POST)', () => {
-      const dto: AppTokenCreateDto = {
+      const dto = {
         description: 'Test description',
         domain: 'fgdfg',
         key: 'sdfgdfgdfgdfgdfgsgf_' + Date.now(),
@@ -183,7 +183,7 @@ describe('OCTRA Nest API (e2e)', () => {
     });
 
     it('/app/tokens/:id (PUT)', () => {
-      const dto: AppTokenCreateDto = {
+      const dto = {
         description: 'Test description',
         domain: 'fgdfg',
         key: 'sdfgdfgdfgdfgdfgsgf_' + Date.now(),
@@ -288,7 +288,7 @@ describe('Projects', () => {
     return authPost('/projects/', {
       'name': tempData.project.name,
       shortname: `${tempData.project.name}_short`,
-      'description': 'arrsseiosdjsp asskdosssspssasdks sossaskdsspossaskdopaküpsd akdspkapsdükapüds'
+      'description': 'test description'
     } as ProjectRequestDto).expect(201).then(({body}) => {
       if (!body) {
         throw new Error('Body must be of type array.');
@@ -342,7 +342,9 @@ describe('Projects', () => {
     return request(app.getHttpServer()).post(`/projects/${tempData.project.id}/tasks/upload`)
       .set('X-App-Token', `${appToken}`)
       .set('Origin', 'http://localhost:8080')
+      .field('okKlappt', 'asdas')
       .field('properties', JSON.stringify({
+        type: '',
         orgtext: 'testorg',
         media: {
           session: 'test263748'

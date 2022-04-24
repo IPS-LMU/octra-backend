@@ -23,7 +23,9 @@ async function bootstrap() {
   });
   app.enableShutdownHooks();
   app.setGlobalPrefix(globalPrefix);
-  app.use(helmet());
+  app.use(helmet({
+    crossOriginEmbedderPolicy: false
+  }));
   const configService = app.get(ConfigService);
   const config = configService.get<IAPIConfiguration>('api');
   const port = config.port;

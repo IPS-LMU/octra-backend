@@ -8,7 +8,8 @@ const mappings = {
     'mediumtext': 'text',
     'timestamp': 'datetime',
     'timestamp without time zone': 'datetime',
-    'mediumblob': 'blob'
+    'mediumblob': 'blob',
+    'jsonb': 'json'
   }
 }
 

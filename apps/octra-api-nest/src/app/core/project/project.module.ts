@@ -1,15 +1,15 @@
 import {Module} from '@nestjs/common';
 import {ProjectController} from './project.controller';
-import {TaskEntity} from './task.entity';
+import {TaskEntity, TaskInputOutputEntity} from './task.entity';
 import {TypeOrmModule} from '@nestjs/typeorm';
-import {ProjectEntity} from './project.entity';
+import {FileProjectEntity, ProjectEntity} from './project.entity';
 import {ProjectService} from './project.service';
 import {ACCOUNT_ENTITIES} from '../account/account.module';
 import {AppService} from '../../app.service';
 import {GuidelinesModule} from './guidelines';
 import {TasksModule} from './tasks';
 
-export const PROJECT_ENTITIES = [TaskEntity, ProjectEntity];
+export const PROJECT_ENTITIES = [TaskEntity, ProjectEntity, FileProjectEntity, TaskInputOutputEntity];
 
 @Module({
   imports: [

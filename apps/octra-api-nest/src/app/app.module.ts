@@ -9,7 +9,7 @@ import {ToolController} from './core/tool';
 import {ProjectController} from './core/project';
 import {FilesController} from './core/files';
 import {AppTokenModule} from './core/app-token/app-token.module';
-import {FilesModule} from './core/files/files.module';
+import {FILE_ENTITIES, FilesModule} from './core/files/files.module';
 import {PROJECT_ENTITIES, ProjectModule} from './core/project/project.module';
 import {TOOL_ENTITIES, ToolModule} from './core/tool/tool.module';
 import {APP_GUARD} from '@nestjs/core';
@@ -22,6 +22,7 @@ import {RolesGuard} from './core/authorization/roles.guard';
 import {AppTokenOriginGuard} from './obj/guards/app-token-origin.guard';
 import {ThrottlerGuard, ThrottlerModule} from '@nestjs/throttler';
 import {ShutdownService} from './shutdown.service';
+import {TASK_ENTITIES} from './core/project/tasks';
 
 const config = Configuration.getInstance();
 
@@ -46,7 +47,7 @@ const config = Configuration.getInstance();
       password: config.database.dbPassword,
       database: config.database.dbName,
       synchronize: false,
-      entities: [AppTokenEntity, ...ACCOUNT_ENTITIES, ...PROJECT_ENTITIES, ...TOOL_ENTITIES],
+      entities: [AppTokenEntity, ...ACCOUNT_ENTITIES, ...PROJECT_ENTITIES, ...TOOL_ENTITIES, ...FILE_ENTITIES, ...TASK_ENTITIES],
       keepConnectionAlive: true
     }),
     ThrottlerModule.forRoot({

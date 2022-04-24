@@ -13,8 +13,6 @@ export class ProjectService {
   constructor(@InjectRepository(ProjectEntity)
               private projectRepository: Repository<ProjectEntity>,
               private connection: Connection,
-              @InjectRepository(AccountRoleProjectEntity)
-              private accountRoleProjectRepository: Repository<AccountRoleProjectEntity>,
               private appService: AppService) {
   }
 
