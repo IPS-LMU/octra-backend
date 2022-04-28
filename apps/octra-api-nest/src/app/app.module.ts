@@ -1,4 +1,4 @@
-import {Module} from '@nestjs/common';
+import {MiddlewareConsumer, Module} from '@nestjs/common';
 
 import {AppController} from './app.controller';
 import {AppService} from './app.service';
@@ -16,15 +16,42 @@ import {APP_GUARD} from '@nestjs/core';
 import {JwtAuthGuard} from './core/authentication/jwt-auth.guard';
 import {ConfigModule} from '@nestjs/config';
 import {Configuration} from './config/configuration';
-import {TypeOrmModule} from '@nestjs/typeorm';
+import {TypeOrmModule, TypeOrmModuleOptions} from '@nestjs/typeorm';
 import {AppTokenEntity} from './core/app-token/app-token.entity';
 import {RolesGuard} from './core/authorization/roles.guard';
 import {AppTokenOriginGuard} from './obj/guards/app-token-origin.guard';
 import {ThrottlerGuard, ThrottlerModule} from '@nestjs/throttler';
 import {ShutdownService} from './shutdown.service';
 import {TASK_ENTITIES} from './core/project/tasks';
+import * as fs from 'fs';
+import {removeNullAttributes} from './functions';
+import {LoggerMiddleware} from './obj/logger.middleware';
 
 const config = Configuration.getInstance();
+
+let TypeORMOptions: TypeOrmModuleOptions = {
+  type: config.database.dbType,
+  host: config.database.dbHost,
+  port: config.database.dbPort,
+  username: config.database.dbUser,
+  password: config.database.dbPassword,
+  database: config.database.dbName,
+  synchronize: false,
+  entities: [AppTokenEntity, ...ACCOUNT_ENTITIES, ...PROJECT_ENTITIES, ...TOOL_ENTITIES, ...FILE_ENTITIES, ...TASK_ENTITIES],
+  keepConnectionAlive: true
+};
+
+if (config.database.ssl) {
+  TypeORMOptions = removeNullAttributes({
+    ...TypeORMOptions,
+    ssl: {
+      rejectUnauthorized: config.database.ssl.rejectUnauthorized,
+      ca: config.database.ssl.ca ? fs.readFileSync(config.database.ssl.ca).toString() : undefined,
+      key: config.database.ssl.key ? fs.readFileSync(config.database.ssl.key).toString() : undefined,
+      cert: config.database.ssl.cert ? fs.readFileSync(config.database.ssl.cert).toString() : undefined
+    }
+  });
+}
 
 @Module({
   imports: [
@@ -39,17 +66,7 @@ const config = Configuration.getInstance();
       ignoreEnvFile: true,
       isGlobal: true
     }),
-    TypeOrmModule.forRoot({
-      type: config.database.dbType,
-      host: config.database.dbHost,
-      port: config.database.dbPort,
-      username: config.database.dbUser,
-      password: config.database.dbPassword,
-      database: config.database.dbName,
-      synchronize: false,
-      entities: [AppTokenEntity, ...ACCOUNT_ENTITIES, ...PROJECT_ENTITIES, ...TOOL_ENTITIES, ...FILE_ENTITIES, ...TASK_ENTITIES],
-      keepConnectionAlive: true
-    }),
+    TypeOrmModule.forRoot(TypeORMOptions),
     ThrottlerModule.forRoot({
       ttl: 60,
       limit: 10,
@@ -79,4 +96,11 @@ const config = Configuration.getInstance();
   ],
 })
 export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    if (config.api.debugging) {
+      consumer
+        .apply(LoggerMiddleware)
+        .forRoutes('*');
+    }
+  }
 }

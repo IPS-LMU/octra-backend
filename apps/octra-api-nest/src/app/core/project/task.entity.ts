@@ -1,6 +1,6 @@
 import {StandardEntity, StandardEntityWithTimestamps} from '../../obj/entities';
 import {DbAwareColumn} from '../../obj/decorators';
-import {TaskStatus} from '@octra/octra-api-types';
+import {TaskInputOutputCreatorType, TaskStatus} from '@octra/octra-api-types';
 import {Entity, JoinColumn, ManyToOne, OneToMany, OneToOne} from 'typeorm';
 import {ToolEntity} from '../tool/tool.entity';
 import {FileProjectEntity, ProjectEntity} from './project.entity';
@@ -31,7 +31,7 @@ export class TaskEntity extends StandardEntityWithTimestamps {
   @DbAwareColumn({
     type: 'text'
   })
-  code: TaskStatus;
+  code: string;
   @DbAwareColumn({
     type: 'timestamp without time zone'
   })
@@ -140,7 +140,7 @@ export class TaskInputOutputEntity extends StandardEntity {
     type: 'text',
     nullable: false
   })
-  creator_type: string;
+  creator_type: TaskInputOutputCreatorType;
   @DbAwareColumn({
     type: 'text',
     nullable: false

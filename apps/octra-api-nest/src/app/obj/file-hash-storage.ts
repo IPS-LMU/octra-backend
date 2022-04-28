@@ -13,6 +13,7 @@ export class FileHashStorage extends StoredFile {
   originalName: string;
   size: number;
   path: string;
+  hash: string;
 
   delete(): Promise<void> {
     return new Promise<void>((resolve, reject) => {

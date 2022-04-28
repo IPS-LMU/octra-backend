@@ -373,6 +373,7 @@ if (todoList.project.tasks.upload) {
           session: 'test263748'
         }
       }))
+        .field('transcriptType', 'text')
         .field('transcript', JSON.stringify({
           test: 'ok'
         }))

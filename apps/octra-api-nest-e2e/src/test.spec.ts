@@ -19,6 +19,7 @@ import {
 import {AccountRole} from '@octra/octra-api-types';
 import {ToolCreateRequestDto, ToolDto} from '../../octra-api-nest/src/app/core/tool/tool.dto';
 import {GuidelinesDto} from '../../octra-api-nest/src/app/core/project/guidelines/guidelines.dto';
+import {AnnotationDto, AnnotJSONType} from '../../octra-api-nest/src/app/core/project/annotations/annotation.dto';
 
 const tempData = {
   apptoken: {
@@ -344,17 +345,22 @@ describe('Projects', () => {
       .set('Origin', 'http://localhost:8080')
       .field('properties', JSON.stringify({
         type: 'annotation',
-        orgtext: 'testorg',
-        media: {
-          session: 'test263748'
-        }
+        orgtext: 'asdas'
       }))
+      .field('transcriptType', 'Text')
       .field('transcript', JSON.stringify({
-        test: 'ok'
-      }))
+        sampleRate: 16000,
+        levels: [{
+          name: 'Test Level',
+          type: AnnotJSONType.SEGMENT,
+          items: []
+        }]
+      } as AnnotationDto))
       .attach('inputs', './testfiles/WebTranscribe.wav', 'WebTranscribe.wav')
       .auth(tempData.admin.jwtToken, {type: 'bearer'})
-      .expect(201)
+      .expect(201).then(({body}) => {
+        const t = '';
+      })
   });
 
   it('/projects/:id (DELETE)', () => {

@@ -1,7 +1,7 @@
 import {Body, Controller, Delete, Param, ParseIntPipe, Post} from '@nestjs/common';
 import {ApiTags} from '@nestjs/swagger';
 import {ToolCreateRequestDto, ToolDto} from './tool.dto';
-import {CombinedRoles} from '../../../combine.decorators';
+import {CombinedRoles} from '../../obj/decorators/combine.decorators';
 import {AccountRole} from '@octra/octra-api-types';
 import {removeNullAttributes} from '../../functions';
 import {ToolService} from './tool.service';

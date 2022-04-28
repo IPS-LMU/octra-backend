@@ -6,7 +6,7 @@ export function removeNullAttributes<T>(obj: T): T {
   } else {
     for (const col in obj) {
       if (obj.hasOwnProperty(col)) {
-        if (obj[col] === null || obj[col] === undefined) {
+        if (obj[col] === null || obj[col] === undefined || obj[col].toString() === 'NaN') {
           delete obj[col];
         } else if (typeof obj[col] === 'object') {
           obj[col] = removeNullAttributes([obj[col]])[0];

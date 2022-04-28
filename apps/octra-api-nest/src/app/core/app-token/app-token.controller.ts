@@ -3,7 +3,7 @@ import {AppTokenService} from './app-token.service';
 import {AppTokenChangeDto, AppTokenCreateDto, AppTokenDto} from './app-token.dto';
 import {ApiBearerAuth, ApiTags} from '@nestjs/swagger';
 import {AccountRole} from '@octra/octra-api-types';
-import {CombinedRoles} from '../../../combine.decorators';
+import {CombinedRoles} from '../../obj/decorators/combine.decorators';
 
 @ApiTags('App tokens')
 @ApiBearerAuth()

@@ -17,7 +17,7 @@ import {Request} from 'express';
 import {ApiBearerAuth, ApiResponse, ApiTags} from '@nestjs/swagger';
 import {AccountRole} from '@octra/octra-api-types';
 import {AccountDto, AccountRegisterRequestDto, AssignRoleDto, ChangePasswordDto} from './account.dto';
-import {CombinedRoles} from '../../../combine.decorators';
+import {CombinedRoles} from '../../obj/decorators/combine.decorators';
 import {AccountService} from './account.service';
 import {InternRequest} from '../../obj/types';
 import {Public} from '../authorization/public.decorator';

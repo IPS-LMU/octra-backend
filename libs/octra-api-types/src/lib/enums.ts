@@ -30,3 +30,7 @@ export enum TaskStatus {
   annotated = 'ANNOTATED',
   postponed = 'POSTPONED'
 }
+
+export enum TaskInputOutputCreatorType {
+  'user' = 'user'
+}

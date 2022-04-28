@@ -25,6 +25,7 @@ export interface IDBConfiguration {
 
 export interface IAPIConfiguration {
   url: string,
+  baseURL: string,
   host: string,
   port: number,
   debugging?: boolean,

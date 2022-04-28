@@ -75,7 +75,12 @@ export class FileProjectEntity extends StandardEntityWithTimestamps {
     referencedColumnName: 'id'
   })
   project: ProjectEntity;
-
+  @DbAwareColumn({
+    type: 'text'
+  })
   virtual_folder_path: string;
+  @DbAwareColumn({
+    type: 'text'
+  })
   virtual_filename: string;
 }

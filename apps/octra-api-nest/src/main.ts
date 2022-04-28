@@ -15,19 +15,19 @@ import * as fs from 'fs';
 import {environment} from './environments/environment';
 import {CustomValidationPipe} from './app/obj/pipes/custom-validation.pipe';
 import helmet from 'helmet';
+import * as path from 'path';
 
 async function bootstrap() {
-  const globalPrefix = 'v1';
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn', 'log', 'debug', 'verbose']
   });
+  const configService = app.get(ConfigService);
+  const config = configService.get<IAPIConfiguration>('api');
   app.enableShutdownHooks();
-  app.setGlobalPrefix(globalPrefix);
+  app.setGlobalPrefix(config.baseURL);
   app.use(helmet({
     crossOriginEmbedderPolicy: false
   }));
-  const configService = app.get(ConfigService);
-  const config = configService.get<IAPIConfiguration>('api');
   const port = config.port;
 
   if (config.reference.enabled) {
@@ -48,7 +48,7 @@ async function bootstrap() {
       tagGroups: [
         {
           name: 'v1',
-          tags: ['Authentication', 'Accounts', 'App tokens', 'Projects', 'Tools', 'Files']
+          tags: ['Authentication', 'Accounts', 'App tokens', 'Projects', 'Tasks', 'Tools', 'Files']
         }
       ],
       requiredPropsFirst: true
@@ -56,7 +56,7 @@ async function bootstrap() {
 
     if (config.reference.protection) {
       redocOptions.auth = {
-        enabled: true,
+        enabled: config.reference.protection.enabled,
         user: config.reference.protection.username,
         password: config.reference.protection.password
       }
@@ -70,14 +70,14 @@ async function bootstrap() {
     if (environment.development) {
       fs.writeFileSync('./dist/swagger-spec.json', JSON.stringify(document));
     }
-    await RedocModule.setup('/v1/reference', app, document, redocOptions);
+    await RedocModule.setup(path.join(config.baseURL, '/reference'), app, document, redocOptions);
   }
 
   app.useGlobalPipes(new CustomValidationPipe());
 
-  await app.listen(port);
+  await app.listen(port, config.host);
   Logger.log(
-    `🚀 Application is running on: http://localhost:${port}/${globalPrefix}/reference`
+    `🚀 Application is running on: http://${path.join(`localhost:${port}/`, config.baseURL, `/reference`)}`
   );
 }
 

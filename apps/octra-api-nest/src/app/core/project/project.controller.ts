@@ -1,6 +1,6 @@
 import {Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put} from '@nestjs/common';
 import {ProjectService} from './project.service';
-import {CombinedRoles} from '../../../combine.decorators';
+import {CombinedRoles} from '../../obj/decorators/combine.decorators';
 import {AccountRole} from '@octra/octra-api-types';
 import {removeNullAttributes} from '../../functions';
 import {ProjectAssignRolesRequestDto, ProjectDto, ProjectRemoveRequestDto, ProjectRequestDto} from './project.dto';

@@ -60,8 +60,12 @@ export class PathBuilder {
   }
 
   public getEncryptedUploadURL(relativePath: string) {
-    const folder = Path.join(`{uploads}`, relativePath.substring(0, relativePath.lastIndexOf('/')));
-    return this.settings.url + Path.join('/v1/files/public/', this.encryptFilePath(folder), Path.basename(relativePath));
+    if (relativePath && /https?:\/\//g.exec(relativePath) === null) {
+
+      const folder = Path.join(`{uploads}`, relativePath.substring(0, relativePath.lastIndexOf('/')));
+      return this.settings.url + Path.join('/v1/files/public/', this.encryptFilePath(folder), Path.basename(relativePath));
+    }
+    return relativePath;
   }
 
   public getEncryptedGuidelinesFileURL(projectId: number, fileName: string) {

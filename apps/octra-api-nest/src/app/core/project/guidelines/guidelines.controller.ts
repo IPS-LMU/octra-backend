@@ -3,7 +3,7 @@ import {AccountRole} from '@octra/octra-api-types';
 import {ApiBearerAuth, ApiTags} from '@nestjs/swagger';
 import {GuidelinesDto} from './guidelines.dto';
 import {GuidelinesService} from './guidelines.service';
-import {CombinedRoles} from '../../../../combine.decorators';
+import {CombinedRoles} from '../../../obj/decorators/combine.decorators';
 
 @ApiTags('Guidelines')
 @ApiBearerAuth()
