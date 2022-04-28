@@ -20,6 +20,7 @@ import {AccountRole} from '@octra/octra-api-types';
 import {ToolCreateRequestDto, ToolDto} from '../../octra-api-nest/src/app/core/tool/tool.dto';
 import {GuidelinesDto} from '../../octra-api-nest/src/app/core/project/guidelines/guidelines.dto';
 import {AnnotationDto, AnnotJSONType} from '../../octra-api-nest/src/app/core/project/annotations/annotation.dto';
+import {TaskDto} from '../../octra-api-nest/src/app/core/project/tasks';
 
 const tempData = {
   apptoken: {
@@ -46,7 +47,7 @@ const tempData = {
     url: '',
     delivery_url: ''
   },
-  transcript: {
+  task: {
     id: 0
   },
   tool: {
@@ -347,7 +348,7 @@ describe('Projects', () => {
         type: 'annotation',
         orgtext: 'asdas'
       }))
-      .field('transcriptType', 'Text')
+      .field('transcriptType', 'AnnotJSON')
       .field('transcript', JSON.stringify({
         sampleRate: 16000,
         levels: [{
@@ -358,9 +359,14 @@ describe('Projects', () => {
       } as AnnotationDto))
       .attach('inputs', './testfiles/WebTranscribe.wav', 'WebTranscribe.wav')
       .auth(tempData.admin.jwtToken, {type: 'bearer'})
-      .expect(201).then(({body}) => {
-        const t = '';
+      .expect(201).then(({body}: { body: TaskDto }) => {
+        tempData.task.id = body.id;
       })
+  });
+
+
+  it('/projects/project_id/:id/tasks/:task_id (GET)', () => {
+    return authGet(`/projects/${tempData.project.id}/tasks/${tempData.task.id}`).expect(200);
   });
 
   it('/projects/:id (DELETE)', () => {

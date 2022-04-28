@@ -23,6 +23,7 @@ import {TaskEntity} from '../task.entity';
 import {removeProperties} from '../../../functions';
 import {TaskInputOutputCreatorType, TaskStatus} from '@octra/octra-api-types';
 import {AudioFileMetaData} from '@octra/db';
+import {StandardWithTimeDto} from '../../standard.dto';
 
 export enum TaskType {
   'annotation' = 'annotation'
@@ -121,6 +122,7 @@ export class TaskProperties {
       startdate: partial.startdate ? new Date(partial.startdate) : undefined,
       enddate: partial.enddate ? new Date(partial.enddate) : undefined
     };
+
     Object.assign(this, partial);
   }
 }
@@ -142,7 +144,7 @@ export class TaskInputOutputDto {
   }
 }
 
-export class TaskDto {
+export class TaskDto extends StandardWithTimeDto {
   pid: string;
   orgtext: string;
   assessment: string;
@@ -165,6 +167,7 @@ export class TaskDto {
   outputs: TaskInputOutputDto[];
 
   constructor(partial: Partial<TaskEntity>) {
+    super();
     const taskInputsOutputs = partial.inputsOutputs.map(a => new TaskInputOutputDto({
       type: a.type,
       creator_type: a.creator_type,
@@ -189,7 +192,11 @@ export class TaskDto {
         return a;
       }),
     };
-    obj = removeProperties(obj, ['worker', 'project', 'tool', 'nexttask', 'inputsOutputs']);
+    if (obj.priority < 1) {
+      delete obj.priority;
+    }
+
+    obj = removeProperties(obj, ['worker', 'project_id', 'project', 'tool', 'nexttask', 'inputsOutputs']);
     Object.assign(this, obj);
   }
 }

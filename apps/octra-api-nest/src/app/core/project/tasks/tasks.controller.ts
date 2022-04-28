@@ -1,4 +1,4 @@
-import {Body, Controller, Param, ParseIntPipe, Post, Req} from '@nestjs/common';
+import {Body, Controller, Get, Param, ParseIntPipe, Post, Req} from '@nestjs/common';
 import {ApiBearerAuth, ApiConsumes, ApiTags} from '@nestjs/swagger';
 import {TasksService} from './tasks.service';
 import {CombinedRoles} from '../../../obj/decorators/combine.decorators';
@@ -26,6 +26,21 @@ export class TasksController {
   @Post(':project_id/tasks/upload')
   async uploadTaskData(@Param('project_id', ParseIntPipe) id: number, @Req() req: InternRequest, @Body() body: TaskUploadDto): Promise<TaskDto> {
     let createdTask = await this.tasksService.uploadTaskData(id, body, req);
+    createdTask.inputsOutputs = createdTask.inputsOutputs.map(a => ({
+      ...a,
+      url: a.url ?? this.appService.pathBuilder.getEncryptedUploadURL(a.file_project?.file.url)
+    }));
+    let data = new TaskDto(createdTask);
+    data = removeNullAttributes(data);
+    return data;
+  }
+
+  // TODO validate account role according to project access?
+
+  @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.dataDelivery, AccountRole.transcriber)
+  @Get(':project_id/tasks/:task_id')
+  async getTask(@Param('project_id') project_id: number, @Param('task_id') task_id: number): Promise<TaskDto> {
+    let createdTask = await this.tasksService.getTask(project_id, task_id);
     createdTask.inputsOutputs = createdTask.inputsOutputs.map(a => ({
       ...a,
       url: a.url ?? this.appService.pathBuilder.getEncryptedUploadURL(a.file_project?.file.url)

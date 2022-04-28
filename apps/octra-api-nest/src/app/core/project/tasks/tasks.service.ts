@@ -81,7 +81,7 @@ export class TasksService {
 
     body = await this.adaptConvertedTranscript(body, mediaFile, dbFile);
     const id = await this.addNewTask(project_id, body, dbFile, reqData, taskProperties);
-    return this.taskRepository.findOne(id, {relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file']});
+    return this.getTask(project_id, Number(id));
   }
 
   private async addNewTask(project_id: number, body: TaskUploadDto, dbFile: FileEntity, reqData: ReqData, taskProperties: TaskProperties): Promise<string> {
@@ -231,6 +231,13 @@ export class TasksService {
       dbFile,
       publicURL
     };
+  }
+
+  public async getTask(project_id: number, task_id: number): Promise<TaskEntity> {
+    return this.taskRepository.findOne({
+      id: task_id,
+      project_id
+    }, {relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file']});
   }
 
   private async adaptConvertedTranscript(body: TaskUploadDto, mediaFile: FileHashStorage, dbFile: FileEntity) {
