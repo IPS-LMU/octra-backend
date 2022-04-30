@@ -1,4 +1,4 @@
-import {Body, Controller, Get, Param, ParseIntPipe, Post, Req} from '@nestjs/common';
+import {Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Req} from '@nestjs/common';
 import {ApiBearerAuth, ApiConsumes, ApiTags} from '@nestjs/swagger';
 import {TasksService} from './tasks.service';
 import {CombinedRoles} from '../../../obj/decorators/combine.decorators';
@@ -36,6 +36,12 @@ export class TasksController {
   }
 
   // TODO validate account role according to project access?
+
+  @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.dataDelivery)
+  @Delete(':project_id/tasks/:task_id')
+  async removeTask(@Param('project_id', ParseIntPipe) project_id: number, @Param('task_id', ParseIntPipe) task_id: number): Promise<void> {
+    await this.tasksService.removeTask(project_id, task_id);
+  }
 
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.dataDelivery, AccountRole.transcriber)
   @Get(':project_id/tasks/:task_id')

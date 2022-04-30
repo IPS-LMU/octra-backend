@@ -97,7 +97,9 @@ export class TaskEntity extends StandardEntityWithTimestamps {
   })
   type: string;
 
-  @OneToMany(() => TaskInputOutputEntity, (entity) => entity.task)
+  @OneToMany(() => TaskInputOutputEntity, (entity) => entity.task, {
+    onDelete: 'CASCADE'
+  })
   @JoinColumn({
     name: 'id',
     referencedColumnName: 'task_id'

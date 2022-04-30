@@ -84,6 +84,14 @@ export class TasksService {
     return this.getTask(project_id, Number(id));
   }
 
+  public async removeTask(project_id: number, task_id: number) {
+    const task = await this.taskRepository.findOne({
+      id: task_id,
+      project_id
+    });
+    return this.taskRepository.remove(task);
+  }
+
   private async addNewTask(project_id: number, body: TaskUploadDto, dbFile: FileEntity, reqData: ReqData, taskProperties: TaskProperties): Promise<string> {
     const queryRunner = this.connection.createQueryRunner();
     await queryRunner.connect();
