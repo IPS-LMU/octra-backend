@@ -85,11 +85,44 @@ export class TasksService {
   }
 
   public async removeTask(project_id: number, task_id: number) {
-    const task = await this.taskRepository.findOne({
-      id: task_id,
-      project_id
-    });
-    return this.taskRepository.remove(task);
+    // TODO improve transaction handling
+    const queryRunner = this.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    const manager = queryRunner.manager;
+
+    try {
+      const project = await manager.findOne(TaskEntity, {
+        id: task_id,
+        project_id
+      });
+
+      if (!project) {
+        throw new HttpException("Task not found.", HttpStatus.BAD_REQUEST);
+      }
+
+      // set nexttask from other tasks to null
+      await manager.update(TaskEntity, {
+        nexttask_id: task_id
+      }, {
+        nexttask_id: null
+      });
+      // remove input outputs
+      await manager.delete(TaskInputOutputEntity, {
+        task_id
+      });
+      const result = await manager.delete(TaskEntity, task_id);
+
+      if (result.affected !== 1) {
+        throw new HttpException("Task not found.", HttpStatus.NOT_FOUND);
+      }
+    } catch (err) {
+      // since we have errors lets rollback the changes we made
+      await queryRunner.rollbackTransaction();
+    } finally {
+      // you need to release a queryRunner which was manually instantiated
+      await queryRunner.release();
+    }
   }
 
   private async addNewTask(project_id: number, body: TaskUploadDto, dbFile: FileEntity, reqData: ReqData, taskProperties: TaskProperties): Promise<string> {

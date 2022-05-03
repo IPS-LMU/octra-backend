@@ -8,7 +8,7 @@ import {ConfigService} from '@nestjs/config';
 import {TaskDto, TaskUploadDto} from './task.dto';
 import {FormDataRequest} from 'nestjs-form-data';
 import {removeNullAttributes} from '../../../functions';
-import {Controller, Get, Delete, HttpException, HttpStatus, Param, ParseIntPipe, Post, Req} from '@nestjs/common';
+import {Body, Controller, Delete, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Req} from '@nestjs/common';
 
 @ApiTags('Tasks')
 @ApiBearerAuth()
@@ -24,7 +24,7 @@ export class TasksController {
   @FormDataRequest()
   @ApiConsumes('multipart/form-data')
   @Post(':project_id/tasks/upload')
-  async uploadTaskData({id, req, body}: { id: number, req: InternRequest, body: TaskUploadDto }): Promise<TaskDto> {
+  async uploadTaskData(@Param('project_id', ParseIntPipe) id: number, @Req() req: InternRequest, @Body() body: TaskUploadDto): Promise<TaskDto> {
     const createdTask = await this.tasksService.uploadTaskData(id, body, req);
     createdTask.inputsOutputs = createdTask.inputsOutputs.map(a => ({
       ...a,
