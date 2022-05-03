@@ -1,4 +1,4 @@
-import {Body, Controller, Get, Param, ParseIntPipe, Post, Req} from '@nestjs/common';
+import {Body, Controller, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Req} from '@nestjs/common';
 import {ApiBearerAuth, ApiConsumes, ApiTags} from '@nestjs/swagger';
 import {TasksService} from './tasks.service';
 import {CombinedRoles} from '../../../obj/decorators/combine.decorators';
@@ -40,8 +40,15 @@ export class TasksController {
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.dataDelivery, AccountRole.transcriber)
   @Get(':project_id/tasks/:task_id')
   async getTask(@Param('project_id') project_id: number, @Param('task_id') task_id: number): Promise<TaskDto> {
-    let createdTask = await this.tasksService.getTask(project_id, task_id);
-    createdTask.inputsOutputs = createdTask.inputsOutputs.map(a => ({
+    // TODO change with pipe
+    if (task_id < 1) {
+      throw new HttpException(`Id of task must be greater than 0`, HttpStatus.BAD_REQUEST);
+    }
+    const createdTask = await this.tasksService.getTask(project_id, task_id);
+    if (!createdTask) {
+      throw new HttpException(`Can't get task`, HttpStatus.CONFLICT);
+    }
+    createdTask.inputsOutputs = createdTask.inputsOutputs?.map(a => ({
       ...a,
       url: a.url ?? this.appService.pathBuilder.getEncryptedUploadURL(a.file_project?.file.url)
     }));

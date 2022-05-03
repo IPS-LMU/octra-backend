@@ -132,13 +132,15 @@ describe('OCTRA Nest API (e2e)', () => {
       return request(app.getHttpServer())
         .post('/auth/login').send({
           'username': 'Julian',
-          'password': 'Test1234'
+          'password': 'Test123'
         })
         .set('X-App-Token', `${appToken}`)
         .set('Origin', 'http://localhost:8080')
         .expect(201).then(({body}: { body: AuthDto }) => {
           tempData.admin.jwtToken = body.access_token;
           tempData.admin.id = body.account_id;
+        }).catch((e) => {
+          console.log(e)
         })
     });
   })
@@ -252,8 +254,8 @@ describe('Accounts', () => {
 
   it('/account/password (PUT)', () => {
     return authPut('/account/password', {
-      oldPassword: 'Test1234',
-      newPassword: 'Test1234'
+      oldPassword: 'Test123',
+      newPassword: 'Test123'
     } as ChangePasswordDto).expect(200);
   });
 

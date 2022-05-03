@@ -38,7 +38,8 @@ export class AccountEntity extends StandardEntityWithTimestamps {
     eager: true
   })
   @JoinColumn({
-    name: 'role_id'
+    name: 'role_id',
+    referencedColumnName: "id"
   })
   generalRole: RoleEntity;
 
