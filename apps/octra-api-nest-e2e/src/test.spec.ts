@@ -371,6 +371,10 @@ describe('Projects', () => {
     return authGet(`/projects/${tempData.project.id}/tasks/${tempData.task.id}`).expect(200);
   });
 
+  it('/projects/project_id/:id/tasks/:task_id (DELETE)', () => {
+    return authDelete(`/projects/${tempData.project.id}/tasks/${tempData.task.id}`, undefined).expect(200);
+  });
+
   it('/projects/:id (DELETE)', () => {
     return authDelete(`/projects/${tempData.project.id}`, {
       cutAllReferences: false,

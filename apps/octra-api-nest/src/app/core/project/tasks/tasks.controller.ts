@@ -1,4 +1,3 @@
-import {Body, Controller, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Req} from '@nestjs/common';
 import {ApiBearerAuth, ApiConsumes, ApiTags} from '@nestjs/swagger';
 import {TasksService} from './tasks.service';
 import {CombinedRoles} from '../../../obj/decorators/combine.decorators';
@@ -9,6 +8,7 @@ import {ConfigService} from '@nestjs/config';
 import {TaskDto, TaskUploadDto} from './task.dto';
 import {FormDataRequest} from 'nestjs-form-data';
 import {removeNullAttributes} from '../../../functions';
+import {Controller, Get, Delete, HttpException, HttpStatus, Param, ParseIntPipe, Post, Req} from '@nestjs/common';
 
 @ApiTags('Tasks')
 @ApiBearerAuth()
@@ -24,8 +24,8 @@ export class TasksController {
   @FormDataRequest()
   @ApiConsumes('multipart/form-data')
   @Post(':project_id/tasks/upload')
-  async uploadTaskData(@Param('project_id', ParseIntPipe) id: number, @Req() req: InternRequest, @Body() body: TaskUploadDto): Promise<TaskDto> {
-    let createdTask = await this.tasksService.uploadTaskData(id, body, req);
+  async uploadTaskData({id, req, body}: { id: number, req: InternRequest, body: TaskUploadDto }): Promise<TaskDto> {
+    const createdTask = await this.tasksService.uploadTaskData(id, body, req);
     createdTask.inputsOutputs = createdTask.inputsOutputs.map(a => ({
       ...a,
       url: a.url ?? this.appService.pathBuilder.getEncryptedUploadURL(a.file_project?.file.url)
@@ -36,6 +36,12 @@ export class TasksController {
   }
 
   // TODO validate account role according to project access?
+
+  @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.dataDelivery)
+  @Delete(':project_id/tasks/:task_id')
+  async removeTask(@Param('project_id', ParseIntPipe) project_id: number, @Param('task_id', ParseIntPipe) task_id: number): Promise<void> {
+    await this.tasksService.removeTask(project_id, task_id);
+  }
 
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.dataDelivery, AccountRole.transcriber)
   @Get(':project_id/tasks/:task_id')
