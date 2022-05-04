@@ -14,6 +14,7 @@ import {
 import {HasMimeType, IsFiles} from 'nestjs-form-data';
 import {FileHashStorage} from '../../../obj/file-hash-storage';
 import {
+  IsOptionalEnum,
   IsOptionalNotEmptyString,
   IsOptionalNumber,
   IsOptionalString
@@ -115,6 +116,9 @@ export class TaskProperties {
   @IsArray()
   @IsObject({each: true})
   log?: any[];
+
+  @IsOptionalEnum(TaskStatus)
+  status?: TaskStatus;
 
   constructor(partial: Partial<TaskProperties>) {
     partial = {
@@ -261,6 +265,6 @@ export class TaskUploadDto {
     return (value !== undefined && !Array.isArray(value)) ? [value] : value;
   })
   @IsFiles()
-  @HasMimeType(['audio/wave'], {each: true})
+  @HasMimeType(['audio/wave', 'application/json', "text/plain"], {each: true})
   inputs: FileHashStorage[];
 }

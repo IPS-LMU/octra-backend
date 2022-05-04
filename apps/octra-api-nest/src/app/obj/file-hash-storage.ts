@@ -35,10 +35,10 @@ export class FileHashStorage extends StoredFile {
     return new Promise<FileSystemStoredFile>((res, rej) => {
       const outStream = fs.createWriteStream(filePath);
       let size: number = 0;
-      const hash = crypto.createHash('sha256');
+      const hash = (mimetype === "audio/wave") ? crypto.createHash('sha256') : undefined;
       stream.on('data', (chunk) => {
         size += chunk.length;
-        hash.update(chunk)
+        hash?.update(chunk)
       });
       outStream.on('error', rej);
       outStream.on('finish', () => {
@@ -48,7 +48,7 @@ export class FileHashStorage extends StoredFile {
           mimetype,
           path: filePath,
           size,
-          hash: hash.digest('hex')
+          hash: hash?.digest('hex')
         });
 
         res(file);
