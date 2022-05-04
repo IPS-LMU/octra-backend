@@ -1,18 +1,19 @@
 import {Injectable} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
-import {Connection, Repository} from 'typeorm';
+import {Repository} from 'typeorm';
 import {ProjectEntity} from './project.entity';
 import {ProjectAssignRolesRequestDto, ProjectRemoveRequestDto, ProjectRequestDto} from './project.dto';
 import {AccountRoleProjectEntity, RoleEntity} from '../account/entities/account-role-project.entity';
 import {TaskEntity} from './task.entity';
 import {AppService} from '../../app.service';
 import {FileSystemHandler} from '../../obj/filesystem-handler';
+import {DatabaseService} from "../../database.service";
 
 @Injectable()
 export class ProjectService {
   constructor(@InjectRepository(ProjectEntity)
               private projectRepository: Repository<ProjectEntity>,
-              private connection: Connection,
+              private databaseService: DatabaseService,
               private appService: AppService) {
   }
 
@@ -35,34 +36,25 @@ export class ProjectService {
   }
 
   public async assignProjectRoles(id: number, roles: ProjectAssignRolesRequestDto[]): Promise<void> {
-    const queryRunner = this.connection.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      const roleRows = await queryRunner.manager.find<RoleEntity>(RoleEntity);
+    return this.databaseService.transaction<void>(async (manager) => {
+      const roleRows = await manager.find<RoleEntity>(RoleEntity);
 
       for (const role of roles) {
-        const foundRole = await queryRunner.manager.findOne(AccountRoleProjectEntity, {
+        const foundRole = await manager.findOne(AccountRoleProjectEntity, {
           where: {
             account_id: role.accountID,
             project_id: id
           }
         });
 
-        await queryRunner.manager.save(AccountRoleProjectEntity, {
+        await manager.save(AccountRoleProjectEntity, {
           id: foundRole?.id,
           project_id: id,
           role_id: roleRows.find(a => a.label === role.role)?.id,
           account_id: role.accountID
         });
       }
-    } catch (e) {
-      await queryRunner.rollbackTransaction();
-    } finally {
-      // you need to release a queryRunner which was manually instantiated
-      await queryRunner.release();
-    }
+    });
   }
 
   public async createProject(dto: ProjectRequestDto): Promise<ProjectEntity> {
@@ -80,15 +72,11 @@ export class ProjectService {
   }
 
   public async removeProject(id: number, dto: ProjectRemoveRequestDto): Promise<void> {
-    const queryRunner = this.connection.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
     // TODO check this algorithm
     // TODO add file_project algorithm
-    try {
+    return this.databaseService.transaction<void>(async (manager) => {
       if (dto.cutAllReferences) {
-        await queryRunner.manager.update(TaskEntity, {
+        await manager.update(TaskEntity, {
           where: {
             project_id: id
           }
@@ -96,15 +84,15 @@ export class ProjectService {
           project_id: null
         });
       } else {
-        await queryRunner.manager.delete(TaskEntity, {
+        await manager.delete(TaskEntity, {
           project_id: id
         });
       }
 
-      await queryRunner.manager.delete(AccountRoleProjectEntity, {
+      await manager.delete(AccountRoleProjectEntity, {
         project_id: id
       });
-      await queryRunner.manager.delete(ProjectEntity, {
+      await manager.delete(ProjectEntity, {
         id
       });
 
@@ -112,11 +100,6 @@ export class ProjectService {
         const folderPath = this.appService.pathBuilder.getAbsoluteProjectPath(id);
         await FileSystemHandler.removeFolder(folderPath);
       }
-    } catch (e) {
-      await queryRunner.rollbackTransaction();
-    } finally {
-      // you need to release a queryRunner which was manually instantiated
-      await queryRunner.release();
-    }
+    });
   }
 }

@@ -8,6 +8,7 @@ import {ACCOUNT_ENTITIES} from '../account/account.module';
 import {AppService} from '../../app.service';
 import {GuidelinesModule} from './guidelines';
 import {TasksModule} from './tasks';
+import {DatabaseService} from "../../database.service";
 
 export const PROJECT_ENTITIES = [TaskEntity, ProjectEntity, FileProjectEntity, TaskInputOutputEntity];
 
@@ -18,7 +19,7 @@ export const PROJECT_ENTITIES = [TaskEntity, ProjectEntity, FileProjectEntity, T
     TasksModule
   ],
   controllers: [ProjectController],
-  providers: [ProjectService, AppService],
+  providers: [ProjectService, AppService, DatabaseService],
   exports: [ProjectService]
 })
 export class ProjectModule {

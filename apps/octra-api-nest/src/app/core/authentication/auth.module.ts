@@ -11,6 +11,7 @@ import {AccountService} from '../account';
 import {TypeOrmModule} from '@nestjs/typeorm';
 import {AccountEntity, AccountPersonEntity} from '../account/entities/account.entity';
 import {AccountRoleProjectEntity, RoleEntity} from '../account/entities/account-role-project.entity';
+import {DatabaseService} from "../../database.service";
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import {AccountRoleProjectEntity, RoleEntity} from '../account/entities/account-
       signOptions: {expiresIn: '60s'},
     })
   ],
-  providers: [AccountService, AuthService, LocalStrategy, JwtStrategy],
+  providers: [AccountService, AuthService, LocalStrategy, JwtStrategy, DatabaseService],
   controllers: [AuthController],
   exports: [AuthService]
 })

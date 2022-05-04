@@ -366,9 +366,39 @@ describe('Projects', () => {
       })
   });
 
+  it('/projects/:id/tasks/:task_id (PUT)', () => {
+    return request(app.getHttpServer()).put(`/projects/${tempData.project.id}/tasks/${tempData.task.id}`)
+      .set('X-App-Token', `${appToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .field('properties', JSON.stringify({
+        type: 'annotation',
+        orgtext: 'YESS it works!'
+      }))
+      .field('transcriptType', 'AnnotJSON')
+      .field('transcript', JSON.stringify({
+        sampleRate: 16000,
+        levels: [{
+          name: 'Test Level2',
+          type: AnnotJSONType.SEGMENT,
+          items: []
+        }]
+      } as AnnotationDto))
+      .attach('inputs', './testfiles/WebTranscribe2.wav', 'WebTranscribe2.wav')
+      .auth(tempData.admin.jwtToken, {type: 'bearer'})
+      .expect(200).then(({body}: { body: TaskDto }) => {
+        tempData.task.id = body.id;
+      })
+  });
+
 
   it('/projects/project_id/:id/tasks/:task_id (GET)', () => {
     return authGet(`/projects/${tempData.project.id}/tasks/${tempData.task.id}`).expect(200);
+  });
+
+  it('/projects/project_id/:id/tasks/ (GET)', () => {
+    return authGet(`/projects/${tempData.project.id}/tasks/`).expect(200).then(({body}) => {
+      const t = body;
+    });
   });
 
   it('/projects/project_id/:id/tasks/:task_id (DELETE)', () => {

@@ -1,5 +1,5 @@
 import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
-import {Connection, Repository} from 'typeorm';
+import {Repository} from 'typeorm';
 import {InjectRepository} from '@nestjs/typeorm';
 import {AccountEntity, AccountPersonEntity} from './entities/account.entity';
 import {AccountRoleProjectEntity, RoleEntity} from './entities/account-role-project.entity';
@@ -14,6 +14,7 @@ import {AccountRoleScope} from '@octra/octra-api-types';
 import {removeNullAttributes} from '../../functions';
 import {SHA256} from 'crypto-js';
 import {ConfigService} from '@nestjs/config';
+import {DatabaseService} from "../../database.service";
 
 @Injectable()
 export class AccountService {
@@ -26,7 +27,7 @@ export class AccountService {
     private accountRoleProjectRepository: Repository<AccountRoleProjectEntity>,
     @InjectRepository(RoleEntity)
     private roleEntityRepository: Repository<RoleEntity>,
-    private connection: Connection,
+    private databaseService: DatabaseService,
     private configService: ConfigService
   ) {
   }
@@ -73,13 +74,10 @@ export class AccountService {
   }
 
   async assignAccountRoles(id: number, roleDto: AssignRoleDto): Promise<AssignRoleDto> {
-    const queryRunner = this.connection.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
     let projectIDs;
 
-    try {
-      const roles = await queryRunner.manager.find<RoleEntity>(RoleEntity);
+    return this.databaseService.transaction<AssignRoleDto>(async (manager) => {
+      const roles = await manager.find<RoleEntity>(RoleEntity);
 
       // save global user role if exists
       if (roleDto.general) {
@@ -93,7 +91,7 @@ export class AccountService {
 
       // remove all roles from each project
       for (const project_id of projectIDs) {
-        await queryRunner.manager.delete(AccountRoleProjectEntity, {
+        await manager.delete(AccountRoleProjectEntity, {
           account_id: id,
           project_id
         });
@@ -102,7 +100,7 @@ export class AccountService {
       // add project roles
       for (const project of roleDto.projects) {
         for (const role of project.roles) {
-          await queryRunner.manager.insert(AccountRoleProjectEntity, new AccountRoleProjectEntity({
+          await manager.insert(AccountRoleProjectEntity, new AccountRoleProjectEntity({
             account_id: id,
             role_id: roles.find(a => a.scope === AccountRoleScope.project && a.label === role.role).id,
             project_id: project.project_id,
@@ -112,9 +110,7 @@ export class AccountService {
         }
       }
 
-      await queryRunner.commitTransaction();
-
-      const account = await this.accountRepository.findOne({
+      const account = await manager.findOne(AccountEntity, {
         id
       });
       projectIDs = account.roles.map(a => a.project_id)
@@ -128,13 +124,7 @@ export class AccountService {
           roles: account.roles.filter(b => b.project_id === a).map(b => new AssignAccountRoleDto(b))
         })))
       });
-    } catch (err) {
-      // since we have errors lets rollback the changes we made
-      await queryRunner.rollbackTransaction();
-    } finally {
-      // you need to release a queryRunner which was manually instantiated
-      await queryRunner.release();
-    }
+    });
   }
 
   async changePassword(id: number, changePasswordDto: ChangePasswordDto): Promise<void> {
@@ -160,39 +150,9 @@ export class AccountService {
   }
 
   async removeAccount(id: number): Promise<void> {
-    /*
-    try {
-      await DatabaseFunctions.dbManager.transaction([
-        {
-          text: 'update task set worker_id=null where worker_id=$1::integer',
-          values: [id]
-        },
-        {
-          text: 'delete from account_role_project where account_id=$1::integer',
-          values: [id]
-        },
-        {
-          text: 'delete from account where id=$1::integer',
-          values: [id]
-        }
-      ]);
-    } catch (e) {
-      throw new Error(`Could not remove user account.}.`);
-    }
-     */
-    const queryRunner = this.connection.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    return this.databaseService.transaction<void>(async () => {
 
-    try {
-    } catch (err) {
-      // since we have errors lets rollback the changes we made
-      await queryRunner.rollbackTransaction();
-    } finally {
-      // you need to release a queryRunner which was manually instantiated
-      await queryRunner.release();
-    }
-
+    })
   }
 
   async createAccount(dto: AccountRegisterRequestDto): Promise<AccountEntity> {

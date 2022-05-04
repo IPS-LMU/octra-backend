@@ -8,7 +8,19 @@ import {ConfigService} from '@nestjs/config';
 import {TaskDto, TaskUploadDto} from './task.dto';
 import {FormDataRequest} from 'nestjs-form-data';
 import {removeNullAttributes} from '../../../functions';
-import {Body, Controller, Delete, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Req} from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
+  Post,
+  Put,
+  Req
+} from '@nestjs/common';
 
 @ApiTags('Tasks')
 @ApiBearerAuth()
@@ -28,7 +40,22 @@ export class TasksController {
     const createdTask = await this.tasksService.uploadTaskData(id, body, req);
     createdTask.inputsOutputs = createdTask.inputsOutputs.map(a => ({
       ...a,
-      url: a.url ?? this.appService.pathBuilder.getEncryptedUploadURL(a.file_project?.file.url)
+      url: a.url ?? this.appService.pathBuilder.getEncryptedUploadURL(a.file_project?.file.url, a.file_project?.virtual_filename)
+    }));
+    let data = new TaskDto(createdTask);
+    data = removeNullAttributes(data);
+    return data;
+  }
+
+  @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.dataDelivery)
+  @FormDataRequest()
+  @ApiConsumes('multipart/form-data')
+  @Put(':project_id/tasks/:task_id')
+  async changeTaskData(@Param('project_id', ParseIntPipe) id: number, @Param('task_id', ParseIntPipe) task_id: number, @Req() req: InternRequest, @Body() body: TaskUploadDto): Promise<TaskDto> {
+    const createdTask = await this.tasksService.changeTaskData(id, task_id, body, req);
+    createdTask.inputsOutputs = createdTask.inputsOutputs.map(a => ({
+      ...a,
+      url: a.url ?? this.appService.pathBuilder.getEncryptedUploadURL(a.file_project?.file.url, a.file_project?.virtual_filename)
     }));
     let data = new TaskDto(createdTask);
     data = removeNullAttributes(data);
@@ -56,10 +83,22 @@ export class TasksController {
     }
     createdTask.inputsOutputs = createdTask.inputsOutputs?.map(a => ({
       ...a,
-      url: a.url ?? this.appService.pathBuilder.getEncryptedUploadURL(a.file_project?.file.url)
+      url: a.url ?? this.appService.pathBuilder.getEncryptedUploadURL(a.file_project?.file.url, a.file_project?.virtual_filename)
     }));
     let data = new TaskDto(createdTask);
     data = removeNullAttributes(data);
     return data;
+  }
+
+  @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.dataDelivery)
+  @Get(':project_id/tasks/')
+  async listTasks(@Param('project_id') project_id: number): Promise<TaskDto[]> {
+    return removeNullAttributes((await this.tasksService.listTasks(project_id)).map(a => new TaskDto({
+      ...a,
+      inputsOutputs: a.inputsOutputs?.map(a => ({
+        ...a,
+        url: a.url ?? this.appService.pathBuilder.getEncryptedUploadURL(a.file_project?.file.url, a.file_project?.virtual_filename)
+      }))
+    })));
   }
 }

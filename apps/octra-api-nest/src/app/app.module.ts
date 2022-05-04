@@ -26,6 +26,7 @@ import {TASK_ENTITIES} from './core/project/tasks';
 import * as fs from 'fs';
 import {removeNullAttributes} from './functions';
 import {LoggerMiddleware} from './obj/logger.middleware';
+import {DatabaseService} from "./database.service";
 
 const config = Configuration.getInstance();
 
@@ -75,6 +76,7 @@ if (config.database.ssl) {
   controllers: [AppController, AppTokenController, FilesController, ProjectController, ToolController],
   providers: [
     AppService,
+    DatabaseService,
     ShutdownService,
     {
       provide: APP_GUARD,

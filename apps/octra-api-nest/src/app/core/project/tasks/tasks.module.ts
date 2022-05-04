@@ -10,6 +10,7 @@ import {TaskEntity} from '../task.entity';
 import {FILE_ENTITIES} from '../../files/files.module';
 import {NestjsFormDataModule} from 'nestjs-form-data';
 import {FileHashStorage} from '../../../obj/file-hash-storage';
+import {DatabaseService} from "../../../database.service";
 
 export const TASK_ENTITIES = [TaskEntity];
 const config = Configuration.getInstance();
@@ -23,7 +24,7 @@ const config = Configuration.getInstance();
     })
   ],
   controllers: [TasksController],
-  providers: [TasksService, AppService, ConfigService],
+  providers: [TasksService, AppService, ConfigService, DatabaseService],
   exports: [TasksService]
 })
 export class TasksModule {

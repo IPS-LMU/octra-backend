@@ -4,7 +4,7 @@ import {unlink} from 'fs-extra';
 import {InternRequest} from '../../../obj/types';
 import {ConfigService} from '@nestjs/config';
 import {InjectRepository} from '@nestjs/typeorm';
-import {Connection, Repository} from 'typeorm';
+import {Repository} from 'typeorm';
 import {FileEntity} from '../../files/file.entity';
 import {TaskEntity, TaskInputOutputEntity} from '../task.entity';
 import {FileCreateDto} from '../../files/file.dto';
@@ -15,9 +15,11 @@ import {FileHashStorage} from '../../../obj/file-hash-storage';
 import {AnnotationDto, TranscriptType} from '../annotations/annotation.dto';
 import {TaskInputOutputCreatorType, TaskStatus} from '@octra/octra-api-types';
 import {FileProjectEntity} from '../project.entity';
+import {removeNullAttributes} from "../../../functions";
+import {DatabaseService} from "../../../database.service";
 
 interface ReqData {
-  project_id: string;
+  project_id: number;
   file?: {
     url: string;
     file_id: number;
@@ -37,7 +39,7 @@ export class TasksService {
               private taskRepository: Repository<TaskEntity>,
               @InjectRepository(FileEntity)
               private fileRepository: Repository<FileEntity>,
-              private connection: Connection,) {
+              private databaseService: DatabaseService) {
   }
 
   async uploadTaskData(project_id: number, body: TaskUploadDto, req: InternRequest): Promise<TaskEntity> {
@@ -49,8 +51,8 @@ export class TasksService {
 
     const mediaPath = Path.join(this.configService.get('api.files.uploadPath'), 'temp');
     const mediaFile = inputs[0];
-    const taskProperties: TaskProperties = req.body?.properties;
-    const taskTranscript: AnnotationDto = req.body?.transcript;
+    const taskProperties: TaskProperties = body?.properties;
+    const taskTranscript: AnnotationDto = body?.transcript;
 
     if (!(/.+(\.wav)/g).exec(inputs[0].originalName)) {
       await this.removeTempFiles(inputs);
@@ -58,7 +60,7 @@ export class TasksService {
     }
 
     let reqData: ReqData = {
-      project_id: req.params.project_id,
+      project_id,
       log: undefined,
       file: undefined
     }
@@ -80,18 +82,65 @@ export class TasksService {
     }
 
     body = await this.adaptConvertedTranscript(body, mediaFile, dbFile);
-    const id = await this.addNewTask(project_id, body, dbFile, reqData, taskProperties);
+    const id = await this.addChangeNewTask(project_id, body, dbFile, reqData, taskProperties);
     return this.getTask(project_id, Number(id));
   }
 
-  public async removeTask(project_id: number, task_id: number) {
-    // TODO improve transaction handling
-    const queryRunner = this.connection.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-    const manager = queryRunner.manager;
+  async changeTaskData(project_id: number, task_id: number, body: TaskUploadDto, req: InternRequest): Promise<TaskEntity> {
+    const task = await this.taskRepository.findOne(task_id, {relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file']});
+    const inputs = body.inputs;
+    const mediaFile = (inputs && inputs.length > 0) ? inputs[0] : undefined;
 
-    try {
+    if (!task) {
+      throw new HttpException("Task not found.", HttpStatus.NOT_FOUND);
+    }
+
+    if (mediaFile && !(/.+(\.wav)/g).exec(mediaFile.originalName)) {
+      await this.removeTempFiles(inputs);
+      throw new HttpException('Only WAVE files supported.', HttpStatus.BAD_REQUEST);
+    }
+
+    const taskProperties: TaskProperties = body?.properties;
+    const taskTranscript: AnnotationDto = body?.transcript;
+
+    let reqData: ReqData = {
+      project_id: project_id,
+      log: task.log,
+      file: undefined
+    }
+
+    if (taskProperties) {
+      reqData = {
+        ...reqData,
+        ...taskProperties,
+        transcript: taskTranscript
+      }
+    }
+    let virtual_filename;
+    let dbFile;
+    let publicURL;
+
+    if (mediaFile) {
+      const result = await this.checkMediaFile(req, mediaFile, reqData, taskProperties);
+      virtual_filename = result.virtual_filename;
+      dbFile = result.dbFile;
+      publicURL = result.publicURL;
+    }
+
+    reqData.file = {
+      virtual_filename,
+      virtual_folder_path: '',
+      file_id: dbFile.id,
+      url: dbFile.url // use public URL?
+    }
+
+    body = await this.adaptConvertedTranscript(body, mediaFile, dbFile);
+    await this.addChangeNewTask(project_id, body, dbFile, reqData, taskProperties, task);
+    return this.getTask(project_id, task_id);
+  }
+
+  public async removeTask(project_id: number, task_id: number) {
+    return this.databaseService.transaction<void>(async (manager) => {
       const project = await manager.findOne(TaskEntity, {
         id: task_id,
         project_id
@@ -116,29 +165,19 @@ export class TasksService {
       if (result.affected !== 1) {
         throw new HttpException("Task not found.", HttpStatus.NOT_FOUND);
       }
-    } catch (err) {
-      // since we have errors lets rollback the changes we made
-      await queryRunner.rollbackTransaction();
-    } finally {
-      // you need to release a queryRunner which was manually instantiated
-      await queryRunner.release();
-    }
+    });
   }
 
-  private async addNewTask(project_id: number, body: TaskUploadDto, dbFile: FileEntity, reqData: ReqData, taskProperties: TaskProperties): Promise<string> {
-    const queryRunner = this.connection.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      const fileProject = await queryRunner.manager.insert(FileProjectEntity, {
-        file_id: dbFile.id,
+  private async addChangeNewTask(project_id: number, body: TaskUploadDto, audioDBFile: FileEntity, reqData: ReqData, taskProperties: TaskProperties, task?: TaskEntity): Promise<number> {
+    return this.databaseService.transaction<number>(async (manager) => {
+      let task_id = task?.id;
+      const audioFileProject = {
+        file_id: audioDBFile.id,
         project_id,
         virtual_folder_path: reqData.file.virtual_folder_path,
         virtual_filename: reqData.file.virtual_filename,
-      } as FileProjectEntity);
-
-      const taskQuery = await queryRunner.manager.insert(TaskEntity, {
+      } as FileProjectEntity;
+      const newTaskProperties = removeNullAttributes({
         pid: taskProperties.pid,
         orgtext: taskProperties.orgtext,
         assessment: taskProperties.assessment,
@@ -156,30 +195,63 @@ export class TasksService {
         project_id
       } as TaskEntity);
 
-      await queryRunner.manager.insert(TaskInputOutputEntity, {
-        task_id: taskQuery.identifiers[0].id,
-        file_project_id: fileProject.identifiers[0].id,
-        type: 'input',
-        creator_type: TaskInputOutputCreatorType.user,
-        label: 'audio'
-      } as TaskInputOutputEntity);
+      if (task) {
+        // update task
+        await manager.update(TaskEntity, {id: task_id}, newTaskProperties);
+      } else {
+        // insert new task
+        const taskQuery = await manager.insert(TaskEntity, newTaskProperties);
+        task_id = taskQuery?.identifiers[0]?.id
+      }
 
-      await queryRunner.manager.insert(TaskInputOutputEntity, {
-        task_id: taskQuery.identifiers[0].id,
-        type: 'input',
-        creator_type: TaskInputOutputCreatorType.user,
-        label: 'transcript',
-        content: body.transcript
-      } as TaskInputOutputEntity);
-      await queryRunner.commitTransaction();
-      return taskQuery.identifiers[0].id;
-    } catch (err) {
-      // since we have errors lets rollback the changes we made
-      await queryRunner.rollbackTransaction();
-    } finally {
-      // you need to release a queryRunner which was manually instantiated
-      await queryRunner.release();
-    }
+      if (!task_id) {
+        throw Error("task_id is undefined.");
+      }
+
+      const transcriptInputDB = task?.inputsOutputs?.find(a => a.label === "transcript" && a.type === "input");
+      const audioInputDB = task?.inputsOutputs?.find(a => a.label === "audio" && a.type === "input");
+      if (audioDBFile) {
+        // insert or update audioFileDB
+        if (audioInputDB) {
+          // update reference only
+          await manager.update(FileProjectEntity, {
+            id: audioInputDB.file_project_id
+          }, audioFileProject);
+        } else {
+          // add new file_project for audio file
+          const fileProject = await manager.insert(FileProjectEntity, audioFileProject);
+          await manager.insert(TaskInputOutputEntity, {
+            task_id: task_id,
+            file_project_id: fileProject.identifiers[0].id,
+            type: 'input',
+            creator_type: TaskInputOutputCreatorType.user,
+            label: 'audio'
+          } as TaskInputOutputEntity);
+        }
+      }
+
+      if (body.transcript) {
+        const newTranscript = {
+          task_id,
+          type: 'input',
+          creator_type: TaskInputOutputCreatorType.user,
+          label: 'transcript',
+          content: body.transcript
+        } as TaskInputOutputEntity;
+
+        // insert or update transcript
+        if (transcriptInputDB) {
+          // update task input only
+          await manager.update(TaskInputOutputEntity, {
+            id: transcriptInputDB.id
+          }, newTranscript);
+        } else {
+          // add new file_project for audio file
+          await manager.insert(TaskInputOutputEntity, newTranscript);
+        }
+      }
+      return task_id;
+    });
   }
 
   private async checkMediaFile(req: InternRequest, mediaFile: FileHashStorage, reqData: any, taskProperties: TaskProperties): Promise<{
@@ -198,8 +270,7 @@ export class TasksService {
 
       if (!dbFile) {
         // file doesn't exists in DB
-        const fileExt = Path.extname(mediaFile.originalName);
-        const newFilePath = Path.join(uploadPath, `${Path.basename(mediaFile.path)}${fileExt}`);
+        const newFilePath = Path.join(uploadPath, `${Path.basename(mediaFile.path)}`);
         await FileSystemHandler.moveFile(mediaFile.path, newFilePath);
         const audioInformation = await FileSystemHandler.readAudioFileInformation(newFilePath);
 
@@ -219,9 +290,8 @@ export class TasksService {
         await unlink(mediaFile.path);
       }
 
-      publicURL = this.appService.pathBuilder.getEncryptedUploadURL(dbFile.url);
-      // fill in file information
       virtual_filename = mediaFile.originalName;
+      publicURL = this.appService.pathBuilder.getEncryptedUploadURL(dbFile.url, virtual_filename);
     } else {
       // no media file uploaded
       const url = taskProperties.media.url;
@@ -234,7 +304,7 @@ export class TasksService {
       const originalName = this.appService.pathBuilder.extractFileNameFromURL(url);
       if (regex.exec(url)) {
         // is intern link
-        const relativePath = reqData.file.url.replace(/^.+links\/([\/]+)\/(.+)/g, (g0, g1, g2) => {
+        const relativePath = reqData.file.url.replace(/^.+links\/([/]+)\/(.+)/g, (g0, g1, g2) => {
           return `${this.appService.pathBuilder.decryptFilePath(g1)}/${g2}`;
         });
 
@@ -279,6 +349,15 @@ export class TasksService {
       id: task_id,
       project_id
     }, {relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file']});
+  }
+
+  public async listTasks(project_id: number): Promise<TaskEntity[]> {
+    return this.taskRepository.find({
+      where: {
+        project_id
+      },
+      relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file']
+    });
   }
 
   private async adaptConvertedTranscript(body: TaskUploadDto, mediaFile: FileHashStorage, dbFile: FileEntity) {
