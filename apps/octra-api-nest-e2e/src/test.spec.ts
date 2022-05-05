@@ -23,6 +23,7 @@ import {TaskDto} from '../../octra-api-nest/src/app/core/project/tasks';
 import * as fs from 'fs';
 import {TaskProperties} from '@octra/db';
 import {AnnotJSONType, TranscriptDto} from '../../octra-api-nest/src/app/core/project/annotations/transcript.dto';
+import {SaveAnnotationDto} from '../../octra-api-nest/src/app/core/project/annotations/annotation.dto';
 
 const tempData = {
   apptoken: {
@@ -575,9 +576,35 @@ describe('Projects', () => {
     });
   });
 
-
   it('/projects/project_id/annotations/start/ (POST)', () => {
     return authPost(`/projects/${tempData.project.id}/annotations/start`, undefined).expect(201).then(({body}) => {
+      tempData.task.id = body.id;
+    });
+  });
+
+  it('/projects/project_id/annotations/save/ (PUT)', () => {
+    return authPut(`/projects/${tempData.project.id}/annotations/${tempData.task.id}/save`, {
+      assessment: 'assessment', code: 'code', comment: 'comment', log: [{
+        name: 'tzas',
+        value: 'uiahs'
+      }], orgtext: 'orgtext', transcript: {
+        sampleRate: 16000,
+        levels: [{
+          name: 'OCTRA',
+          type: AnnotJSONType.SEGMENT,
+          items: [{
+            id: 1,
+            sampleStart: 0,
+            sampleDur: 1000,
+            labels: [{
+              name: 'OCTRA',
+              value: 'test'
+            }]
+          }]
+        }]
+      },
+      pid: 'test'
+    } as SaveAnnotationDto).expect(200).then(({body}) => {
       const t = body;
     });
   });
@@ -585,7 +612,6 @@ describe('Projects', () => {
   it('/projects/project_id/:id/tasks/:task_id (DELETE)', () => {
     return authDelete(`/projects/${tempData.project.id}/tasks/${tempData.task.id}`, undefined).expect(200);
   });
-
 
   it('/projects/:id (DELETE)', () => {
     return authDelete(`/projects/${tempData.project.id}`, {

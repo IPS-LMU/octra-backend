@@ -28,7 +28,8 @@ export enum TaskStatus {
   draft = 'DRAFT',
   free = 'FREE',
   busy = 'BUSY',
-  annotated = 'ANNOTATED',
+  finished = 'FINISHED',
+  failed = 'FAILED',
   postponed = 'POSTPONED'
 }
 

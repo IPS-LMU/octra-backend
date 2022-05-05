@@ -15,8 +15,9 @@ import {FileHashStorage} from '../../../obj/file-hash-storage';
 import {AnnotJSONType, TranscriptType} from '../annotations/transcript.dto';
 import {TaskInputOutputCreatorType, TaskStatus} from '@octra/octra-api-types';
 import {FileProjectEntity} from '../project.entity';
-import {removeNullAttributes} from '../../../functions';
+import {removeNullAttributes, removeProperties} from '../../../functions';
 import {DatabaseService} from '../../../database.service';
+import {SaveAnnotationDto} from '../annotations/annotation.dto';
 
 interface ReqData {
   virtual_folder_path?: string;
@@ -432,11 +433,52 @@ export class TasksService {
         id: task.id
       }, {
         status: TaskStatus.busy,
+        startdate: new Date().toISOString(),
         worker_id
       });
 
       if (updateResult.affected < 1) {
         throw new Error('Can\'t update task status to \'BUSY\'.');
+      }
+      return await manager.findOne(TaskEntity, task.id, {
+        relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file'],
+      });
+    });
+  }
+
+  public async saveAnnotationData(project_id: number, task_id: number, worker_id: number, dto: SaveAnnotationDto): Promise<TaskEntity> {
+    return this.databaseService.transaction<TaskEntity>(async (manager) => {
+      const task = await manager.findOne(TaskEntity, {
+        id: task_id
+      });
+
+      if (!task) {
+        throw new Error('Can\'t find a free task.');
+      }
+
+      if (task.status === TaskStatus.finished) {
+        throw new Error('You can\'t save an annotation of an finished task');
+      }
+
+      await manager.insert(TaskInputOutputEntity, {
+        task_id: task.id,
+        type: 'output',
+        content: dto.transcript,
+        creator_type: TaskInputOutputCreatorType.user,
+        label: 'transcript'
+      });
+
+      const updateResult = await manager.update(TaskEntity, {
+        id: task.id
+      }, {
+        ...removeProperties(dto, ['transcript']),
+        status: TaskStatus.finished,
+        enddate: new Date().toISOString(),
+        worker_id
+      });
+
+      if (updateResult.affected < 1) {
+        throw new Error('Can\'t save annotation to task.');
       }
       return await manager.findOne(TaskEntity, task.id, {
         relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file'],

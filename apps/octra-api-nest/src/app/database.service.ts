@@ -1,4 +1,4 @@
-import {Injectable} from '@nestjs/common';
+import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
 import {Connection, EntityManager} from 'typeorm';
 
 @Injectable()
@@ -16,10 +16,11 @@ export class DatabaseService {
       const result = await callback(manager);
       await queryRunner.commitTransaction();
       return result;
+      3
     } catch (err) {
       // since we have errors lets rollback the changes we made
       await queryRunner.rollbackTransaction();
-      throw(err);
+      throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
     } finally {
       // you need to release a queryRunner which was manually instantiated
       await queryRunner.release();

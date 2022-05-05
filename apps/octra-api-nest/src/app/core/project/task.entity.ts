@@ -5,6 +5,7 @@ import {Entity, JoinColumn, ManyToOne, OneToMany, OneToOne} from 'typeorm';
 import {ToolEntity} from '../tool/tool.entity';
 import {FileProjectEntity, ProjectEntity} from './project.entity';
 import {AccountEntity} from '../account/entities/account.entity';
+import {TranscriptDto} from './annotations/transcript.dto';
 
 @Entity({name: 'task'})
 export class TaskEntity extends StandardEntityWithTimestamps {
@@ -167,5 +168,5 @@ export class TaskInputOutputEntity extends StandardEntity {
     type: 'json',
     nullable: true
   })
-  content?: any;
+  content?: TranscriptDto;
 }
