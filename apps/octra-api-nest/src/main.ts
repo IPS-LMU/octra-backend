@@ -2,7 +2,7 @@
  * This is not a production server yet!
  * This is only a minimal backend to get started.
  */
-
+import {version} from '../package.json'
 import {Logger} from '@nestjs/common';
 import {NestFactory} from '@nestjs/core';
 
@@ -34,7 +34,7 @@ async function bootstrap() {
     const swaggerConfig = new DocumentBuilder()
       .setTitle('OCTRA API')
       .setDescription('API for connecting OCTRA Backend to OCTRA')
-      .setVersion('0.2.0')
+      .setVersion(version)
       .addBearerAuth()
       .addSecurity('roles', {
         type: 'http'

@@ -7,7 +7,9 @@
       "node"
     ],
     "emitDecoratorMetadata": true,
-    "target": "es2015"
+    "target": "es2015",
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true
   },
   "exclude": [
     "**/*.spec.ts",
