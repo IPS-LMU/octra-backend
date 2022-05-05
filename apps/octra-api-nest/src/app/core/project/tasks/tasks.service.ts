@@ -8,15 +8,15 @@ import {Repository} from 'typeorm';
 import {FileEntity} from '../../files/file.entity';
 import {TaskEntity, TaskInputOutputEntity} from '../task.entity';
 import {FileCreateDto} from '../../files/file.dto';
-import {TaskProperties, TaskUploadDto} from './task.dto';
+import {TaskChangeDto, TaskProperties, TaskUploadDto} from './task.dto';
 import * as Path from 'path';
 import {FileSystemHandler} from '../../../obj/filesystem-handler';
 import {FileHashStorage} from '../../../obj/file-hash-storage';
 import {AnnotJSONType, TranscriptType} from '../annotations/annotation.dto';
 import {TaskInputOutputCreatorType, TaskStatus} from '@octra/octra-api-types';
 import {FileProjectEntity} from '../project.entity';
-import {removeNullAttributes} from "../../../functions";
-import {DatabaseService} from "../../../database.service";
+import {removeNullAttributes} from '../../../functions';
+import {DatabaseService} from '../../../database.service';
 
 interface ReqData {
   virtual_folder_path?: string;
@@ -92,21 +92,21 @@ export class TasksService {
       virtual_folder_path: ''
     }
 
-    body = await this.adaptConvertedTranscript(body, mediaFile, dbFile);
+    body = await this.adaptConvertedTranscript(body, mediaFile, dbFile) as any;
     taskProperties.status = TaskStatus.draft;
     const id = await this.addChangeNewTask(project_id, body, dbFile, reqData, taskProperties);
     return this.getTask(project_id, Number(id));
   }
 
-  async changeTaskData(project_id: number, task_id: number, body: TaskUploadDto, req: InternRequest): Promise<TaskEntity> {
+  async changeTaskData(project_id: number, task_id: number, body: TaskUploadDto | TaskChangeDto, req: InternRequest): Promise<TaskEntity> {
     const task = await this.taskRepository.findOne(task_id, {relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file']});
     const inputs = body.inputs;
-    const mediaFile = inputs?.find(a => a.mimetype === "audio/wave");
-    const transcriptFile = inputs?.find(a => a.mimetype === "application/json" || a.mimetype === "text/plain");
+    const mediaFile = inputs?.find(a => a.mimetype === 'audio/wave');
+    const transcriptFile = inputs?.find(a => a.mimetype === 'application/json' || a.mimetype === 'text/plain');
     const taskProperties: TaskProperties = body?.properties;
 
     if (!task) {
-      throw new HttpException("Task not found.", HttpStatus.NOT_FOUND);
+      throw new HttpException('Task not found.', HttpStatus.NOT_FOUND);
     }
 
     if (mediaFile && !(/.+(\.wav)/g).exec(mediaFile.originalName)) {
@@ -184,22 +184,25 @@ export class TasksService {
         nexttask_id: null
       });
       // remove input outputs
-      await manager.delete(TaskInputOutputEntity, {
+      const test = await manager.delete(TaskInputOutputEntity, {
         task_id
       });
-      const result = await manager.delete(TaskEntity, task_id);
+      const result = await manager.delete(TaskEntity, {
+        id: task_id
+      });
 
       if (result.affected !== 1) {
-        throw new HttpException("Task not found.", HttpStatus.NOT_FOUND);
+        throw new HttpException('Task not found.', HttpStatus.NOT_FOUND);
       }
+      return;
     });
   }
 
-  private async addChangeNewTask(project_id: number, body: TaskUploadDto, audioDBFile: FileEntity, reqData: ReqData, taskProperties: TaskProperties, task?: TaskEntity): Promise<number> {
-    return this.databaseService.transaction<number>(async (manager) => {
+  private async addChangeNewTask(project_id: number, body: TaskUploadDto | TaskChangeDto, audioDBFile: FileEntity, reqData: ReqData, taskProperties: TaskProperties, task?: TaskEntity): Promise<number> {
+    return await this.databaseService.transaction<number>(async (manager) => {
       let task_id = task?.id;
       const audioFileProject = {
-        file_id: audioDBFile.id,
+        file_id: audioDBFile?.id,
         project_id,
         virtual_folder_path: reqData.virtual_folder_path,
         virtual_filename: reqData.virtual_filename,
@@ -209,7 +212,7 @@ export class TasksService {
         orgtext: taskProperties.orgtext,
         assessment: taskProperties.assessment,
         priority: taskProperties.priority,
-        status: taskProperties.status,
+        status: taskProperties.status ?? 'DRAFT',
         code: taskProperties.code,
         startdate: taskProperties.startdate,
         enddate: taskProperties.enddate,
@@ -382,7 +385,7 @@ export class TasksService {
     });
   }
 
-  private async adaptConvertedTranscript(body: TaskUploadDto, mediaFile: FileHashStorage, dbFile: FileEntity) {
+  private async adaptConvertedTranscript(body: TaskUploadDto | TaskChangeDto, mediaFile: FileHashStorage, dbFile: FileEntity) {
     if (body.transcript && body.transcriptType === TranscriptType.Text) {
       // adapt transcript
       body.transcript.annotates = mediaFile.originalName;

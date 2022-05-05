@@ -21,8 +21,8 @@ import {ToolCreateRequestDto, ToolDto} from '../../octra-api-nest/src/app/core/t
 import {GuidelinesDto} from '../../octra-api-nest/src/app/core/project/guidelines/guidelines.dto';
 import {AnnotationDto, AnnotJSONType} from '../../octra-api-nest/src/app/core/project/annotations/annotation.dto';
 import {TaskDto} from '../../octra-api-nest/src/app/core/project/tasks';
-import * as fs from "fs";
-import {TaskProperties} from "@octra/db";
+import * as fs from 'fs';
+import {TaskProperties} from '@octra/db';
 
 const tempData = {
   apptoken: {
@@ -58,6 +58,44 @@ const tempData = {
 };
 let app;
 const appToken = 'a810c2e6e76774fadf03d8edd1fc9d1954cc27d6';
+
+fs.writeFileSync('./data/files/tmp/test.json', JSON.stringify({
+  sampleRate: 16000,
+  levels: [{
+    name: 'Test Level local',
+    type: AnnotJSONType.SEGMENT,
+    items: [{
+      id: 1,
+      label: 'test',
+      value: 'this is a file test'
+    }]
+  }]
+}), {
+  encoding: 'utf-8'
+});
+
+fs.writeFileSync('./data/files/tmp/test.txt', 'this is a test', {
+  encoding: 'utf-8'
+});
+
+fs.writeFileSync('./data/files/tmp/test2.json', JSON.stringify({
+  sampleRate: 16000,
+  levels: [{
+    name: 'Test Level local Test2',
+    type: AnnotJSONType.SEGMENT,
+    items: [{
+      id: 1,
+      label: 'test',
+      value: 'this is a file test2'
+    }]
+  }]
+}), {
+  encoding: 'utf-8'
+});
+
+fs.writeFileSync('./data/files/tmp/test2.txt', 'this is a test2', {
+  encoding: 'utf-8'
+});
 
 const authGet = (url: string, isAdmin = true) => {
   return request(app.getHttpServer()).get(url)
@@ -344,7 +382,7 @@ describe('Projects', () => {
   });
 
   it('/projects/:id/tasks (POST)', () => {
-    return request(app.getHttpServer()).post(`/projects/${tempData.project.id}/tasks/upload`)
+    return request(app.getHttpServer()).post(`/projects/${tempData.project.id}/tasks/`)
       .set('X-App-Token', `${appToken}`)
       .set('Origin', 'http://localhost:8080')
       .field('properties', JSON.stringify({
@@ -352,7 +390,7 @@ describe('Projects', () => {
         orgtext: 'asdas'
       }))
       .field('transcriptType', 'AnnotJSON')
-      .field("transcript", JSON.stringify({
+      .field('transcript', JSON.stringify({
         sampleRate: 16000,
         levels: [{
           name: 'Test Level local',
@@ -367,18 +405,8 @@ describe('Projects', () => {
       })
   });
 
-  it('/projects/:id/tasks (POST) (transcript file)', () => {
-    fs.writeFileSync("./data/files/tmp/test.json", JSON.stringify({
-      sampleRate: 16000,
-      levels: [{
-        name: 'Test Level local',
-        type: AnnotJSONType.SEGMENT,
-        items: []
-      }]
-    }), {
-      encoding: "utf-8"
-    });
-    return request(app.getHttpServer()).post(`/projects/${tempData.project.id}/tasks/upload`)
+  it('/projects/:id/tasks (POST) (no transcript)', () => {
+    return request(app.getHttpServer()).post(`/projects/${tempData.project.id}/tasks/`)
       .set('X-App-Token', `${appToken}`)
       .set('Origin', 'http://localhost:8080')
       .field('properties', JSON.stringify({
@@ -393,42 +421,57 @@ describe('Projects', () => {
       })
   });
 
-  it('/projects/:id/tasks/:task_id (PUT)', () => {
+  it('/projects/:id/tasks (POST) (transcript file, JSON)', () => {
+    return request(app.getHttpServer()).post(`/projects/${tempData.project.id}/tasks/`)
+      .set('X-App-Token', `${appToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .field('properties', JSON.stringify({
+        type: 'annotation',
+        orgtext: 'asdas'
+      }))
+      .field('transcriptType', 'AnnotJSON')
+      .attach('inputs[]', './data/files/tmp/test.json', 'test.json')
+      .attach('inputs[]', './testfiles/WebTranscribe.wav', 'WebTranscribe.wav')
+      .auth(tempData.admin.jwtToken, {type: 'bearer'})
+      .expect(201).then(({body}: { body: TaskDto }) => {
+        tempData.task.id = body.id;
+      })
+  });
+
+  it('/projects/:id/tasks (POST) (transcript file, Text)', () => {
+    return request(app.getHttpServer()).post(`/projects/${tempData.project.id}/tasks/`)
+      .set('X-App-Token', `${appToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .field('properties', JSON.stringify({
+        type: 'annotation',
+        orgtext: 'asdas'
+      }))
+      .field('transcriptType', 'Text')
+      .attach('inputs[]', './data/files/tmp/test.txt', 'test.txt')
+      .attach('inputs[]', './testfiles/WebTranscribe.wav', 'WebTranscribe.wav')
+      .auth(tempData.admin.jwtToken, {type: 'bearer'})
+      .expect(201).then(({body}: { body: TaskDto }) => {
+        tempData.task.id = body.id;
+      })
+  });
+
+  it('/projects/:id/tasks/:task_id (PUT) transcript AnnotJSON', () => {
     return request(app.getHttpServer()).put(`/projects/${tempData.project.id}/tasks/${tempData.task.id}`)
       .set('X-App-Token', `${appToken}`)
       .set('Origin', 'http://localhost:8080')
       .field('properties', JSON.stringify({
         type: 'annotation',
-        assessment: "ok"
+        assessment: 'ok'
       } as TaskProperties))
       .field('transcriptType', 'AnnotJSON')
       .field('transcript', JSON.stringify({
         sampleRate: 16000,
         levels: [{
-          name: 'Test Level2',
+          name: 'Test Level3',
           type: AnnotJSONType.SEGMENT,
           items: []
         }]
       } as AnnotationDto))
-      .attach('inputs', './testfiles/WebTranscribe2.wav', 'WebTranscribe2.wav')
-      .auth(tempData.admin.jwtToken, {type: 'bearer'})
-      .expect(200).then(({body}: { body: TaskDto }) => {
-        tempData.task.id = body.id;
-      })
-  });
-
-  it('/projects/:id/tasks/:task_id (PUT) (transcript file)', () => {
-    fs.writeFileSync("./data/files/tmp/test.txt", "das ist ein test");
-
-    return request(app.getHttpServer()).put(`/projects/${tempData.project.id}/tasks/${tempData.task.id}`)
-      .set('X-App-Token', `${appToken}`)
-      .set('Origin', 'http://localhost:8080')
-      .field('properties', JSON.stringify({
-        type: 'annotation',
-        assessment: "ok 2"
-      } as TaskProperties))
-      .field('transcriptType', 'AnnotJSON')
-      .attach('inputs[]', './data/files/tmp/test.txt', 'test.txt')
       .attach('inputs[]', './testfiles/WebTranscribe2.wav', 'WebTranscribe2.wav')
       .auth(tempData.admin.jwtToken, {type: 'bearer'})
       .expect(200).then(({body}: { body: TaskDto }) => {
@@ -436,6 +479,90 @@ describe('Projects', () => {
       })
   });
 
+  it('/projects/:id/tasks/:task_id (PUT) transcript Text', () => {
+    return request(app.getHttpServer()).put(`/projects/${tempData.project.id}/tasks/${tempData.task.id}`)
+      .set('X-App-Token', `${appToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .field('properties', JSON.stringify({
+        type: 'annotation',
+        assessment: 'ok'
+      } as TaskProperties))
+      .field('transcriptType', 'Text')
+      .field('transcript', 'this is a test inline transcript')
+      .attach('inputs[]', './testfiles/WebTranscribe2.wav', 'WebTranscribe2.wav')
+      .auth(tempData.admin.jwtToken, {type: 'bearer'})
+      .expect(200).then(({body}: { body: TaskDto }) => {
+        tempData.task.id = body.id;
+      })
+  });
+
+  it('/projects/:id/tasks/:task_id (PUT) no transcript', () => {
+    return request(app.getHttpServer()).put(`/projects/${tempData.project.id}/tasks/${tempData.task.id}`)
+      .set('X-App-Token', `${appToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .field('properties', JSON.stringify({
+        type: 'annotation',
+        assessment: 'ok2'
+      } as TaskProperties))
+      .field('transcriptType', 'AnnotJSON')
+      .attach('inputs[]', './testfiles/WebTranscribe2.wav', 'WebTranscribe2.wav')
+      .auth(tempData.admin.jwtToken, {type: 'bearer'})
+      .expect(200).then(({body}: { body: TaskDto }) => {
+        tempData.task.id = body.id;
+      })
+  });
+
+  it('/projects/:id/tasks/:task_id (PUT) transcript file JSON', () => {
+    return request(app.getHttpServer()).put(`/projects/${tempData.project.id}/tasks/${tempData.task.id}`)
+      .set('X-App-Token', `${appToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .field('properties', JSON.stringify({
+        type: 'annotation',
+        assessment: 'ok2',
+        status: 'FREE'
+      } as TaskProperties))
+      .field('transcriptType', 'AnnotJSON')
+      .attach('inputs[]', './data/files/tmp/test2.json', 'test2.json')
+      .attach('inputs[]', './testfiles/WebTranscribe2.wav', 'WebTranscribe2.wav')
+      .auth(tempData.admin.jwtToken, {type: 'bearer'})
+      .expect(200).then(({body}: { body: TaskDto }) => {
+        tempData.task.id = body.id;
+      })
+  });
+
+  it('/projects/:id/tasks/:task_id (PUT) transcript file Text', () => {
+    return request(app.getHttpServer()).put(`/projects/${tempData.project.id}/tasks/${tempData.task.id}`)
+      .set('X-App-Token', `${appToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .field('properties', JSON.stringify({
+        type: 'annotation',
+        assessment: 'ok2',
+        status: 'BUSY'
+      } as TaskProperties))
+      .field('transcriptType', 'Text')
+      .attach('inputs[]', './data/files/tmp/test2.txt', 'test2.txt')
+      .attach('inputs[]', './testfiles/WebTranscribe2.wav', 'WebTranscribe2.wav')
+      .auth(tempData.admin.jwtToken, {type: 'bearer'})
+      .expect(200).then(({body}: { body: TaskDto }) => {
+        tempData.task.id = body.id;
+      })
+  });
+
+  it('/projects/:id/tasks/:task_id (PUT) without inputs', () => {
+    return request(app.getHttpServer()).put(`/projects/${tempData.project.id}/tasks/${tempData.task.id}`)
+      .set('X-App-Token', `${appToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .field('properties', JSON.stringify({
+        type: 'annotation',
+        assessment: 'ok3',
+        status: 'BUSY'
+      } as TaskProperties))
+      .field('transcriptType', 'Text')
+      .auth(tempData.admin.jwtToken, {type: 'bearer'})
+      .expect(200).then(({body}: { body: TaskDto }) => {
+        tempData.task.id = body.id;
+      })
+  });
 
   it('/projects/project_id/:id/tasks/:task_id (GET)', () => {
     return authGet(`/projects/${tempData.project.id}/tasks/${tempData.task.id}`).expect(200);

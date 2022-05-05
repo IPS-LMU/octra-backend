@@ -1,13 +1,13 @@
 import {Injectable} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Repository} from 'typeorm';
-import {ProjectEntity} from './project.entity';
+import {FileProjectEntity, ProjectEntity} from './project.entity';
 import {ProjectAssignRolesRequestDto, ProjectRemoveRequestDto, ProjectRequestDto} from './project.dto';
 import {AccountRoleProjectEntity, RoleEntity} from '../account/entities/account-role-project.entity';
-import {TaskEntity} from './task.entity';
+import {TaskEntity, TaskInputOutputEntity} from './task.entity';
 import {AppService} from '../../app.service';
 import {FileSystemHandler} from '../../obj/filesystem-handler';
-import {DatabaseService} from "../../database.service";
+import {DatabaseService} from '../../database.service';
 
 @Injectable()
 export class ProjectService {
@@ -73,7 +73,6 @@ export class ProjectService {
 
   public async removeProject(id: number, dto: ProjectRemoveRequestDto): Promise<void> {
     // TODO check this algorithm
-    // TODO add file_project algorithm
     return this.databaseService.transaction<void>(async (manager) => {
       if (dto.cutAllReferences) {
         await manager.update(TaskEntity, {
@@ -84,10 +83,30 @@ export class ProjectService {
           project_id: null
         });
       } else {
-        await manager.delete(TaskEntity, {
+        // remove all references to tasks of this project
+        const items = await manager.find(TaskEntity, {
           project_id: id
         });
+        for (const item of items) {
+          await manager.update(TaskEntity, {
+            nexttask_id: item.id
+          }, {
+            nexttask_id: null
+          });
+          // remove all task_inputs_outputs of this project
+          await manager.delete(TaskInputOutputEntity, {
+            task_id: item.id
+          });
+        }
+
+        const test = await manager.delete(TaskEntity, {
+          project_id: id
+        });
+        const t = '';
       }
+      await manager.delete(FileProjectEntity, {
+        project_id: id
+      });
 
       await manager.delete(AccountRoleProjectEntity, {
         project_id: id

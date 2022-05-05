@@ -27,6 +27,7 @@ export enum AccountRoleScope {
 export enum TaskStatus {
   draft = 'DRAFT',
   free = 'FREE',
+  busy = 'BUSY',
   annotated = 'ANNOTATED',
   postponed = 'POSTPONED'
 }

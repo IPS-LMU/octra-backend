@@ -1,5 +1,5 @@
 import {Injectable} from '@nestjs/common';
-import {Connection, EntityManager} from "typeorm";
+import {Connection, EntityManager} from 'typeorm';
 
 @Injectable()
 export class DatabaseService {
@@ -19,6 +19,7 @@ export class DatabaseService {
     } catch (err) {
       // since we have errors lets rollback the changes we made
       await queryRunner.rollbackTransaction();
+      throw(err);
     } finally {
       // you need to release a queryRunner which was manually instantiated
       await queryRunner.release();

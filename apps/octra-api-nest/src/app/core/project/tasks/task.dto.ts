@@ -265,6 +265,70 @@ export class TaskUploadDto {
     return (value !== undefined && !Array.isArray(value)) ? [value] : value;
   })
   @IsFiles()
-  @HasMimeType(['audio/wave', 'application/json', "text/plain"], {each: true})
+  @HasMimeType(['audio/wave', 'application/json', 'text/plain'], {each: true})
   inputs: FileHashStorage[];
 }
+
+export class TaskChangeDto {
+  /**
+   * properties of the task
+   */
+  @Transform(({value}) => {
+    return new TaskProperties(JSON.parse(value));
+  }, {toClassOnly: true})
+  @Type(() => TaskProperties)
+  @ValidateNested()
+  properties: TaskProperties;
+
+  /**
+   * the type of transcript. If it's "Text" the transcript is going to be converted to AnnotJSON automatically.
+   */
+  @IsNotEmpty()
+  @IsEnum(TranscriptType)
+  transcriptType: TranscriptType;
+
+  /**
+   * the transcript. Either AnnotJSON or plain Text. See "transcriptType" for more information.
+   */
+  @Transform(({obj, value}: { obj: TaskUploadDto, value: string }) => {
+    if (obj.transcriptType === TranscriptType.AnnotJSON) {
+      return plainToInstance(AnnotationDto, JSON.parse(value));
+    }
+    return plainToInstance(AnnotationDto, new AnnotationDto({
+      sampleRate: 0,
+      links: [],
+      annotates: '',
+      name: ``,
+      levels: [{
+        name: 'CONVERTER_TRN',
+        type: AnnotJSONType.SEGMENT,
+        items: [
+          {
+            id: 1,
+            labels: [
+              {
+                name: 'TRN',
+                value
+              }
+            ]
+          }
+        ]
+      }
+      ]
+    }))
+  })
+  @Type(() => AnnotationDto)
+  @ValidateNested()
+  transcript: AnnotationDto;
+
+  /**
+   * the input files. Currently, only an audio file (WAVE) is supported.
+   */
+  @Transform(({value}) => {
+    return (value !== undefined && !Array.isArray(value)) ? [value] : value;
+  })
+  @IsOptional()
+  @HasMimeType(['audio/wave', 'application/json', 'text/plain'], {each: true})
+  inputs?: FileHashStorage[];
+}
+
