@@ -8,11 +8,11 @@ import {Repository} from 'typeorm';
 import {FileEntity} from '../../files/file.entity';
 import {TaskEntity, TaskInputOutputEntity} from '../task.entity';
 import {FileCreateDto} from '../../files/file.dto';
-import {TaskChangeDto, TaskProperties, TaskUploadDto} from './task.dto';
+import {TaskChangeDto, TaskProperties, TaskType, TaskUploadDto} from './task.dto';
 import * as Path from 'path';
 import {FileSystemHandler} from '../../../obj/filesystem-handler';
 import {FileHashStorage} from '../../../obj/file-hash-storage';
-import {AnnotJSONType, TranscriptType} from '../annotations/annotation.dto';
+import {AnnotJSONType, TranscriptType} from '../annotations/transcript.dto';
 import {TaskInputOutputCreatorType, TaskStatus} from '@octra/octra-api-types';
 import {FileProjectEntity} from '../project.entity';
 import {removeNullAttributes} from '../../../functions';
@@ -37,8 +37,8 @@ export class TasksService {
   async uploadTaskData(project_id: number, body: TaskUploadDto, req: InternRequest): Promise<TaskEntity> {
     // TODO allow empty transcript
     const inputs = body.inputs;
-    const mediaFile = inputs?.find(a => a.mimetype === "audio/wave");
-    const transcriptFile = inputs?.find(a => a.mimetype === "application/json" || a.mimetype === "text/plain");
+    const mediaFile = inputs?.find(a => a.mimetype === 'audio/wave');
+    const transcriptFile = inputs?.find(a => a.mimetype === 'application/json' || a.mimetype === 'text/plain');
     const taskProperties: TaskProperties = body?.properties;
 
     if (!mediaFile && !taskProperties.media?.url) {
@@ -60,7 +60,7 @@ export class TasksService {
 
     if (transcriptFile) {
       //read transcript file
-      const content = await readFile(transcriptFile.path, "utf-8");
+      const content = await readFile(transcriptFile.path, 'utf-8');
       if (body.transcriptType === TranscriptType.AnnotJSON) {
         body.transcript = JSON.parse(content);
       } else {
@@ -70,14 +70,14 @@ export class TasksService {
           name: `${Path.parse(mediaFile.originalName).name}_annot.json`,
           sampleRate: dbFile.metadata.sampleRate,
           levels: [{
-            name: "TRN",
+            name: 'TRN',
             type: AnnotJSONType.SEGMENT,
             items: [{
               sampleStart: 0,
               sampleDur: dbFile.metadata.duration.samples,
               id: 1,
               labels: [{
-                name: "TRN",
+                name: 'TRN',
                 value: content
               }]
             }]
@@ -130,7 +130,7 @@ export class TasksService {
 
     if (transcriptFile) {
       //read transcript file
-      const content = await readFile(transcriptFile.path, "utf-8");
+      const content = await readFile(transcriptFile.path, 'utf-8');
       if (body.transcriptType === TranscriptType.AnnotJSON) {
         body.transcript = JSON.parse(content);
       } else {
@@ -140,14 +140,14 @@ export class TasksService {
           name: `${Path.parse(mediaFile.originalName).name}_annot.json`,
           sampleRate: dbFile.metadata.sampleRate,
           levels: [{
-            name: "TRN",
+            name: 'TRN',
             type: AnnotJSONType.SEGMENT,
             items: [{
               sampleStart: 0,
               sampleDur: dbFile.metadata.duration.samples,
               id: 1,
               labels: [{
-                name: "TRN",
+                name: 'TRN',
                 value: content
               }]
             }]
@@ -174,7 +174,7 @@ export class TasksService {
       });
 
       if (!project) {
-        throw new HttpException("Task not found.", HttpStatus.BAD_REQUEST);
+        throw new HttpException('Task not found.', HttpStatus.BAD_REQUEST);
       }
 
       // set nexttask from other tasks to null
@@ -235,11 +235,11 @@ export class TasksService {
       }
 
       if (!task_id) {
-        throw Error("task_id is undefined.");
+        throw Error('task_id is undefined.');
       }
 
-      const transcriptInputDB = task?.inputsOutputs?.find(a => a.label === "transcript" && a.type === "input");
-      const audioInputDB = task?.inputsOutputs?.find(a => a.label === "audio" && a.type === "input");
+      const transcriptInputDB = task?.inputsOutputs?.find(a => a.label === 'transcript' && a.type === 'input');
+      const audioInputDB = task?.inputsOutputs?.find(a => a.label === 'audio' && a.type === 'input');
       if (audioDBFile) {
         // insert or update audioFileDB
         if (audioInputDB) {
@@ -382,6 +382,65 @@ export class TasksService {
         project_id
       },
       relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file']
+    });
+  }
+
+
+  public async getNextFreeTask(project_id: number, worker_id: number, type: TaskType): Promise<TaskEntity> {
+    return this.taskRepository.findOne({
+      relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file'],
+      where: [
+        {worker_id, project_id, status: TaskStatus.free, type},
+        {project_id, status: TaskStatus.free, type},
+      ]
+    });
+  }
+
+  public async setTaskStatus(project_id: number, task_id: number, status: TaskStatus): Promise<TaskEntity> {
+    const update = await this.taskRepository.update({
+      id: task_id
+    }, {
+      status
+    });
+
+    if (update.affected < 1) {
+      throw new HttpException('Can\'t set task status to ' + status, HttpStatus.CONFLICT);
+    }
+
+    return this.taskRepository.findOne({
+      id: task_id
+    }, {
+      relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file']
+    });
+  }
+
+  public async giveNextFreeTaskToAccount(project_id: number, worker_id: number): Promise<TaskEntity> {
+    // TODO how to handle tasks that are referenced by another tasks in nexttask_id?
+    return this.databaseService.transaction<TaskEntity>(async (manager) => {
+      const task = await manager.findOne(TaskEntity, {
+        where: [
+          {worker_id, project_id, status: TaskStatus.free, type: TaskType.annotation},
+          {project_id, status: TaskStatus.free, type: TaskType.annotation},
+        ]
+      });
+
+      if (!task) {
+        throw new Error('Can\'t find a free task.');
+      }
+
+      const updateResult = await manager.update(TaskEntity, {
+        id: task.id
+      }, {
+        status: TaskStatus.busy,
+        worker_id
+      });
+
+      if (updateResult.affected < 1) {
+        throw new Error('Can\'t update task status to \'BUSY\'.');
+      }
+      return await manager.findOne(TaskEntity, task.id, {
+        relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file'],
+      });
     });
   }
 

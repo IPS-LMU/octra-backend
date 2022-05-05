@@ -19,10 +19,10 @@ import {
 import {AccountRole} from '@octra/octra-api-types';
 import {ToolCreateRequestDto, ToolDto} from '../../octra-api-nest/src/app/core/tool/tool.dto';
 import {GuidelinesDto} from '../../octra-api-nest/src/app/core/project/guidelines/guidelines.dto';
-import {AnnotationDto, AnnotJSONType} from '../../octra-api-nest/src/app/core/project/annotations/annotation.dto';
 import {TaskDto} from '../../octra-api-nest/src/app/core/project/tasks';
 import * as fs from 'fs';
 import {TaskProperties} from '@octra/db';
+import {AnnotJSONType, TranscriptDto} from '../../octra-api-nest/src/app/core/project/annotations/transcript.dto';
 
 const tempData = {
   apptoken: {
@@ -59,6 +59,7 @@ const tempData = {
 let app;
 const appToken = 'a810c2e6e76774fadf03d8edd1fc9d1954cc27d6';
 
+fs.mkdirSync('./data/files/tmp/', {recursive: true});
 fs.writeFileSync('./data/files/tmp/test.json', JSON.stringify({
   sampleRate: 16000,
   levels: [{
@@ -471,7 +472,7 @@ describe('Projects', () => {
           type: AnnotJSONType.SEGMENT,
           items: []
         }]
-      } as AnnotationDto))
+      } as TranscriptDto))
       .attach('inputs[]', './testfiles/WebTranscribe2.wav', 'WebTranscribe2.wav')
       .auth(tempData.admin.jwtToken, {type: 'bearer'})
       .expect(200).then(({body}: { body: TaskDto }) => {
@@ -555,7 +556,7 @@ describe('Projects', () => {
       .field('properties', JSON.stringify({
         type: 'annotation',
         assessment: 'ok3',
-        status: 'BUSY'
+        status: 'FREE'
       } as TaskProperties))
       .field('transcriptType', 'Text')
       .auth(tempData.admin.jwtToken, {type: 'bearer'})
@@ -574,9 +575,17 @@ describe('Projects', () => {
     });
   });
 
+
+  it('/projects/project_id/annotations/start/ (POST)', () => {
+    return authPost(`/projects/${tempData.project.id}/annotations/start`, undefined).expect(201).then(({body}) => {
+      const t = body;
+    });
+  });
+
   it('/projects/project_id/:id/tasks/:task_id (DELETE)', () => {
     return authDelete(`/projects/${tempData.project.id}/tasks/${tempData.task.id}`, undefined).expect(200);
   });
+
 
   it('/projects/:id (DELETE)', () => {
     return authDelete(`/projects/${tempData.project.id}`, {

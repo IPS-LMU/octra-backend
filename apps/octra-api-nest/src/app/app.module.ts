@@ -1,5 +1,4 @@
 import {MiddlewareConsumer, Module} from '@nestjs/common';
-
 import {AppController} from './app.controller';
 import {AppService} from './app.service';
 import {AuthModule} from './core/authentication';
@@ -26,7 +25,8 @@ import {TASK_ENTITIES} from './core/project/tasks';
 import * as fs from 'fs';
 import {removeNullAttributes} from './functions';
 import {LoggerMiddleware} from './obj/logger.middleware';
-import {DatabaseService} from "./database.service";
+import {DatabaseService} from './database.service';
+import {AnnotationModule} from './core/project/annotations/annotation.module';
 
 const config = Configuration.getInstance();
 
@@ -61,6 +61,7 @@ if (config.database.ssl) {
     FilesModule,
     AccountModule,
     ProjectModule,
+    AnnotationModule,
     ToolModule,
     ConfigModule.forRoot({
       load: [() => (config)],

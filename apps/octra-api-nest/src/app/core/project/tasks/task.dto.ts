@@ -19,7 +19,7 @@ import {
   IsOptionalNumber,
   IsOptionalString
 } from '../../../obj/decorators/custom-validators.decorator';
-import {AnnotationDto, AnnotJSONType, TranscriptType} from '../annotations/annotation.dto';
+import {AnnotJSONType, TranscriptDto, TranscriptType} from '../annotations/transcript.dto';
 import {TaskEntity} from '../task.entity';
 import {removeProperties} from '../../../functions';
 import {TaskInputOutputCreatorType, TaskStatus} from '@octra/octra-api-types';
@@ -172,7 +172,7 @@ export class TaskDto extends StandardWithTimeDto {
 
   constructor(partial: Partial<TaskEntity>) {
     super();
-    const taskInputsOutputs = partial.inputsOutputs.map(a => new TaskInputOutputDto({
+    const taskInputsOutputs = partial.inputsOutputs?.map(a => new TaskInputOutputDto({
       type: a.type,
       creator_type: a.creator_type,
       label: a.label,
@@ -228,9 +228,9 @@ export class TaskUploadDto {
    */
   @Transform(({obj, value}: { obj: TaskUploadDto, value: string }) => {
     if (obj.transcriptType === TranscriptType.AnnotJSON) {
-      return plainToInstance(AnnotationDto, JSON.parse(value));
+      return plainToInstance(TranscriptDto, JSON.parse(value));
     }
-    return plainToInstance(AnnotationDto, new AnnotationDto({
+    return plainToInstance(TranscriptDto, new TranscriptDto({
       sampleRate: 0,
       links: [],
       annotates: '',
@@ -253,9 +253,9 @@ export class TaskUploadDto {
       ]
     }))
   })
-  @Type(() => AnnotationDto)
+  @Type(() => TranscriptDto)
   @ValidateNested()
-  transcript: AnnotationDto;
+  transcript: TranscriptDto;
 
 
   /**
@@ -292,9 +292,9 @@ export class TaskChangeDto {
    */
   @Transform(({obj, value}: { obj: TaskUploadDto, value: string }) => {
     if (obj.transcriptType === TranscriptType.AnnotJSON) {
-      return plainToInstance(AnnotationDto, JSON.parse(value));
+      return plainToInstance(TranscriptDto, JSON.parse(value));
     }
-    return plainToInstance(AnnotationDto, new AnnotationDto({
+    return plainToInstance(TranscriptDto, new TranscriptDto({
       sampleRate: 0,
       links: [],
       annotates: '',
@@ -317,9 +317,9 @@ export class TaskChangeDto {
       ]
     }))
   })
-  @Type(() => AnnotationDto)
+  @Type(() => TranscriptDto)
   @ValidateNested()
-  transcript: AnnotationDto;
+  transcript: TranscriptDto;
 
   /**
    * the input files. Currently, only an audio file (WAVE) is supported.
