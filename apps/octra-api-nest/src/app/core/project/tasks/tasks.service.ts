@@ -35,7 +35,7 @@ export class TasksService {
               private databaseService: DatabaseService) {
   }
 
-  async uploadTaskData(project_id: number, body: TaskUploadDto, req: InternRequest): Promise<TaskEntity> {
+  async uploadTaskData(project_id: string, body: TaskUploadDto, req: InternRequest): Promise<TaskEntity> {
     // TODO allow empty transcript
     const inputs = body.inputs;
     const mediaFile = inputs?.find(a => a.mimetype === 'audio/wave');
@@ -96,10 +96,10 @@ export class TasksService {
     body = await this.adaptConvertedTranscript(body, mediaFile, dbFile) as any;
     taskProperties.status = TaskStatus.draft;
     const id = await this.addChangeNewTask(project_id, body, dbFile, reqData, taskProperties);
-    return this.getTask(project_id, Number(id));
+    return this.getTask(project_id, id);
   }
 
-  async changeTaskData(project_id: number, task_id: number, body: TaskUploadDto | TaskChangeDto, req: InternRequest): Promise<TaskEntity> {
+  async changeTaskData(project_id: string, task_id: string, body: TaskUploadDto | TaskChangeDto, req: InternRequest): Promise<TaskEntity> {
     const task = await this.taskRepository.findOne(task_id, {relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file']});
     const inputs = body.inputs;
     const mediaFile = inputs?.find(a => a.mimetype === 'audio/wave');
@@ -167,7 +167,7 @@ export class TasksService {
     return this.getTask(project_id, task_id);
   }
 
-  public async removeTask(project_id: number, task_id: number) {
+  public async removeTask(project_id: string, task_id: string) {
     return this.databaseService.transaction<void>(async (manager) => {
       const project = await manager.findOne(TaskEntity, {
         id: task_id,
@@ -199,8 +199,8 @@ export class TasksService {
     });
   }
 
-  private async addChangeNewTask(project_id: number, body: TaskUploadDto | TaskChangeDto, audioDBFile: FileEntity, reqData: ReqData, taskProperties: TaskProperties, task?: TaskEntity): Promise<number> {
-    return await this.databaseService.transaction<number>(async (manager) => {
+  private async addChangeNewTask(project_id: string, body: TaskUploadDto | TaskChangeDto, audioDBFile: FileEntity, reqData: ReqData, taskProperties: TaskProperties, task?: TaskEntity): Promise<string> {
+    return await this.databaseService.transaction<string>(async (manager) => {
       let task_id = task?.id;
       const audioFileProject = {
         file_id: audioDBFile?.id,
@@ -370,14 +370,14 @@ export class TasksService {
     };
   }
 
-  public async getTask(project_id: number, task_id: number): Promise<TaskEntity> {
+  public async getTask(project_id: string, task_id: string): Promise<TaskEntity> {
     return this.taskRepository.findOne({
       id: task_id,
       project_id
     }, {relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file']});
   }
 
-  public async listTasks(project_id: number): Promise<TaskEntity[]> {
+  public async listTasks(project_id: string): Promise<TaskEntity[]> {
     return this.taskRepository.find({
       where: {
         project_id
@@ -386,36 +386,7 @@ export class TasksService {
     });
   }
 
-
-  public async getNextFreeTask(project_id: number, worker_id: number, type: TaskType): Promise<TaskEntity> {
-    return this.taskRepository.findOne({
-      relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file'],
-      where: [
-        {worker_id, project_id, status: TaskStatus.free, type},
-        {project_id, status: TaskStatus.free, type},
-      ]
-    });
-  }
-
-  public async setTaskStatus(project_id: number, task_id: number, status: TaskStatus): Promise<TaskEntity> {
-    const update = await this.taskRepository.update({
-      id: task_id
-    }, {
-      status
-    });
-
-    if (update.affected < 1) {
-      throw new HttpException('Can\'t set task status to ' + status, HttpStatus.CONFLICT);
-    }
-
-    return this.taskRepository.findOne({
-      id: task_id
-    }, {
-      relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file']
-    });
-  }
-
-  public async giveNextFreeTaskToAccount(project_id: number, worker_id: number): Promise<TaskEntity> {
+  public async giveNextFreeTaskToAccount(project_id: string, worker_id: string): Promise<TaskEntity> {
     // TODO how to handle tasks that are referenced by another tasks in nexttask_id?
     return this.databaseService.transaction<TaskEntity>(async (manager) => {
       const task = await manager.findOne(TaskEntity, {
@@ -446,7 +417,7 @@ export class TasksService {
     });
   }
 
-  public async saveAnnotationData(project_id: number, task_id: number, worker_id: number, dto: SaveAnnotationDto): Promise<TaskEntity> {
+  public async saveAnnotationData(project_id: string, task_id: string, worker_id: string, dto: SaveAnnotationDto): Promise<TaskEntity> {
     return this.databaseService.transaction<TaskEntity>(async (manager) => {
       const task = await manager.findOne(TaskEntity, {
         id: task_id
@@ -458,6 +429,10 @@ export class TasksService {
 
       if (task.status === TaskStatus.finished) {
         throw new Error('You can\'t save an annotation of an finished task');
+      }
+
+      if (task.status === TaskStatus.busy && task.worker_id !== worker_id) {
+        throw new Error('You can\'t overwrite an annotation that is busy and is edited by another worker.');
       }
 
       await manager.insert(TaskInputOutputEntity, {
@@ -479,6 +454,35 @@ export class TasksService {
 
       if (updateResult.affected < 1) {
         throw new Error('Can\'t save annotation to task.');
+      }
+      return await manager.findOne(TaskEntity, task.id, {
+        relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file'],
+      });
+    });
+  }
+
+  public async freeAnnotation(project_id: string, task_id: string, worker_id: string): Promise<TaskEntity> {
+    return this.databaseService.transaction<TaskEntity>(async (manager) => {
+      const task = await manager.findOne(TaskEntity, {
+        id: task_id
+      });
+
+      if (!task) {
+        throw new Error('Can\'t find a free task.');
+      }
+
+      if (task.worker_id.toString() !== worker_id) {
+        throw new Error('You can\'t free an annotation that is edited by another worker.');
+      }
+
+      const updateResult = await manager.update(TaskEntity, {
+        id: task.id
+      }, {
+        status: TaskStatus.free
+      });
+
+      if (updateResult.affected < 1) {
+        throw new Error('Can\'t free annotation.');
       }
       return await manager.findOne(TaskEntity, task.id, {
         relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file'],

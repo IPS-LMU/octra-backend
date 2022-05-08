@@ -32,7 +32,7 @@ export class AccountEntity extends StandardEntityWithTimestamps {
   @DbAwareColumn({
     type: 'bigint'
   })
-  role_id: number;
+  role_id: string;
 
   @OneToOne(() => RoleEntity, {
     eager: true

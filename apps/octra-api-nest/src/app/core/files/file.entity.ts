@@ -28,7 +28,7 @@ export class FileEntity extends StandardEntityWithTimestamps {
     type: 'bigint',
     nullable: true
   })
-  uploader_id?: number;
+  uploader_id?: string;
 
   @ManyToOne(() => AccountEntity)
   @JoinColumn({

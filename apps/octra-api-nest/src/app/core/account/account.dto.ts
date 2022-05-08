@@ -12,7 +12,7 @@ export class RoleDto {
   role: AccountRole;
   @IsNotEmpty()
   scope: AccountRoleScope;
-  project_id?: number;
+  project_id?: string;
   project_name?: string;
   valid_startdate?: string;
   valid_enddate?: string;
@@ -53,7 +53,7 @@ export class AssignAccountRoleDto extends PartialType(
 }
 
 export class AssignRoleProjectDto {
-  project_id: number;
+  project_id: string;
   @Type(() => RoleDto)
   roles: AssignAccountRoleDto[];
 

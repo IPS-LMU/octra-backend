@@ -25,8 +25,8 @@ export class PathBuilder {
   }
 
   public encryptFilePath(path: string) {
-    var pw = CryptoJS.enc.Utf8.parse(path);
-    var encrypted = CryptoJS.AES.encrypt(pw, this.urlEncryption.key, {
+    const pw = CryptoJS.enc.Utf8.parse(path);
+    const encrypted = CryptoJS.AES.encrypt(pw, this.urlEncryption.key, {
       iv: this.urlEncryption.iv
     });
     //Encrypt string
@@ -39,24 +39,24 @@ export class PathBuilder {
     }).toString(CryptoJS.enc.Utf8);
   }
 
-  public getProjectFolderPath(projectID: number) {
+  public getProjectFolderPath(projectID: string) {
     return Path.join(`project_${projectID}`);
   }
 
-  public getAbsoluteProjectPath(projectID: number) {
+  public getAbsoluteProjectPath(projectID: string) {
     return Path.join(this.projectsPath, this.getProjectFolderPath(projectID));
   }
 
-  public getAbsoluteGuidelinesPath(projectID: number) {
+  public getAbsoluteGuidelinesPath(projectID: string) {
     return Path.join(this.getAbsoluteProjectPath(projectID), 'guidelines');
   }
 
-  public getGuidelinesFolderPath(projectID: number) {
+  public getGuidelinesFolderPath(projectID: string) {
     return Path.join(this.getProjectFolderPath(projectID), 'guidelines');
   }
 
-  public getEncryptedProjectFileURL(projectId: number, fileName: string) {
-    return this.settings.url + Path.join('/v1/files/public/', this.encryptFilePath(Path.join(`{projects}`, `project_${projectId}`)), Path.basename(fileName));
+  public getEncryptedProjectFileURL(projectID: string, fileName: string) {
+    return this.settings.url + Path.join('/v1/files/public/', this.encryptFilePath(Path.join(`{projects}`, `project_${projectID}`)), Path.basename(fileName));
   }
 
   public getEncryptedUploadURL(relativePath: string, virtual_filename: string) {
@@ -68,8 +68,8 @@ export class PathBuilder {
     return relativePath;
   }
 
-  public getEncryptedGuidelinesFileURL(projectId: number, fileName: string) {
-    return this.settings.url + Path.join('/v1/files/public/', this.encryptFilePath(Path.join('{projects}', `project_${projectId}`)), Path.basename(fileName));
+  public getEncryptedGuidelinesFileURL(projectID: string, fileName: string) {
+    return this.settings.url + Path.join('/v1/files/public/', this.encryptFilePath(Path.join('{projects}', `project_${projectID}`)), Path.basename(fileName));
   }
 
   public getAbsoluteUploadPath() {

@@ -27,34 +27,34 @@ import {SaveAnnotationDto} from '../../octra-api-nest/src/app/core/project/annot
 
 const tempData = {
   apptoken: {
-    addedID: 0,
-    removedID: 0
+    addedID: "0",
+    removedID: "0"
   },
   admin: {
-    id: 0,
+    id: "0",
     jwtToken: ''
   },
   user: {
-    id: 0,
+    id: "0",
     name: 'TestUser_' + Date.now(),
     email: 'testemail@testtest.de',
     jwtToken: ''
   },
   project: {
-    id: 0,
+    id: "0",
     name: ''
   },
   mediaItem: {
-    id: 0,
+    id: "0",
     uploadURL: '',
     url: '',
     delivery_url: ''
   },
   task: {
-    id: 0
+    id: "0"
   },
   tool: {
-    id: 0
+    id: "0"
   }
 };
 let app;
@@ -271,7 +271,7 @@ describe('Accounts', () => {
       general: AccountRole.user,
       projects: [
         {
-          project_id: 801,
+          project_id: "801",
           roles: [
             {
               role: AccountRole.dataDelivery
@@ -279,7 +279,7 @@ describe('Accounts', () => {
           ]
         },
         {
-          project_id: 813,
+          project_id: "813",
           roles: [
             {
               role: AccountRole.dataDelivery
@@ -361,7 +361,7 @@ describe('Projects', () => {
 
   it('/projects/:id/roles (POST)', () => {
     return authPost(`/projects/${tempData.project.id}/roles`, [{
-      accountID: 459,
+      account_id: "459",
       role: AccountRole.projectAdministrator
     }] as ProjectAssignRolesRequestDto[]).expect((a) => a.status === 200 || a.status === 201)
   });
@@ -606,6 +606,14 @@ describe('Projects', () => {
       pid: 'test'
     } as SaveAnnotationDto).expect(200).then(({body}) => {
       const t = body;
+    });
+  });
+
+  it('/projects/project_id/annotations/free/ (POST)', () => {
+    return authPut(`/projects/${tempData.project.id}/annotations/${tempData.task.id}/free`, undefined).expect(200).then(({body}) => {
+      tempData.task.id = body.id;
+    }).catch((a) => {
+      const t = a;
     });
   });
 

@@ -52,7 +52,7 @@ export class TaskEntity extends StandardEntityWithTimestamps {
   @DbAwareColumn({
     type: 'integer'
   })
-  tool_id: number;
+  tool_id: string;
   @OneToOne(() => ToolEntity)
   @JoinColumn({
     referencedColumnName: 'id',
@@ -62,7 +62,7 @@ export class TaskEntity extends StandardEntityWithTimestamps {
   @DbAwareColumn({
     type: 'bigint'
   })
-  project_id: number;
+  project_id: string;
   @ManyToOne(() => ProjectEntity, (entity) => entity.tasks)
   @JoinColumn({
     referencedColumnName: 'id',
@@ -76,7 +76,7 @@ export class TaskEntity extends StandardEntityWithTimestamps {
   @DbAwareColumn({
     type: 'bigint'
   })
-  worker_id: number;
+  worker_id: string;
   @ManyToOne(() => AccountEntity)
   @JoinColumn({
     referencedColumnName: 'id',
@@ -86,7 +86,7 @@ export class TaskEntity extends StandardEntityWithTimestamps {
   @DbAwareColumn({
     type: 'bigint'
   })
-  nexttask_id: number;
+  nexttask_id: string;
   @OneToOne(() => TaskEntity)
   @JoinColumn({
     referencedColumnName: 'id',
@@ -113,7 +113,7 @@ export class TaskInputOutputEntity extends StandardEntity {
   @DbAwareColumn({
     type: 'bigint'
   })
-  task_id: number;
+  task_id: string;
   @ManyToOne(() => TaskEntity)
   @JoinColumn({
     name: 'task_id',
@@ -124,7 +124,7 @@ export class TaskInputOutputEntity extends StandardEntity {
     type: 'bigint',
     nullable: true
   })
-  file_project_id?: number;
+  file_project_id?: string;
   @ManyToOne(() => FileProjectEntity)
   @JoinColumn({
     name: 'file_project_id',

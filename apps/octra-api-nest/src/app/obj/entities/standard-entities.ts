@@ -5,7 +5,7 @@ export abstract class StandardEntity {
   @PrimaryGeneratedColumn({
     type: 'bigint'
   })
-  id: number;
+  id: string;
 }
 
 export abstract class StandardEntityWithTimestamps extends StandardEntity {

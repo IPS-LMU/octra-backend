@@ -9,8 +9,8 @@ export class GuidelinesService {
   constructor(private appService: AppService) {
   }
 
-  public async saveGuidelines(project_id: number, dtos: GuidelinesDto[]): Promise<void> {
-    const guidelinesPath = this.appService.pathBuilder.getAbsoluteGuidelinesPath(Number(project_id));
+  public async saveGuidelines(project_id: string, dtos: GuidelinesDto[]): Promise<void> {
+    const guidelinesPath = this.appService.pathBuilder.getAbsoluteGuidelinesPath(project_id);
     await FileSystemHandler.removeFolder(guidelinesPath);
 
     for (const createGuidelinesRequest of dtos) {
@@ -21,8 +21,8 @@ export class GuidelinesService {
     return;
   }
 
-  async getGuidelines(project_id: number): Promise<GuidelinesDto[]> {
-    const guidelinesPath = this.appService.pathBuilder.getAbsoluteGuidelinesPath(Number(project_id));
+  async getGuidelines(project_id: string): Promise<GuidelinesDto[]> {
+    const guidelinesPath = this.appService.pathBuilder.getAbsoluteGuidelinesPath(project_id);
     const files = await FileSystemHandler.listFiles(guidelinesPath);
     return files.map(a => {
       let json;

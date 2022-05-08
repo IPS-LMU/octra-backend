@@ -1,4 +1,4 @@
-import {AfterLoad, Entity, JoinColumn, ManyToOne, OneToOne} from 'typeorm';
+import {Entity, JoinColumn, ManyToOne, OneToOne} from 'typeorm';
 import {AccountEntity} from './account.entity';
 import {DbAwareColumn} from '../../../obj/decorators';
 import {StandardEntityWithTimestamps} from '../../../obj/entities';
@@ -29,12 +29,12 @@ export class AccountRoleProjectEntity extends StandardEntityWithTimestamps {
   @DbAwareColumn({
     type: 'bigint'
   })
-  account_id?: number;
+  account_id?: string;
 
   @DbAwareColumn({
     type: 'bigint'
   })
-  role_id: number;
+  role_id: string;
 
   @OneToOne(() => RoleEntity, {eager: true})
   @JoinColumn({
@@ -46,7 +46,7 @@ export class AccountRoleProjectEntity extends StandardEntityWithTimestamps {
   @DbAwareColumn({
     type: 'bigint'
   })
-  project_id: number;
+  project_id: string;
   @ManyToOne(() => ProjectEntity)
   @JoinColumn({
     name: 'project_id',
@@ -70,11 +70,6 @@ export class AccountRoleProjectEntity extends StandardEntityWithTimestamps {
     referencedColumnName: 'id'
   })
   account: AccountEntity;
-
-  @AfterLoad()
-  _convertNumerics() {
-    this.id = parseInt(this.id as any);
-  }
 
   constructor(partial: Partial<AccountRoleProjectEntity>) {
     super();

@@ -6,7 +6,7 @@ export class FileDto extends StandardWithTimeDto {
   url: string;
   type?: string;
   size?: number;
-  uploader_id?: number;
+  uploader_id?: string;
   original_name?: string;
   hash?: string;
   metadata?: AudioFileMetaData;
@@ -16,7 +16,7 @@ export class FileCreateDto extends OmitType(FileDto, ['id', 'creationdate', 'upd
   url: string;
   type?: string;
   size?: number;
-  uploader_id?: number;
+  uploader_id?: string;
   original_name?: string;
   hash?: string;
   metadata?: AudioFileMetaData;

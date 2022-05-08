@@ -28,19 +28,19 @@ export class ProjectController {
 
   @CombinedRoles(AccountRole.administrator)
   @Get(':id')
-  async getProject(@Param('id', ParseIntPipe) id: number): Promise<ProjectDto> {
+  async getProject(@Param('id', ParseIntPipe) id: string): Promise<ProjectDto> {
     return removeNullAttributes<ProjectDto>(new ProjectDto(await this.projectService.getProject(id)));
   }
 
   @CombinedRoles(AccountRole.administrator)
   @Get(':id/roles')
-  async getProjectRoles(@Param('id', ParseIntPipe) id: number): Promise<any> {
+  async getProjectRoles(@Param('id', ParseIntPipe) id: string): Promise<any> {
     return removeNullAttributes(await this.projectService.getProjectRoles(id));
   }
 
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator)
   @Post(':id/roles')
-  async assignProjectRoles(@Param('id', ParseIntPipe) id: number, @Body() dto: ProjectAssignRolesRequestDto[]): Promise<void> {
+  async assignProjectRoles(@Param('id', ParseIntPipe) id: string, @Body() dto: ProjectAssignRolesRequestDto[]): Promise<void> {
     return removeNullAttributes(await this.projectService.assignProjectRoles(id, dto));
   }
 
@@ -62,7 +62,7 @@ export class ProjectController {
    */
   @CombinedRoles(AccountRole.administrator)
   @Put(':id')
-  async changeProject(@Param('id', ParseIntPipe) id: number, @Body() dto: ProjectRequestDto): Promise<ProjectDto> {
+  async changeProject(@Param('id', ParseIntPipe) id: string, @Body() dto: ProjectRequestDto): Promise<ProjectDto> {
     return removeNullAttributes(new ProjectDto(await this.projectService.changeProject(id, dto)));
   }
 
@@ -73,7 +73,7 @@ export class ProjectController {
    */
   @CombinedRoles(AccountRole.administrator)
   @Delete(':id')
-  async removeProject(@Param('id', ParseIntPipe) id: number, @Body() dto: ProjectRemoveRequestDto): Promise<void> {
+  async removeProject(@Param('id', ParseIntPipe) id: string, @Body() dto: ProjectRemoveRequestDto): Promise<void> {
     return this.projectService.removeProject(id, dto);
   }
 }

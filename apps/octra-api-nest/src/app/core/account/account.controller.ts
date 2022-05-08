@@ -58,7 +58,7 @@ export class AccountController {
    */
   @CombinedRoles(AccountRole.administrator)
   @Put(':id/roles')
-  async assignAccountRoles(@Param('id', ParseIntPipe) id: number, @Body() assignDto: AssignRoleDto): Promise<AssignRoleDto> {
+  async assignAccountRoles(@Param('id', ParseIntPipe) id: string, @Body() assignDto: AssignRoleDto): Promise<AssignRoleDto> {
     return this.accountService.assignAccountRoles(id, assignDto);
   }
 
@@ -93,13 +93,13 @@ export class AccountController {
    */
   @CombinedRoles(AccountRole.administrator)
   @Get(':id')
-  async getAccountInformation(@Param('id') id: number): Promise<AccountDto | undefined> {
+  async getAccountInformation(@Param('id') id: string): Promise<AccountDto | undefined> {
     return removeNullAttributes(new AccountDto(await this.accountService.findAccountByID(id)));
   }
 
   @CombinedRoles(AccountRole.administrator)
   @Delete(':id')
-  removeUser(@Param('id') id: number): string {
+  removeUser(@Param('id') id: string): string {
     // TODO implement function
     return 'Implementation needed';
   }

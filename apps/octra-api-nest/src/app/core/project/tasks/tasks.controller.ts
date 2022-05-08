@@ -36,7 +36,7 @@ export class TasksController {
   @FormDataRequest()
   @ApiConsumes('multipart/form-data')
   @Post(':project_id/tasks')
-  async uploadTaskData(@Param('project_id', ParseIntPipe) id: number, @Req() req: InternRequest, @Body() body: TaskUploadDto): Promise<TaskDto> {
+  async uploadTaskData(@Param('project_id', ParseIntPipe) id: string, @Req() req: InternRequest, @Body() body: TaskUploadDto): Promise<TaskDto> {
     const createdTask = await this.tasksService.uploadTaskData(id, body, req);
     createdTask.inputsOutputs = createdTask.inputsOutputs.map(a => ({
       ...a,
@@ -51,7 +51,7 @@ export class TasksController {
   @FormDataRequest()
   @ApiConsumes('multipart/form-data')
   @Put(':project_id/tasks/:task_id')
-  async changeTaskData(@Param('project_id', ParseIntPipe) id: number, @Param('task_id', ParseIntPipe) task_id: number, @Req() req: InternRequest, @Body() body: TaskChangeDto): Promise<TaskDto> {
+  async changeTaskData(@Param('project_id', ParseIntPipe) id: string, @Param('task_id', ParseIntPipe) task_id: string, @Req() req: InternRequest, @Body() body: TaskChangeDto): Promise<TaskDto> {
     const createdTask = await this.tasksService.changeTaskData(id, task_id, body, req);
     createdTask.inputsOutputs = createdTask.inputsOutputs.map(a => ({
       ...a,
@@ -66,15 +66,15 @@ export class TasksController {
 
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.dataDelivery)
   @Delete(':project_id/tasks/:task_id')
-  async removeTask(@Param('project_id', ParseIntPipe) project_id: number, @Param('task_id', ParseIntPipe) task_id: number): Promise<void> {
+  async removeTask(@Param('project_id', ParseIntPipe) project_id: string, @Param('task_id', ParseIntPipe) task_id: string): Promise<void> {
     return this.tasksService.removeTask(project_id, task_id);
   }
 
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.dataDelivery, AccountRole.transcriber)
   @Get(':project_id/tasks/:task_id')
-  async getTask(@Param('project_id') project_id: number, @Param('task_id') task_id: number): Promise<TaskDto> {
+  async getTask(@Param('project_id') project_id: string, @Param('task_id') task_id: string): Promise<TaskDto> {
     // TODO change with pipe
-    if (task_id < 1) {
+    if (Number(task_id) < 1) {
       throw new HttpException(`Id of task must be greater than 0`, HttpStatus.BAD_REQUEST);
     }
     const createdTask = await this.tasksService.getTask(project_id, task_id);
@@ -92,7 +92,7 @@ export class TasksController {
 
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.dataDelivery)
   @Get(':project_id/tasks/')
-  async listTasks(@Param('project_id') project_id: number): Promise<TaskDto[]> {
+  async listTasks(@Param('project_id') project_id: string): Promise<TaskDto[]> {
     return removeNullAttributes((await this.tasksService.listTasks(project_id)).map(a => new TaskDto({
       ...a,
       inputsOutputs: a.inputsOutputs?.map(a => ({

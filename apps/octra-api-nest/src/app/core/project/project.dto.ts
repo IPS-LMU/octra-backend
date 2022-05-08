@@ -28,7 +28,7 @@ export class ProjectRequestDto extends StandardWithTimeDto {
 
 export class ProjectDto extends StandardWithTimeDto {
   @IsNotEmpty()
-  id: number;
+  id: string;
   @IsNotEmpty()
   active: boolean;
   shortname?: string;
@@ -42,7 +42,7 @@ export class ProjectDto extends StandardWithTimeDto {
 export class ProjectAssignRolesRequestDto {
   @IsNotEmpty()
   @IsNumber()
-  accountID: number;
+  account_id: string;
   @IsNotEmpty()
   @IsString()
   role: AccountRole;

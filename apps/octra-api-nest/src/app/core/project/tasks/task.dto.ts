@@ -95,16 +95,16 @@ export class TaskProperties {
   comment?: string;
   /* id of the tool that should be used for this task */
   @IsOptionalNumber()
-  tool_id?: number;
+  tool_id?: string;
   /* comment by project administrator */
   @IsOptionalString()
   admin_comment?: string;
   /* id of the worker who should do this task */
   @IsOptionalNumber()
-  worker_id?: number;
+  worker_id?: string;
   /* id of the next task. The task must already exist. */
   @IsOptionalNumber()
-  nexttask_id?: number;
+  nexttask_id?: string;
 
   /* only fill in this data if you don't upload a media file. The URL of the media file must exist. */
   @IsOptional()
@@ -159,10 +159,10 @@ export class TaskDto extends StandardWithTimeDto {
   enddate: string;
   log: any;
   comment: string;
-  tool_id: number;
+  tool_id: string;
   admin_comment: string;
-  worker_id: number;
-  nexttask_id: number;
+  worker_id: string;
+  nexttask_id: string;
   type: string;
 
   @Type(() => TaskInputOutputDto)

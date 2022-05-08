@@ -56,7 +56,7 @@ export class AccountService {
     return (t.length > 0) ? t[0] : undefined;
   }
 
-  async findAccountByID(id: number): Promise<AccountEntity | undefined> {
+  async findAccountByID(id: string): Promise<AccountEntity | undefined> {
     const t = await this.accountRepository.find({
       id
     });
@@ -67,13 +67,13 @@ export class AccountService {
     return await this.accountRepository.find();
   }
 
-  async getAccount(id: number): Promise<AccountEntity> {
+  async getAccount(id: string): Promise<AccountEntity> {
     return await this.accountRepository.findOne({
       id
     });
   }
 
-  async assignAccountRoles(id: number, roleDto: AssignRoleDto): Promise<AssignRoleDto> {
+  async assignAccountRoles(id: string, roleDto: AssignRoleDto): Promise<AssignRoleDto> {
     let projectIDs;
 
     return this.databaseService.transaction<AssignRoleDto>(async (manager) => {
@@ -127,7 +127,7 @@ export class AccountService {
     });
   }
 
-  async changePassword(id: number, changePasswordDto: ChangePasswordDto): Promise<void> {
+  async changePassword(id: string, changePasswordDto: ChangePasswordDto): Promise<void> {
     const account = await this.accountRepository.findOne({
       id
     });
@@ -149,7 +149,7 @@ export class AccountService {
     }
   }
 
-  async removeAccount(id: number): Promise<void> {
+  async removeAccount(id: string): Promise<void> {
     return this.databaseService.transaction<void>(async () => {
 
     })

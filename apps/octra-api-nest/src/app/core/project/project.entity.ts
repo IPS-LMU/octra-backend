@@ -57,7 +57,7 @@ export class FileProjectEntity extends StandardEntityWithTimestamps {
   @DbAwareColumn({
     type: 'bigint'
   })
-  file_id: number;
+  file_id: string;
   @ManyToOne(() => FileEntity)
   @JoinColumn({
     name: 'file_id',
@@ -67,7 +67,7 @@ export class FileProjectEntity extends StandardEntityWithTimestamps {
   @DbAwareColumn({
     type: 'bigint'
   })
-  project_id: number;
+  project_id: string;
 
   @ManyToOne(() => ProjectEntity)
   @JoinColumn({

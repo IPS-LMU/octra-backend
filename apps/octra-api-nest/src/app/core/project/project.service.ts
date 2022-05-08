@@ -21,13 +21,13 @@ export class ProjectService {
     return this.projectRepository.find();
   }
 
-  public async getProject(id: number): Promise<ProjectEntity> {
+  public async getProject(id: string): Promise<ProjectEntity> {
     return this.projectRepository.findOne({
       id
     });
   }
 
-  public async getProjectRoles(id: number): Promise<AccountRoleProjectEntity[]> {
+  public async getProjectRoles(id: string): Promise<AccountRoleProjectEntity[]> {
     return (await this.projectRepository.findOne({
       id
     }, {
@@ -35,14 +35,14 @@ export class ProjectService {
     })).roles;
   }
 
-  public async assignProjectRoles(id: number, roles: ProjectAssignRolesRequestDto[]): Promise<void> {
+  public async assignProjectRoles(id: string, roles: ProjectAssignRolesRequestDto[]): Promise<void> {
     return this.databaseService.transaction<void>(async (manager) => {
       const roleRows = await manager.find<RoleEntity>(RoleEntity);
 
       for (const role of roles) {
         const foundRole = await manager.findOne(AccountRoleProjectEntity, {
           where: {
-            account_id: role.accountID,
+            account_id: role.account_id,
             project_id: id
           }
         });
@@ -51,7 +51,7 @@ export class ProjectService {
           id: foundRole?.id,
           project_id: id,
           role_id: roleRows.find(a => a.label === role.role)?.id,
-          account_id: role.accountID
+          account_id: role.account_id
         });
       }
     });
@@ -64,14 +64,14 @@ export class ProjectService {
     return project;
   }
 
-  public async changeProject(id: number, dto: ProjectRequestDto): Promise<ProjectEntity> {
+  public async changeProject(id: string, dto: ProjectRequestDto): Promise<ProjectEntity> {
     return this.projectRepository.save({
       id,
       ...dto
     });
   }
 
-  public async removeProject(id: number, dto: ProjectRemoveRequestDto): Promise<void> {
+  public async removeProject(id: string, dto: ProjectRemoveRequestDto): Promise<void> {
     // TODO check this algorithm
     return this.databaseService.transaction<void>(async (manager) => {
       if (dto.cutAllReferences) {

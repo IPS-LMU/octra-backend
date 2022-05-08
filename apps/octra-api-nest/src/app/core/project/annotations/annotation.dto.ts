@@ -24,7 +24,7 @@ export class SaveAnnotationDto {
   comment?: string;
   /* id of the tool that should be used for this task */
   @IsOptionalNumber()
-  tool_id?: number;
+  tool_id?: string;
 
   /* logging data from task */
   @IsOptional()
