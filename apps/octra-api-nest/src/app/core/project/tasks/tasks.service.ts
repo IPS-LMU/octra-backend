@@ -424,14 +424,14 @@ export class TasksService {
       });
 
       if (!task) {
-        throw new Error('Can\'t find a free task.');
+        throw new Error('Can\'t find task.');
       }
 
       if (task.status === TaskStatus.finished) {
         throw new Error('You can\'t save an annotation of an finished task');
       }
 
-      if (task.status === TaskStatus.busy && task.worker_id !== worker_id) {
+      if (task.status === TaskStatus.busy && task.worker_id.toString() !== worker_id) {
         throw new Error('You can\'t overwrite an annotation that is busy and is edited by another worker.');
       }
 
@@ -461,14 +461,14 @@ export class TasksService {
     });
   }
 
-  public async freeAnnotation(project_id: string, task_id: string, worker_id: string): Promise<TaskEntity> {
+  public async freeTask(project_id: string, task_id: string, worker_id: string): Promise<TaskEntity> {
     return this.databaseService.transaction<TaskEntity>(async (manager) => {
       const task = await manager.findOne(TaskEntity, {
         id: task_id
       });
 
       if (!task) {
-        throw new Error('Can\'t find a free task.');
+        throw new Error('Can\'t find task.');
       }
 
       if (task.worker_id.toString() !== worker_id) {
@@ -484,6 +484,56 @@ export class TasksService {
       if (updateResult.affected < 1) {
         throw new Error('Can\'t free annotation.');
       }
+      return await manager.findOne(TaskEntity, task.id, {
+        relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file'],
+      });
+    });
+  }
+
+  public async continueTask(project_id: string, task_id: string, worker_id: string): Promise<TaskEntity> {
+    return this.databaseService.transaction<TaskEntity>(async (manager) => {
+      const task = await manager.findOne(TaskEntity, {
+        id: task_id
+      });
+
+      if (!task) {
+        throw new Error('Can\'t find task.');
+      }
+
+      if (task.worker_id.toString() !== worker_id) {
+        throw new Error('You can\'t resume a task that is edited by another worker.');
+      }
+
+      if (task.status !== TaskStatus.busy) {
+        throw new Error('You can\'t continue a task that is not \'BUSY\'.');
+      }
+
+      // don't change status because there's no need.
+      return await manager.findOne(TaskEntity, task.id, {
+        relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file'],
+      });
+    });
+  }
+
+  public async resumeTask(project_id: string, task_id: string, worker_id: string): Promise<TaskEntity> {
+    return this.databaseService.transaction<TaskEntity>(async (manager) => {
+      const task = await manager.findOne(TaskEntity, {
+        id: task_id
+      });
+
+      if (!task) {
+        throw new Error('Can\'t find task.');
+      }
+
+      if (task.worker_id.toString() !== worker_id) {
+        throw new Error('You can\'t resume a task that is edited by another worker.');
+      }
+
+      if (task.status !== TaskStatus.busy) {
+        throw new Error('You can\'t continue a task that is not \'FINISHED\'.');
+      }
+
+      // don't change status because there's no need.
       return await manager.findOne(TaskEntity, task.id, {
         relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file'],
       });

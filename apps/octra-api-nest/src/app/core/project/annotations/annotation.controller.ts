@@ -39,23 +39,36 @@ export class AnnotationController {
     return new TaskDto(removeNullAttributes(await this.tasksService.saveAnnotationData(project_id, annotation_id, req.user.userId, dto)));
   }
 
-  // TODO remove all parseInts on IDs!
-
+  /**
+   * sets the status from 'BUSY' to 'FREE' of an annotation task.
+   *
+   * Allowed user roles: <code>administrator, project_admin, transcriber</code>
+   */
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.transcriber)
   @Put(':project_id/annotations/:annotation_id/free')
   async freeAnnotation(@Param('project_id', NumericStringValidationPipe) project_id: string, @Param('annotation_id', NumericStringValidationPipe) annotation_id: string, @Req() req: InternRequest): Promise<TaskDto> {
-    return new TaskDto(removeNullAttributes(await this.tasksService.freeAnnotation(project_id, annotation_id, req.user.userId)));
+    return new TaskDto(removeNullAttributes(await this.tasksService.freeTask(project_id, annotation_id, req.user.userId)));
   }
 
+  /**
+   * continues an annotation task (only if status is 'BUSY').
+   *
+   * Allowed user roles: <code>administrator, project_admin, transcriber</code>
+   */
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.transcriber)
   @Put(':project_id/annotations/:annotation_id/continue')
-  async continueAnnotation(@Param('project_id', NumericStringValidationPipe) project_id: string, @Param('annotation_id', NumericStringValidationPipe) annotation_id: string): Promise<any> {
-    return undefined;
+  async continueAnnotation(@Param('project_id', NumericStringValidationPipe) project_id: string, @Param('annotation_id', NumericStringValidationPipe) annotation_id: string, @Req() req: InternRequest): Promise<TaskDto> {
+    return new TaskDto(removeNullAttributes(await this.tasksService.continueTask(project_id, annotation_id, req.user.userId)));
   }
 
+  /**
+   * resumes an annotation task (only if status is 'FINISHED').
+   *
+   * Allowed user roles: <code>administrator, project_admin, transcriber</code>
+   */
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.transcriber)
-  @Put(':project_id/annotations/:annotation_id/restart')
-  async restartAnnotation(@Param('project_id', NumericStringValidationPipe) project_id: string, @Param('annotation_id', NumericStringValidationPipe) annotation_id: string): Promise<any> {
-    return undefined;
+  @Put(':project_id/annotations/:annotation_id/resume')
+  async resumeAnnotation(@Param('project_id', NumericStringValidationPipe) project_id: string, @Param('annotation_id', NumericStringValidationPipe) annotation_id: string, @Req() req: InternRequest): Promise<TaskDto> {
+    return new TaskDto(removeNullAttributes(await this.tasksService.resumeTask(project_id, annotation_id, req.user.userId)));
   }
 }

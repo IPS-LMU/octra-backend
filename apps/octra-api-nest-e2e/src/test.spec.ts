@@ -582,6 +582,14 @@ describe('Projects', () => {
     });
   });
 
+  it('/projects/:project_id/annotations/:task_id/continue/ (POST)', () => {
+    return authPut(`/projects/${tempData.project.id}/annotations/${tempData.task.id}/continue`, undefined).expect(200).then(({body}) => {
+      tempData.task.id = body.id;
+    }).catch((a) => {
+      const t = a;
+    });
+  });
+
   it('/projects/project_id/annotations/save/ (PUT)', () => {
     return authPut(`/projects/${tempData.project.id}/annotations/${tempData.task.id}/save`, {
       assessment: 'assessment', code: 'code', comment: 'comment', log: [{
@@ -606,6 +614,16 @@ describe('Projects', () => {
       pid: 'test'
     } as SaveAnnotationDto).expect(200).then(({body}) => {
       const t = body;
+    }).catch((e) => {
+      console.log(e);
+    });
+  });
+
+  it('/projects/:project_id/annotations/:task_id/resume/ (POST)', () => {
+    return authPut(`/projects/${tempData.project.id}/annotations/${tempData.task.id}/resume`, undefined).expect(200).then(({body}) => {
+      tempData.task.id = body.id;
+    }).catch((a) => {
+      const t = a;
     });
   });
 

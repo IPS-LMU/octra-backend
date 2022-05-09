@@ -6,6 +6,7 @@ import {ToolEntity} from '../tool/tool.entity';
 import {FileProjectEntity, ProjectEntity} from './project.entity';
 import {AccountEntity} from '../account/entities/account.entity';
 import {TranscriptDto} from './annotations/transcript.dto';
+import {Type} from "class-transformer";
 
 @Entity({name: 'task'})
 export class TaskEntity extends StandardEntityWithTimestamps {
@@ -76,6 +77,7 @@ export class TaskEntity extends StandardEntityWithTimestamps {
   @DbAwareColumn({
     type: 'bigint'
   })
+  @Type(() => String)
   worker_id: string;
   @ManyToOne(() => AccountEntity)
   @JoinColumn({
