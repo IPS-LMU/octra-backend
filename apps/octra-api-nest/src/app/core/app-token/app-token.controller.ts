@@ -1,9 +1,10 @@
-import {Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put} from '@nestjs/common';
+import {Body, Controller, Delete, Get, Param, Post, Put} from '@nestjs/common';
 import {AppTokenService} from './app-token.service';
 import {AppTokenChangeDto, AppTokenCreateDto, AppTokenDto} from './app-token.dto';
 import {ApiBearerAuth, ApiTags} from '@nestjs/swagger';
 import {AccountRole} from '@octra/octra-api-types';
 import {CombinedRoles} from '../../obj/decorators/combine.decorators';
+import {NumericStringValidationPipe} from "../../obj/pipes/numeric-string-validation.pipe";
 
 @ApiTags('App tokens')
 @ApiBearerAuth()
@@ -41,7 +42,7 @@ export class AppTokenController {
    */
   @CombinedRoles(AccountRole.administrator)
   @Put('tokens/:id')
-  changeAppToken(@Body() token: AppTokenChangeDto, @Param('id', ParseIntPipe) id: number): Promise<void> {
+  changeAppToken(@Body() token: AppTokenChangeDto, @Param('id', NumericStringValidationPipe) id: number): Promise<void> {
     return this.appTokensService.updateAppToken(id, token);
   }
 
@@ -52,7 +53,7 @@ export class AppTokenController {
    */
   @CombinedRoles(AccountRole.administrator)
   @Put('tokens/:id/refresh')
-  async refreshAppToken(@Param('id', ParseIntPipe) id: number): Promise<AppTokenDto> {
+  async refreshAppToken(@Param('id', NumericStringValidationPipe) id: number): Promise<AppTokenDto> {
     return new AppTokenDto(await this.appTokensService.refreshAppToken(id));
   }
 
@@ -63,7 +64,7 @@ export class AppTokenController {
    */
   @CombinedRoles(AccountRole.administrator)
   @Delete('tokens/:id')
-  async removeAppToken(@Param('id') id: number): Promise<void> {
+  async removeAppToken(@Param('id', NumericStringValidationPipe) id: number): Promise<void> {
     return this.appTokensService.removeAppToken(id);
   }
 }

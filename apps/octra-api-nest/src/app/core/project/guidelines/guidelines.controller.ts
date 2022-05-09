@@ -1,9 +1,10 @@
-import {Body, Controller, Get, Param, ParseIntPipe, Put} from '@nestjs/common';
+import {Body, Controller, Get, Param, Put} from '@nestjs/common';
 import {AccountRole} from '@octra/octra-api-types';
 import {ApiBearerAuth, ApiTags} from '@nestjs/swagger';
 import {GuidelinesDto} from './guidelines.dto';
 import {GuidelinesService} from './guidelines.service';
 import {CombinedRoles} from '../../../obj/decorators/combine.decorators';
+import {NumericStringValidationPipe} from "../../../obj/pipes/numeric-string-validation.pipe";
 
 @ApiTags('Guidelines')
 @ApiBearerAuth()
@@ -21,7 +22,7 @@ export class GuidelinesController {
    */
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator)
   @Put(':id/guidelines')
-  async saveGuidelines(@Param('id', ParseIntPipe) id: string, @Body() dtos: GuidelinesDto[]): Promise<void> {
+  async saveGuidelines(@Param('id', NumericStringValidationPipe) id: string, @Body() dtos: GuidelinesDto[]): Promise<void> {
     return this.guidelinesService.saveGuidelines(id, dtos);
   }
 
@@ -33,7 +34,7 @@ export class GuidelinesController {
    */
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.transcriber)
   @Get(':id/guidelines')
-  async getGuidelines(@Param('id', ParseIntPipe) id: string): Promise<GuidelinesDto[]> {
+  async getGuidelines(@Param('id', NumericStringValidationPipe) id: string): Promise<GuidelinesDto[]> {
     return this.guidelinesService.getGuidelines(id);
   }
 }

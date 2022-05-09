@@ -8,19 +8,8 @@ import {ConfigService} from '@nestjs/config';
 import {TaskChangeDto, TaskDto, TaskUploadDto} from './task.dto';
 import {FormDataRequest} from 'nestjs-form-data';
 import {removeNullAttributes} from '../../../functions';
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpException,
-  HttpStatus,
-  Param,
-  ParseIntPipe,
-  Post,
-  Put,
-  Req
-} from '@nestjs/common';
+import {Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, Put, Req} from '@nestjs/common';
+import {NumericStringValidationPipe} from "../../../obj/pipes/numeric-string-validation.pipe";
 
 @ApiTags('Tasks')
 @ApiBearerAuth()
@@ -36,7 +25,7 @@ export class TasksController {
   @FormDataRequest()
   @ApiConsumes('multipart/form-data')
   @Post(':project_id/tasks')
-  async uploadTaskData(@Param('project_id', ParseIntPipe) id: string, @Req() req: InternRequest, @Body() body: TaskUploadDto): Promise<TaskDto> {
+  async uploadTaskData(@Param('project_id', NumericStringValidationPipe) id: string, @Req() req: InternRequest, @Body() body: TaskUploadDto): Promise<TaskDto> {
     const createdTask = await this.tasksService.uploadTaskData(id, body, req);
     createdTask.inputsOutputs = createdTask.inputsOutputs.map(a => ({
       ...a,
@@ -51,7 +40,7 @@ export class TasksController {
   @FormDataRequest()
   @ApiConsumes('multipart/form-data')
   @Put(':project_id/tasks/:task_id')
-  async changeTaskData(@Param('project_id', ParseIntPipe) id: string, @Param('task_id', ParseIntPipe) task_id: string, @Req() req: InternRequest, @Body() body: TaskChangeDto): Promise<TaskDto> {
+  async changeTaskData(@Param('project_id', NumericStringValidationPipe) id: string, @Param('task_id', NumericStringValidationPipe) task_id: string, @Req() req: InternRequest, @Body() body: TaskChangeDto): Promise<TaskDto> {
     const createdTask = await this.tasksService.changeTaskData(id, task_id, body, req);
     createdTask.inputsOutputs = createdTask.inputsOutputs.map(a => ({
       ...a,
@@ -66,7 +55,7 @@ export class TasksController {
 
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.dataDelivery)
   @Delete(':project_id/tasks/:task_id')
-  async removeTask(@Param('project_id', ParseIntPipe) project_id: string, @Param('task_id', ParseIntPipe) task_id: string): Promise<void> {
+  async removeTask(@Param('project_id', NumericStringValidationPipe) project_id: string, @Param('task_id', NumericStringValidationPipe) task_id: string): Promise<void> {
     return this.tasksService.removeTask(project_id, task_id);
   }
 

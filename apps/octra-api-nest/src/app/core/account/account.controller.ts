@@ -6,7 +6,6 @@ import {
   Get,
   HttpStatus,
   Param,
-  ParseIntPipe,
   Post,
   Put,
   Query,
@@ -22,6 +21,7 @@ import {AccountService} from './account.service';
 import {InternRequest} from '../../obj/types';
 import {Public} from '../authorization/public.decorator';
 import {removeNullAttributes} from '../../functions';
+import {NumericStringValidationPipe} from "../../obj/pipes/numeric-string-validation.pipe";
 
 @ApiTags('Accounts')
 @ApiBearerAuth()
@@ -58,7 +58,7 @@ export class AccountController {
    */
   @CombinedRoles(AccountRole.administrator)
   @Put(':id/roles')
-  async assignAccountRoles(@Param('id', ParseIntPipe) id: string, @Body() assignDto: AssignRoleDto): Promise<AssignRoleDto> {
+  async assignAccountRoles(@Param('id', NumericStringValidationPipe) id: string, @Body() assignDto: AssignRoleDto): Promise<AssignRoleDto> {
     return this.accountService.assignAccountRoles(id, assignDto);
   }
 
@@ -93,13 +93,13 @@ export class AccountController {
    */
   @CombinedRoles(AccountRole.administrator)
   @Get(':id')
-  async getAccountInformation(@Param('id') id: string): Promise<AccountDto | undefined> {
+  async getAccountInformation(@Param('id', NumericStringValidationPipe) id: string): Promise<AccountDto | undefined> {
     return removeNullAttributes(new AccountDto(await this.accountService.findAccountByID(id)));
   }
 
   @CombinedRoles(AccountRole.administrator)
   @Delete(':id')
-  removeUser(@Param('id') id: string): string {
+  removeUser(@Param('id', NumericStringValidationPipe) id: string): string {
     // TODO implement function
     return 'Implementation needed';
   }
