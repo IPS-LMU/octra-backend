@@ -3,7 +3,7 @@ import * as request from 'supertest';
 import {AppModule} from '../../octra-api-nest/src/app/app.module';
 import {AuthDto} from '../../octra-api-nest/src/app/core/authentication/auth.dto';
 import {AppTokenDto} from '../../octra-api-nest/src/app/core/app-token/app-token.dto';
-import {BadRequestException, ValidationPipe} from '@nestjs/common';
+import {BadRequestException, HttpException, ValidationPipe} from '@nestjs/common';
 import {ValidationError} from 'class-validator';
 import {
   AccountDto,
@@ -170,6 +170,7 @@ describe('OCTRA Nest API (e2e)', () => {
   })
 
   describe('Authentication', () => {
+    /*
     it('/authentication/login (POST)', () => {
       return request(app.getHttpServer())
         .post('/auth/login').send({
@@ -183,6 +184,25 @@ describe('OCTRA Nest API (e2e)', () => {
           tempData.admin.id = body.account_id;
         }).catch((e) => {
           console.log(e)
+        })
+    });
+
+     */
+
+
+    it('/authentication/login (POST) (user)', () => {
+      return request(app.getHttpServer())
+        .post('/auth/login').send({
+          'name': tempData.user.name,
+          'password': 'Test1234',
+        })
+        .set('X-App-Token', `${appToken}`)
+        .set('Origin', 'http://localhost:8080')
+        .expect(201).then(({body}: { body: AuthDto }) => {
+          tempData.user.jwtToken = body.access_token;
+          tempData.user.id = body.account_id;
+        }).catch((e: HttpException) => {
+          console.log(e.stack);
         })
     });
   })
@@ -345,12 +365,6 @@ describe('Projects', () => {
     });
   });
 
-  it('/projects/:id (GET)', () => {
-    return authGet(`/projects/${tempData.project.id}`).expect(200).then(({body}) => {
-        const t = '';
-      }
-    )
-  });
 
   it('/projects/:id/roles (GET)', () => {
     return authGet(`/projects/${tempData.project.id}/roles`).expect(200).then(({body}) => {
@@ -361,9 +375,16 @@ describe('Projects', () => {
 
   it('/projects/:id/roles (POST)', () => {
     return authPost(`/projects/${tempData.project.id}/roles`, [{
-      account_id: "459",
+      account_id: tempData.user.id,
       role: AccountRole.projectAdministrator
     }] as ProjectAssignRolesRequestDto[]).expect((a) => a.status === 200 || a.status === 201)
+  });
+
+  it('/projects/:id (GET)', () => {
+    return authGet(`/projects/${tempData.project.id}`, false).expect(200).then(({body}) => {
+        const t = '';
+      }
+    )
   });
 
   it('/projects/:id/guidelines (PUT)', () => {
@@ -437,6 +458,8 @@ describe('Projects', () => {
       .auth(tempData.admin.jwtToken, {type: 'bearer'})
       .expect(201).then(({body}: { body: TaskDto }) => {
         tempData.task.id = body.id;
+        tempData.mediaItem.uploadURL = body.inputs[0].url;
+        const t = "";
       })
   });
 

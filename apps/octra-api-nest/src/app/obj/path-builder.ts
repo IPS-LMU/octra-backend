@@ -62,8 +62,9 @@ export class PathBuilder {
   public getEncryptedUploadURL(relativePath: string, virtual_filename: string) {
     if (relativePath && /https?:\/\//g.exec(relativePath) === null) {
 
-      const folder = Path.join(`{uploads}`, relativePath.substring(0, relativePath.lastIndexOf('/')));
-      return this.settings.url + (this.settings.port ? `:${this.settings.port}` : '') + Path.join('/v1/files/public/', this.encryptFilePath(relativePath), virtual_filename);
+      const folder = Path.join(`{uploads}`, Path.parse(relativePath).dir);
+      const fileName = Path.basename(relativePath);
+      return this.settings.url + (this.settings.port ? `:${this.settings.port}` : '') + Path.join('/v1/files/public/', this.encryptFilePath(folder), fileName);
     }
     return relativePath;
   }

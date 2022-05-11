@@ -1,4 +1,4 @@
-import {Injectable} from '@nestjs/common';
+import {Injectable, MethodNotAllowedException} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Repository} from 'typeorm';
 import {FileProjectEntity, ProjectEntity} from './project.entity';
@@ -8,23 +8,32 @@ import {TaskEntity, TaskInputOutputEntity} from './task.entity';
 import {AppService} from '../../app.service';
 import {FileSystemHandler} from '../../obj/filesystem-handler';
 import {DatabaseService} from '../../database.service';
+import {CurrentUser, InternRequest} from "../../obj/types";
+import {AccountRole} from "@octra/octra-api-types";
+import {Reflector} from '@nestjs/core';
 
 @Injectable()
 export class ProjectService {
   constructor(@InjectRepository(ProjectEntity)
               private projectRepository: Repository<ProjectEntity>,
               private databaseService: DatabaseService,
-              private appService: AppService) {
+              private appService: AppService,
+              private reflector: Reflector) {
   }
 
   public async listProjects(): Promise<ProjectEntity[]> {
     return this.projectRepository.find();
   }
 
-  public async getProject(id: string): Promise<ProjectEntity> {
-    return this.projectRepository.findOne({
+  public async getProject(id: string, allowedProjectRoles: string[], req: InternRequest): Promise<ProjectEntity> {
+    const project = await this.projectRepository.findOne({
       id
     });
+
+    if (!this.isProjectAccessAllowed(project, undefined, req.user, allowedProjectRoles)) {
+      throw new MethodNotAllowedException();
+    }
+    return project;
   }
 
   public async getProjectRoles(id: string): Promise<AccountRoleProjectEntity[]> {
@@ -120,5 +129,33 @@ export class ProjectService {
         await FileSystemHandler.removeFolder(folderPath);
       }
     });
+  }
+
+  private isProjectAccessAllowed(project: ProjectEntity, task: TaskEntity, user: CurrentUser, allowedProjectRoles: string[]) {
+    const generalRole = user.roles.find(a => a.scope === "general");
+
+    if (allowedProjectRoles.length > 0 && generalRole.role !== AccountRole.administrator) {
+      const userProjectRole = user.roles.find(a => a.project_id?.toString() === project.id);
+      // check project role
+      if (userProjectRole) {
+        if (userProjectRole.role !== AccountRole.projectAdministrator) {
+          if (userProjectRole.role === AccountRole.user) {
+            if (allowedProjectRoles.find(a => a === AccountRole.user)) {
+              if (task?.worker_id !== user.userId) {
+                return false;
+              }
+            }
+          }
+        }
+      } else {
+        // user doesn't have an user role, assume "user"
+        if (allowedProjectRoles.find(a => a === AccountRole.user)) {
+          if (task?.worker_id && task?.worker_id !== user.userId) {
+            return false;
+          }
+        }
+      }
+    }
+    return true;
   }
 }

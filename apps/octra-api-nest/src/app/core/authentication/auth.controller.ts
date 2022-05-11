@@ -1,10 +1,11 @@
-import {Body, Controller, Post, Req, UseGuards} from '@nestjs/common';
+import {Body, Controller, Post, Req, UseFilters, UseGuards} from '@nestjs/common';
 import {AuthService} from './auth.service';
 import {Public} from '../authorization/public.decorator';
 import {LocalAuthGuard} from './local-auth.guard';
-import {AuthLoginDto, AuthRegisterDto} from './auth.dto';
+import {AuthDto, AuthLoginDto, AuthRegisterDto} from './auth.dto';
 import {ApiBody, ApiExtraModels, ApiTags} from '@nestjs/swagger';
 import {AccountEntity} from '../account/entities/account.entity';
+import {HttpExceptionFilter} from "../../obj/filters/http-exception.filter";
 
 @ApiTags('Authentication')
 @ApiExtraModels(AuthLoginDto)
@@ -49,9 +50,10 @@ export class AuthController {
     }
   })
   @Public()
-  @UseGuards(LocalAuthGuard)
   @Post('login')
-  login(@Req() req: { user: AccountEntity }): any {
+  @UseFilters(new HttpExceptionFilter())
+  @UseGuards(LocalAuthGuard)
+  login(@Req() req: { user: AccountEntity }): Promise<AuthDto> {
     return this.authService.login(req.user);
   }
 

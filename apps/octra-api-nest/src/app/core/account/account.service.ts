@@ -33,19 +33,18 @@ export class AccountService {
   }
 
   async findAccountByName(username: string): Promise<AccountEntity | undefined> {
-    const t = await this.accountRepository.find({
+    return this.accountRepository.findOne({
       where: {
         account_person: {
           username
         }
       },
-      relations: ['account_person']
+      relations: ['account_person', "roles"]
     });
-    return t[0];
   }
 
   async findAccountByHash(hash: string): Promise<AccountEntity | undefined> {
-    const t = await this.accountRepository.find({
+    return this.accountRepository.findOne({
       where: {
         account_person: {
           hash
@@ -53,14 +52,12 @@ export class AccountService {
       },
       relations: ['account_person']
     });
-    return (t.length > 0) ? t[0] : undefined;
   }
 
   async findAccountByID(id: string): Promise<AccountEntity | undefined> {
-    const t = await this.accountRepository.find({
+    return this.accountRepository.findOne({
       id
     });
-    return (t.length > 0) ? t[0] : undefined;
   }
 
   async getAll(): Promise<AccountEntity[]> {

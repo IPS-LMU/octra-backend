@@ -1,4 +1,4 @@
-import {Body, Controller, Delete, Get, Param, Post, Put} from '@nestjs/common';
+import {Body, Controller, Delete, Get, Param, Post, Put, Req} from '@nestjs/common';
 import {ProjectService} from './project.service';
 import {CombinedRoles} from '../../obj/decorators/combine.decorators';
 import {AccountRole} from '@octra/octra-api-types';
@@ -6,13 +6,16 @@ import {removeNullAttributes} from '../../functions';
 import {ProjectAssignRolesRequestDto, ProjectDto, ProjectRemoveRequestDto, ProjectRequestDto} from './project.dto';
 import {ApiBearerAuth, ApiTags} from '@nestjs/swagger';
 import {NumericStringValidationPipe} from "../../obj/pipes/numeric-string-validation.pipe";
+import {ROLES_KEY} from "../../../../role.decorator";
+import {Reflector} from "@nestjs/core";
+import {InternRequest} from "../../obj/types";
 
 @ApiTags('Projects')
 @ApiBearerAuth()
 @Controller('projects')
 export class ProjectController {
 
-  constructor(private projectService: ProjectService) {
+  constructor(private projectService: ProjectService, private reflector: Reflector) {
   }
 
   /**
@@ -28,20 +31,21 @@ export class ProjectController {
   }
 
   @CombinedRoles(AccountRole.administrator)
-  @Get(':id')
-  async getProject(@Param('id', NumericStringValidationPipe) id: string): Promise<ProjectDto> {
-    return removeNullAttributes<ProjectDto>(new ProjectDto(await this.projectService.getProject(id)));
+  @Get(':project_id')
+  async getProject(@Param('project_id', NumericStringValidationPipe) id: string, @Req() req: InternRequest): Promise<ProjectDto> {
+    const allowedProjectRoles = this.reflector.get<AccountRole[]>(ROLES_KEY, this.getProject);
+    return removeNullAttributes<ProjectDto>(new ProjectDto(await this.projectService.getProject(id, allowedProjectRoles, req)));
   }
 
   @CombinedRoles(AccountRole.administrator)
-  @Get(':id/roles')
-  async getProjectRoles(@Param('id', NumericStringValidationPipe) id: string): Promise<any> {
+  @Get(':project_id/roles')
+  async getProjectRoles(@Param('project_id', NumericStringValidationPipe) id: string): Promise<any> {
     return removeNullAttributes(await this.projectService.getProjectRoles(id));
   }
 
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator)
-  @Post(':id/roles')
-  async assignProjectRoles(@Param('id', NumericStringValidationPipe) id: string, @Body() dto: ProjectAssignRolesRequestDto[]): Promise<void> {
+  @Post(':project_id/roles')
+  async assignProjectRoles(@Param('project_id', NumericStringValidationPipe) id: string, @Body() dto: ProjectAssignRolesRequestDto[]): Promise<void> {
     return removeNullAttributes(await this.projectService.assignProjectRoles(id, dto));
   }
 
@@ -50,7 +54,7 @@ export class ProjectController {
    *
    * Allowed user roles: <code>administrator</code>
    */
-  @CombinedRoles(AccountRole.administrator)
+  @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator)
   @Post('')
   async createProject(@Body() dto: ProjectRequestDto): Promise<ProjectDto> {
     return removeNullAttributes(new ProjectDto(await this.projectService.createProject(dto)));
@@ -61,9 +65,9 @@ export class ProjectController {
    *
    * Allowed user roles: <code>administrator</code>
    */
-  @CombinedRoles(AccountRole.administrator)
-  @Put(':id')
-  async changeProject(@Param('id', NumericStringValidationPipe) id: string, @Body() dto: ProjectRequestDto): Promise<ProjectDto> {
+  @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator)
+  @Put(':project_id')
+  async changeProject(@Param('project_id', NumericStringValidationPipe) id: string, @Body() dto: ProjectRequestDto): Promise<ProjectDto> {
     return removeNullAttributes(new ProjectDto(await this.projectService.changeProject(id, dto)));
   }
 
@@ -72,9 +76,9 @@ export class ProjectController {
    *
    * Allowed user roles: <code>administrator</code>
    */
-  @CombinedRoles(AccountRole.administrator)
-  @Delete(':id')
-  async removeProject(@Param('id', NumericStringValidationPipe) id: string, @Body() dto: ProjectRemoveRequestDto): Promise<void> {
+  @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator)
+  @Delete(':project_id')
+  async removeProject(@Param('project_id', NumericStringValidationPipe) id: string, @Body() dto: ProjectRemoveRequestDto): Promise<void> {
     return this.projectService.removeProject(id, dto);
   }
 }

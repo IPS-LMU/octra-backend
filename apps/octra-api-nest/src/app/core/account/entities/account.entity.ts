@@ -56,7 +56,8 @@ export class AccountEntity extends StandardEntityWithTimestamps {
     eager: true
   })
   @JoinColumn({
-    name: 'account_person_id'
+    name: 'account_person_id',
+    referencedColumnName: "id"
   })
   account_person: AccountPersonEntity;
 }

@@ -51,8 +51,6 @@ export class TasksController {
     return data;
   }
 
-  // TODO validate account role according to project access?
-
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.dataDelivery)
   @Delete(':project_id/tasks/:task_id')
   async removeTask(@Param('project_id', NumericStringValidationPipe) project_id: string, @Param('task_id', NumericStringValidationPipe) task_id: string): Promise<void> {
@@ -62,10 +60,6 @@ export class TasksController {
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.dataDelivery, AccountRole.transcriber)
   @Get(':project_id/tasks/:task_id')
   async getTask(@Param('project_id') project_id: string, @Param('task_id') task_id: string): Promise<TaskDto> {
-    // TODO change with pipe
-    if (Number(task_id) < 1) {
-      throw new HttpException(`Id of task must be greater than 0`, HttpStatus.BAD_REQUEST);
-    }
     const createdTask = await this.tasksService.getTask(project_id, task_id);
     if (!createdTask) {
       throw new HttpException(`Can't get task`, HttpStatus.CONFLICT);

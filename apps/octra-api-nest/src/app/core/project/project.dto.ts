@@ -49,7 +49,6 @@ export class ProjectAssignRolesRequestDto {
 }
 
 export class ProjectRemoveRequestDto {
-  // TODO implement custom validator for one of
   @IsNotEmpty()
   @IsBoolean()
   removeAllReferences: boolean;

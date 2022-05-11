@@ -36,7 +36,6 @@ export class TasksService {
   }
 
   async uploadTaskData(project_id: string, body: TaskUploadDto, req: InternRequest): Promise<TaskEntity> {
-    // TODO allow empty transcript
     const inputs = body.inputs;
     const mediaFile = inputs?.find(a => a.mimetype === 'audio/wave');
     const transcriptFile = inputs?.find(a => a.mimetype === 'application/json' || a.mimetype === 'text/plain');

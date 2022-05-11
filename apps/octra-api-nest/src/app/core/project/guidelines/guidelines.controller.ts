@@ -21,8 +21,8 @@ export class GuidelinesController {
    * Allowed user roles: <code>administrator, project_admin</code>
    */
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator)
-  @Put(':id/guidelines')
-  async saveGuidelines(@Param('id', NumericStringValidationPipe) id: string, @Body() dtos: GuidelinesDto[]): Promise<void> {
+  @Put(':project_id/guidelines')
+  async saveGuidelines(@Param('project_id', NumericStringValidationPipe) id: string, @Body() dtos: GuidelinesDto[]): Promise<void> {
     return this.guidelinesService.saveGuidelines(id, dtos);
   }
 
@@ -33,8 +33,8 @@ export class GuidelinesController {
    * Allowed user roles: <code>administrator, project_admin, transcriber</code>
    */
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.transcriber)
-  @Get(':id/guidelines')
-  async getGuidelines(@Param('id', NumericStringValidationPipe) id: string): Promise<GuidelinesDto[]> {
+  @Get(':project_id/guidelines')
+  async getGuidelines(@Param('project_id', NumericStringValidationPipe) id: string): Promise<GuidelinesDto[]> {
     return this.guidelinesService.getGuidelines(id);
   }
 }

@@ -95,7 +95,6 @@ if (config.database.ssl) {
       provide: APP_GUARD,
       useClass: ThrottlerGuard
     }
-
   ],
 })
 export class AppModule {

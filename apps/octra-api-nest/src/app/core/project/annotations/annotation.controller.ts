@@ -22,7 +22,7 @@ export class AnnotationController {
    *
    * Allowed user roles: <code>administrator, project_admin, transcriber</code>
    */
-  @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.transcriber)
+  @CombinedRoles(AccountRole.administrator, AccountRole.user, AccountRole.projectAdministrator)
   @Post(':project_id/annotations/start')
   async startAnnotation(@Param('project_id', NumericStringValidationPipe) project_id: string, @Req() req: InternRequest): Promise<TaskDto> {
     return new TaskDto(removeNullAttributes(await this.tasksService.giveNextFreeTaskToAccount(project_id, req.user.userId)));

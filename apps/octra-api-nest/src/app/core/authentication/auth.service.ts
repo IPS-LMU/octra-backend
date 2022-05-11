@@ -34,7 +34,7 @@ export class AuthService {
           valid_startdate: a.valid_startdate,
           valid_enddate: a.valid_enddate,
           project_id: a.project_id,
-          project_name: '' // TODO add project name
+          project_name: a?.project?.name
         } as RoleDto))),
         {
           role: user.generalRole.label,
