@@ -1,11 +1,15 @@
 import {ExtractJwt, Strategy} from 'passport-jwt';
 import {PassportStrategy} from '@nestjs/passport';
-import {Injectable} from '@nestjs/common';
+import {ForbiddenException, Injectable} from '@nestjs/common';
 import {jwtConstants} from './auth.constants';
+import {JWTPayload} from './jwt.types';
+import {AccountService} from '../account';
+import {CurrentUser} from '../../obj/types';
+import {AccountRoleScope} from '@octra/octra-api-types';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(private accountService: AccountService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -13,11 +17,29 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: any) {
+  async validate(payload: JWTPayload): Promise<CurrentUser> {
+    const account = await this.accountService.getAccount(payload.sub);
+
+    if (!account) {
+      throw new ForbiddenException(`Account not found.`);
+    }
     return {
       userId: payload.sub,
-      roles: payload.roles,
-      username: payload.username
+      roles: [
+        {
+          scope: AccountRoleScope.general,
+          role: account.generalRole.label
+        },
+        ...account.roles?.map(a => ({
+          scope: a.role.scope,
+          role: a.role.label,
+          project_id: a.project_id,
+          project_name: a.project?.name,
+          valid_startdate: a.valid_startdate,
+          valid_enddate: a.valid_enddate
+        }))
+      ],
+      username: account?.account_person?.username
     };
   }
 }

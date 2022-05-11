@@ -1,4 +1,4 @@
-import {Injectable, MethodNotAllowedException} from '@nestjs/common';
+import {Injectable} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Repository} from 'typeorm';
 import {FileProjectEntity, ProjectEntity} from './project.entity';
@@ -8,9 +8,9 @@ import {TaskEntity, TaskInputOutputEntity} from './task.entity';
 import {AppService} from '../../app.service';
 import {FileSystemHandler} from '../../obj/filesystem-handler';
 import {DatabaseService} from '../../database.service';
-import {CurrentUser, InternRequest} from "../../obj/types";
-import {AccountRole} from "@octra/octra-api-types";
+import {CurrentUser, InternRequest} from '../../obj/types';
 import {Reflector} from '@nestjs/core';
+import {checkIfProjectAccessAllowed} from '../../functions';
 
 @Injectable()
 export class ProjectService {
@@ -30,22 +30,34 @@ export class ProjectService {
       id
     });
 
-    if (!this.isProjectAccessAllowed(project, undefined, req.user, allowedProjectRoles)) {
-      throw new MethodNotAllowedException();
-    }
+    // TODO write interceptor to check project related access
+
+    checkIfProjectAccessAllowed(project, undefined, req.user, allowedProjectRoles);
     return project;
   }
 
-  public async getProjectRoles(id: string): Promise<AccountRoleProjectEntity[]> {
-    return (await this.projectRepository.findOne({
+  public async getProjectRoles(id: string, user: CurrentUser, allowedProjectRoles: string[]): Promise<AccountRoleProjectEntity[]> {
+    const project = await this.projectRepository.findOne({
       id
     }, {
       relations: ['roles']
-    })).roles;
+    });
+
+    checkIfProjectAccessAllowed(project, undefined, user, allowedProjectRoles);
+
+    return project?.roles;
   }
 
-  public async assignProjectRoles(id: string, roles: ProjectAssignRolesRequestDto[]): Promise<void> {
+  public async assignProjectRoles(id: string, roles: ProjectAssignRolesRequestDto[], user: CurrentUser, allowedProjectRoles: string[]): Promise<void> {
     return this.databaseService.transaction<void>(async (manager) => {
+      const project = await manager.findOne(ProjectEntity, {
+        id
+      }, {
+        relations: ['roles']
+      });
+
+      checkIfProjectAccessAllowed(project, undefined, user, allowedProjectRoles);
+
       const roleRows = await manager.find<RoleEntity>(RoleEntity);
 
       for (const role of roles) {
@@ -73,7 +85,13 @@ export class ProjectService {
     return project;
   }
 
-  public async changeProject(id: string, dto: ProjectRequestDto): Promise<ProjectEntity> {
+  public async changeProject(id: string, dto: ProjectRequestDto, user: CurrentUser, allowedProjectRoles: string[]): Promise<ProjectEntity> {
+    const project = await this.projectRepository.findOne({
+      id
+    });
+
+    checkIfProjectAccessAllowed(project, undefined, user, allowedProjectRoles);
+
     return this.projectRepository.save({
       id,
       ...dto
@@ -129,33 +147,5 @@ export class ProjectService {
         await FileSystemHandler.removeFolder(folderPath);
       }
     });
-  }
-
-  private isProjectAccessAllowed(project: ProjectEntity, task: TaskEntity, user: CurrentUser, allowedProjectRoles: string[]) {
-    const generalRole = user.roles.find(a => a.scope === "general");
-
-    if (allowedProjectRoles.length > 0 && generalRole.role !== AccountRole.administrator) {
-      const userProjectRole = user.roles.find(a => a.project_id?.toString() === project.id);
-      // check project role
-      if (userProjectRole) {
-        if (userProjectRole.role !== AccountRole.projectAdministrator) {
-          if (userProjectRole.role === AccountRole.user) {
-            if (allowedProjectRoles.find(a => a === AccountRole.user)) {
-              if (task?.worker_id !== user.userId) {
-                return false;
-              }
-            }
-          }
-        }
-      } else {
-        // user doesn't have an user role, assume "user"
-        if (allowedProjectRoles.find(a => a === AccountRole.user)) {
-          if (task?.worker_id && task?.worker_id !== user.userId) {
-            return false;
-          }
-        }
-      }
-    }
-    return true;
   }
 }

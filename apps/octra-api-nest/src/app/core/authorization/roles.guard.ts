@@ -3,6 +3,7 @@ import {Reflector} from '@nestjs/core';
 import {AccountRole} from '@octra/octra-api-types';
 import {ROLES_KEY} from '../../../../role.decorator';
 import {RoleDto} from '../account/account.dto';
+import {CurrentUser} from '../../obj/types';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -17,7 +18,7 @@ export class RolesGuard implements CanActivate {
     if (!requiredRoles) {
       return true;
     }
-    const {user} = context.switchToHttp().getRequest();
+    const user: CurrentUser = context.switchToHttp().getRequest()?.user;
     const roles: RoleDto[] = user.roles;
     return requiredRoles.some((role) => roles?.find(a => a.role === role) !== undefined);
   }

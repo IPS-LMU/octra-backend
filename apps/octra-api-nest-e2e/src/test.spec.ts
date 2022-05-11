@@ -334,6 +334,7 @@ describe('Accounts', () => {
   });
 });
 
+// TODO: allow projectadmins, filter their projects
 
 describe('Projects', () => {
   it('/projects/ (GET)', () => {
@@ -360,19 +361,18 @@ describe('Projects', () => {
     });
   });
 
-
-  it('/projects/:id/roles (GET)', () => {
-    return authGet(`/projects/${tempData.project.id}/roles`).expect(200).then(({body}) => {
-        const t = '';
-      }
-    )
-  });
-
   it('/projects/:id/roles (POST)', () => {
     return authPost(`/projects/${tempData.project.id}/roles`, [{
       account_id: tempData.user.id,
       role: AccountRole.projectAdministrator
     }] as ProjectAssignRolesRequestDto[]).expect((a) => a.status === 200 || a.status === 201)
+  });
+
+  it('/projects/:id/roles (GET)', () => {
+    return authGet(`/projects/${tempData.project.id}/roles`, false).expect(200).then(({body}) => {
+        const t = '';
+      }
+    )
   });
 
   it('/projects/:id (GET)', () => {

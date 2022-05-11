@@ -5,7 +5,6 @@ import {SHA256} from 'crypto-js';
 import {ConfigService} from '@nestjs/config';
 import {JWTPayload} from './jwt.types';
 import {AccountEntity} from '../account/entities/account.entity';
-import {RoleDto} from '../account/account.dto';
 import {AuthDto} from './auth.dto';
 
 @Injectable()
@@ -26,21 +25,7 @@ export class AuthService {
 
   async login(user: AccountEntity): Promise<AuthDto> {
     const payload: JWTPayload = {
-      username: user.account_person.username,
-      roles: [
-        ...(user.roles.map(a => ({
-          role: a.role.label,
-          scope: a.role.scope,
-          valid_startdate: a.valid_startdate,
-          valid_enddate: a.valid_enddate,
-          project_id: a.project_id,
-          project_name: a?.project?.name
-        } as RoleDto))),
-        {
-          role: user.generalRole.label,
-          scope: user.generalRole.scope
-        }
-      ],
+      customSalt: this.configService.get<string>('api.jwtSalt'),
       sub: user.id
     };
     return {
