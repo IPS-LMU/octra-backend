@@ -1,4 +1,12 @@
-import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+  MethodNotAllowedException,
+  NotFoundException
+} from '@nestjs/common';
 import {AppService} from '../../../app.service';
 import {readFile, unlink} from 'fs-extra';
 import {InternRequest} from '../../../obj/types';
@@ -323,7 +331,7 @@ export class TasksService {
       // no media file uploaded
       const url = taskProperties.media.url;
       if (!url || url.trim() === '' || !(new RegExp('^https?://').exec(url))) {
-        throw new Error('Can\'t find url in url property');
+        throw new BadRequestException('Can\'t find url in url property');
       }
 
       const regex = new RegExp(`^${Path.join(this.configService.get('api.url'), 'v1/links')}`);
@@ -396,7 +404,7 @@ export class TasksService {
       });
 
       if (!task) {
-        throw new Error('Can\'t find a free task.');
+        throw new NotFoundException('Can\'t find a free task.');
       }
 
       const updateResult = await manager.update(TaskEntity, {
@@ -408,7 +416,7 @@ export class TasksService {
       });
 
       if (updateResult.affected < 1) {
-        throw new Error('Can\'t update task status to \'BUSY\'.');
+        throw new InternalServerErrorException('Can\'t update task status to \'BUSY\'.');
       }
       return await manager.findOne(TaskEntity, task.id, {
         relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file'],
@@ -423,15 +431,15 @@ export class TasksService {
       });
 
       if (!task) {
-        throw new Error('Can\'t find task.');
+        throw new NotFoundException('Can\'t find task.');
       }
 
       if (task.status === TaskStatus.finished) {
-        throw new Error('You can\'t save an annotation of an finished task');
+        throw new BadRequestException('You can\'t save an annotation of an finished task');
       }
 
       if (task.status === TaskStatus.busy && task.worker_id.toString() !== worker_id) {
-        throw new Error('You can\'t overwrite an annotation that is busy and is edited by another worker.');
+        throw new BadRequestException('You can\'t overwrite an annotation that is busy and is edited by another worker.');
       }
 
       await manager.insert(TaskInputOutputEntity, {
@@ -452,7 +460,7 @@ export class TasksService {
       });
 
       if (updateResult.affected < 1) {
-        throw new Error('Can\'t save annotation to task.');
+        throw new InternalServerErrorException('Can\'t save annotation to task.');
       }
       return await manager.findOne(TaskEntity, task.id, {
         relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file'],
@@ -467,11 +475,11 @@ export class TasksService {
       });
 
       if (!task) {
-        throw new Error('Can\'t find task.');
+        throw new NotFoundException('Can\'t find task.');
       }
 
       if (task.worker_id.toString() !== worker_id) {
-        throw new Error('You can\'t free an annotation that is edited by another worker.');
+        throw new MethodNotAllowedException('You can\'t free an annotation that is edited by another worker.');
       }
 
       const updateResult = await manager.update(TaskEntity, {
@@ -481,7 +489,7 @@ export class TasksService {
       });
 
       if (updateResult.affected < 1) {
-        throw new Error('Can\'t free annotation.');
+        throw new InternalServerErrorException('Can\'t free annotation.');
       }
       return await manager.findOne(TaskEntity, task.id, {
         relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file'],
@@ -496,15 +504,15 @@ export class TasksService {
       });
 
       if (!task) {
-        throw new Error('Can\'t find task.');
+        throw new NotFoundException('Can\'t find task.');
       }
 
       if (task.worker_id.toString() !== worker_id) {
-        throw new Error('You can\'t resume a task that is edited by another worker.');
+        throw new MethodNotAllowedException('You can\'t resume a task that is edited by another worker.');
       }
 
       if (task.status !== TaskStatus.busy) {
-        throw new Error('You can\'t continue a task that is not \'BUSY\'.');
+        throw new MethodNotAllowedException('You can\'t continue a task that is not \'BUSY\'.');
       }
 
       // don't change status because there's no need.
@@ -521,15 +529,15 @@ export class TasksService {
       });
 
       if (!task) {
-        throw new Error('Can\'t find task.');
+        throw new NotFoundException('Can\'t find task.');
       }
 
       if (task.worker_id.toString() !== worker_id) {
-        throw new Error('You can\'t resume a task that is edited by another worker.');
+        throw new MethodNotAllowedException('You can\'t resume a task that is edited by another worker.');
       }
 
       if (task.status !== TaskStatus.busy) {
-        throw new Error('You can\'t continue a task that is not \'FINISHED\'.');
+        throw new MethodNotAllowedException('You can\'t continue a task that is not \'FINISHED\'.');
       }
 
       // don't change status because there's no need.

@@ -21,7 +21,7 @@ import {AccountService} from './account.service';
 import {InternRequest} from '../../obj/types';
 import {Public} from '../authorization/public.decorator';
 import {removeNullAttributes} from '../../functions';
-import {NumericStringValidationPipe} from "../../obj/pipes/numeric-string-validation.pipe";
+import {NumericStringValidationPipe} from '../../obj/pipes/numeric-string-validation.pipe';
 
 @ApiTags('Accounts')
 @ApiBearerAuth()
@@ -120,6 +120,7 @@ export class AccountController {
   @Public()
   @Post('register')
   async registerAccount(@Body() dto: AccountRegisterRequestDto): Promise<AccountDto> {
-    return removeNullAttributes(new AccountDto(await this.accountService.createAccount(dto)));
+    const result = await this.accountService.createAccount(dto);
+    return removeNullAttributes(new AccountDto(result));
   }
 }

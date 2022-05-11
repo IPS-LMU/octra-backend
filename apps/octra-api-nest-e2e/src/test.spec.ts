@@ -3,7 +3,7 @@ import * as request from 'supertest';
 import {AppModule} from '../../octra-api-nest/src/app/app.module';
 import {AuthDto} from '../../octra-api-nest/src/app/core/authentication/auth.dto';
 import {AppTokenDto} from '../../octra-api-nest/src/app/core/app-token/app-token.dto';
-import {BadRequestException, HttpException, ValidationPipe} from '@nestjs/common';
+import {BadRequestException, ValidationPipe} from '@nestjs/common';
 import {ValidationError} from 'class-validator';
 import {
   AccountDto,
@@ -27,34 +27,34 @@ import {SaveAnnotationDto} from '../../octra-api-nest/src/app/core/project/annot
 
 const tempData = {
   apptoken: {
-    addedID: "0",
-    removedID: "0"
+    addedID: '0',
+    removedID: '0'
   },
   admin: {
-    id: "0",
+    id: '0',
     jwtToken: ''
   },
   user: {
-    id: "0",
+    id: '0',
     name: 'TestUser_' + Date.now(),
     email: 'testemail@testtest.de',
     jwtToken: ''
   },
   project: {
-    id: "0",
+    id: '0',
     name: ''
   },
   mediaItem: {
-    id: "0",
+    id: '0',
     uploadURL: '',
     url: '',
     delivery_url: ''
   },
   task: {
-    id: "0"
+    id: '0'
   },
   tool: {
-    id: "0"
+    id: '0'
   }
 };
 let app;
@@ -170,7 +170,6 @@ describe('OCTRA Nest API (e2e)', () => {
   })
 
   describe('Authentication', () => {
-    /*
     it('/authentication/login (POST)', () => {
       return request(app.getHttpServer())
         .post('/auth/login').send({
@@ -187,13 +186,11 @@ describe('OCTRA Nest API (e2e)', () => {
         })
     });
 
-     */
-
 
     it('/authentication/login (POST) (user)', () => {
       return request(app.getHttpServer())
         .post('/auth/login').send({
-          'name': tempData.user.name,
+          'username': tempData.user.name,
           'password': 'Test1234',
         })
         .set('X-App-Token', `${appToken}`)
@@ -201,8 +198,6 @@ describe('OCTRA Nest API (e2e)', () => {
         .expect(201).then(({body}: { body: AuthDto }) => {
           tempData.user.jwtToken = body.access_token;
           tempData.user.id = body.account_id;
-        }).catch((e: HttpException) => {
-          console.log(e.stack);
         })
     });
   })
@@ -291,7 +286,7 @@ describe('Accounts', () => {
       general: AccountRole.user,
       projects: [
         {
-          project_id: "801",
+          project_id: '801',
           roles: [
             {
               role: AccountRole.dataDelivery
@@ -299,7 +294,7 @@ describe('Accounts', () => {
           ]
         },
         {
-          project_id: "813",
+          project_id: '813',
           roles: [
             {
               role: AccountRole.dataDelivery
@@ -459,7 +454,7 @@ describe('Projects', () => {
       .expect(201).then(({body}: { body: TaskDto }) => {
         tempData.task.id = body.id;
         tempData.mediaItem.uploadURL = body.inputs[0].url;
-        const t = "";
+        const t = '';
       })
   });
 

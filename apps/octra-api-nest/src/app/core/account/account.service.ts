@@ -14,7 +14,7 @@ import {AccountRoleScope} from '@octra/octra-api-types';
 import {removeNullAttributes} from '../../functions';
 import {SHA256} from 'crypto-js';
 import {ConfigService} from '@nestjs/config';
-import {DatabaseService} from "../../database.service";
+import {DatabaseService} from '../../database.service';
 
 @Injectable()
 export class AccountService {
@@ -39,7 +39,7 @@ export class AccountService {
           username
         }
       },
-      relations: ['account_person', "roles"]
+      relations: ['account_person', 'roles']
     });
   }
 
@@ -153,23 +153,30 @@ export class AccountService {
   }
 
   async createAccount(dto: AccountRegisterRequestDto): Promise<AccountEntity> {
-    const role = await this.roleEntityRepository.findOne({
-      where: {
-        label: 'user',
-        scope: 'general'
-      }
-    });
+    return this.databaseService.transaction<AccountEntity>(async (manager) => {
+      const role = await manager.findOne(RoleEntity, {
+        where: {
+          label: 'user',
+          scope: 'general'
+        }
+      });
 
-    const result = await this.accountRepository.save({
-      role_id: role.id,
-      account_person: {
+      let insertResult = await manager.insert(AccountPersonEntity, {
         username: dto.name,
-        password: this.getPasswordHash(dto.password),
-        email: dto.email
-      }
-    });
+        hash: this.getPasswordHash(dto.password),
+        email: dto.email,
+        loginmethod: 'local'
+      });
 
-    return this.accountRepository.findOne(result.id);
+      insertResult = await manager.insert(AccountEntity, {
+        role_id: role.id,
+        account_person_id: insertResult.identifiers[0].id
+      });
+
+      return manager.findOne(AccountEntity, insertResult.identifiers[0].id, {
+        relations: ['account_person', 'roles']
+      });
+    });
   }
 
   private getPasswordHash(password: string): string {

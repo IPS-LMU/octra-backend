@@ -5,19 +5,27 @@ import {StandardEntity, StandardEntityWithTimestamps} from '../../../obj/entitie
 
 @Entity({name: 'account_person'})
 export class AccountPersonEntity extends StandardEntity {
-  @DbAwareColumn()
+  @DbAwareColumn({
+    type: 'text'
+  })
   username?: string;
 
-  @DbAwareColumn()
+  @DbAwareColumn({
+    type: 'text'
+  })
   email?: string;
 
-  @DbAwareColumn()
-  loginmethod: string;
+  @DbAwareColumn({
+    type: 'text'
+  })
+  loginmethod: 'local' | 'shibboleth';
 
   @DbAwareColumn({default: true})
   active: boolean;
 
-  @DbAwareColumn()
+  @DbAwareColumn({
+    type: 'text'
+  })
   hash?: string;
 }
 
@@ -39,7 +47,7 @@ export class AccountEntity extends StandardEntityWithTimestamps {
   })
   @JoinColumn({
     name: 'role_id',
-    referencedColumnName: "id"
+    referencedColumnName: 'id'
   })
   generalRole: RoleEntity;
 
@@ -49,15 +57,22 @@ export class AccountEntity extends StandardEntityWithTimestamps {
   @JoinColumn({referencedColumnName: 'account_id'})
   roles: AccountRoleProjectEntity[];
 
-  @DbAwareColumn()
+  @DbAwareColumn({
+    type: 'date'
+  })
   last_login?: string;
+
+  @DbAwareColumn({
+    type: 'bigint'
+  })
+  account_person_id: string;
 
   @OneToOne(() => AccountPersonEntity, {
     eager: true
   })
   @JoinColumn({
     name: 'account_person_id',
-    referencedColumnName: "id"
+    referencedColumnName: 'id'
   })
   account_person: AccountPersonEntity;
 }
