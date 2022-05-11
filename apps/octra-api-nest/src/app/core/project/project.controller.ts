@@ -1,4 +1,4 @@
-import {Body, Controller, Delete, Get, Param, Post, Put, Req} from '@nestjs/common';
+import {Body, Controller, Delete, Get, Param, Post, Put, Req, UseInterceptors} from '@nestjs/common';
 import {ProjectService} from './project.service';
 import {CombinedRoles} from '../../obj/decorators/combine.decorators';
 import {AccountRole} from '@octra/octra-api-types';
@@ -9,6 +9,7 @@ import {NumericStringValidationPipe} from '../../obj/pipes/numeric-string-valida
 import {ROLES_KEY} from '../../../../role.decorator';
 import {Reflector} from '@nestjs/core';
 import {InternRequest} from '../../obj/types';
+import {ProjectAccessInterceptor} from "../../obj/interceptors/project-access.interceptor";
 
 @ApiTags('Projects')
 @ApiBearerAuth()
@@ -32,9 +33,9 @@ export class ProjectController {
 
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator)
   @Get(':project_id')
+  @UseInterceptors(ProjectAccessInterceptor)
   async getProject(@Param('project_id', NumericStringValidationPipe) id: string, @Req() req: InternRequest): Promise<ProjectDto> {
-    const allowedProjectRoles = this.reflector.get<AccountRole[]>(ROLES_KEY, this.getProject);
-    return removeNullAttributes<ProjectDto>(new ProjectDto(await this.projectService.getProject(id, allowedProjectRoles, req)));
+    return removeNullAttributes<ProjectDto>(new ProjectDto(await this.projectService.getProject(id)));
   }
 
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator)

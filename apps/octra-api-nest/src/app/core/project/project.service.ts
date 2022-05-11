@@ -8,7 +8,7 @@ import {TaskEntity, TaskInputOutputEntity} from './task.entity';
 import {AppService} from '../../app.service';
 import {FileSystemHandler} from '../../obj/filesystem-handler';
 import {DatabaseService} from '../../database.service';
-import {CurrentUser, InternRequest} from '../../obj/types';
+import {CurrentUser} from '../../obj/types';
 import {Reflector} from '@nestjs/core';
 import {checkIfProjectAccessAllowed} from '../../functions';
 
@@ -25,14 +25,10 @@ export class ProjectService {
     return this.projectRepository.find();
   }
 
-  public async getProject(id: string, allowedProjectRoles: string[], req: InternRequest): Promise<ProjectEntity> {
+  public async getProject(id: string): Promise<ProjectEntity> {
     const project = await this.projectRepository.findOne({
       id
     });
-
-    // TODO write interceptor to check project related access
-
-    checkIfProjectAccessAllowed(project, undefined, req.user, allowedProjectRoles);
     return project;
   }
 

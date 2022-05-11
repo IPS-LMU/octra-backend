@@ -21,7 +21,7 @@ import {RolesGuard} from './core/authorization/roles.guard';
 import {AppTokenOriginGuard} from './obj/guards/app-token-origin.guard';
 import {ThrottlerGuard, ThrottlerModule} from '@nestjs/throttler';
 import {ShutdownService} from './shutdown.service';
-import {TASK_ENTITIES} from './core/project/tasks';
+import {TASK_ENTITIES, TasksService} from './core/project/tasks';
 import * as fs from 'fs';
 import {removeNullAttributes} from './functions';
 import {LoggerMiddleware} from './obj/logger.middleware';
@@ -79,6 +79,7 @@ if (config.database.ssl) {
     AppService,
     DatabaseService,
     ShutdownService,
+    TasksService,
     {
       provide: APP_GUARD,
       useClass: AppTokenOriginGuard,
