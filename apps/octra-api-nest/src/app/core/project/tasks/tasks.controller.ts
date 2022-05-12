@@ -9,7 +9,7 @@ import {TaskChangeDto, TaskDto, TaskUploadDto} from './task.dto';
 import {FormDataRequest} from 'nestjs-form-data';
 import {removeNullAttributes} from '../../../functions';
 import {Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, Put, Req} from '@nestjs/common';
-import {NumericStringValidationPipe} from "../../../obj/pipes/numeric-string-validation.pipe";
+import {NumericStringValidationPipe} from '../../../obj/pipes/numeric-string-validation.pipe';
 
 @ApiTags('Tasks')
 @ApiBearerAuth()

@@ -9,11 +9,12 @@ import {NumericStringValidationPipe} from '../../obj/pipes/numeric-string-valida
 import {ROLES_KEY} from '../../../../role.decorator';
 import {Reflector} from '@nestjs/core';
 import {InternRequest} from '../../obj/types';
-import {ProjectAccessInterceptor} from "../../obj/interceptors/project-access.interceptor";
+import {ProjectAccessInterceptor} from '../../obj/interceptors/project-access.interceptor';
 
 @ApiTags('Projects')
 @ApiBearerAuth()
 @Controller('projects')
+@UseInterceptors(ProjectAccessInterceptor)
 export class ProjectController {
 
   constructor(private projectService: ProjectService, private reflector: Reflector) {
@@ -33,7 +34,6 @@ export class ProjectController {
 
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator)
   @Get(':project_id')
-  @UseInterceptors(ProjectAccessInterceptor)
   async getProject(@Param('project_id', NumericStringValidationPipe) id: string, @Req() req: InternRequest): Promise<ProjectDto> {
     return removeNullAttributes<ProjectDto>(new ProjectDto(await this.projectService.getProject(id)));
   }

@@ -1,12 +1,12 @@
 import {Module} from '@nestjs/common';
 import {GuidelinesController} from './guidelines.controller';
 import {GuidelinesService} from './guidelines.service';
-import {AppService} from '../../../app.service';
+import {GlobalModule} from '../../../global.module';
 
 @Module({
-  imports: [],
+  imports: [GlobalModule],
   controllers: [GuidelinesController],
-  providers: [GuidelinesService, AppService],
+  providers: [GuidelinesService],
   exports: [GuidelinesService]
 })
 export class GuidelinesModule {

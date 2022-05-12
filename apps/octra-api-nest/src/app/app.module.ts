@@ -1,6 +1,5 @@
 import {MiddlewareConsumer, Module} from '@nestjs/common';
 import {AppController} from './app.controller';
-import {AppService} from './app.service';
 import {AuthModule} from './core/authentication';
 import {ACCOUNT_ENTITIES, AccountModule} from './core/account/account.module';
 import {AppTokenController} from './core/app-token';
@@ -21,12 +20,12 @@ import {RolesGuard} from './core/authorization/roles.guard';
 import {AppTokenOriginGuard} from './obj/guards/app-token-origin.guard';
 import {ThrottlerGuard, ThrottlerModule} from '@nestjs/throttler';
 import {ShutdownService} from './shutdown.service';
-import {TASK_ENTITIES, TasksService} from './core/project/tasks';
+import {TASK_ENTITIES} from './core/project/tasks';
 import * as fs from 'fs';
 import {removeNullAttributes} from './functions';
 import {LoggerMiddleware} from './obj/logger.middleware';
-import {DatabaseService} from './database.service';
 import {AnnotationModule} from './core/project/annotations/annotation.module';
+import {GlobalModule} from './global.module';
 
 const config = Configuration.getInstance();
 
@@ -72,14 +71,11 @@ if (config.database.ssl) {
     ThrottlerModule.forRoot({
       ttl: 60,
       limit: 10,
-    })
+    }),
+    GlobalModule
   ],
   controllers: [AppController, AppTokenController, FilesController, ProjectController, ToolController],
   providers: [
-    AppService,
-    DatabaseService,
-    ShutdownService,
-    TasksService,
     {
       provide: APP_GUARD,
       useClass: AppTokenOriginGuard,
@@ -95,7 +91,8 @@ if (config.database.ssl) {
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard
-    }
+    },
+    ShutdownService
   ],
 })
 export class AppModule {

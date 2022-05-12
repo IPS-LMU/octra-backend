@@ -1,14 +1,13 @@
-import {Module} from '@nestjs/common';
+import {forwardRef, Module} from '@nestjs/common';
 import {ProjectController} from './project.controller';
 import {TaskEntity, TaskInputOutputEntity} from './task.entity';
 import {TypeOrmModule} from '@nestjs/typeorm';
 import {FileProjectEntity, ProjectEntity} from './project.entity';
 import {ProjectService} from './project.service';
 import {ACCOUNT_ENTITIES} from '../account/account.module';
-import {AppService} from '../../app.service';
 import {GuidelinesModule} from './guidelines';
 import {TasksModule} from './tasks';
-import {DatabaseService} from "../../database.service";
+import {GlobalModule} from '../../global.module';
 
 export const PROJECT_ENTITIES = [TaskEntity, ProjectEntity, FileProjectEntity, TaskInputOutputEntity];
 
@@ -16,11 +15,12 @@ export const PROJECT_ENTITIES = [TaskEntity, ProjectEntity, FileProjectEntity, T
   imports: [
     TypeOrmModule.forFeature([...ACCOUNT_ENTITIES, ...PROJECT_ENTITIES]),
     GuidelinesModule,
-    TasksModule
+    forwardRef(() => TasksModule),
+    GlobalModule
   ],
   controllers: [ProjectController],
-  providers: [ProjectService, AppService, DatabaseService],
-  exports: [ProjectService]
+  providers: [ProjectService],
+  exports: [ProjectService, TasksModule, TypeOrmModule]
 })
 export class ProjectModule {
 }

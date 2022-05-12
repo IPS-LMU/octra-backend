@@ -1,8 +1,6 @@
 import {Module} from '@nestjs/common';
 import {TasksService} from './tasks.service';
-import {AppService} from '../../../app.service';
 import {TasksController} from './tasks.controller';
-import {ConfigService} from '@nestjs/config';
 import {Configuration} from '../../../config/configuration';
 import * as path from 'path';
 import {TypeOrmModule} from '@nestjs/typeorm';
@@ -10,7 +8,7 @@ import {TaskEntity} from '../task.entity';
 import {FILE_ENTITIES} from '../../files/files.module';
 import {NestjsFormDataModule} from 'nestjs-form-data';
 import {FileHashStorage} from '../../../obj/file-hash-storage';
-import {DatabaseService} from "../../../database.service";
+import {GlobalModule} from '../../../global.module';
 
 export const TASK_ENTITIES = [TaskEntity];
 const config = Configuration.getInstance();
@@ -21,11 +19,12 @@ const config = Configuration.getInstance();
     NestjsFormDataModule.config({
       storage: FileHashStorage,
       fileSystemStoragePath: path.join(config.api.files.uploadPath, 'tmp')
-    })
+    }),
+    GlobalModule
   ],
   controllers: [TasksController],
-  providers: [TasksService, AppService, ConfigService, DatabaseService],
-  exports: [TasksService]
+  providers: [TasksService],
+  exports: [TasksService, TypeOrmModule]
 })
 export class TasksModule {
 }
