@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   displayName: 'octra-db',
 
   globals: {
@@ -12,5 +12,5 @@ module.exports = {
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   coverageDirectory: '../../coverage/libs/octra-db',
   testEnvironment: 'node',
-  preset: '../../jest.preset.ts',
+  preset: '../../jest.preset.js',
 };

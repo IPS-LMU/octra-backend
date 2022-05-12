@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   displayName: 'octra-api-nest-e2e',
 
   globals: {
@@ -13,5 +13,5 @@ module.exports = {
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../coverage/apps/octra-api-nest-e2e',
-  preset: '../../jest.preset.ts',
+  preset: '../../jest.preset.js',
 };

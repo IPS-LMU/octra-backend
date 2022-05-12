@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   displayName: 'octra-api',
 
   globals: {
@@ -13,5 +13,5 @@ module.exports = {
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../coverage/apps/octra-api',
   testEnvironment: 'node',
-  preset: '../../jest.preset.ts',
+  preset: '../../jest.preset.js',
 };
