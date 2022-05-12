@@ -5,8 +5,8 @@ import {WriteFileOptions} from 'fs-extra';
 import * as pathFunctions from 'path';
 import * as mime from 'mime';
 import * as mm from 'music-metadata';
-import {AudioFileMetaData} from '@octra/db';
 import {removeNullAttributes} from '../functions';
+import {AudioFileMetaData} from '@octra/octra-api-types';
 
 export class FileSystemHandler {
   static mkDir(path) {

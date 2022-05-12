@@ -1,6 +1,6 @@
 import {StandardWithTimeDto} from '../standard.dto';
-import {AudioFileMetaData} from '@octra/db';
 import {OmitType} from '@nestjs/swagger';
+import {AudioFileMetaData} from '@octra/octra-api-types';
 
 export class FileDto extends StandardWithTimeDto {
   url: string;

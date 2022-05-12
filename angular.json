@@ -24,7 +24,9 @@
         },
         "test": {
           "builder": "@nrwl/jest:jest",
-          "outputs": ["coverage/libs/ngx-octra-api"],
+          "outputs": [
+            "coverage/libs/ngx-octra-api"
+          ],
           "options": {
             "jestConfig": "libs/ngx-octra-api/jest.config.ts",
             "passWithNoTests": true
@@ -38,69 +40,9 @@
               "libs/ngx-octra-api/src/**/*.html"
             ]
           },
-          "outputs": ["{options.outputFile}"]
-        }
-      },
-      "tags": []
-    },
-    "octra-api": {
-      "root": "apps/octra-api",
-      "sourceRoot": "apps/octra-api/src",
-      "projectType": "application",
-      "architect": {
-        "build": {
-          "builder": "@nrwl/node:webpack",
-          "outputs": ["{options.outputPath}"],
-          "options": {
-            "outputPath": "dist/apps/octra-api",
-            "main": "apps/octra-api/src/main.ts",
-            "tsConfig": "apps/octra-api/tsconfig.app.json",
-            "assets": [
-              "apps/octra-api/src/views",
-              "apps/octra-api/src/static",
-              "apps/octra-api/src/config.json"
-            ]
-          },
-          "configurations": {
-            "production": {
-              "optimization": true,
-              "extractLicenses": true,
-              "inspect": false,
-              "fileReplacements": [
-                {
-                  "replace": "apps/octra-api/src/environments/environment.ts",
-                  "with": "apps/octra-api/src/environments/environment.prod.ts"
-                }
-              ]
-            }
-          }
-        },
-        "serve": {
-          "builder": "@nrwl/node:node",
-          "options": {
-            "buildTarget": "octra-api:build"
-          }
-        },
-        "lint": {
-          "builder": "@nrwl/linter:eslint",
-          "options": {
-            "lintFilePatterns": ["apps/octra-api/**/*.ts"]
-          },
           "outputs": [
             "{options.outputFile}"
           ]
-        },
-        "test": {
-          "builder": "@nrwl/jest:jest",
-          "outputs": [
-            "coverage/apps/octra-api"
-          ],
-          "options": {
-            "jestConfig": "apps/octra-api/jest.config.ts",
-            "passWithNoTests": false,
-            "bail": true,
-            "runInBand": true
-          }
         }
       },
       "tags": []
@@ -258,6 +200,21 @@
       "sourceRoot": "libs/octra-api-types/src",
       "projectType": "library",
       "architect": {
+        "build": {
+          "builder": "@nrwl/js:tsc",
+          "outputs": [
+            "{options.outputPath}"
+          ],
+          "options": {
+            "outputPath": "dist/libs/octra-api-types",
+            "tsConfig": "libs/octra-api-types/tsconfig.lib.json",
+            "packageJson": "libs/octra-api-types/package.json",
+            "main": "libs/octra-api-types/src/index.ts",
+            "assets": [
+              "libs/octra-api-types/*.md"
+            ]
+          }
+        },
         "lint": {
           "builder": "@nrwl/linter:eslint",
           "outputs": [
@@ -371,11 +328,15 @@
               "apps/octra-backend/src/**/*.html"
             ]
           },
-          "outputs": ["{options.outputFile}"]
+          "outputs": [
+            "{options.outputFile}"
+          ]
         },
         "test": {
           "builder": "@nrwl/jest:jest",
-          "outputs": ["coverage/apps/octra-backend"],
+          "outputs": [
+            "coverage/apps/octra-backend"
+          ],
           "options": {
             "jestConfig": "apps/octra-backend/jest.config.ts",
             "passWithNoTests": true
@@ -405,51 +366,19 @@
         "lint": {
           "builder": "@nrwl/linter:eslint",
           "options": {
-            "lintFilePatterns": ["apps/octra-backend-e2e/**/*.{js,ts}"]
+            "lintFilePatterns": [
+              "apps/octra-backend-e2e/**/*.{js,ts}"
+            ]
           },
-          "outputs": ["{options.outputFile}"]
+          "outputs": [
+            "{options.outputFile}"
+          ]
         }
       },
       "tags": [],
-      "implicitDependencies": ["octra-backend"]
-    },
-    "octra-db": {
-      "root": "libs/octra-db",
-      "sourceRoot": "libs/octra-db/src",
-      "projectType": "library",
-      "architect": {
-        "lint": {
-          "builder": "@nrwl/linter:eslint",
-          "options": {
-            "lintFilePatterns": ["libs/octra-db/**/*.ts"]
-          },
-          "outputs": ["{options.outputFile}"]
-        },
-        "test": {
-          "builder": "@nrwl/jest:jest",
-          "outputs": ["coverage/libs/octra-db"],
-          "options": {
-            "jestConfig": "libs/octra-db/jest.config.ts",
-            "passWithNoTests": true
-          }
-        },
-        "build": {
-          "builder": "@nrwl/js:tsc",
-          "outputs": [
-            "{options.outputPath}"
-          ],
-          "options": {
-            "outputPath": "dist/libs/octra-db",
-            "tsConfig": "libs/octra-db/tsconfig.lib.json",
-            "packageJson": "libs/octra-db/package.json",
-            "main": "libs/octra-db/src/index.ts",
-            "assets": [
-              "libs/octra-db/*.md"
-            ]
-          }
-        }
-      },
-      "tags": []
+      "implicitDependencies": [
+        "octra-backend"
+      ]
     }
   }
 }

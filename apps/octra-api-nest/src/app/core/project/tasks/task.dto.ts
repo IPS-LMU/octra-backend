@@ -22,8 +22,7 @@ import {
 import {AnnotJSONType, TranscriptDto, TranscriptType} from '../annotations/transcript.dto';
 import {TaskEntity} from '../task.entity';
 import {removeProperties} from '../../../functions';
-import {TaskInputOutputCreatorType, TaskStatus} from '@octra/octra-api-types';
-import {AudioFileMetaData} from '@octra/db';
+import {AudioFileMetaData, TaskInputOutputCreatorType, TaskStatus} from '@octra/octra-api-types';
 import {StandardWithTimeDto} from '../../standard.dto';
 
 export enum TaskType {

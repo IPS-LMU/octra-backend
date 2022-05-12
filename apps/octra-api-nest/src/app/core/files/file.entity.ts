@@ -1,8 +1,8 @@
 import {Entity, JoinColumn, ManyToOne} from 'typeorm';
 import {StandardEntityWithTimestamps} from '../../obj/entities';
 import {DbAwareColumn} from '../../obj/decorators';
-import {AudioFileMetaData} from '@octra/db';
 import {AccountEntity} from '../account/entities/account.entity';
+import {AudioFileMetaData} from '@octra/octra-api-types';
 
 @Entity({name: 'file'})
 export class FileEntity extends StandardEntityWithTimestamps {

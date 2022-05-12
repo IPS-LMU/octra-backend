@@ -20,9 +20,8 @@ import {
 import {AccountRole} from '@octra/octra-api-types';
 import {ToolCreateRequestDto, ToolDto} from '../../octra-api-nest/src/app/core/tool/tool.dto';
 import {GuidelinesDto} from '../../octra-api-nest/src/app/core/project/guidelines/guidelines.dto';
-import {TaskDto} from '../../octra-api-nest/src/app/core/project/tasks';
+import {TaskDto, TaskProperties} from '../../octra-api-nest/src/app/core/project/tasks';
 import * as fs from 'fs';
-import {TaskProperties} from '@octra/db';
 import {AnnotJSONType, TranscriptDto} from '../../octra-api-nest/src/app/core/project/annotations/transcript.dto';
 import {SaveAnnotationDto} from '../../octra-api-nest/src/app/core/project/annotations/annotation.dto';
 
