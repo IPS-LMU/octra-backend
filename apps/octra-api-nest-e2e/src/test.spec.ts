@@ -6,6 +6,7 @@ import {AppTokenDto} from '../../octra-api-nest/src/app/core/app-token/app-token
 import {BadRequestException, ValidationPipe} from '@nestjs/common';
 import {ValidationError} from 'class-validator';
 import {
+  AccountCreateRequestDto,
   AccountDto,
   AccountRegisterRequestDto,
   AssignRoleDto,
@@ -184,6 +185,24 @@ describe('OCTRA Nest API (e2e)', () => {
         }).catch((e) => {
           console.log(e)
         })
+    });
+
+
+    it('/account/ (POST)', () => {
+      tempData.user.name = `TestAccount_${Date.now()}_delivery`;
+      tempData.user.email = `test_${Date.now()}_delivery@email.com`;
+
+      return authPost('/account', {
+        'name': tempData.user.name,
+        'password': 'Test1234',
+        'email': tempData.user.email,
+        role: 'data_delivery'
+      } as AccountCreateRequestDto)
+        .expect(201).then(({body}: { body: AccountDto }) => {
+          if (typeof body !== 'object') {
+            throw new Error('Body must be of type object.');
+          }
+        });
     });
 
 
@@ -663,5 +682,9 @@ describe('Projects', () => {
       removeAllReferences: true,
       removeProjectFiles: true
     } as ProjectRemoveRequestDto).expect(200);
+  });
+
+  it('/account/:id (DELETE)', () => {
+    return authDelete(`/account/${tempData.user.id}`, undefined).expect(200);
   });
 });

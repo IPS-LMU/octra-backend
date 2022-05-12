@@ -15,7 +15,13 @@ import {
 import {Request} from 'express';
 import {ApiBearerAuth, ApiResponse, ApiTags} from '@nestjs/swagger';
 import {AccountRole} from '@octra/octra-api-types';
-import {AccountDto, AccountRegisterRequestDto, AssignRoleDto, ChangePasswordDto} from './account.dto';
+import {
+  AccountCreateRequestDto,
+  AccountDto,
+  AccountRegisterRequestDto,
+  AssignRoleDto,
+  ChangePasswordDto
+} from './account.dto';
 import {CombinedRoles} from '../../obj/decorators/combine.decorators';
 import {AccountService} from './account.service';
 import {InternRequest} from '../../obj/types';
@@ -99,9 +105,8 @@ export class AccountController {
 
   @CombinedRoles(AccountRole.administrator)
   @Delete(':id')
-  removeUser(@Param('id', NumericStringValidationPipe) id: string): string {
-    // TODO implement function
-    return 'Implementation needed';
+  removeUser(@Param('id', NumericStringValidationPipe) id: string): Promise<void> {
+    return this.accountService.removeAccount(id);
   }
 
   /**
@@ -111,9 +116,9 @@ export class AccountController {
    */
   @CombinedRoles(AccountRole.administrator)
   @Post('')
-  createAccount(): string {
-    // TODO implement function
-    return 'Implementation needed';
+  async createAccount(@Body() dto: AccountCreateRequestDto): Promise<AccountDto> {
+    const result = await this.accountService.createAccount(dto);
+    return removeNullAttributes(new AccountDto(result));
   }
 
   @UseInterceptors(ClassSerializerInterceptor)

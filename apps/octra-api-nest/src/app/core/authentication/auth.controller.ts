@@ -1,11 +1,11 @@
-import {Body, Controller, Post, Req, UseFilters, UseGuards} from '@nestjs/common';
+import {Controller, Post, Req, UseFilters, UseGuards} from '@nestjs/common';
 import {AuthService} from './auth.service';
 import {Public} from '../authorization/public.decorator';
 import {LocalAuthGuard} from './local-auth.guard';
-import {AuthDto, AuthLoginDto, AuthRegisterDto} from './auth.dto';
+import {AuthDto, AuthLoginDto} from './auth.dto';
 import {ApiBody, ApiExtraModels, ApiTags} from '@nestjs/swagger';
 import {AccountEntity} from '../account/entities/account.entity';
-import {HttpExceptionFilter} from "../../obj/filters/http-exception.filter";
+import {HttpExceptionFilter} from '../../obj/filters/http-exception.filter';
 
 @ApiTags('Authentication')
 @ApiExtraModels(AuthLoginDto)
@@ -55,12 +55,5 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   login(@Req() req: { user: AccountEntity }): Promise<AuthDto> {
     return this.authService.login(req.user);
-  }
-
-  @Public()
-  @Post('register')
-  register(@Body() registerUserDto: AuthRegisterDto): string {
-    // TODO implement function
-    return 'Implementation needed';
   }
 }

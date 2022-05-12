@@ -1,5 +1,5 @@
 import {StandardWithTimeDto} from '../standard.dto';
-import {IsNotEmpty} from 'class-validator';
+import {IsEnum, IsNotEmpty} from 'class-validator';
 import {AccountEntity} from './entities/account.entity';
 import {Transform, Type} from 'class-transformer';
 import {AccountRoleProjectEntity, RoleEntity} from './entities/account-role-project.entity';
@@ -125,4 +125,10 @@ export class AccountRegisterRequestDto extends StandardWithTimeDto {
   @IsNotEmpty()
   password: string;
   email: string;
+}
+
+export class AccountCreateRequestDto extends AccountRegisterRequestDto {
+  @IsNotEmpty()
+  @IsEnum(AccountRole)
+  role: AccountRole;
 }

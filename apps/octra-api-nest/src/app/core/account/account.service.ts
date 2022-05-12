@@ -4,6 +4,7 @@ import {InjectRepository} from '@nestjs/typeorm';
 import {AccountEntity, AccountPersonEntity} from './entities/account.entity';
 import {AccountRoleProjectEntity, RoleEntity} from './entities/account-role-project.entity';
 import {
+  AccountCreateRequestDto,
   AccountRegisterRequestDto,
   AssignAccountRoleDto,
   AssignRoleDto,
@@ -147,16 +148,24 @@ export class AccountService {
   }
 
   async removeAccount(id: string): Promise<void> {
-    return this.databaseService.transaction<void>(async () => {
-
-    })
+    return this.databaseService.transaction<void>(async (manager) => {
+      const account = await manager.findOne(AccountEntity, id);
+      await manager.update(AccountEntity, {
+        id
+      }, {
+        account_person_id: null
+      });
+      await manager.delete(AccountPersonEntity, {
+        id: account.account_person_id
+      });
+    });
   }
 
-  async createAccount(dto: AccountRegisterRequestDto): Promise<AccountEntity> {
+  async createAccount(dto: AccountRegisterRequestDto | AccountCreateRequestDto): Promise<AccountEntity> {
     return this.databaseService.transaction<AccountEntity>(async (manager) => {
       const role = await manager.findOne(RoleEntity, {
         where: {
-          label: 'user',
+          label: (dto instanceof AccountRegisterRequestDto) ? 'user' : (dto as AccountCreateRequestDto).role,
           scope: 'general'
         }
       });
