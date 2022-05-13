@@ -47,8 +47,8 @@ export class TasksService {
     const inputs = body.inputs;
     const mediaFile = inputs?.find(a => a.mimetype === 'audio/wave');
     const transcriptFile = inputs?.find(a => a.mimetype === 'application/json' || a.mimetype === 'text/plain');
-    const taskProperties: TaskProperties = body?.properties;
-
+    let taskProperties: TaskProperties = body?.properties;
+    taskProperties = (taskProperties && typeof taskProperties === 'string') ? JSON.parse(taskProperties as any) : taskProperties;
     if (!mediaFile && !taskProperties.media?.url) {
       await this.removeTempFiles(inputs);
       throw new HttpException('You have to either upload an audio file or set an url in properties.media.url.', HttpStatus.BAD_REQUEST);

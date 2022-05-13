@@ -97,7 +97,7 @@ export class AccountDto extends StandardWithTimeDto {
 
     newObj = {
       ...newObj,
-      ...removeProperties(partial.account_person, ['id']),
+      ...removeProperties(partial.account_person, ['id', 'hash']),
       projectRoles: partial.roles.map(a => removeProperties(new RoleDto(a), ['scope', 'id']))
     }
     // add transformation if account person doesnt exist

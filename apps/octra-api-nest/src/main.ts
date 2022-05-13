@@ -5,6 +5,7 @@
 import {version} from '../package.json'
 import {Logger} from '@nestjs/common';
 import {NestFactory} from '@nestjs/core';
+import * as bodyParser from 'body-parser';
 
 import {AppModule} from './app/app.module';
 import {ConfigService} from '@nestjs/config';
@@ -28,6 +29,9 @@ async function bootstrap() {
   app.use(helmet({
     crossOriginEmbedderPolicy: false
   }));
+  app.use(bodyParser.json({limit: '50mb'}));
+  app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+
   const port = config.port;
 
   if (config.reference.enabled) {
