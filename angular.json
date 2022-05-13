@@ -379,6 +379,68 @@
       "implicitDependencies": [
         "octra-backend"
       ]
+    },
+    "octra-cli": {
+      "root": "apps/octra-cli",
+      "sourceRoot": "apps/octra-cli/src",
+      "projectType": "application",
+      "architect": {
+        "build": {
+          "builder": "@nrwl/node:webpack",
+          "outputs": [
+            "{options.outputPath}"
+          ],
+          "options": {
+            "outputPath": "dist/apps/octra-cli",
+            "main": "apps/octra-cli/src/main.ts",
+            "tsConfig": "apps/octra-cli/tsconfig.app.json",
+            "assets": [
+              "apps/octra-cli/src/assets"
+            ]
+          },
+          "configurations": {
+            "production": {
+              "optimization": true,
+              "extractLicenses": true,
+              "inspect": false,
+              "fileReplacements": [
+                {
+                  "replace": "apps/octra-cli/src/environments/environment.ts",
+                  "with": "apps/octra-cli/src/environments/environment.prod.ts"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "builder": "@nrwl/node:node",
+          "options": {
+            "buildTarget": "octra-cli:build"
+          }
+        },
+        "lint": {
+          "builder": "@nrwl/linter:eslint",
+          "outputs": [
+            "{options.outputFile}"
+          ],
+          "options": {
+            "lintFilePatterns": [
+              "apps/octra-cli/**/*.ts"
+            ]
+          }
+        },
+        "test": {
+          "builder": "@nrwl/jest:jest",
+          "outputs": [
+            "coverage/apps/octra-cli"
+          ],
+          "options": {
+            "jestConfig": "apps/octra-cli/jest.config.ts",
+            "passWithNoTests": true
+          }
+        }
+      },
+      "tags": []
     }
   }
 }

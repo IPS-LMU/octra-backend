@@ -1,0 +1,25 @@
+{
+  "name": "octra-cli",
+  "version": "0.0.1",
+  "description": "OCTRA CLI for servers",
+  "main": "main.js",
+  "author": "Julian Pömp, Christoph Draxler; Institut für Phonetik und Sprachverarbeitung, LMU München",
+  "license": "MIT",
+  "private": true,
+  "repository": {
+    "url": "https://github.com/IPS-LMU/octra-backend"
+  },
+  "pkg": {
+    "outputPath": "./dist/builds",
+    "output": "octra-cli",
+    "assets": [
+      "../../../node_modules/nestjs-redoc/views/*",
+      "src/assets/**/*"
+    ],
+    "targets": [
+      "node12-macos-x64",
+      "node12-win-x64",
+      "node12-linux-x64"
+    ]
+  }
+}
