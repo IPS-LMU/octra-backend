@@ -624,3 +624,7 @@ apps/shibboleth-php-authenticator/authShibboleth.config.php
 /data/
 /extern/
 /apps/octra-api-nest/src/config.json
+octra_api_easy_local.cfg
+octra_api_easy.cfg
+EinsZweiDrei.txt
+EinsZweiDrei.wav
