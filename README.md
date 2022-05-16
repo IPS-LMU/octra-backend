@@ -50,5 +50,14 @@ Angular OCTRA-API library
 <a href="https://github.com/IPS-LMU/octra-backend/tree/main/libs/ngx-octra-api/">more information</a>
 </td>
 </tr>
+<tr>
+<td>
+Angular OCTRA-CLI
+</td>
+<td>CLI for server side administration using the terminal. This tool is needed for upgrade/installation of the DB.</td>
+<td>
+<a href="https://github.com/IPS-LMU/octra-backend/tree/main/libs/ngx-octra-cli/">more information</a>
+</td>
+</tr>
 </tbody>
 </table>
