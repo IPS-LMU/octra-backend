@@ -386,7 +386,7 @@
       "projectType": "application",
       "architect": {
         "build": {
-          "builder": "@nrwl/node:webpack",
+          "builder": "@nrwl/node:tsc",
           "outputs": [
             "{options.outputPath}"
           ],
@@ -395,7 +395,7 @@
             "main": "apps/octra-cli/src/main.ts",
             "tsConfig": "apps/octra-cli/tsconfig.app.json",
             "assets": [
-              "apps/octra-cli/src/assets"
+              "apps/octra-cli/src/migrations"
             ]
           },
           "configurations": {

@@ -1,12 +1,15 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "../../dist/out-tsc",
+    "outDir": "../../dist",
+    "target": "ES2020",
     "module": "commonjs",
     "types": [
       "node"
     ],
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "sourceMap": false,
+    "removeComments": true
   },
   "exclude": [
     "jest.config.ts",
@@ -14,6 +17,7 @@
     "**/*.test.ts"
   ],
   "include": [
-    "**/*.ts"
+    "**/*.ts",
+    "package.json"
   ]
 }

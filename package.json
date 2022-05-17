@@ -22,7 +22,7 @@
     "deploy:api-nest": "npm run package:api-nest && sh ./deploy_dev.sh",
     "package:api": "nx build octra-api --generatePackageJson --prod && node ./apps/octra-api/src/app.prepare.js && pkg ./dist/apps/octra-api/main.js -c ./dist/apps/octra-api/package.json",
     "package:api-nest": "nx build octra-api-nest --generatePackageJson --prod && node ./apps/octra-api-nest/src/app.prepare.js && pkg ./dist/apps/octra-api-nest/main.js -c ./dist/apps/octra-api-nest/package.json",
-    "package:cli": "nx build octra-cli --generatePackageJson --prod && pkg ./dist/apps/octra-cli/main.js -c ./dist/apps/octra-cli/package.json",
+    "package:cli": "tsc -p apps/octra-cli/tsconfig.app.json && pkg ./dist/apps/octra-cli/src/main.js -c ./dist/apps/octra-cli/package.json",
     "test": "ng test",
     "lint": "nx workspace-lint && ng lint",
     "e2e": "ng e2e",
@@ -108,9 +108,11 @@
     "request": "^2.88.2",
     "rxjs": "^7.5.5",
     "swagger-ui-express": "^4.3.0",
+    "ts-node": "^10.7.0",
     "tslib": "^2.0.0",
     "typeorm": "^0.2.45",
     "uid": "^2.0.0",
+    "yargs": "^17.5.1",
     "zone.js": "0.11.4"
   },
   "devDependencies": {
@@ -149,6 +151,7 @@
     "@types/passport-jwt": "^3.0.6",
     "@types/passport-local": "^1.0.34",
     "@types/pg": "^7.14.11",
+    "@types/yargs": "^17.0.10",
     "@typescript-eslint/eslint-plugin": "5.18.0",
     "@typescript-eslint/parser": "5.18.0",
     "cypress": "^7.3.0",
@@ -167,7 +170,6 @@
     "prettier": "2.5.1",
     "supertest": "^6.2.1",
     "ts-jest": "27.1.4",
-    "ts-node": "~9.1.1",
     "typescript": "4.6.3"
   }
 }
