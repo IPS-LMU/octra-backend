@@ -37,7 +37,7 @@ const argv = yargs
     await runScript(`${typeORMPath} schema:drop`, false);
     console.log("Removed Database.");
     console.log("Initialize database...");
-    await runScript(`${typeORMPath} migration:run`, false);
+    await runScript(`${typeORMPath} migration:run`, true);
     console.log("Installation complete.");
   })
   .command('currDir', "Install a new Octra-DB.", (args) => {

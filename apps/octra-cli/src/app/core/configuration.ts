@@ -3,7 +3,7 @@ import {dirname, join} from 'path';
 import {Validator} from 'jsonschema';
 import {AppConfigurationSchema} from './app-config.schema';
 
-export type DBType = 'postgres'; // currently PostgreSQL only
+export type DBType = 'postgres' | 'sqlite';
 
 export interface IAppConfiguration {
   version: string;
@@ -64,6 +64,7 @@ export class Configuration {
 
   public static getInstance() {
     if (!this.configuration) {
+      console.log("READ CONFIG!");
       let configPath = '';
       configPath = join(dirname(process.execPath), 'config.json');
       console.log(`Load config file from ${configPath}...`)
