@@ -1,5 +1,4 @@
 import * as yargs from "yargs";
-
 import {exec} from "child_process";
 import * as fs from "fs";
 import * as Path from "path";

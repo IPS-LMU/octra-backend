@@ -12,9 +12,9 @@
     "allowSyntheticDefaultImports": true
   },
   "exclude": [
+    "jest.config.ts",
     "**/*.spec.ts",
-    "**/*.test.ts",
-    "jest.config.ts"
+    "**/*.test.ts"
   ],
   "include": [
     "**/*.ts"

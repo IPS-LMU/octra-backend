@@ -1,0 +1,45 @@
+{
+  "projectType": "library",
+  "sourceRoot": "libs/ngx-octra-api/src",
+  "prefix": "octra-backend",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/angular:ng-packagr-lite",
+      "outputs": [
+        "dist/libs/ngx-octra-api"
+      ],
+      "options": {
+        "project": "libs/ngx-octra-api/ng-package.json"
+      },
+      "configurations": {
+        "production": {
+          "tsConfig": "libs/ngx-octra-api/tsconfig.lib.prod.json"
+        },
+        "development": {
+          "tsConfig": "libs/ngx-octra-api/tsconfig.lib.json"
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": [
+        "coverage/libs/ngx-octra-api"
+      ],
+      "options": {
+        "jestConfig": "libs/ngx-octra-api/jest.config.ts",
+        "passWithNoTests": true
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "options": {
+        "lintFilePatterns": [
+          "libs/ngx-octra-api/**/*.ts",
+          "libs/ngx-octra-api/**/*.html"
+        ]
+      }
+    }
+  },
+  "tags": []
+}

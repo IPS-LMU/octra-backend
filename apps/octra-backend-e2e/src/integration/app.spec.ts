@@ -1,4 +1,4 @@
-import { getGreeting } from '../support/app.po';
+import {getGreeting} from '../support/app.po';
 
 describe('octra-backend', () => {
   beforeEach(() => cy.visit('/'));
@@ -8,6 +8,6 @@ describe('octra-backend', () => {
     cy.login('my-email@something.com', 'myPassword');
 
     // Function helper example, see `../support/app.po.ts` file
-    getGreeting().contains('Welcome to octra-backend!');
+    getGreeting().contains('Welcome octra-backend');
   });
 });

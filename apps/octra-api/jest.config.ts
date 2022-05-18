@@ -1,10 +1,10 @@
+/* eslint-disable */
 export default {
-  displayName: 'octra-api-nest-e2e',
-
+  displayName: 'octra-api',
+  preset: '../../jest.preset.js',
   globals: {
     'ts-jest': {
       tsconfig: '<rootDir>/tsconfig.spec.json',
-      bail: 1,
     },
   },
   testEnvironment: 'node',
@@ -12,6 +12,5 @@ export default {
     '^.+\\.[tj]s$': 'ts-jest',
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
-  coverageDirectory: '../../coverage/apps/octra-api-nest-e2e',
-  preset: '../../jest.preset.js',
+  coverageDirectory: '../../coverage/apps/octra-api',
 };

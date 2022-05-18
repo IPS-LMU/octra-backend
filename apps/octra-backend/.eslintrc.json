@@ -19,7 +19,7 @@
           "error",
           {
             "type": "attribute",
-            "prefix": "octraBackend",
+            "prefix": "octraBackend2",
             "style": "camelCase"
           }
         ],

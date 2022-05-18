@@ -1,8 +1,9 @@
 import {Test, TestingModule} from '@nestjs/testing';
 import * as request from 'supertest';
-import {AppModule} from '../../octra-api-nest/src/app/app.module';
-import {AuthDto} from '../../octra-api-nest/src/app/core/authentication/auth.dto';
-import {AppTokenDto} from '../../octra-api-nest/src/app/core/app-token/app-token.dto';
+import * as fs from 'fs';
+import {AppModule} from '../../octra-api/src/app/app.module';
+import {AuthDto} from '../../octra-api/src/app/core/authentication/auth.dto';
+import {AppTokenDto} from '../../octra-api/src/app/core/app-token/app-token.dto';
 import {BadRequestException, ValidationPipe} from '@nestjs/common';
 import {ValidationError} from 'class-validator';
 import {
@@ -11,19 +12,18 @@ import {
   AccountRegisterRequestDto,
   AssignRoleDto,
   ChangePasswordDto
-} from '../../octra-api-nest/src/app/core/account/account.dto';
+} from '../../octra-api/src/app/core/account/account.dto';
 import {
   ProjectAssignRolesRequestDto,
   ProjectRemoveRequestDto,
   ProjectRequestDto
-} from '../../octra-api-nest/src/app/core/project/project.dto';
+} from '../../octra-api/src/app/core/project/project.dto';
 import {AccountRole} from '@octra/octra-api-types';
-import {ToolCreateRequestDto, ToolDto} from '../../octra-api-nest/src/app/core/tool/tool.dto';
-import {GuidelinesDto} from '../../octra-api-nest/src/app/core/project/guidelines/guidelines.dto';
-import {TaskDto, TaskProperties} from '../../octra-api-nest/src/app/core/project/tasks';
-import * as fs from 'fs';
-import {AnnotJSONType, TranscriptDto} from '../../octra-api-nest/src/app/core/project/annotations/transcript.dto';
-import {SaveAnnotationDto} from '../../octra-api-nest/src/app/core/project/annotations/annotation.dto';
+import {ToolCreateRequestDto, ToolDto} from '../../octra-api/src/app/core/tool/tool.dto';
+import {TaskDto, TaskProperties} from '../../octra-api/src/app/core/project/tasks';
+import {AnnotJSONType, TranscriptDto} from '../../octra-api/src/app/core/project/annotations/transcript.dto';
+import {SaveAnnotationDto} from '../../octra-api/src/app/core/project/annotations/annotation.dto';
+import {GuidelinesDto} from 'apps/octra-api/src/app/core/project/guidelines/guidelines.dto';
 
 const tempData = {
   apptoken: {
