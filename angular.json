@@ -2,12 +2,13 @@
   "$schema": "./node_modules/nx/schemas/workspace-schema.json",
   "version": 2,
   "projects": {
+    "api-types": "libs/api-types",
+    "cli": "libs/cli",
     "ngx-octra-api": "libs/ngx-octra-api",
-    "octra-api": "apps/octra-api",
-    "octra-api-e2e": "apps/octra-api-e2e",
-    "octra-api-types": "libs/octra-api-types",
-    "octra-backend": "apps/octra-backend",
-    "octra-backend-e2e": "apps/octra-backend-e2e",
-    "octra-cli": "libs/octra-cli"
+    "api": "apps/api",
+    "api-e2e": "apps/api-e2e",
+    "web-backend": "apps/web-backend",
+    "web-backend-e2e": "apps/web-backend-e2e",
+    "server-side": "libs/server-side"
   }
 }

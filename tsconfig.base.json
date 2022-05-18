@@ -15,17 +15,17 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@octra/api-types": [
+        "libs/api-types/src/index.ts"
+      ],
+      "@octra/cli": [
+        "libs/cli/src/index.ts"
+      ],
       "@octra/ngx-octra-api": [
         "libs/ngx-octra-api/src/index.ts"
       ],
-      "@octra/octra-api": [
-        "libs/octra-api/src/*"
-      ],
-      "@octra/octra-api-types": [
-        "libs/octra-api-types/src/index.ts"
-      ],
-      "@octra/octra-cli": [
-        "libs/octra-cli/src/index.ts"
+      "@octra/server-side": [
+        "libs/server-side/src/index.ts"
       ]
     }
   },

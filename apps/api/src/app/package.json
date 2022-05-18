@@ -1,0 +1,25 @@
+{
+  "name": "api",
+  "version": "0.3.1",
+  "description": "OCTRA REST API",
+  "main": "main.js",
+  "author": "Julian Pömp, Christoph Draxler; Institut für Phonetik und Sprachverarbeitung, LMU München",
+  "license": "MIT",
+  "private": true,
+  "repository": {
+    "url": "https://github.com/IPS-LMU/octra-backend"
+  },
+  "pkg": {
+    "outputPath": "./dist/builds",
+    "output": "api",
+    "assets": [
+      "views/**/*",
+      "static/**/*"
+    ],
+    "targets": [
+      "node12-macos-x64",
+      "node12-win-x64",
+      "node12-linux-x64"
+    ]
+  }
+}

@@ -20,25 +20,25 @@ OCTRA-API
 </td>
 <td>API for communication with the OCTRA-Database.</td>
 <td>
-<a href="https://github.com/IPS-LMU/octra-backend/tree/main/apps/octra-api-nest/">more information</a>
+<a href="https://github.com/IPS-LMU/octra-backend/tree/main/apps/api/">more information</a>
 </td>
 </tr>
 <tr>
 <td>
-OCTRA-Backend
+Web-Backend
 </td>
 <td>Backend website for OCTRA users doing administrative tasks or changing personal information.</td>
 <td>
-<a href="https://github.com/IPS-LMU/octra-backend/tree/main/apps/octra-backend/">more information</a>
+<a href="https://github.com/IPS-LMU/octra-backend/tree/main/apps/web-backend/">more information</a>
 </td>
 </tr>
 <tr>
 <td>
 OCTRA-DB
 </td>
-<td>Information about the Database and type declarations for typescript developers.</td>
+<td>Typedefinitions for typescript development.</td>
 <td>
-<a href="https://github.com/IPS-LMU/octra-backend/tree/main/libs/octra-db/">more information</a>
+<a href="https://github.com/IPS-LMU/octra-backend/tree/main/libs/api-types/">more information</a>
 </td>
 </tr>
 <tr>
@@ -56,7 +56,7 @@ Angular OCTRA-CLI
 </td>
 <td>CLI for server side administration using the terminal. This tool is needed for upgrade/installation of the DB.</td>
 <td>
-<a href="https://github.com/IPS-LMU/octra-backend/tree/main/libs/ngx-octra-cli/">more information</a>
+<a href="https://github.com/IPS-LMU/octra-backend/tree/main/libs/cli/">more information</a>
 </td>
 </tr>
 </tbody>

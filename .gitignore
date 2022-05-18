@@ -616,10 +616,10 @@ FodyWeavers.xsd
 deploy.sh
 deploy_dev.sh
 api.prod.test.js
-/apps/octra-api/src/config.json
-/apps/octra-backend/src/config/config.json
+/apps/api/src/config.json
+/apps/web-backend/src/config/config.json
 /apps/shibboleth-php-authenticator/php-jwt
-apps/octra-backend/src/php/window-auth.config.php
+apps/web-backend/src/php/window-auth.config.php
 apps/shibboleth-php-authenticator/authShibboleth.config.php
 /data/
 /extern/
