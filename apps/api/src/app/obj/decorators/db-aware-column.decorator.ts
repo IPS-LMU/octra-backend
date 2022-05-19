@@ -1,8 +1,7 @@
 import {Column, ColumnOptions, ColumnType} from 'typeorm';
 import {ColumnNumericTransformer} from '../transformers';
-import {Configuration} from "@octra/server-side";
-import {environment} from "../../../environments/environment";
-import {dirname} from "path";
+import {Configuration} from '@octra/server-side';
+import {dirname} from 'path';
 
 // mappings from psql to mappings
 const mappings = {
@@ -15,9 +14,7 @@ const mappings = {
   }
 }
 
-const config = Configuration.getInstance(
-  (environment.production) ? dirname(process.execPath) : __dirname
-);
+const config = Configuration.getInstance(dirname(process.execPath));
 
 export function resolveDbType(mySqlType: ColumnType, dbType: string): ColumnType {
   if (mySqlType && mappings.hasOwnProperty(dbType) && mappings[dbType].hasOwnProperty(mySqlType.toString())) {

@@ -24,7 +24,7 @@
     "package:cli:prod": "pkg ./dist/libs/cli/src/main.js --compress GZip -c ./dist/libs/cli/package.json",
     "build:release:cli": "nx build cli && rm -rf node_modules/@octra && mkdir node_modules/@octra && cp -rf ./dist/libs/server-side ./node_modules/@octra/server-side",
     "release:cli:after": "rm -rf node_modules/@octra",
-    "release:cli": "npm run build:release:cli && npm run package:cli && npm run release:cli:after",
+    "release:cli": "npm run build:release:cli && sleep 3 && npm run package:cli && sleep 3 && npm run release:cli:after",
     "release:cli:prod": "npm run build:release:cli && npm run package:cli:prod && npm run release:cli:after",
     "test": "nx test",
     "affected:apps": "nx affected:apps",

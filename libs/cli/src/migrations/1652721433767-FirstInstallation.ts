@@ -378,6 +378,303 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
         columnNames: ['uploader_id']
       })
     ]);
+
+    // create file table
+    await queryRunner.createTable(new Table({
+      name: 'file_project',
+      columns: [
+        {
+          name: 'id',
+          type: m('bigint'),
+          isPrimary: true,
+          isGenerated: true,
+          generationStrategy: 'increment'
+        },
+        {
+          name: 'file_id',
+          type: m('bigint')
+        },
+        {
+          name: 'project_id',
+          type: m('bigint'),
+          isNullable: true
+        },
+        {
+          name: 'virtual_folder_path',
+          type: m('text'),
+          isNullable: true
+        },
+        {
+          name: 'virtual_filename',
+          type: m('text'),
+          isNullable: true
+        },
+        {
+          name: 'creationdate',
+          type: m('timestamp without time zone'),
+        },
+        {
+          name: 'updatedate',
+          type: m('timestamp without time zone'),
+        }
+      ]
+    }));
+
+    await queryRunner.createForeignKeys('file_project', [
+      new TableForeignKey({
+        referencedTableName: 'file',
+        referencedColumnNames: ['id'],
+        columnNames: ['file_id']
+      }),
+      new TableForeignKey({
+        referencedTableName: 'project',
+        referencedColumnNames: ['id'],
+        columnNames: ['project_id']
+      })
+    ]);
+
+    // create file table
+    await queryRunner.createTable(new Table({
+      name: 'apptoken',
+      columns: [
+        {
+          name: 'id',
+          type: m('bigint'),
+          isPrimary: true,
+          isGenerated: true,
+          generationStrategy: 'increment'
+        },
+        {
+          name: 'name',
+          type: m('text')
+        },
+        {
+          name: 'key',
+          type: m('text')
+        },
+        {
+          name: 'domain',
+          type: m('text'),
+          isNullable: true
+        },
+        {
+          name: 'description',
+          type: m('text'),
+          isNullable: true
+        },
+        {
+          name: 'registrations',
+          type: m('boolean'),
+          default: false
+        },
+        {
+          name: 'creationdate',
+          type: m('timestamp without time zone'),
+        },
+        {
+          name: 'updatedate',
+          type: m('timestamp without time zone'),
+        }
+      ]
+    }));
+
+    // create task_input_output table
+    await queryRunner.createTable(new Table({
+      name: 'task',
+      columns: [
+        {
+          name: 'id',
+          type: m('bigint'),
+          isPrimary: true,
+          isGenerated: true,
+          generationStrategy: 'increment'
+        },
+        {
+          name: 'type',
+          type: m('text'),
+          isNullable: true
+        },
+        {
+          name: 'pid',
+          type: m('text'),
+          isNullable: true
+        },
+        {
+          name: 'orgtext',
+          type: m('text'),
+          isNullable: true
+        },
+        {
+          name: 'assassment',
+          type: m('text'),
+          isNullable: true
+        },
+        {
+          name: 'priority',
+          type: m('integer'),
+          default: 0,
+          isNullable: true
+        },
+        {
+          name: 'status',
+          type: m('text'),
+          isNullable: true
+        },
+        {
+          name: 'code',
+          type: m('text'),
+          isNullable: true
+        },
+        {
+          name: 'startdate',
+          type: m('timestamp without time zone'),
+          isNullable: true
+        },
+        {
+          name: 'enddate',
+          type: m('timestamp without time zone'),
+          isNullable: true
+        },
+        {
+          name: 'log',
+          type: m('json'),
+          isNullable: true
+        },
+        {
+          name: 'comment',
+          type: m('text'),
+          isNullable: true
+        },
+        {
+          name: 'tool_id',
+          type: m('bigint'),
+          isNullable: true
+        },
+        {
+          name: 'project_id',
+          type: m('bigint'),
+          isNullable: true
+        },
+        {
+          name: 'worker_id',
+          type: m('bigint'),
+          isNullable: true
+        },
+        {
+          name: 'nexttask_id',
+          type: m('bigint'),
+          isNullable: true
+        },
+        {
+          name: 'admin_comment',
+          type: m('bigint'),
+          isNullable: true
+        },
+        {
+          name: 'creationdate',
+          type: m('timestamp without time zone'),
+          isNullable: true
+        },
+        {
+          name: 'updatedate',
+          type: m('timestamp without time zone'),
+          isNullable: true
+        }
+      ]
+    }));
+
+    // create task_input_output table
+    await queryRunner.createTable(new Table({
+      name: 'task_input_output',
+      columns: [
+        {
+          name: 'id',
+          type: m('bigint'),
+          isPrimary: true,
+          isGenerated: true,
+          generationStrategy: 'increment'
+        },
+        {
+          name: 'task_id',
+          type: m('bigint')
+        },
+        {
+          name: 'file_project_id',
+          type: m('bigint'),
+          isNullable: true
+        },
+        {
+          name: 'type',
+          type: m('text'),
+        },
+        {
+          name: 'creator_type',
+          type: m('text'),
+        },
+        {
+          name: 'label',
+          type: m('text'),
+        },
+        {
+          name: 'description',
+          type: m('text'),
+          isNullable: true
+        },
+        {
+          name: 'filename',
+          type: m('text'),
+          isNullable: true
+        },
+        {
+          name: 'url',
+          type: m('text'),
+          isNullable: true
+        },
+        {
+          name: 'content',
+          type: m('json'),
+          isNullable: true
+        }
+      ]
+    }));
+
+    await queryRunner.createForeignKeys('task_input_output', [
+      new TableForeignKey({
+        referencedTableName: 'task',
+        referencedColumnNames: ['id'],
+        columnNames: ['task_id']
+      }),
+      new TableForeignKey({
+        referencedTableName: 'file_project',
+        referencedColumnNames: ['id'],
+        columnNames: ['file_project_id']
+      })
+    ]);
+
+    await queryRunner.createForeignKeys('task', [
+      new TableForeignKey({
+        referencedTableName: 'tool',
+        referencedColumnNames: ['id'],
+        columnNames: ['tool_id']
+      }),
+      new TableForeignKey({
+        referencedTableName: 'project',
+        referencedColumnNames: ['id'],
+        columnNames: ['project_id']
+      }),
+      new TableForeignKey({
+        referencedTableName: 'account',
+        referencedColumnNames: ['id'],
+        columnNames: ['worker_id']
+      }),
+      new TableForeignKey({
+        referencedTableName: 'task',
+        referencedColumnNames: ['id'],
+        columnNames: ['nexttask_id']
+      })
+    ]);
+
+    // TODO create first admin account
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
