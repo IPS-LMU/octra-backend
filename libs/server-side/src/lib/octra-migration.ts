@@ -1,5 +1,6 @@
-import {Configuration, DBPostgresType, IAppConfiguration, SQLTypeMapper} from "@octra/server-side";
-import {dirname} from "path";
+import {dirname} from 'path';
+import {DBPostgresType, SQLTypeMapper} from './sql-type-mapper';
+import {Configuration, IAppConfiguration} from './config';
 
 export class OctraMigration {
   protected sqlMapper: SQLTypeMapper;

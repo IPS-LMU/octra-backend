@@ -1,9 +1,10 @@
-import {IAppConfiguration} from "./configuration";
-import * as fs from "fs";
-import {removeNullAttributes} from "../functions";
+import {IAppConfiguration} from './configuration';
+import * as fs from 'fs';
+import {removeNullAttributes} from '../functions';
+import {DbNamingStrategy} from '../db-naming.strategy';
 
 export function getOrmConfig(config: IAppConfiguration) {
-  let OrmDatabaseConfig = {
+  let OrmDatabaseConfig: any = {
     type: config.database.dbType,
     host: config.database.dbHost,
     port: config.database.dbPort,
@@ -24,5 +25,11 @@ export function getOrmConfig(config: IAppConfiguration) {
       }
     });
   }
+
+  OrmDatabaseConfig = {
+    ...OrmDatabaseConfig,
+    namingStrategy: new DbNamingStrategy()
+  }
+
   return OrmDatabaseConfig;
 }

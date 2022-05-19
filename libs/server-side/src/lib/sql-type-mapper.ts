@@ -1,15 +1,16 @@
-import {DatabaseType} from "typeorm";
+import {DatabaseType} from 'typeorm';
 
 export type DBPostgresType =
-  "mediumtext"
-  | "integer"
-  | "bigint"
-  | "text"
-  | "timestamp"
-  | "timestamp without time zone"
-  | "mediumblob"
-  | "jsonb"
-  | "json";
+  'mediumtext'
+  | 'boolean'
+  | 'integer'
+  | 'bigint'
+  | 'text'
+  | 'timestamp'
+  | 'timestamp without time zone'
+  | 'mediumblob'
+  | 'jsonb'
+  | 'json';
 
 export class SQLTypeMapper {
   private mappings = {
@@ -21,7 +22,8 @@ export class SQLTypeMapper {
       'jsonb': 'json',
       'integer': 'integer',
       'bigint': 'integer',
-      "text": "text"
+      'text': 'text',
+      'boolean': 'boolean'
     }
   };
 
