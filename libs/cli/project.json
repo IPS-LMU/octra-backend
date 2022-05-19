@@ -14,7 +14,8 @@
         "packageJson": "libs/cli/package.json",
         "main": "libs/cli/src/index.ts",
         "assets": [
-          "libs/cli/*.md"
+          "libs/cli/*.md",
+          "libs/cli/package.dev.json"
         ]
       }
     },
