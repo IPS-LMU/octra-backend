@@ -102,8 +102,7 @@ export const AppConfigurationSchema: Schema = {
           properties: {
             uploadPath: {
               type: 'string',
-              required: true,
-              pattern: '^/'
+              required: true
             },
             urlEncryption: {
               type: 'object',

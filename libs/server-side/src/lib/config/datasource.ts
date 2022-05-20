@@ -1,7 +1,7 @@
 import {IAppConfiguration} from './configuration';
 import * as fs from 'fs';
 import {removeNullAttributes} from '../functions';
-import {DbNamingStrategy} from '../db-naming.strategy';
+import {DbNamingStrategy} from '../typeorm/db-naming.strategy';
 
 export function getOrmConfig(config: IAppConfiguration) {
   let OrmDatabaseConfig: any = {

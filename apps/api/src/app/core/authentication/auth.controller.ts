@@ -4,8 +4,8 @@ import {Public} from '../authorization/public.decorator';
 import {LocalAuthGuard} from './local-auth.guard';
 import {AuthDto, AuthLoginDto} from './auth.dto';
 import {ApiBody, ApiExtraModels, ApiTags} from '@nestjs/swagger';
-import {AccountEntity} from '../account/entities/account.entity';
 import {HttpExceptionFilter} from '../../obj/filters/http-exception.filter';
+import {AccountEntity} from '@octra/server-side';
 
 @ApiTags('Authentication')
 @ApiExtraModels(AuthLoginDto)

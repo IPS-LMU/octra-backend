@@ -1,7 +1,6 @@
 import {Request} from 'express';
 import {RoleDto} from '../core/account/account.dto';
-import {ProjectEntity} from "../core/project/project.entity";
-import {TaskEntity} from "../core/project/task.entity";
+import {ProjectEntity, TaskEntity} from '@octra/server-side';
 
 export interface CurrentUser {
   userId: string,

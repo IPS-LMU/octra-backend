@@ -1,3 +1,5 @@
+import {SHA256} from 'crypto-js';
+
 export function removeNullAttributes<T>(obj: T): T {
 
   if (Array.isArray(obj)) {
@@ -5,7 +7,7 @@ export function removeNullAttributes<T>(obj: T): T {
       obj[i] = removeNullAttributes(obj[i]);
     }
   } else {
-    if (typeof obj === "object") {
+    if (typeof obj === 'object') {
       const anyObj = obj as any;
       const keys = Object.keys(obj);
 
@@ -31,4 +33,9 @@ export function removeProperties(obj: any, properties: string[]) {
     }
   }
   return obj;
+}
+
+export function getPasswordHash(salt: string, password: string): string {
+  salt = SHA256(salt).toString();
+  return SHA256(password + salt).toString();
 }

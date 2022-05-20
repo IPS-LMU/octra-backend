@@ -1,8 +1,6 @@
 import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
 import {Repository} from 'typeorm';
 import {InjectRepository} from '@nestjs/typeorm';
-import {AccountEntity, AccountPersonEntity} from './entities/account.entity';
-import {AccountRoleProjectEntity, RoleEntity} from './entities/account-role-project.entity';
 import {
   AccountCreateRequestDto,
   AccountRegisterRequestDto,
@@ -12,10 +10,16 @@ import {
   ChangePasswordDto
 } from './account.dto';
 import {AccountRoleScope} from '@octra/api-types';
-import {removeNullAttributes} from '../../../../../../libs/server-side/src/lib/functions';
-import {SHA256} from 'crypto-js';
 import {ConfigService} from '@nestjs/config';
 import {DatabaseService} from '../../database.service';
+import {
+  AccountEntity,
+  AccountPersonEntity,
+  AccountRoleProjectEntity,
+  getPasswordHash,
+  removeNullAttributes,
+  RoleEntity
+} from '@octra/server-side';
 
 @Injectable()
 export class AccountService {
@@ -131,12 +135,12 @@ export class AccountService {
     });
 
     if (account) {
-      if (account.account_person.hash === this.getPasswordHash(changePasswordDto.oldPassword)) {
+      if (account.account_person.hash === getPasswordHash(this.configService.get('api.passwordSalt'), changePasswordDto.oldPassword)) {
         // change
         await this.accountPersonRepository.update({
           id: account.account_person.id
         }, {
-          hash: this.getPasswordHash(changePasswordDto.newPassword)
+          hash: getPasswordHash(this.configService.get('api.passwordSalt'), changePasswordDto.newPassword)
         });
       } else {
         // error
@@ -172,7 +176,7 @@ export class AccountService {
 
       let insertResult = await manager.insert(AccountPersonEntity, {
         username: dto.name,
-        hash: this.getPasswordHash(dto.password),
+        hash: getPasswordHash(this.configService.get('api.passwordSalt'), dto.password),
         email: dto.email,
         loginmethod: 'local'
       });
@@ -186,11 +190,5 @@ export class AccountService {
         relations: ['account_person', 'roles']
       });
     });
-  }
-
-  private getPasswordHash(password: string): string {
-    let salt = this.configService.get('api.passwordSalt');
-    salt = SHA256(salt).toString();
-    return SHA256(password + salt).toString();
   }
 }

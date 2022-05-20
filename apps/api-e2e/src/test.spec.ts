@@ -21,9 +21,9 @@ import {
 import {AccountRole} from '@octra/api-types';
 import {ToolCreateRequestDto, ToolDto} from '../../api/src/app/core/tool/tool.dto';
 import {TaskDto, TaskProperties} from '../../api/src/app/core/project/tasks';
-import {AnnotJSONType, TranscriptDto} from '../../api/src/app/core/project/annotations/transcript.dto';
 import {SaveAnnotationDto} from '../../api/src/app/core/project/annotations/annotation.dto';
 import {GuidelinesDto} from 'apps/api/src/app/core/project/guidelines/guidelines.dto';
+import {AnnotJSONType, TranscriptDto} from '@octra/server-side';
 
 const tempData = {
   apptoken: {
@@ -59,6 +59,8 @@ const tempData = {
 };
 let app;
 const appToken = 'a810c2e6e76774fadf03d8edd1fc9d1954cc27d6';
+
+console.log('configPath: ' + process.env.configPath);
 
 fs.mkdirSync('./data/files/tmp/', {recursive: true});
 fs.writeFileSync('./data/files/tmp/test.json', JSON.stringify({
@@ -299,34 +301,6 @@ describe('Accounts', () => {
     })
   });
 
-  it('/account/:id/roles (PUT)', () => {
-    return authPut(`/account/444/roles`, {
-      general: AccountRole.user,
-      projects: [
-        {
-          project_id: '801',
-          roles: [
-            {
-              role: AccountRole.dataDelivery
-            }
-          ]
-        },
-        {
-          project_id: '813',
-          roles: [
-            {
-              role: AccountRole.dataDelivery
-            }
-          ]
-        }
-      ]
-    } as AssignRoleDto, true).expect(200).then(({body}) => {
-      if (!Array.isArray(body.projects)) {
-        throw new Error('Body must be of type array.');
-      }
-    })
-  });
-
   it('/account/password (PUT)', () => {
     return authPut('/account/password', {
       oldPassword: 'Test123',
@@ -344,7 +318,7 @@ describe('Accounts', () => {
 
 
   it('/account/:id (GET)', () => {
-    return authGet(`/account/444`).expect(200).then(({body}) => {
+    return authGet(`/account/${tempData.user.id}`).expect(200).then(({body}) => {
       if (body === undefined) {
         throw new Error('Body must be of type array.');
       }
@@ -384,6 +358,26 @@ describe('Projects', () => {
       account_id: tempData.user.id,
       role: AccountRole.projectAdministrator
     }] as ProjectAssignRolesRequestDto[]).expect((a) => a.status === 200 || a.status === 201)
+  });
+
+  it('/account/:id/roles (PUT)', () => {
+    return authPut(`/account/${tempData.user.id}/roles`, {
+      general: AccountRole.user,
+      projects: [
+        {
+          project_id: tempData.project.id,
+          roles: [
+            {
+              role: AccountRole.projectAdministrator
+            }
+          ]
+        }
+      ]
+    } as AssignRoleDto, true).expect(200).then(({body}) => {
+      if (!Array.isArray(body.projects)) {
+        throw new Error('Body must be of type array.');
+      }
+    })
   });
 
   it('/projects/:id/roles (GET)', () => {

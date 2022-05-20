@@ -62,9 +62,9 @@ export interface IDBSSLConfiguration {
 export class Configuration {
   private static configuration: IAppConfiguration;
 
-  public static getInstance(configPath: string) {
+  public static getInstance(configPath?: string) {
     if (!this.configuration) {
-      configPath = join(configPath, 'config.json');
+      configPath = join(configPath ?? '', 'config.json');
       console.log(`Load config file from ${configPath}...`)
       const validator = new Validator();
       const json = fs.readJSONSync(configPath, 'utf8');

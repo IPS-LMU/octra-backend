@@ -5,9 +5,9 @@ import {InternRequest} from '../types';
 import {AccountRole} from '@octra/api-types';
 import {ROLES_KEY} from '../../../../role.decorator';
 import {Reflector} from '@nestjs/core';
-import {TaskEntity} from '../../core/project/task.entity';
 import {TasksService} from '../../core/project/tasks';
-import {checkIfProjectAccessAllowed} from "../../functions";
+import {checkIfProjectAccessAllowed} from '../../functions';
+import {TaskEntity} from '@octra/server-side';
 
 @Injectable()
 export class ProjectAccessInterceptor implements NestInterceptor {

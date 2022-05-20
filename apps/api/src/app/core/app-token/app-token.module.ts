@@ -1,8 +1,8 @@
 import {Module} from '@nestjs/common';
 import {AppTokenController} from './app-token.controller';
 import {TypeOrmModule} from '@nestjs/typeorm';
-import {AppTokenEntity} from './app-token.entity';
 import {AppTokenService} from './app-token.service';
+import {AppTokenEntity} from '@octra/server-side';
 
 @Module({
   imports: [

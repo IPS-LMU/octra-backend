@@ -14,7 +14,6 @@ import {APP_GUARD} from '@nestjs/core';
 import {JwtAuthGuard} from './core/authentication/jwt-auth.guard';
 import {ConfigModule} from '@nestjs/config';
 import {TypeOrmModule, TypeOrmModuleOptions} from '@nestjs/typeorm';
-import {AppTokenEntity} from './core/app-token/app-token.entity';
 import {RolesGuard} from './core/authorization/roles.guard';
 import {AppTokenOriginGuard} from './obj/guards/app-token-origin.guard';
 import {ThrottlerGuard, ThrottlerModule} from '@nestjs/throttler';
@@ -23,13 +22,10 @@ import {TASK_ENTITIES} from './core/project/tasks';
 import {LoggerMiddleware} from './obj/logger.middleware';
 import {AnnotationModule} from './core/project/annotations/annotation.module';
 import {GlobalModule} from './global.module';
-import {Configuration, getOrmConfig} from "@octra/server-side";
-import {environment} from "../environments/environment";
-import {dirname} from "path";
+import {AppTokenEntity, Configuration, getOrmConfig} from '@octra/server-side';
 
-const config = Configuration.getInstance(
-  (environment.production) ? dirname(process.execPath) : __dirname
-);
+console.log('load config in app.module');
+const config = Configuration.getInstance();
 
 const TypeORMOptions: TypeOrmModuleOptions = {
   ...getOrmConfig(config),

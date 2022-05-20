@@ -1,6 +1,6 @@
 import {IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested} from 'class-validator';
-import {IsOptionalNumber, IsOptionalString} from '../../../obj/decorators/custom-validators.decorator';
 import {Type} from 'class-transformer';
+import {IsOptionalNumber, IsOptionalString} from '../typeorm/decorators';
 
 
 export enum TranscriptType {
@@ -10,18 +10,18 @@ export enum TranscriptType {
 
 export class TranscriptDto {
   @IsOptionalString()
-  name: string;
+  name!: string;
   @IsOptionalString()
-  annotates: string;
+  annotates!: string;
   @IsOptionalNumber()
-  sampleRate: number;
+  sampleRate!: number;
   @IsArray()
   @ValidateNested({each: true})
   @Type(() => Level)
   levels!: Level[];
   @IsOptional()
   @IsArray()
-  links: Link[];
+  links!: Link[];
 
   constructor(partial: Partial<TranscriptDto>) {
     Object.assign(this, partial);
@@ -49,36 +49,36 @@ export class Level {
 export class Item {
   @IsNotEmpty()
   @IsNumber()
-  id: number;
+  id!: number;
   sampleStart?: number;
   sampleDur?: number;
   samplePoint?: number;
   @IsArray()
-  labels: Label[];
+  labels!: Label[];
 }
 
 export class Segment extends Item {
-  sampleStart: number;
-  sampleDur: number;
+  override sampleStart!: number;
+  override sampleDur!: number;
 }
 
 export class Event extends Item {
-  samplePoint: number;
+  override samplePoint!: number;
 }
 
 export class Label {
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
   @IsString()
-  value: string;
+  value!: string;
 }
 
 export class Link {
   @IsNotEmpty()
   @IsNumber()
-  fromID: number;
+  fromID!: number;
   @IsNotEmpty()
   @IsNumber()
-  toID: number;
+  toID!: number;
 }

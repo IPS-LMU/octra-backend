@@ -1,11 +1,18 @@
 import {MigrationInterface, QueryRunner, Table, TableForeignKey} from 'typeorm';
-import {Configuration, DBPostgresType, OctraMigration} from '@octra/server-side';
-import {dirname} from 'path';
+import {
+  AccountEntity,
+  AccountPersonEntity,
+  AppTokenEntity,
+  DBPostgresType,
+  getPasswordHash,
+  OctraMigration,
+  RoleEntity
+} from '@octra/server-side';
+import {AccountRole, AccountRoleScope} from '@octra/api-types';
 
 export class FirstInstallation1652721433767 extends OctraMigration implements MigrationInterface {
   constructor() {
     super();
-    this.config = Configuration.getInstance(dirname(process.execPath));
   }
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -114,6 +121,42 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
         }
       ]
     }));
+
+    await queryRunner.manager.insert(RoleEntity, {
+      label: AccountRole.administrator,
+      description: 'Administrator with full access to the api.',
+      scope: AccountRoleScope.general,
+      creationdate: new Date(),
+      updatedate: new Date()
+    });
+    await queryRunner.manager.insert(RoleEntity, {
+      label: AccountRole.user,
+      description: 'Default role of a registered person',
+      scope: AccountRoleScope.general,
+      creationdate: new Date(),
+      updatedate: new Date()
+    });
+    await queryRunner.manager.insert(RoleEntity, {
+      label: AccountRole.projectAdministrator,
+      description: 'Person who organizes a project.',
+      scope: AccountRoleScope.project,
+      creationdate: new Date(),
+      updatedate: new Date()
+    });
+    await queryRunner.manager.insert(RoleEntity, {
+      label: AccountRole.dataDelivery,
+      description: 'Person who imports data for new transcriptions.',
+      scope: AccountRoleScope.project,
+      creationdate: new Date(),
+      updatedate: new Date()
+    });
+    await queryRunner.manager.insert(RoleEntity, {
+      label: AccountRole.transcriber,
+      description: 'Person who transcribes only.',
+      scope: AccountRoleScope.project,
+      creationdate: new Date(),
+      updatedate: new Date()
+    });
 
     // create account_person table
     await queryRunner.createTable(new Table({
@@ -279,6 +322,10 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
           generationStrategy: 'increment'
         },
         {
+          name: 'account_id',
+          type: m('bigint')
+        },
+        {
           name: 'role_id',
           type: m('bigint')
         },
@@ -308,6 +355,11 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
     }));
 
     await queryRunner.createForeignKeys('account_role_project', [
+      new TableForeignKey({
+        referencedTableName: 'account',
+        referencedColumnNames: ['id'],
+        columnNames: ['account_id']
+      }),
       new TableForeignKey({
         referencedTableName: 'role',
         referencedColumnNames: ['id'],
@@ -348,6 +400,11 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
         {
           name: 'uploader_id',
           type: m('bigint'),
+          isNullable: true
+        },
+        {
+          name: 'original_name',
+          type: m('text'),
           isNullable: true
         },
         {
@@ -505,7 +562,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
           isNullable: true
         },
         {
-          name: 'assassment',
+          name: 'assessment',
           type: m('text'),
           isNullable: true
         },
@@ -674,7 +731,34 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       })
     ]);
 
-    // TODO create first admin account
+    console.log(`create first apptoken: a810c2e6e76774fadf03d8edd1fc9d1954cc27d6`);
+    await queryRunner.manager.insert(AppTokenEntity, {
+      name: 'dev token',
+      key: 'a810c2e6e76774fadf03d8edd1fc9d1954cc27d6',
+      domain: 'localhost',
+      description: 'apptoken for testing',
+      registrations: false,
+      creationdate: new Date(),
+      updatedate: new Date()
+    });
+
+    console.log(`create first administrator with username="Julian" and password="Test123"`);
+    const insertResult = await queryRunner.manager.insert(AccountPersonEntity, {
+      username: 'Julian',
+      email: 'j.poemp@campus.lmu.de',
+      loginmethod: 'local',
+      hash: getPasswordHash(this.config.api.passwordSalt, 'Test123'),
+      active: true
+    });
+    await queryRunner.manager.insert(AccountEntity, {
+      training: '',
+      comment: '',
+      account_person_id: insertResult.identifiers[0].id,
+      role_id: '1',
+      last_login: new Date(),
+      creationdate: new Date(),
+      updatedate: new Date(),
+    })
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

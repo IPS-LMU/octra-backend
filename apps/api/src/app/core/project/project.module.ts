@@ -1,13 +1,12 @@
 import {forwardRef, Module} from '@nestjs/common';
 import {ProjectController} from './project.controller';
-import {TaskEntity, TaskInputOutputEntity} from './task.entity';
 import {TypeOrmModule} from '@nestjs/typeorm';
-import {FileProjectEntity, ProjectEntity} from './project.entity';
 import {ProjectService} from './project.service';
 import {ACCOUNT_ENTITIES} from '../account/account.module';
 import {GuidelinesModule} from './guidelines';
 import {TasksModule} from './tasks';
 import {GlobalModule} from '../../global.module';
+import {FileProjectEntity, ProjectEntity, TaskEntity, TaskInputOutputEntity} from '@octra/server-side';
 
 export const PROJECT_ENTITIES = [TaskEntity, ProjectEntity, FileProjectEntity, TaskInputOutputEntity];
 

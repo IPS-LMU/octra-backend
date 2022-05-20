@@ -9,9 +9,8 @@ import {jwtConstants} from './auth.constants';
 import {JwtStrategy} from './jwt.strategy';
 import {AccountService} from '../account';
 import {TypeOrmModule} from '@nestjs/typeorm';
-import {AccountEntity, AccountPersonEntity} from '../account/entities/account.entity';
-import {AccountRoleProjectEntity, RoleEntity} from '../account/entities/account-role-project.entity';
-import {DatabaseService} from "../../database.service";
+import {DatabaseService} from '../../database.service';
+import {AccountEntity, AccountPersonEntity, AccountRoleProjectEntity, RoleEntity} from '@octra/server-side';
 
 @Module({
   imports: [

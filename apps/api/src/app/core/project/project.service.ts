@@ -1,16 +1,21 @@
 import {Injectable} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Repository} from 'typeorm';
-import {FileProjectEntity, ProjectEntity} from './project.entity';
 import {ProjectAssignRolesRequestDto, ProjectRemoveRequestDto, ProjectRequestDto} from './project.dto';
-import {AccountRoleProjectEntity, RoleEntity} from '../account/entities/account-role-project.entity';
-import {TaskEntity, TaskInputOutputEntity} from './task.entity';
 import {AppService} from '../../app.service';
 import {FileSystemHandler} from '../../obj/filesystem-handler';
 import {DatabaseService} from '../../database.service';
 import {CurrentUser} from '../../obj/types';
 import {Reflector} from '@nestjs/core';
-import {checkIfProjectAccessAllowed} from "../../functions";
+import {checkIfProjectAccessAllowed} from '../../functions';
+import {
+  AccountRoleProjectEntity,
+  FileProjectEntity,
+  ProjectEntity,
+  RoleEntity,
+  TaskEntity,
+  TaskInputOutputEntity
+} from '@octra/server-side';
 
 @Injectable()
 export class ProjectService {

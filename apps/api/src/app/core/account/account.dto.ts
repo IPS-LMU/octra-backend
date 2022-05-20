@@ -1,11 +1,9 @@
 import {StandardWithTimeDto} from '../standard.dto';
 import {IsEnum, IsNotEmpty} from 'class-validator';
-import {AccountEntity} from './entities/account.entity';
 import {Transform, Type} from 'class-transformer';
-import {AccountRoleProjectEntity, RoleEntity} from './entities/account-role-project.entity';
-import {removeProperties} from '../../../../../../libs/server-side/src/lib/functions';
 import {OmitType, PartialType} from '@nestjs/swagger';
 import {AccountRole, AccountRoleScope} from '@octra/api-types';
+import {AccountEntity, AccountRoleProjectEntity, removeProperties, RoleEntity} from '@octra/server-side';
 
 export class RoleDto {
   @IsNotEmpty()

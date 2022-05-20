@@ -1,8 +1,8 @@
 import {Entity, JoinColumn, ManyToOne} from 'typeorm';
-import {StandardEntityWithTimestamps} from '../../obj/entities';
-import {DbAwareColumn} from '../../obj/decorators';
-import {AccountEntity} from '../account/entities/account.entity';
 import {AudioFileMetaData} from '@octra/api-types';
+import {StandardEntityWithTimestamps} from './standard-entities';
+import {DbAwareColumn} from '../decorators';
+import {AccountEntity} from './account.entity';
 
 @Entity({name: 'file'})
 export class FileEntity extends StandardEntityWithTimestamps {
@@ -10,7 +10,7 @@ export class FileEntity extends StandardEntityWithTimestamps {
     type: 'text',
     nullable: false
   })
-  url: string;
+  url!: string;
 
   @DbAwareColumn({
     type: 'text',
@@ -35,7 +35,7 @@ export class FileEntity extends StandardEntityWithTimestamps {
     name: 'uploader_id',
     referencedColumnName: 'id'
   })
-  uploader: AccountEntity;
+  uploader!: AccountEntity;
 
   @DbAwareColumn({
     type: 'bigint',

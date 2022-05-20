@@ -1,10 +1,10 @@
 import {Module} from '@nestjs/common';
 import {ToolController} from './tool.controller';
-import {ToolEntity} from './tool.entity';
 import {TypeOrmModule} from '@nestjs/typeorm';
 import {ToolService} from './tool.service';
 import {AppService} from '../../app.service';
 import {GlobalModule} from '../../global.module';
+import {ToolEntity} from '@octra/server-side';
 
 export const TOOL_ENTITIES = [ToolEntity];
 

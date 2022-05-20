@@ -13,19 +13,24 @@ import {InternRequest} from '../../../obj/types';
 import {ConfigService} from '@nestjs/config';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Repository} from 'typeorm';
-import {FileEntity} from '../../files/file.entity';
-import {TaskEntity, TaskInputOutputEntity} from '../task.entity';
 import {FileCreateDto} from '../../files/file.dto';
 import {TaskChangeDto, TaskProperties, TaskType, TaskUploadDto} from './task.dto';
 import * as Path from 'path';
 import {FileSystemHandler} from '../../../obj/filesystem-handler';
 import {FileHashStorage} from '../../../obj/file-hash-storage';
-import {AnnotJSONType, TranscriptType} from '../annotations/transcript.dto';
 import {TaskInputOutputCreatorType, TaskStatus} from '@octra/api-types';
-import {FileProjectEntity} from '../project.entity';
-import {removeNullAttributes, removeProperties} from '../../../../../../../libs/server-side/src/lib/functions';
 import {DatabaseService} from '../../../database.service';
 import {SaveAnnotationDto} from '../annotations/annotation.dto';
+import {
+  AnnotJSONType,
+  FileEntity,
+  FileProjectEntity,
+  removeNullAttributes,
+  removeProperties,
+  TaskEntity,
+  TaskInputOutputEntity,
+  TranscriptType
+} from '@octra/server-side';
 
 interface ReqData {
   virtual_folder_path?: string;

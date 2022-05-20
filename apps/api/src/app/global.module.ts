@@ -2,12 +2,12 @@ import {MiddlewareConsumer, Module} from '@nestjs/common';
 import {AppService} from './app.service';
 import {LoggerMiddleware} from './obj/logger.middleware';
 import {DatabaseService} from './database.service';
-import {Configuration} from "@octra/server-side";
-import {environment} from "../environments/environment";
-import {dirname} from "path";
+import {Configuration} from '@octra/server-side';
+import {getConfigPath} from './functions';
 
+console.log('load config in global.module');
 const config = Configuration.getInstance(
-  (environment.production) ? dirname(process.execPath) : __dirname
+  getConfigPath()
 );
 
 @Module({

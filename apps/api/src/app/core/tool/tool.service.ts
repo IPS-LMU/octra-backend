@@ -2,8 +2,8 @@ import {Injectable} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Connection, Repository} from 'typeorm';
 import {AppService} from '../../app.service';
-import {ToolEntity} from './tool.entity';
 import {ToolCreateRequestDto} from './tool.dto';
+import {ToolEntity} from '@octra/server-side';
 
 @Injectable()
 export class ToolService {

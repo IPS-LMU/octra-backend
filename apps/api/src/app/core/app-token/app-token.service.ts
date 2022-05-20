@@ -1,10 +1,9 @@
 import {Injectable} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
-import {AppTokenEntity} from './app-token.entity';
 import {Repository} from 'typeorm';
 import {randomBytes} from 'crypto';
-import {removeNullAttributes} from '../../../../../../libs/server-side/src/lib/functions';
 import {AppTokenChangeDto, AppTokenCreateDto} from './app-token.dto';
+import {AppTokenEntity, removeNullAttributes} from '@octra/server-side';
 
 @Injectable()
 export class AppTokenService {

@@ -1,23 +1,23 @@
-import {StandardEntityWithTimestamps} from '../../obj/entities';
 import {Entity} from 'typeorm';
-import {DbAwareColumn} from '../../obj/decorators';
+import {StandardEntityWithTimestamps} from './standard-entities';
+import {DbAwareColumn} from '../decorators';
 
 @Entity({name: 'tool'})
 export class ToolEntity extends StandardEntityWithTimestamps {
   @DbAwareColumn({
     type: 'text'
   })
-  name: string;
+  name!: string;
   @DbAwareColumn({
     type: 'text'
   })
-  version: string;
+  version!: string;
   @DbAwareColumn({
     type: 'text'
   })
-  description: string;
+  description!: string;
   @DbAwareColumn({
     type: 'text'
   })
-  pid: string;
+  pid!: string;
 }

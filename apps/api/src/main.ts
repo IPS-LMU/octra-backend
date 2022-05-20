@@ -16,7 +16,7 @@ import {environment} from './environments/environment';
 import {CustomValidationPipe} from './app/obj/pipes/custom-validation.pipe';
 import helmet from 'helmet';
 import * as path from 'path';
-import {IAPIConfiguration} from "@octra/server-side";
+import {IAPIConfiguration} from '@octra/server-side';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {

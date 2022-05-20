@@ -13,17 +13,19 @@ import {
 } from 'class-validator';
 import {HasMimeType, IsFiles} from 'nestjs-form-data';
 import {FileHashStorage} from '../../../obj/file-hash-storage';
+import {AudioFileMetaData, TaskInputOutputCreatorType, TaskStatus} from '@octra/api-types';
+import {StandardWithTimeDto} from '../../standard.dto';
 import {
+  AnnotJSONType,
   IsOptionalEnum,
   IsOptionalNotEmptyString,
   IsOptionalNumber,
-  IsOptionalString
-} from '../../../obj/decorators/custom-validators.decorator';
-import {AnnotJSONType, TranscriptDto, TranscriptType} from '../annotations/transcript.dto';
-import {TaskEntity} from '../task.entity';
-import {removeProperties} from '../../../../../../../libs/server-side/src/lib/functions';
-import {AudioFileMetaData, TaskInputOutputCreatorType, TaskStatus} from '@octra/api-types';
-import {StandardWithTimeDto} from '../../standard.dto';
+  IsOptionalString,
+  removeProperties,
+  TaskEntity,
+  TranscriptDto,
+  TranscriptType
+} from '@octra/server-side';
 
 export enum TaskType {
   'annotation' = 'annotation'

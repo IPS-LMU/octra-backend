@@ -4,8 +4,8 @@ import {JwtService} from '@nestjs/jwt';
 import {SHA256} from 'crypto-js';
 import {ConfigService} from '@nestjs/config';
 import {JWTPayload} from './jwt.types';
-import {AccountEntity} from '../account/entities/account.entity';
 import {AuthDto} from './auth.dto';
+import {AccountEntity} from '@octra/server-side';
 
 @Injectable()
 export class AuthService {

@@ -15,6 +15,18 @@
     "assets": [
       "../../../node_modules/.bin/*",
       "../../../node_modules/@octra/server-side/**/*",
+      "../../../node_modules/@octra/api-types/**/*",
+      "../../../node_modules/@nestjs/common/**/*",
+      "../../../node_modules/mime-types/**/*",
+      "../../../node_modules/asynckit/**/*",
+      "../../../node_modules/mime-db/**/*",
+      "../../../node_modules/follow-redirects/**/*",
+      "../../../node_modules/combined-stream/**/*",
+      "../../../node_modules/delayed-stream/**/*",
+      "../../../node_modules/axios/**/*",
+      "../../../node_modules/rxjs/**/*",
+      "../../../node_modules/class-validator/**/*",
+      "../../../node_modules/validator/**/*",
       "../../../node_modules/pg/**/*",
       "../../../node_modules/pg-connection-string/**/*",
       "../../../node_modules/pg-pool/**/*",
@@ -23,6 +35,7 @@
       "../../../node_modules/split2/**/*",
       "../../../node_modules/pg-types/**/*",
       "../../../node_modules/pgpass/**/*",
+      "../../../node_modules/iterare/**/*",
       "../../../node_modules/postgres-array/**/*",
       "../../../node_modules/postgres-bytea/**/*",
       "../../../node_modules/postgres-date/**/*",
@@ -110,6 +123,8 @@
       "../../../node_modules/thenify/**/*",
       "../../../node_modules/highlight.js/**/*",
       "../../../node_modules/sqlite3/**/*",
+      "../../../node_modules/libphonenumber-js/**/*",
+      "../../../node_modules/class-transformer/**/*",
       "../../../node_modules/node-gyp/**/*",
       "../../../node_modules/mapbox/**/*",
       "../../../node_modules/node-addon-api/**/*",
@@ -209,6 +224,7 @@
       "../../../node_modules/iconv-lite/**/*",
       "../../../node_modules/ip/**/*",
       "../../../node_modules/safe-buffer/**/*",
+      "../../../node_modules/crypto-js/**/*",
       "src/migrations/**/*",
       "src/environments/**/*",
       "src/app/**/*",
@@ -219,3 +235,4 @@
     ]
   }
 }
+

@@ -2,19 +2,18 @@ import {Module} from '@nestjs/common';
 import {TasksService} from './tasks.service';
 import {TasksController} from './tasks.controller';
 import * as path from 'path';
-import {dirname} from 'path';
 import {TypeOrmModule} from '@nestjs/typeorm';
-import {TaskEntity} from '../task.entity';
 import {FILE_ENTITIES} from '../../files/files.module';
 import {NestjsFormDataModule} from 'nestjs-form-data';
 import {FileHashStorage} from '../../../obj/file-hash-storage';
 import {GlobalModule} from '../../../global.module';
-import {Configuration} from "@octra/server-side";
-import {environment} from "../../../../environments/environment";
+import {Configuration, TaskEntity} from '@octra/server-side';
+import {getConfigPath} from '../../../functions';
 
 export const TASK_ENTITIES = [TaskEntity];
+console.log('load config in tasks.module');
 const config = Configuration.getInstance(
-  (environment.production) ? dirname(process.execPath) : __dirname
+  getConfigPath()
 );
 
 @Module({

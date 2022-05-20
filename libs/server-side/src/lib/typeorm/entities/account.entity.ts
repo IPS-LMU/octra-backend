@@ -1,7 +1,7 @@
 import {Entity, JoinColumn, OneToMany, OneToOne} from 'typeorm';
-import {DbAwareColumn} from '../../../obj/decorators/';
 import {AccountRoleProjectEntity, RoleEntity} from './account-role-project.entity';
-import {StandardEntity, StandardEntityWithTimestamps} from '../../../obj/entities';
+import {DbAwareColumn} from '../decorators';
+import {StandardEntity, StandardEntityWithTimestamps} from './standard-entities';
 
 @Entity({name: 'account_person'})
 export class AccountPersonEntity extends StandardEntity {
@@ -18,10 +18,10 @@ export class AccountPersonEntity extends StandardEntity {
   @DbAwareColumn({
     type: 'text'
   })
-  loginmethod: 'local' | 'shibboleth';
+  loginmethod!: 'local' | 'shibboleth';
 
   @DbAwareColumn({default: true})
-  active: boolean;
+  active!: boolean;
 
   @DbAwareColumn({
     type: 'text'
@@ -32,15 +32,15 @@ export class AccountPersonEntity extends StandardEntity {
 @Entity({name: 'account'})
 export class AccountEntity extends StandardEntityWithTimestamps {
   @DbAwareColumn()
-  training: string;
+  training!: string;
 
   @DbAwareColumn()
-  comment: string;
+  comment!: string;
 
   @DbAwareColumn({
     type: 'bigint'
   })
-  role_id: string;
+  role_id!: string;
 
   @OneToOne(() => RoleEntity, {
     eager: true
@@ -49,23 +49,34 @@ export class AccountEntity extends StandardEntityWithTimestamps {
     name: 'role_id',
     referencedColumnName: 'id'
   })
-  generalRole: RoleEntity;
+  generalRole!: RoleEntity;
 
   @OneToMany(() => AccountRoleProjectEntity, (accountRoleProject) => accountRoleProject.account, {
     eager: true
   })
   @JoinColumn({referencedColumnName: 'account_id'})
-  roles: AccountRoleProjectEntity[];
+  roles!: AccountRoleProjectEntity[];
 
   @DbAwareColumn({
-    type: 'date'
+    type: 'timestamp without time zone',
+    transformer: {
+      from(value: any): any {
+        return value;
+      },
+      to(value: any): any {
+        if (!value) {
+          return new Date();
+        }
+        return value;
+      }
+    }
   })
-  last_login?: string;
+  last_login?: Date;
 
   @DbAwareColumn({
     type: 'bigint'
   })
-  account_person_id: string;
+  account_person_id!: string;
 
   @OneToOne(() => AccountPersonEntity, {
     eager: true
@@ -74,5 +85,5 @@ export class AccountEntity extends StandardEntityWithTimestamps {
     name: 'account_person_id',
     referencedColumnName: 'id'
   })
-  account_person: AccountPersonEntity;
+  account_person!: AccountPersonEntity;
 }

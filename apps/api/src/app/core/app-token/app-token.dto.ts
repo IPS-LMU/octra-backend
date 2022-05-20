@@ -1,7 +1,7 @@
 import {StandardWithTimeDto} from '../standard.dto';
 import {OmitType} from '@nestjs/swagger';
 import {IsNotEmpty} from 'class-validator';
-import {AppTokenEntity} from './app-token.entity';
+import {AppTokenEntity} from '@octra/server-side';
 
 export class AppTokenDto extends StandardWithTimeDto {
   @IsNotEmpty()

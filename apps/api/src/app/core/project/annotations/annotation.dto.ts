@@ -1,11 +1,6 @@
-import {TranscriptDto} from './transcript.dto';
 import {IsArray, IsObject, IsOptional} from 'class-validator';
-import {
-  IsOptionalNotEmptyString,
-  IsOptionalNumber,
-  IsOptionalString
-} from '../../../obj/decorators/custom-validators.decorator';
 import {Type} from 'class-transformer';
+import {IsOptionalNotEmptyString, IsOptionalNumber, IsOptionalString, TranscriptDto} from '@octra/server-side';
 
 export class SaveAnnotationDto {
   /* id for scientific issues */

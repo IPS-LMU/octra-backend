@@ -1,47 +1,47 @@
-import {StandardEntity, StandardEntityWithTimestamps} from '../../obj/entities';
-import {DbAwareColumn} from '../../obj/decorators';
-import {TaskInputOutputCreatorType, TaskStatus} from '@octra/api-types';
 import {Entity, JoinColumn, ManyToOne, OneToMany, OneToOne} from 'typeorm';
-import {ToolEntity} from '../tool/tool.entity';
+import {StandardEntity, StandardEntityWithTimestamps} from './standard-entities';
+import {DbAwareColumn} from '../decorators';
+import {TaskInputOutputCreatorType, TaskStatus} from '@octra/api-types';
+import {ToolEntity} from './tool.entity';
+import {Type} from 'class-transformer';
 import {FileProjectEntity, ProjectEntity} from './project.entity';
-import {AccountEntity} from '../account/entities/account.entity';
-import {TranscriptDto} from './annotations/transcript.dto';
-import {Type} from "class-transformer";
+import {AccountEntity} from './account.entity';
+import {TranscriptDto} from '../../dtos';
 
 @Entity({name: 'task'})
 export class TaskEntity extends StandardEntityWithTimestamps {
   @DbAwareColumn({
     type: 'text'
   })
-  pid: string;
+  pid!: string;
   @DbAwareColumn({
     type: 'text'
   })
-  orgtext: string;
+  orgtext!: string;
   @DbAwareColumn({
     type: 'text'
   })
-  assessment: string;
+  assessment!: string;
   @DbAwareColumn({
     type: 'integer'
   })
-  priority: number;
+  priority!: number;
   @DbAwareColumn({
     type: 'text'
   })
-  status: TaskStatus;
+  status!: TaskStatus;
   @DbAwareColumn({
     type: 'text'
   })
-  code: string;
+  code!: string;
   @DbAwareColumn({
     type: 'timestamp without time zone'
   })
-  startdate: Date;
+  startdate!: Date;
   @DbAwareColumn({
     type: 'timestamp without time zone'
   })
-  enddate: Date;
+  enddate!: Date;
   @DbAwareColumn({
     type: 'json'
   })
@@ -49,56 +49,56 @@ export class TaskEntity extends StandardEntityWithTimestamps {
   @DbAwareColumn({
     type: 'text'
   })
-  comment: string;
+  comment!: string;
   @DbAwareColumn({
     type: 'integer'
   })
-  tool_id: string;
+  tool_id!: string;
   @OneToOne(() => ToolEntity)
   @JoinColumn({
     referencedColumnName: 'id',
     name: 'tool_id'
   })
-  tool: ToolEntity;
+  tool!: ToolEntity;
   @DbAwareColumn({
     type: 'bigint'
   })
-  project_id: string;
+  project_id!: string;
   @ManyToOne(() => ProjectEntity, (entity) => entity.tasks)
   @JoinColumn({
     referencedColumnName: 'id',
     name: 'project_id'
   })
-  project: ProjectEntity;
+  project!: ProjectEntity;
   @DbAwareColumn({
     type: 'text'
   })
-  admin_comment: string;
+  admin_comment!: string;
   @DbAwareColumn({
     type: 'bigint'
   })
   @Type(() => String)
-  worker_id: string;
+  worker_id!: string;
   @ManyToOne(() => AccountEntity)
   @JoinColumn({
     referencedColumnName: 'id',
     name: 'worker_id'
   })
-  worker: AccountEntity;
+  worker!: AccountEntity;
   @DbAwareColumn({
     type: 'bigint'
   })
-  nexttask_id: string;
+  nexttask_id!: string;
   @OneToOne(() => TaskEntity)
   @JoinColumn({
     referencedColumnName: 'id',
     name: 'nexttask_id'
   })
-  nexttask: TaskEntity;
+  nexttask!: TaskEntity;
   @DbAwareColumn({
     type: 'text'
   })
-  type: string;
+  type!: string;
 
   @OneToMany(() => TaskInputOutputEntity, (entity) => entity.task, {
     onDelete: 'CASCADE'
@@ -107,7 +107,7 @@ export class TaskEntity extends StandardEntityWithTimestamps {
     name: 'id',
     referencedColumnName: 'task_id'
   })
-  inputsOutputs: TaskInputOutputEntity[];
+  inputsOutputs!: TaskInputOutputEntity[];
 }
 
 @Entity({name: 'task_input_output'})
@@ -115,13 +115,13 @@ export class TaskInputOutputEntity extends StandardEntity {
   @DbAwareColumn({
     type: 'bigint'
   })
-  task_id: string;
+  task_id!: string;
   @ManyToOne(() => TaskEntity)
   @JoinColumn({
     name: 'task_id',
     referencedColumnName: 'id'
   })
-  task: TaskEntity;
+  task!: TaskEntity;
   @DbAwareColumn({
     type: 'bigint',
     nullable: true
@@ -132,25 +132,25 @@ export class TaskInputOutputEntity extends StandardEntity {
     name: 'file_project_id',
     referencedColumnName: 'id'
   })
-  file_project: FileProjectEntity;
+  file_project!: FileProjectEntity;
 
   @DbAwareColumn({
     type: 'enum',
     enum: ['input', 'output'],
     nullable: false
   })
-  type: 'input' | 'output';
+  type!: 'input' | 'output';
 
   @DbAwareColumn({
     type: 'text',
     nullable: false
   })
-  creator_type: TaskInputOutputCreatorType;
+  creator_type!: TaskInputOutputCreatorType;
   @DbAwareColumn({
     type: 'text',
     nullable: false
   })
-  label: string;
+  label!: string;
   @DbAwareColumn({
     type: 'text',
     nullable: true
@@ -168,7 +168,19 @@ export class TaskInputOutputEntity extends StandardEntity {
   url?: string;
   @DbAwareColumn({
     type: 'json',
-    nullable: true
+    nullable: true,
+    transformer: {
+      from(value: any): any {
+        if (typeof value === 'object') {
+          JSON.stringify(value);
+        }
+      },
+      to(value: any): any {
+        if (typeof value === 'string') {
+          JSON.parse(value);
+        }
+      }
+    }
   })
   content?: TranscriptDto;
 }
