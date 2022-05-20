@@ -19,9 +19,11 @@ export class SQLTypeMapper {
       'timestamp': 'datetime',
       'timestamp without time zone': 'datetime',
       'mediumblob': 'blob',
-      'jsonb': 'json',
+      'enum': 'text',
+      'json': 'text',
+      'jsonb': 'text',
       'integer': 'integer',
-      'bigint': 'integer',
+      'bigint': 'integer', // we have to use integer because of autoincrement
       'text': 'text',
       'boolean': 'boolean'
     }
