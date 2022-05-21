@@ -2,6 +2,7 @@ import {Column, ColumnOptions, CreateDateColumn, UpdateDateColumn} from 'typeorm
 import {SQLTypeMapper} from '../sql-type-mapper';
 import {Configuration} from '../../config';
 import {applyDecorators} from '@nestjs/common';
+import {dateTransformer} from '../transformers';
 
 console.log('load config in db aware column');
 const config = Configuration.getInstance(process.env['configPath'] as string);
@@ -36,17 +37,7 @@ export function DbAwareCreateDate() {
   return applyDecorators(
     CreateDateColumn({
       type: sqlMapper.map('timestamp without time zone'),
-      transformer: {
-        from(value: any): any {
-          return value;
-        },
-        to(value: any): any {
-          if (!value) {
-            return new Date();
-          }
-          return value;
-        }
-      },
+      transformer: dateTransformer,
       generated: true
     })
   );
@@ -57,17 +48,7 @@ export function DbAwareUpdateDate() {
   return applyDecorators(
     UpdateDateColumn({
       type: sqlMapper.map('timestamp without time zone'),
-      transformer: {
-        from(value: any): any {
-          return value;
-        },
-        to(value: any): any {
-          if (!value) {
-            return new Date();
-          }
-          return value;
-        }
-      },
+      transformer: dateTransformer,
       generated: true
     })
   );

@@ -1,20 +1,18 @@
-import {Body, Controller, Delete, Get, Param, Post, Put, Req, UseInterceptors} from '@nestjs/common';
+import {Body, Controller, Delete, Get, Param, Post, Put, Req} from '@nestjs/common';
 import {ProjectService} from './project.service';
 import {CombinedRoles} from '../../obj/decorators/combine.decorators';
 import {AccountRole} from '@octra/api-types';
-import {removeNullAttributes} from '../../../../../../libs/server-side/src/lib/functions';
 import {ProjectAssignRolesRequestDto, ProjectDto, ProjectRemoveRequestDto, ProjectRequestDto} from './project.dto';
 import {ApiBearerAuth, ApiTags} from '@nestjs/swagger';
 import {NumericStringValidationPipe} from '../../obj/pipes/numeric-string-validation.pipe';
 import {ROLES_KEY} from '../../../../role.decorator';
 import {Reflector} from '@nestjs/core';
 import {InternRequest} from '../../obj/types';
-import {ProjectAccessInterceptor} from '../../obj/interceptors/project-access.interceptor';
+import {removeNullAttributes} from '@octra/server-side';
 
 @ApiTags('Projects')
 @ApiBearerAuth()
 @Controller('projects')
-@UseInterceptors(ProjectAccessInterceptor)
 export class ProjectController {
 
   constructor(private projectService: ProjectService, private reflector: Reflector) {

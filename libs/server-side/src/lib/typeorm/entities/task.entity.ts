@@ -7,6 +7,7 @@ import {Type} from 'class-transformer';
 import {FileProjectEntity, ProjectEntity} from './project.entity';
 import {AccountEntity} from './account.entity';
 import {TranscriptDto} from '../../dtos';
+import {dateTransformer, jsonTransformer} from '../transformers';
 
 @Entity({name: 'task'})
 export class TaskEntity extends StandardEntityWithTimestamps {
@@ -35,15 +36,18 @@ export class TaskEntity extends StandardEntityWithTimestamps {
   })
   code!: string;
   @DbAwareColumn({
-    type: 'timestamp without time zone'
+    type: 'timestamp without time zone',
+    transformer: dateTransformer
   })
   startdate!: Date;
   @DbAwareColumn({
-    type: 'timestamp without time zone'
+    type: 'timestamp without time zone',
+    transformer: dateTransformer
   })
   enddate!: Date;
   @DbAwareColumn({
-    type: 'json'
+    type: 'json',
+    transformer: jsonTransformer
   })
   log: any;
   @DbAwareColumn({
@@ -169,18 +173,7 @@ export class TaskInputOutputEntity extends StandardEntity {
   @DbAwareColumn({
     type: 'json',
     nullable: true,
-    transformer: {
-      from(value: any): any {
-        if (typeof value === 'object') {
-          JSON.stringify(value);
-        }
-      },
-      to(value: any): any {
-        if (typeof value === 'string') {
-          JSON.parse(value);
-        }
-      }
-    }
+    transformer: jsonTransformer
   })
   content?: TranscriptDto;
 }

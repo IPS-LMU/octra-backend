@@ -16,6 +16,8 @@ export const OrmConfig: TypeOrmModuleOptions = {
   migrations: [Path.join(__dirname, 'migrations/*.js')],
   cli: {
     'migrationsDir': 'src/migrations'
-  }
+  },
+  logging: 'error',
+  logger: 'advanced-console'
 }
 export default OrmConfig;

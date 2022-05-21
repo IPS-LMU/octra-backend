@@ -30,7 +30,8 @@ const config = Configuration.getInstance();
 const TypeORMOptions: TypeOrmModuleOptions = {
   ...getOrmConfig(config),
   entities: [AppTokenEntity, ...ACCOUNT_ENTITIES, ...PROJECT_ENTITIES, ...TOOL_ENTITIES, ...FILE_ENTITIES, ...TASK_ENTITIES],
-  keepConnectionAlive: true
+  keepConnectionAlive: true,
+  logging: 'error'
 };
 
 

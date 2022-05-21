@@ -512,7 +512,7 @@ export class TasksService {
         throw new NotFoundException('Can\'t find task.');
       }
 
-      if (task.worker_id.toString() !== worker_id) {
+      if (task.worker_id.toString() !== worker_id.toString()) {
         throw new MethodNotAllowedException('You can\'t resume a task that is edited by another worker.');
       }
 
@@ -541,8 +541,8 @@ export class TasksService {
         throw new MethodNotAllowedException('You can\'t resume a task that is edited by another worker.');
       }
 
-      if (task.status !== TaskStatus.busy) {
-        throw new MethodNotAllowedException('You can\'t continue a task that is not \'FINISHED\'.');
+      if (task.status !== TaskStatus.finished) {
+        throw new MethodNotAllowedException('You can\'t continue a task that is not \'BUSY\'.');
       }
 
       // don't change status because there's no need.

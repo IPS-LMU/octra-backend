@@ -3,6 +3,7 @@ import {AudioFileMetaData} from '@octra/api-types';
 import {StandardEntityWithTimestamps} from './standard-entities';
 import {DbAwareColumn} from '../decorators';
 import {AccountEntity} from './account.entity';
+import {jsonTransformer} from '../transformers';
 
 @Entity({name: 'file'})
 export class FileEntity extends StandardEntityWithTimestamps {
@@ -52,7 +53,8 @@ export class FileEntity extends StandardEntityWithTimestamps {
 
   @DbAwareColumn({
     type: 'jsonb',
-    nullable: true
+    nullable: true,
+    transformer: jsonTransformer
   })
   metadata?: AudioFileMetaData;
 }

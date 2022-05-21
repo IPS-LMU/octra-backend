@@ -4,6 +4,7 @@ import {StandardEntityWithTimestamps} from './standard-entities';
 import {DbAwareColumn} from '../decorators';
 import {AccountRoleProjectEntity} from './account-role-project.entity';
 import {FileEntity} from './file.entity';
+import {dateTransformer, jsonTransformer} from '../transformers';
 
 @Entity({name: 'project'})
 export class ProjectEntity extends StandardEntityWithTimestamps {
@@ -21,19 +22,23 @@ export class ProjectEntity extends StandardEntityWithTimestamps {
   })
   description!: string;
   @DbAwareColumn({
-    type: 'json'
+    type: 'json',
+    transformer: jsonTransformer
   })
   configuration: any;
   @DbAwareColumn({
-    type: 'timestamp without time zone'
+    type: 'timestamp without time zone',
+    transformer: dateTransformer
   })
   startdate!: Date;
   @DbAwareColumn({
-    type: 'timestamp without time zone'
+    type: 'timestamp without time zone',
+    transformer: dateTransformer
   })
   enddate!: Date;
   @DbAwareColumn({
-    type: 'boolean'
+    type: 'boolean',
+    default: true
   })
   active!: boolean;
 

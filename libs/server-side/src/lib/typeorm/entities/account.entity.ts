@@ -2,6 +2,7 @@ import {Entity, JoinColumn, OneToMany, OneToOne} from 'typeorm';
 import {AccountRoleProjectEntity, RoleEntity} from './account-role-project.entity';
 import {DbAwareColumn} from '../decorators';
 import {StandardEntity, StandardEntityWithTimestamps} from './standard-entities';
+import {dateTransformer} from '../transformers';
 
 @Entity({name: 'account_person'})
 export class AccountPersonEntity extends StandardEntity {
@@ -20,7 +21,7 @@ export class AccountPersonEntity extends StandardEntity {
   })
   loginmethod!: 'local' | 'shibboleth';
 
-  @DbAwareColumn({default: true})
+  @DbAwareColumn({type: 'boolean', default: true})
   active!: boolean;
 
   @DbAwareColumn({
@@ -59,17 +60,7 @@ export class AccountEntity extends StandardEntityWithTimestamps {
 
   @DbAwareColumn({
     type: 'timestamp without time zone',
-    transformer: {
-      from(value: any): any {
-        return value;
-      },
-      to(value: any): any {
-        if (!value) {
-          return new Date();
-        }
-        return value;
-      }
-    }
+    transformer: dateTransformer
   })
   last_login?: Date;
 

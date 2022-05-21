@@ -357,7 +357,9 @@ describe('Projects', () => {
     return authPost(`/projects/${tempData.project.id}/roles`, [{
       account_id: tempData.user.id,
       role: AccountRole.projectAdministrator
-    }] as ProjectAssignRolesRequestDto[]).expect((a) => a.status === 200 || a.status === 201)
+    }] as ProjectAssignRolesRequestDto[]).expect((a) => a.status === 200 || a.status === 201).then((({body}) => {
+      const t = body;
+    }));
   });
 
   it('/account/:id/roles (PUT)', () => {

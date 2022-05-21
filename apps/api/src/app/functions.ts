@@ -10,13 +10,13 @@ export function isProjectAccessAllowed(project: ProjectEntity, task: TaskEntity,
   const generalRole = user.roles.find(a => a.scope === 'general');
 
   if (allowedProjectRoles.length > 0 && generalRole.role !== AccountRole.administrator) {
-    const userProjectRole = user.roles.find(a => a.project_id?.toString() === project.id);
+    const userProjectRole = user.roles.find(a => a.project_id?.toString() === project.id.toString());
     // check project role
     if (userProjectRole) {
       if (userProjectRole.role !== AccountRole.projectAdministrator) {
         if (userProjectRole.role === AccountRole.user) {
           if (allowedProjectRoles.find(a => a === AccountRole.user)) {
-            if (task?.worker_id && task?.worker_id !== user.userId) {
+            if (task?.worker_id && task?.worker_id?.toString() !== user.userId.toString()) {
               return false;
             }
           }
@@ -25,7 +25,7 @@ export function isProjectAccessAllowed(project: ProjectEntity, task: TaskEntity,
     } else {
       // user doesn't have an user role, assume "user"
       if (allowedProjectRoles.find(a => a === AccountRole.user)) {
-        if (task?.worker_id && task?.worker_id !== user.userId) {
+        if (task?.worker_id && task?.worker_id?.toString() !== user.userId?.toString()) {
           return false;
         }
       } else {

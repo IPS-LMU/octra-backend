@@ -4,6 +4,7 @@ import {AccountRole, AccountRoleScope} from '@octra/api-types';
 import {StandardEntityWithTimestamps} from './standard-entities';
 import {DbAwareColumn} from '../decorators';
 import {ProjectEntity} from './project.entity';
+import {dateTransformer} from '../transformers';
 
 @Entity('role')
 export class RoleEntity extends StandardEntityWithTimestamps {
@@ -55,14 +56,16 @@ export class AccountRoleProjectEntity extends StandardEntityWithTimestamps {
   project!: ProjectEntity;
 
   @DbAwareColumn({
-    type: 'timestamp without time zone'
+    type: 'timestamp without time zone',
+    transformer: dateTransformer
   })
-  valid_startdate?: string;
+  valid_startdate?: Date;
 
   @DbAwareColumn({
-    type: 'timestamp without time zone'
+    type: 'timestamp without time zone',
+    transformer: dateTransformer
   })
-  valid_enddate?: string;
+  valid_enddate?: Date;
 
   @ManyToOne(() => AccountEntity)
   @JoinColumn({

@@ -24,7 +24,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new ForbiddenException(`Account not found.`);
     }
     return {
-      userId: payload.sub,
+      userId: payload.sub.toString(),
       roles: [
         {
           scope: AccountRoleScope.general,
@@ -35,8 +35,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
           role: a.role.label,
           project_id: a.project_id,
           project_name: a.project?.name,
-          valid_startdate: a.valid_startdate,
-          valid_enddate: a.valid_enddate
+          valid_startdate: a.valid_startdate?.toISOString(),
+          valid_enddate: a.valid_enddate?.toISOString(),
         }))
       ],
       username: account?.account_person?.username

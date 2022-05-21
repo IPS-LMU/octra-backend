@@ -65,7 +65,7 @@ export class Configuration {
   public static getInstance(configPath?: string) {
     if (!this.configuration) {
       configPath = join(configPath ?? '', 'config.json');
-      console.log(`Load config file from ${configPath}...`)
+      console.log(`Load config file from ${configPath}...`);
       const validator = new Validator();
       const json = fs.readJSONSync(configPath, 'utf8');
       const validation = validator.validate(json, AppConfigurationSchema);
@@ -74,6 +74,8 @@ export class Configuration {
         throw new Error(`Validation configuration errors found:\n->${validation.errors.map(a => `${a.path}: ${a.message}`).join('\n-> ')}`)
       }
       this.configuration = json;
+      console.log(`DB Type: ${this.configuration.database.dbType}`);
+      console.log(`DB path: ${this.configuration.database.dbName}`);
     }
     return this.configuration;
   }

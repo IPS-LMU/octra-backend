@@ -20,7 +20,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       return this.sqlMapper.map(postgresType);
     };
 
-    // create option table
+    console.log(`-> Create table "options"...`);
     await queryRunner.createTable(new Table({
       name: 'option',
       columns: [
@@ -44,7 +44,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       ]
     }));
 
-    // create tool table
+    console.log(`-> Create table "tool"...`);
     await queryRunner.createTable(new Table({
       name: 'tool',
       columns: [
@@ -86,7 +86,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       ]
     }));
 
-    // create role table
+    console.log(`-> Create table "role"...`);
     await queryRunner.createTable(new Table({
       name: 'role',
       columns: [
@@ -158,7 +158,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       updatedate: new Date()
     });
 
-    // create account_person table
+    console.log(`-> Create table "account_person"...`);
     await queryRunner.createTable(new Table({
       name: 'account_person',
       columns: [
@@ -194,7 +194,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       ]
     }));
 
-    // create account table
+    console.log(`-> Create table "account"...`);
     await queryRunner.createTable(new Table({
       name: 'account',
       columns: [
@@ -206,6 +206,15 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
           generationStrategy: 'increment'
         },
         {
+          name: 'account_person_id',
+          type: m('bigint'),
+          isNullable: true
+        },
+        {
+          name: 'role_id',
+          type: m('bigint')
+        },
+        {
           name: 'training',
           type: m('text'),
           isNullable: true
@@ -214,15 +223,6 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
           name: 'comment',
           type: m('text'),
           isNullable: true
-        },
-        {
-          name: 'account_person_id',
-          type: m('bigint'),
-          isNullable: true
-        },
-        {
-          name: 'role_id',
-          type: m('bigint')
         },
         {
           name: 'last_login',
@@ -310,7 +310,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       ]
     }));
 
-    // create account_role_project table
+    console.log(`-> Create table "account_role_project"...`);
     await queryRunner.createTable(new Table({
       name: 'account_role_project',
       columns: [
@@ -372,7 +372,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       })
     ]);
 
-    // create file table
+    console.log(`-> Create table "file"...`);
     await queryRunner.createTable(new Table({
       name: 'file',
       columns: [
@@ -436,7 +436,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       })
     ]);
 
-    // create file table
+    console.log(`-> Create table "file_project"...`);
     await queryRunner.createTable(new Table({
       name: 'file_project',
       columns: [
@@ -490,7 +490,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       })
     ]);
 
-    // create file table
+    console.log(`-> Create table "apptoken"...`);
     await queryRunner.createTable(new Table({
       name: 'apptoken',
       columns: [
@@ -535,7 +535,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       ]
     }));
 
-    // create task_input_output table
+    console.log(`-> Create table "task"...`);
     await queryRunner.createTable(new Table({
       name: 'task',
       columns: [
@@ -640,7 +640,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       ]
     }));
 
-    // create task_input_output table
+    console.log(`-> Create task_input_output "task"...`);
     await queryRunner.createTable(new Table({
       name: 'task_input_output',
       columns: [
@@ -731,7 +731,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       })
     ]);
 
-    console.log(`create first apptoken: a810c2e6e76774fadf03d8edd1fc9d1954cc27d6`);
+    console.log(`-> Create first apptoken: a810c2e6e76774fadf03d8edd1fc9d1954cc27d6`);
     await queryRunner.manager.insert(AppTokenEntity, {
       name: 'dev token',
       key: 'a810c2e6e76774fadf03d8edd1fc9d1954cc27d6',
@@ -742,7 +742,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       updatedate: new Date()
     });
 
-    console.log(`create first administrator with username="Julian" and password="Test123"`);
+    console.log(`-> Create first administrator with username="Julian" and password="Test123"`);
     const insertResult = await queryRunner.manager.insert(AccountPersonEntity, {
       username: 'Julian',
       email: 'j.poemp@campus.lmu.de',

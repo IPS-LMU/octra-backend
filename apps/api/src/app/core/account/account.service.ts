@@ -106,8 +106,8 @@ export class AccountService {
             account_id: id,
             role_id: roles.find(a => a.scope === AccountRoleScope.project && a.label === role.role).id,
             project_id: project.project_id,
-            valid_startdate: role.valid_startdate,
-            valid_enddate: role.valid_enddate
+            valid_startdate: role.valid_startdate ? new Date(role.valid_startdate) : undefined,
+            valid_enddate: role.valid_enddate ? new Date(role.valid_enddate) : undefined
           }));
         }
       }
@@ -183,7 +183,8 @@ export class AccountService {
 
       insertResult = await manager.insert(AccountEntity, {
         role_id: role.id,
-        account_person_id: insertResult.identifiers[0].id
+        account_person_id: insertResult.identifiers[0].id,
+        last_login: new Date()
       });
 
       return manager.findOne(AccountEntity, insertResult.identifiers[0].id, {
