@@ -18,6 +18,7 @@ import helmet from 'helmet';
 import * as path from 'path';
 import {IAPIConfiguration} from '@octra/server-side';
 import {getConfigPath} from './app/functions';
+import {IntroView} from './app/view/intro.view';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -38,7 +39,7 @@ async function bootstrap() {
   if (config.reference.enabled) {
     const swaggerConfig = new DocumentBuilder()
       .setTitle('OCTRA API')
-      .setDescription('API for connecting OCTRA Backend to OCTRA')
+      .setDescription(IntroView)
       .setVersion(version)
       .addBearerAuth()
       .addSecurity('roles', {
