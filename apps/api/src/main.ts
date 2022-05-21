@@ -17,6 +17,7 @@ import {CustomValidationPipe} from './app/obj/pipes/custom-validation.pipe';
 import helmet from 'helmet';
 import * as path from 'path';
 import {IAPIConfiguration} from '@octra/server-side';
+import {getConfigPath} from './app/functions';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -72,16 +73,16 @@ async function bootstrap() {
     });
 
     if (environment.development) {
-      fs.writeFileSync('./dist/swagger-spec.json', JSON.stringify(document));
+      fs.writeFileSync(path.join(getConfigPath(), 'swagger-spec.json'), JSON.stringify(document));
     }
-    await RedocModule.setup(path.join(config.baseURL, '/reference'), app, document, redocOptions);
+    await RedocModule.setup(config.baseURL + 'reference', app, document, redocOptions);
   }
 
   app.useGlobalPipes(new CustomValidationPipe());
 
   await app.listen(port, config.host);
   Logger.log(
-    `🚀 Application is running on: http://${path.join(`localhost:${port}/`, config.baseURL, `/reference`)}`
+    `🚀 Application is running on: http://localhost:${port}${config.baseURL}/reference`
   );
 }
 
