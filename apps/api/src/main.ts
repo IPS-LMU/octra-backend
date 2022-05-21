@@ -82,7 +82,7 @@ async function bootstrap() {
 
   await app.listen(port, config.host);
   Logger.log(
-    `🚀 Application is running on: http://localhost:${port}${config.baseURL}/reference`
+    `🚀 Application is running on: http://localhost:${port}${config.baseURL}reference`
   );
 }
 

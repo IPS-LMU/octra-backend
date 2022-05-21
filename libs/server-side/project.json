@@ -1,22 +1,8 @@
 {
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/server-side/src",
+  "sourceRoot": "libs/my-ts-lib/src",
   "projectType": "library",
   "targets": {
-    "build": {
-      "executor": "@nrwl/js:tsc",
-      "outputs": [
-        "{options.outputPath}"
-      ],
-      "options": {
-        "outputPath": "dist/libs/server-side",
-        "main": "libs/server-side/src/index.ts",
-        "tsConfig": "libs/server-side/tsconfig.lib.json",
-        "assets": [
-          "libs/server-side/*.md"
-        ]
-      }
-    },
     "lint": {
       "executor": "@nrwl/linter:eslint",
       "outputs": [
@@ -24,17 +10,17 @@
       ],
       "options": {
         "lintFilePatterns": [
-          "libs/server-side/**/*.ts"
+          "libs/my-ts-lib/**/*.ts"
         ]
       }
     },
     "test": {
       "executor": "@nrwl/jest:jest",
       "outputs": [
-        "coverage/libs/server-side"
+        "coverage/libs/my-ts-lib"
       ],
       "options": {
-        "jestConfig": "libs/server-side/jest.config.ts",
+        "jestConfig": "libs/my-ts-lib/jest.config.ts",
         "passWithNoTests": true
       }
     }

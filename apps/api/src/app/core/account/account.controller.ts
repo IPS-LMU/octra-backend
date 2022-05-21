@@ -54,7 +54,7 @@ export class AccountController {
    */
   @Get('current')
   async getCurrentAccountInformation(@Req() req: InternRequest): Promise<AccountDto> {
-    return removeNullAttributes(new AccountDto(await this.accountService.getAccount(req.user.userId)));
+    return new AccountDto(await this.accountService.getAccount(req.user.userId));
   }
 
   /**
@@ -65,7 +65,7 @@ export class AccountController {
   @CombinedRoles(AccountRole.administrator)
   @Put(':id/roles')
   async assignAccountRoles(@Param('id', NumericStringValidationPipe) id: string, @Body() assignDto: AssignRoleDto): Promise<AssignRoleDto> {
-    return removeNullAttributes(this.accountService.assignAccountRoles(id, assignDto));
+    return this.accountService.assignAccountRoles(id, assignDto);
   }
 
   /**

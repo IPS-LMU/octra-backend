@@ -2,13 +2,13 @@
   "$schema": "./node_modules/nx/schemas/workspace-schema.json",
   "version": 2,
   "projects": {
+    "api": "apps/api",
+    "api-e2e": "apps/api-e2e",
     "api-types": "libs/api-types",
     "cli": "libs/cli",
     "ngx-octra-api": "libs/ngx-octra-api",
-    "api": "apps/api",
-    "api-e2e": "apps/api-e2e",
+    "server-side": "libs/server-side",
     "web-backend": "apps/web-backend",
-    "web-backend-e2e": "apps/web-backend-e2e",
-    "server-side": "libs/server-side"
+    "web-backend-e2e": "apps/web-backend-e2e"
   }
 }
