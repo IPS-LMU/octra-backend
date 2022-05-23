@@ -18,7 +18,7 @@
     "watch:libs": "nx build ngx-octra-api --prod --watch & nx build octra-db --watch",
     "test:api": "nx test api --runInBand --bail true --silent",
     "test:api-nest": "nx e2e api-e2e",
-    "deploy:api-nest": "npm run package:api-nest && sh ./deploy_dev.sh",
+    "deploy:api": "npm run package:api && sh ./deploy_dev.sh",
     "package:api": "nx build api --generatePackageJson --prod && node apps/api/src/app.prepare.js && pkg ./dist/apps/api/main.js --compress GZip -c ./dist/apps/api/package.json",
     "package:cli": "pkg ./dist/libs/cli/src/main.js -c ./dist/libs/cli/package.json",
     "package:cli:prod": "pkg ./dist/libs/cli/src/main.js --compress GZip -c ./dist/libs/cli/package.json",
