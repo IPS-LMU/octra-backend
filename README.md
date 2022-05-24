@@ -6,7 +6,7 @@ NestJS. At the moment the documentation is deprecated and it is going to be upda
 backend has been finished.**
 ---
 
-<img src="https://raw.githubusercontent.com/IPS-LMU/octra-backend/main/images/octra-backend-diagram.png" />
+<img src="https://github.com/IPS-LMU/octra-backend/raw/main/images/octra-backend-diagram.jpg" />
 
 ## Overview
 
