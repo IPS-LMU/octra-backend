@@ -4,8 +4,9 @@
 **!Please notice: This project is under big reconstruction. A lot of work is in progress like refactoring and moving to
 NestJS. At the moment the documentation is deprecated and it is going to be updated as soon as the implementation of the
 backend has been finished.**
-
 ---
+
+<img src="https://raw.githubusercontent.com/IPS-LMU/octra-backend/main/images/octra-backend-diagram.png" />
 
 ## Overview
 
