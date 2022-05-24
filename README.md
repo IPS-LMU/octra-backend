@@ -1,17 +1,15 @@
-# OCTRA Backend - mono repository
+**! Please notice: This project is still in development. At the moment the documentation is deprecated and it is going
+to be updated step for step.**
 
----
-**!Please notice: This project is under big reconstruction. A lot of work is in progress like refactoring and moving to
-NestJS. At the moment the documentation is deprecated and it is going to be updated as soon as the implementation of the
-backend has been finished.**
----
+# OCTRA Backend
+
+This repository is a mono-repository for all packages and applications related to the backend of OCTRA. Applications can
+use the OCTRA-API in order to connect with the OCTRA-DB (Database). The OCTRA-API allows features like user management,
+project management and the definition of annotation tasks. Users can authenticate via credentials or Shibboleth.
 
 <img src="https://github.com/IPS-LMU/octra-backend/raw/main/images/octra-backend-diagram.jpg" />
 
 ## Overview
-
-This repository is a mono-repository created with Nx. It contains all projects related to the OCTRA backend (server
-side).
 
 <table>
 <tbody>
