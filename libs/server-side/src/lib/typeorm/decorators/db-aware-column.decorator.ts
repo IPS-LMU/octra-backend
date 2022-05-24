@@ -61,6 +61,7 @@ export function DbAwareUpdateDate() {
   return applyDecorators(
     UpdateDateColumn({
       type: sqlMapper.map('timestamp without time zone'),
+      onUpdate: 'CURRENT_TIMESTAMP',
       transformer: dateTransformer,
       generated: true
     })

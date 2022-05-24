@@ -99,6 +99,8 @@ export class AccountService {
         });
       }
 
+      // TODO better update? each insert adds new incremented number
+
       // add project roles
       for (const project of roleDto.projects) {
         for (const role of project.roles) {

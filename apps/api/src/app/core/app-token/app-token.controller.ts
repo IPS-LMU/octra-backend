@@ -4,7 +4,7 @@ import {AppTokenChangeDto, AppTokenCreateDto, AppTokenDto} from './app-token.dto
 import {ApiBearerAuth, ApiTags} from '@nestjs/swagger';
 import {AccountRole} from '@octra/api-types';
 import {CombinedRoles} from '../../obj/decorators/combine.decorators';
-import {NumericStringValidationPipe} from "../../obj/pipes/numeric-string-validation.pipe";
+import {NumericStringValidationPipe} from '../../obj/pipes/numeric-string-validation.pipe';
 
 @ApiTags('App tokens')
 @ApiBearerAuth()
@@ -42,7 +42,7 @@ export class AppTokenController {
    */
   @CombinedRoles(AccountRole.administrator)
   @Put('tokens/:id')
-  changeAppToken(@Body() token: AppTokenChangeDto, @Param('id', NumericStringValidationPipe) id: number): Promise<void> {
+  async changeAppToken(@Body() token: AppTokenChangeDto, @Param('id', NumericStringValidationPipe) id: number): Promise<void> {
     return this.appTokensService.updateAppToken(id, token);
   }
 

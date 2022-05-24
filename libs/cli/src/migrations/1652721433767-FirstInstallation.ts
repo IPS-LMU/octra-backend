@@ -77,11 +77,14 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
         },
         {
           name: 'creationdate',
+          default: 'CURRENT_TIMESTAMP',
           type: m('timestamp without time zone')
         },
         {
           name: 'updatedate',
-          type: m('timestamp without time zone')
+          type: m('timestamp without time zone'),
+          default: 'CURRENT_TIMESTAMP',
+          onUpdate: 'CURRENT_TIMESTAMP'
         }
       ]
     }));
@@ -113,11 +116,14 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
         },
         {
           name: 'creationdate',
+          default: 'CURRENT_TIMESTAMP',
           type: m('timestamp without time zone')
         },
         {
           name: 'updatedate',
-          type: m('timestamp without time zone')
+          type: m('timestamp without time zone'),
+          default: 'CURRENT_TIMESTAMP',
+          onUpdate: 'CURRENT_TIMESTAMP'
         }
       ]
     }));
@@ -125,37 +131,27 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
     await queryRunner.manager.insert(RoleEntity, {
       label: AccountRole.administrator,
       description: 'Administrator with full access to the api.',
-      scope: AccountRoleScope.general,
-      creationdate: new Date(),
-      updatedate: new Date()
+      scope: AccountRoleScope.general
     });
     await queryRunner.manager.insert(RoleEntity, {
       label: AccountRole.user,
       description: 'Default role of a registered person',
-      scope: AccountRoleScope.general,
-      creationdate: new Date(),
-      updatedate: new Date()
+      scope: AccountRoleScope.general
     });
     await queryRunner.manager.insert(RoleEntity, {
       label: AccountRole.projectAdministrator,
       description: 'Person who organizes a project.',
-      scope: AccountRoleScope.project,
-      creationdate: new Date(),
-      updatedate: new Date()
+      scope: AccountRoleScope.project
     });
     await queryRunner.manager.insert(RoleEntity, {
       label: AccountRole.dataDelivery,
       description: 'Person who imports data for new transcriptions.',
-      scope: AccountRoleScope.project,
-      creationdate: new Date(),
-      updatedate: new Date()
+      scope: AccountRoleScope.project
     });
     await queryRunner.manager.insert(RoleEntity, {
       label: AccountRole.transcriber,
       description: 'Person who transcribes only.',
-      scope: AccountRoleScope.project,
-      creationdate: new Date(),
-      updatedate: new Date()
+      scope: AccountRoleScope.project
     });
 
     console.log(`-> Create table "account_person"...`);
@@ -230,11 +226,14 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
         },
         {
           name: 'creationdate',
+          default: 'CURRENT_TIMESTAMP',
           type: m('timestamp without time zone'),
         },
         {
           name: 'updatedate',
           type: m('timestamp without time zone'),
+          default: 'CURRENT_TIMESTAMP',
+          onUpdate: 'CURRENT_TIMESTAMP'
         }
       ]
     }));
@@ -301,11 +300,14 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
         },
         {
           name: 'creationdate',
+          default: 'CURRENT_TIMESTAMP',
           type: m('timestamp without time zone'),
         },
         {
           name: 'updatedate',
           type: m('timestamp without time zone'),
+          default: 'CURRENT_TIMESTAMP',
+          onUpdate: 'CURRENT_TIMESTAMP'
         }
       ]
     }));
@@ -345,11 +347,14 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
         },
         {
           name: 'creationdate',
+          default: 'CURRENT_TIMESTAMP',
           type: m('timestamp without time zone'),
         },
         {
           name: 'updatedate',
           type: m('timestamp without time zone'),
+          default: 'CURRENT_TIMESTAMP',
+          onUpdate: 'CURRENT_TIMESTAMP'
         }
       ]
     }));
@@ -419,11 +424,14 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
         },
         {
           name: 'creationdate',
+          default: 'CURRENT_TIMESTAMP',
           type: m('timestamp without time zone'),
         },
         {
           name: 'updatedate',
           type: m('timestamp without time zone'),
+          default: 'CURRENT_TIMESTAMP',
+          onUpdate: 'CURRENT_TIMESTAMP'
         }
       ]
     }));
@@ -468,11 +476,14 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
         },
         {
           name: 'creationdate',
+          default: 'CURRENT_TIMESTAMP',
           type: m('timestamp without time zone'),
         },
         {
           name: 'updatedate',
           type: m('timestamp without time zone'),
+          default: 'CURRENT_TIMESTAMP',
+          onUpdate: 'CURRENT_TIMESTAMP'
         }
       ]
     }));
@@ -526,11 +537,14 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
         },
         {
           name: 'creationdate',
+          default: 'CURRENT_TIMESTAMP',
           type: m('timestamp without time zone'),
         },
         {
           name: 'updatedate',
           type: m('timestamp without time zone'),
+          default: 'CURRENT_TIMESTAMP',
+          onUpdate: 'CURRENT_TIMESTAMP'
         }
       ]
     }));
@@ -629,13 +643,14 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
         },
         {
           name: 'creationdate',
-          type: m('timestamp without time zone'),
-          isNullable: true
+          default: 'CURRENT_TIMESTAMP',
+          type: m('timestamp without time zone')
         },
         {
           name: 'updatedate',
           type: m('timestamp without time zone'),
-          isNullable: true
+          default: 'CURRENT_TIMESTAMP',
+          onUpdate: 'CURRENT_TIMESTAMP'
         }
       ]
     }));
@@ -737,9 +752,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       key: 'a810c2e6e76774fadf03d8edd1fc9d1954cc27d6',
       domain: 'localhost',
       description: 'apptoken for testing',
-      registrations: false,
-      creationdate: new Date(),
-      updatedate: new Date()
+      registrations: false
     });
 
     console.log(`-> Create first administrator with username="Julian" and password="Test123"`);
@@ -755,9 +768,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       comment: '',
       account_person_id: insertResult.identifiers[0].id,
       role_id: '1',
-      last_login: new Date(),
-      creationdate: new Date(),
-      updatedate: new Date(),
+      last_login: new Date()
     })
   }
 
