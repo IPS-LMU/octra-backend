@@ -5,10 +5,10 @@ import {
   AppTokenEntity,
   DBPostgresType,
   getPasswordHash,
-  OctraMigration,
   RoleEntity
 } from '@octra/server-side';
 import {AccountRole, AccountRoleScope} from '@octra/api-types';
+import {OctraMigration} from '../octra-migration';
 
 export class FirstInstallation1652721433767 extends OctraMigration implements MigrationInterface {
   constructor() {
@@ -128,6 +128,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       ]
     }));
 
+    console.log('--> Insert role entries...')
     await queryRunner.manager.insert(RoleEntity, {
       label: AccountRole.administrator,
       description: 'Administrator with full access to the api.',

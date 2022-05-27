@@ -71,7 +71,7 @@ export class Configuration {
       const validation = validator.validate(json, AppConfigurationSchema);
 
       if (!validation.valid) {
-        throw new Error(`Validation configuration errors found:\n->${validation.errors.map(a => `${a.path}: ${a.message}`).join('\n-> ')}`)
+        throw new Error(`Validation configuration errors found (config at ${configPath}):\n->${validation.errors.map(a => `${a.path}: ${a.message}`).join('\n-> ')}`)
       }
       this.configuration = json;
       console.log(`DB Type: ${this.configuration.database.dbType}`);

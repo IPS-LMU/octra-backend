@@ -5,7 +5,7 @@
     "api": "apps/api",
     "api-e2e": "apps/api-e2e",
     "api-types": "libs/api-types",
-    "cli": "libs/cli",
+    "cli": "apps/cli",
     "ngx-octra-api": "libs/ngx-octra-api",
     "server-side": "libs/server-side",
     "web-backend": "apps/web-backend",

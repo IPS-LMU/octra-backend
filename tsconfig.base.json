@@ -18,9 +18,6 @@
       "@octra/api-types": [
         "libs/api-types/src/index.ts"
       ],
-      "@octra/cli": [
-        "libs/cli/src/index.ts"
-      ],
       "@octra/ngx-octra-api": [
         "libs/ngx-octra-api/src/index.ts"
       ],

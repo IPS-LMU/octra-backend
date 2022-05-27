@@ -3,20 +3,19 @@ import {SQLTypeMapper} from '../sql-type-mapper';
 import {Configuration} from '../../config';
 import {applyDecorators} from '@nestjs/common';
 import {dateTransformer} from '../transformers';
-import {dirname} from 'path';
 
 function getConfigPath() {
-  if (process.env['configPath']) {
-    console.log('got env variable: ' + process.env['configPath']);
-    return process.env['configPath'];
-  } else {
-    return dirname(process.execPath);
+  if (!process.env['configPath']) {
+    throw new Error('configPath env variable not set!');
   }
+
+  return process.env['configPath'];
 }
 
-
+/*
+ first read and initialization of configuration is here
+ */
 export function DbAwareColumn(columnOptions?: ColumnOptions) {
-  console.log('load from db aware');
   const config = Configuration.getInstance(getConfigPath());
   const dbType = config.database.dbType;
   const sqlMapper = new SQLTypeMapper(config.database.dbType);
@@ -42,7 +41,6 @@ export function DbAwareColumn(columnOptions?: ColumnOptions) {
 }
 
 export function DbAwareCreateDate() {
-  console.log('load from db aware');
   const config = Configuration.getInstance(getConfigPath());
   const sqlMapper = new SQLTypeMapper(config.database.dbType);
   return applyDecorators(
@@ -55,7 +53,6 @@ export function DbAwareCreateDate() {
 }
 
 export function DbAwareUpdateDate() {
-  console.log('load from db aware');
   const config = Configuration.getInstance(getConfigPath());
   const sqlMapper = new SQLTypeMapper(config.database.dbType);
   return applyDecorators(

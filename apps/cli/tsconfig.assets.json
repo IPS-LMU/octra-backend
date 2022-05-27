@@ -1,0 +1,39 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc",
+    "module": "commonjs",
+    "types": [
+      "node"
+    ],
+    "resolveJsonModule": true,
+    "paths": {
+      "@octra/api-types": [
+        "libs/api-types/src/index.ts"
+      ],
+      "@octra/cli": [
+        "libs/cli/src/index.ts"
+      ],
+      "@octra/ngx-octra-api": [
+        "libs/ngx-octra-api/src/index.ts"
+      ],
+      "@octra/server-side": [
+        "libs/server-side/src/index.ts"
+      ]
+    }
+  },
+  "exclude": [
+    "jest.config.ts",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "src/app/**/*",
+    "src/environments/**/*",
+    "src/main.ts",
+    "../../libs/**/*"
+  ],
+  "include": [
+    "src/migrations/*.ts",
+    "src/datasource.ts",
+    "src/octra-migration.ts"
+  ]
+}
