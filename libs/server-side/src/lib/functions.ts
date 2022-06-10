@@ -42,5 +42,5 @@ export function getPasswordHash(salt: string, password: string): string {
 }
 
 export function getRandomString(length: number): string {
-  return randomBytes(48).toString('hex');
+  return randomBytes(48).toString('base64');
 }

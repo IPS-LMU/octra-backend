@@ -3,7 +3,9 @@ import {Argv} from 'yargs';
 import {OctraCLICommand} from './command';
 import {ScriptRunner} from '../script-runner';
 import {GlobalVariables} from '../types';
-import {readJSON} from 'fs-extra';
+import {readJSON, writeJSON} from 'fs-extra';
+import {Configuration, getRandomString, IAppConfiguration} from '@octra/server-side';
+import {join} from 'path';
 
 export class InstallationCommand extends OctraCLICommand {
   override init(argv: yargs.Argv, globals: GlobalVariables): yargs.Argv {
@@ -12,7 +14,22 @@ export class InstallationCommand extends OctraCLICommand {
   }
 
   private install = async (args: Argv) => {
-    const answer = await this.askQuestion('Are you sure to install the database to the destination given in the config.json? All existing data in the database is going to be deleted.\n(Yes = y, No = n)\n');
+    let configFile: IAppConfiguration = await this.readJSON(join(process.env['configPath'], 'config.json'));
+    if (!configFile) {
+      throw new Error('Can\'t read config file');
+    }
+
+    const answer = await this.askQuestion(`Are you sure to install the database to the destination given in the config.json? All existing data in the database is going to be deleted.
+------------------------------------------------------------------
+! All data from the following connection are going to be deleted: !
+  type: ${configFile.database.dbType}
+  name: ${configFile.database.dbName}
+  host: ${configFile.database.dbHost}
+  port: ${configFile.database.dbPort}
+------------------------------------------------------------------
+
+Press "y" for "Yes" or "n" for "No" and press ENTER.
+`);
 
     if (answer === 'y') {
       const adminName = await this.askQuestion('Please choose a user name for the new administrator account and press ENTER:\n');
@@ -30,9 +47,7 @@ export class InstallationCommand extends OctraCLICommand {
       }
       process.env['ADMIN_PW'] = adminPassword;
 
-      // TODO create salts
-      /*
-      let configFile = await this.readJSON(process.env['configPath']);
+
       configFile = {
         ...configFile,
         api: {
@@ -44,16 +59,21 @@ export class InstallationCommand extends OctraCLICommand {
             ...configFile.api.files,
             urlEncryption: {
               ...configFile.api.files.urlEncryption,
+              secret: getRandomString(30),
               salt: getRandomString(30)
             }
+          },
+          shibboleth: {
+            ...configFile.api.shibboleth,
+            secret: getRandomString(30)
           }
         }
       };
-      await writeJSON(process.env['configPath'], configFile, {
+      await writeJSON(join(process.env['configPath'], 'config.json'), configFile, {
         spaces: 2
       });
+      Configuration.overwrite(configFile);
 
-       */
       console.log('Remove all existing tables...');
       await ScriptRunner.run(`${this.globals.typeORMPath} schema:drop`, false);
       console.log('Removed Database.');
@@ -66,14 +86,6 @@ export class InstallationCommand extends OctraCLICommand {
   }
 
   private async readJSON(file: string): Promise<any> {
-    new Promise<any>((resolve, reject) => {
-      readJSON(file, (err, data) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(data);
-        }
-      })
-    });
+    return readJSON(file, {encoding: 'utf-8'});
   }
 }
