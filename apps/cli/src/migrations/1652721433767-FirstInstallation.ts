@@ -42,7 +42,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
           type: m('text')
         }
       ]
-    }));
+    }), true);
 
     console.log(`-> Create table "tool"...`);
     await queryRunner.createTable(new Table({
@@ -87,7 +87,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
           onUpdate: 'CURRENT_TIMESTAMP'
         }
       ]
-    }));
+    }), true);
 
     console.log(`-> Create table "role"...`);
     await queryRunner.createTable(new Table({
@@ -126,7 +126,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
           onUpdate: 'CURRENT_TIMESTAMP'
         }
       ]
-    }));
+    }), true);
 
     console.log('--> Insert role entries...')
     await queryRunner.manager.insert(RoleEntity, {
@@ -189,7 +189,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
           default: true
         }
       ]
-    }));
+    }), true);
 
     console.log(`-> Create table "account"...`);
     await queryRunner.createTable(new Table({
@@ -237,7 +237,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
           onUpdate: 'CURRENT_TIMESTAMP'
         }
       ]
-    }));
+    }), true);
 
     await queryRunner.createForeignKeys('account', [
       new TableForeignKey({
@@ -311,7 +311,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
           onUpdate: 'CURRENT_TIMESTAMP'
         }
       ]
-    }));
+    }), true);
 
     console.log(`-> Create table "account_role_project"...`);
     await queryRunner.createTable(new Table({
@@ -358,7 +358,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
           onUpdate: 'CURRENT_TIMESTAMP'
         }
       ]
-    }));
+    }), true);
 
     await queryRunner.createForeignKeys('account_role_project', [
       new TableForeignKey({
@@ -435,7 +435,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
           onUpdate: 'CURRENT_TIMESTAMP'
         }
       ]
-    }));
+    }), true);
 
     await queryRunner.createForeignKeys('file', [
       new TableForeignKey({
@@ -487,7 +487,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
           onUpdate: 'CURRENT_TIMESTAMP'
         }
       ]
-    }));
+    }), true);
 
     await queryRunner.createForeignKeys('file_project', [
       new TableForeignKey({
@@ -548,7 +548,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
           onUpdate: 'CURRENT_TIMESTAMP'
         }
       ]
-    }));
+    }), true);
 
     console.log(`-> Create table "task"...`);
     await queryRunner.createTable(new Table({
@@ -654,7 +654,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
           onUpdate: 'CURRENT_TIMESTAMP'
         }
       ]
-    }));
+    }), true);
 
     console.log(`-> Create task_input_output "task"...`);
     await queryRunner.createTable(new Table({
@@ -709,7 +709,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
           isNullable: true
         }
       ]
-    }));
+    }), true);
 
     await queryRunner.createForeignKeys('task_input_output', [
       new TableForeignKey({
