@@ -756,12 +756,19 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       registrations: false
     });
 
-    console.log(`-> Create first administrator with username="Julian" and password="Test123"`);
+    if (!process.env['ADMIN_NAME'] || !process.env['ADMIN_MAIL'] || !process.env['ADMIN_PW']) {
+      throw new Error('Misseing credentials for new administrator account.');
+    }
+
+    const admin_name = process.env['ADMIN_NAME'];
+    const password = process.env['ADMIN_PW'];
+
+    console.log(`-> Create first administrator..."`);
     const insertResult = await queryRunner.manager.insert(AccountPersonEntity, {
-      username: 'Julian',
-      email: 'j.poemp@campus.lmu.de',
+      username: admin_name,
+      email: process.env['ADMIN_MAIL'],
       loginmethod: 'local',
-      hash: getPasswordHash(this.config.api.passwordSalt, 'Test123'),
+      hash: getPasswordHash(this.config.api.passwordSalt, password),
       active: true
     });
     await queryRunner.manager.insert(AccountEntity, {
@@ -770,7 +777,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       account_person_id: insertResult.identifiers[0].id,
       role_id: '1',
       last_login: new Date()
-    })
+    });
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

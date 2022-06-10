@@ -3,6 +3,7 @@ import {Configuration, DBPostgresType, IAppConfiguration, SQLTypeMapper} from '@
 export class OctraMigration {
   protected sqlMapper: SQLTypeMapper;
   protected config: IAppConfiguration;
+  protected inputs: any;
 
   constructor() {
     this.config = Configuration.getInstance(process.env['configPath']);

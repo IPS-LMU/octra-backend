@@ -1,0 +1,53 @@
+{
+  "version": "0.1.0",
+  "database": {
+    "dbVersion": "0.1.0",
+    "dbType": "sqlite",
+    "dbHost": "localhost",
+    "dbPort": 5432,
+    "dbName": "test.sql",
+    "dbUser": "",
+    "dbPassword": ""
+  },
+  "api": {
+    "url": "http://localhost",
+    "host": "",
+    "port": 8080,
+    "trustProxy": false,
+    "baseURL": "/",
+    "debugging": true,
+    "secret": "3289u4290340ß239iweuw7dh9jw90k",
+    "passwordSalt": "0NUhClpORk815_Dz0g4bgV3V2bkoEF8HD083Aaot",
+    "jwtSalt": "uhsd87zs879d0fnu9wa8dz90aß0iksd90adu9a",
+    "files": {
+      "projectsPath": "/Users/ips/repos/octra-backend/data/projects",
+      "uploadPath": "/Users/ips/repos/octra-backend/data/files",
+      "urlEncryption": {
+        "secret": "78weur9w8reu90wier9084378tzu30h7",
+        "salt": "iaoush876sd7t789u0jßj90f"
+      }
+    },
+    "reference": {
+      "enabled": true,
+      "protection": {
+        "enabled": false,
+        "username": "test",
+        "password": "test"
+      }
+    },
+    "shibboleth": {
+      "enabled": true,
+      "secret": "2a25?P!@tS2~8_kl_Y3big*#M,Q_Bw68H6XS_X^4",
+      "windowURL": "https://clarin.phonetik.uni-muenchen.de/apps/octra/window-auth.php"
+    },
+    "keycloak": {
+      "enabled": true,
+      "realm": "Transcription",
+      "auth-server-url": "https://sso.phonetik.uni-muenchen.de/auth/",
+      "ssl-required": "external",
+      "resource": "OCTRA-API",
+      "public-client": true,
+      "confidential-port": 0
+    }
+  }
+}

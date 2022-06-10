@@ -1,4 +1,5 @@
 import {SHA256} from 'crypto-js';
+import {randomBytes} from 'crypto';
 
 export function removeNullAttributes<T>(obj: T): T {
 
@@ -38,4 +39,8 @@ export function removeProperties(obj: any, properties: string[]) {
 export function getPasswordHash(salt: string, password: string): string {
   salt = SHA256(salt).toString();
   return SHA256(password + salt).toString();
+}
+
+export function getRandomString(length: number): string {
+  return randomBytes(48).toString('hex');
 }

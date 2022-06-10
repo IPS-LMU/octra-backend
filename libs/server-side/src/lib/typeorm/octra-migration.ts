@@ -1,5 +1,6 @@
 import {DBPostgresType, SQLTypeMapper} from './sql-type-mapper';
-import {Configuration, IAppConfiguration} from '../config';
+import {Configuration} from '../config';
+import {IAppConfiguration} from '../types';
 
 export class OctraMigration {
   protected sqlMapper: SQLTypeMapper;
