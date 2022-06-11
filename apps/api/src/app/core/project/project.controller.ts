@@ -25,11 +25,10 @@ export class ProjectController {
    *
    * Allowed user roles: <code>administrator</code>
    */
-  @CombinedRoles(AccountRole.administrator)
-  @UseInterceptors(ProjectAccessInterceptor)
+  @CombinedRoles(AccountRole.administrator, AccountRole.user)
   @Get('')
-  async listProjects(): Promise<ProjectDto[]> {
-    return removeNullAttributes(await this.projectService.listProjects()).map(a => new ProjectDto(a));
+  async listProjects(@Req() req: InternRequest): Promise<ProjectDto[]> {
+    return removeNullAttributes(await this.projectService.listProjects(req.user)).map(a => new ProjectDto(a));
   }
 
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator)

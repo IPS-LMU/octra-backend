@@ -339,17 +339,17 @@ describe('Projects', () => {
 
   tempData.project.name = 'TestProject_' + Date.now();
   it('/projects/ (POST)', () => {
-    return authPost('/projects/', {
-      'name': tempData.project.name,
-      shortname: `${tempData.project.name}_short`,
-      'description': 'test description'
-    } as ProjectRequestDto).expect(201).then(({body}) => {
-      if (!body) {
-        throw new Error('Body must be of type array.');
-      }
-      tempData.project.id = body.id;
-    }).catch((e) => {
-      throw Error(e);
+     return authPost('/projects/', {
+       'name': tempData.project.name,
+       shortname: `${tempData.project.name}_short`,
+       'description': 'test description'
+     } as ProjectRequestDto).expect(201).then(({body}) => {
+       if (!body) {
+         throw new Error('Body must be of type array.');
+       }
+       tempData.project.id = body.id;
+     }).catch((e) => {
+       throw Error(e);
     });
   });
 
@@ -360,6 +360,15 @@ describe('Projects', () => {
     }] as ProjectAssignRolesRequestDto[]).expect((a) => a.status === 200 || a.status === 201).then((({body}) => {
       const t = body;
     }));
+  });
+
+
+  it('/projects/ (GET) (ProjectAdmin)', () => {
+    return authGet('/projects/', false).expect(200).then(({body}) => {
+      if (!Array.isArray(body)) {
+        throw new Error('Body must be of type array.');
+      }
+    })
   });
 
   it('/account/:id/roles (PUT)', () => {

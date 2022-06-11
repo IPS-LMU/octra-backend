@@ -1,16 +1,13 @@
 import {Injectable} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
-import {DataSource, Repository} from 'typeorm';
-import {AppService} from '../../app.service';
+import {Repository} from 'typeorm';
 import {ToolCreateRequestDto} from './tool.dto';
 import {ToolEntity} from '@octra/server-side';
 
 @Injectable()
 export class ToolService {
   constructor(@InjectRepository(ToolEntity)
-              private toolRepository: Repository<ToolEntity>,
-              private connection: DataSource,
-              private appService: AppService) {
+              private toolRepository: Repository<ToolEntity>) {
   }
 
   async addTool(dto: ToolCreateRequestDto): Promise<ToolEntity> {

@@ -6,7 +6,7 @@ export function CombinedRoles(...roles: AccountRole[]) {
   return applyDecorators(
     Roles(...roles),
     SerializeOptions({
-      groups: [...roles.map(a => `role:${a}`)]
+      groups: [...roles]
     }),
     UseInterceptors(ClassSerializerInterceptor)
   );

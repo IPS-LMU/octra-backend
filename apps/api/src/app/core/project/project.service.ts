@@ -16,6 +16,7 @@ import {
   TaskEntity,
   TaskInputOutputEntity
 } from '@octra/server-side';
+import {AccountRole} from '@octra/api-types';
 
 @Injectable()
 export class ProjectService {
@@ -28,8 +29,32 @@ export class ProjectService {
               private reflector: Reflector) {
   }
 
-  public async listProjects(): Promise<ProjectEntity[]> {
-    return this.projectRepository.find();
+  public async listProjects(user: CurrentUser): Promise<ProjectEntity[]> {
+    if (user.roles.find(a => a.role === AccountRole.administrator)) {
+      return this.projectRepository.find({relations: ['roles']});
+    }
+
+    let projects = await this.projectRepository.find({
+      where: {
+        roles: {
+          account_id: user.userId
+        }
+      },
+      relations: ['roles']
+    });
+
+    // TODO list public projects
+    // how to define public projects?
+    // a) no workers => public
+    // b) visibility column
+
+    return projects.filter((a) => {
+      const now = new Date().getTime();
+      const startdate = a.startdate ?? 0;
+      const enddate = a.enddate ?? now + 10000;
+
+      return (startdate <= now && now <= enddate);
+    });
   }
 
   public async getProject(id: string): Promise<ProjectEntity> {

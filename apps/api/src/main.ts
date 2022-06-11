@@ -4,7 +4,7 @@
  */
 import {ConfigLoader} from './config-loader';
 import {version} from '../package.json'
-import {Logger} from '@nestjs/common';
+import {Logger, ValidationPipe} from '@nestjs/common';
 import {NestFactory} from '@nestjs/core';
 import * as bodyParser from 'body-parser';
 
@@ -14,7 +14,6 @@ import {DocumentBuilder, SwaggerModule} from '@nestjs/swagger';
 import {RedocModule, RedocOptions} from 'nestjs-redoc';
 import * as fs from 'fs';
 import {environment} from './environments/environment';
-import {CustomValidationPipe} from './app/obj/pipes/custom-validation.pipe';
 import helmet from 'helmet';
 import * as path from 'path';
 import {IAPIConfiguration} from '@octra/server-side';
@@ -82,7 +81,9 @@ async function bootstrap() {
     await RedocModule.setup(config.baseURL + 'reference', app, document, redocOptions);
   }
 
-  app.useGlobalPipes(new CustomValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({
+    transform: true
+  }));
 
   await app.listen(port, config.host);
   Logger.log(

@@ -1,6 +1,6 @@
 import {StandardWithTimeDto} from '../standard.dto';
 import {IsEnum, IsNotEmpty} from 'class-validator';
-import {Transform, Type} from 'class-transformer';
+import {Expose, Transform, Type} from 'class-transformer';
 import {OmitType, PartialType} from '@nestjs/swagger';
 import {AccountRole, AccountRoleScope} from '@octra/api-types';
 import {AccountEntity, AccountRoleProjectEntity, removeProperties, RoleEntity} from '@octra/server-side';
@@ -12,7 +12,13 @@ export class RoleDto {
   scope: AccountRoleScope;
   project_id?: string;
   project_name?: string;
+  @Expose({
+    groups: [AccountRole.administrator]
+  })
   valid_startdate?: string;
+  @Expose({
+    groups: [AccountRole.administrator]
+  })
   valid_enddate?: string;
 
   constructor(partial: Partial<AccountRoleProjectEntity>) {

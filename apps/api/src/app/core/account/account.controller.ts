@@ -26,8 +26,8 @@ import {CombinedRoles} from '../../obj/decorators/combine.decorators';
 import {AccountService} from './account.service';
 import {InternRequest} from '../../obj/types';
 import {Public} from '../authorization/public.decorator';
-import {removeNullAttributes} from '../../../../../../libs/server-side/src/lib/functions';
 import {NumericStringValidationPipe} from '../../obj/pipes/numeric-string-validation.pipe';
+import {removeNullAttributes} from '@octra/server-side';
 
 @ApiTags('Accounts')
 @ApiBearerAuth()

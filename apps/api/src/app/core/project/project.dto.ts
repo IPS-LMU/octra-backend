@@ -3,6 +3,9 @@ import {StandardWithTimeDto} from '../standard.dto';
 import {removeProperties} from '../../../../../../libs/server-side/src/lib/functions';
 import {ApiHideProperty} from '@nestjs/swagger';
 import {AccountRole} from '@octra/api-types';
+import {RoleDto} from '../account/account.dto';
+import {Expose, Transform} from 'class-transformer';
+import {ProjectEntity} from '@octra/server-side';
 
 export class ProjectRequestDto extends StandardWithTimeDto {
   @IsNotEmpty()
@@ -19,6 +22,7 @@ export class ProjectRequestDto extends StandardWithTimeDto {
   @ApiHideProperty()
   updatedate: Date;
 
+
   constructor(partial: Partial<ProjectDto>) {
     super();
     partial = removeProperties(partial, ['id']);
@@ -29,11 +33,42 @@ export class ProjectRequestDto extends StandardWithTimeDto {
 export class ProjectDto extends StandardWithTimeDto {
   @IsNotEmpty()
   id: string;
-  @IsNotEmpty()
+  name: string;
   active: boolean;
   shortname?: string;
+  description?: string;
+  configuration?: any;
+  @Expose({
+    groups: [AccountRole.administrator, AccountRole.projectAdministrator]
+  })
+  startdate?: Date;
+  @Expose({
+    groups: [AccountRole.administrator, AccountRole.projectAdministrator]
+  })
+  enddate?: Date;
+  @Expose({
+    groups: [AccountRole.administrator]
+  })
+  @ApiHideProperty()
+  creationdate: Date;
+  @Expose({
+    groups: [AccountRole.administrator]
+  })
+  @ApiHideProperty()
+  updatedate: Date;
 
-  constructor(partial: Partial<ProjectDto>) {
+  @Expose({
+    groups: [AccountRole.administrator]
+  })
+  @Transform(({value}) => {
+    if (value) {
+      return value.map(a => new RoleDto(a));
+    }
+    return value;
+  })
+  roles: RoleDto[];
+
+  constructor(partial: Partial<ProjectEntity>) {
     super();
     Object.assign(this, partial);
   }
