@@ -1,4 +1,4 @@
-import {MiddlewareConsumer, Module} from '@nestjs/common';
+import {Global, MiddlewareConsumer, Module} from '@nestjs/common';
 import {AppService} from './app.service';
 import {LoggerMiddleware} from './obj/logger.middleware';
 import {DatabaseService} from './database.service';
@@ -10,6 +10,7 @@ const config = Configuration.getInstance(
   getConfigPath()
 );
 
+@Global()
 @Module({
   imports: [],
   providers: [

@@ -4,12 +4,24 @@ import {CombinedRoles} from '../../../obj/decorators/combine.decorators';
 import {AccountRole} from '@octra/api-types';
 import {InternRequest} from '../../../obj/types';
 import {AppService} from '../../../app.service';
-import {ConfigService} from '@nestjs/config';
 import {TaskChangeDto, TaskDto, TaskUploadDto} from './task.dto';
-import {FormDataRequest} from 'nestjs-form-data';
-import {removeNullAttributes} from '../../../../../../../libs/server-side/src/lib/functions';
-import {Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, Put, Req} from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Req,
+  UseInterceptors
+} from '@nestjs/common';
 import {NumericStringValidationPipe} from '../../../obj/pipes/numeric-string-validation.pipe';
+import {FormDataRequest} from 'nestjs-form-data';
+import {removeNullAttributes} from '@octra/server-side';
+import {ProjectAccessInterceptor} from '../../../obj/interceptors/project-access.interceptor';
 
 @ApiTags('Tasks')
 @ApiBearerAuth()
@@ -17,11 +29,11 @@ import {NumericStringValidationPipe} from '../../../obj/pipes/numeric-string-val
 export class TasksController {
 
   constructor(private tasksService: TasksService,
-              private appService: AppService,
-              private configService: ConfigService) {
+              private appService: AppService) {
   }
 
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.dataDelivery)
+  @UseInterceptors(ProjectAccessInterceptor)
   @FormDataRequest()
   @ApiConsumes('multipart/form-data')
   @Post(':project_id/tasks')
@@ -37,6 +49,7 @@ export class TasksController {
   }
 
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.dataDelivery)
+  @UseInterceptors(ProjectAccessInterceptor)
   @FormDataRequest()
   @ApiConsumes('multipart/form-data')
   @Put(':project_id/tasks/:task_id')
@@ -52,12 +65,14 @@ export class TasksController {
   }
 
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.dataDelivery)
+  @UseInterceptors(ProjectAccessInterceptor)
   @Delete(':project_id/tasks/:task_id')
   async removeTask(@Param('project_id', NumericStringValidationPipe) project_id: string, @Param('task_id', NumericStringValidationPipe) task_id: string): Promise<void> {
     return this.tasksService.removeTask(project_id, task_id);
   }
 
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.dataDelivery, AccountRole.transcriber)
+  @UseInterceptors(ProjectAccessInterceptor)
   @Get(':project_id/tasks/:task_id')
   async getTask(@Param('project_id') project_id: string, @Param('task_id') task_id: string): Promise<TaskDto> {
     const createdTask = await this.tasksService.getTask(project_id, task_id);
@@ -74,6 +89,7 @@ export class TasksController {
   }
 
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.dataDelivery)
+  @UseInterceptors(ProjectAccessInterceptor)
   @Get(':project_id/tasks/')
   async listTasks(@Param('project_id') project_id: string): Promise<TaskDto[]> {
     return removeNullAttributes((await this.tasksService.listTasks(project_id)).map(a => new TaskDto({

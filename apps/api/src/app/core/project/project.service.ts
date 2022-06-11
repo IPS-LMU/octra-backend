@@ -21,6 +21,8 @@ import {
 export class ProjectService {
   constructor(@InjectRepository(ProjectEntity)
               private projectRepository: Repository<ProjectEntity>,
+              @InjectRepository(TaskEntity)
+              private taskRepository: Repository<TaskEntity>,
               private databaseService: DatabaseService,
               private appService: AppService,
               private reflector: Reflector) {
@@ -147,6 +149,16 @@ export class ProjectService {
         const folderPath = this.appService.pathBuilder.getAbsoluteProjectPath(id);
         await FileSystemHandler.removeFolder(folderPath);
       }
+    });
+  }
+
+  public async getTask(project_id: string, task_id: string): Promise<TaskEntity> {
+    return this.taskRepository.findOne({
+      where: {
+        id: task_id,
+        project_id
+      },
+      relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file']
     });
   }
 }

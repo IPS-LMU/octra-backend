@@ -1,13 +1,14 @@
-import {Body, Controller, Param, Post, Put, Req} from '@nestjs/common';
+import {Body, Controller, Param, Post, Put, Req, UseInterceptors} from '@nestjs/common';
 import {AccountRole} from '@octra/api-types';
 import {ApiBearerAuth, ApiTags} from '@nestjs/swagger';
 import {CombinedRoles} from '../../../obj/decorators/combine.decorators';
 import {SaveAnnotationDto} from './annotation.dto';
 import {TaskDto, TasksService} from '../tasks';
 import {InternRequest} from '../../../obj/types';
-import {removeNullAttributes} from '../../../../../../../libs/server-side/src/lib/functions';
 import {AnnotationService} from './annotation.service';
-import {NumericStringValidationPipe} from "../../../obj/pipes/numeric-string-validation.pipe";
+import {NumericStringValidationPipe} from '../../../obj/pipes/numeric-string-validation.pipe';
+import {removeNullAttributes} from '@octra/server-side';
+import {ProjectAccessInterceptor} from '../../../obj/interceptors/project-access.interceptor';
 
 @ApiTags('Annotations')
 @ApiBearerAuth()
@@ -23,6 +24,7 @@ export class AnnotationController {
    * Allowed user roles: <code>administrator, project_admin, transcriber</code>
    */
   @CombinedRoles(AccountRole.administrator, AccountRole.user, AccountRole.projectAdministrator)
+  @UseInterceptors(ProjectAccessInterceptor)
   @Post(':project_id/annotations/start')
   async startAnnotation(@Param('project_id', NumericStringValidationPipe) project_id: string, @Req() req: InternRequest): Promise<TaskDto> {
     return new TaskDto(removeNullAttributes(await this.tasksService.giveNextFreeTaskToAccount(project_id, req.user.userId)));
@@ -34,6 +36,7 @@ export class AnnotationController {
    * Allowed user roles: <code>administrator, project_admin, transcriber</code>
    */
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.transcriber)
+  @UseInterceptors(ProjectAccessInterceptor)
   @Put(':project_id/annotations/:annotation_id/save')
   async saveAnnotation(@Param('project_id', NumericStringValidationPipe) project_id: string, @Param('annotation_id', NumericStringValidationPipe) annotation_id: string, @Body() dto: SaveAnnotationDto, @Req() req: InternRequest): Promise<TaskDto> {
     return new TaskDto(removeNullAttributes(await this.tasksService.saveAnnotationData(project_id, annotation_id, req.user.userId, dto)));
@@ -45,6 +48,7 @@ export class AnnotationController {
    * Allowed user roles: <code>administrator, project_admin, transcriber</code>
    */
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.transcriber)
+  @UseInterceptors(ProjectAccessInterceptor)
   @Put(':project_id/annotations/:annotation_id/free')
   async freeAnnotation(@Param('project_id', NumericStringValidationPipe) project_id: string, @Param('annotation_id', NumericStringValidationPipe) annotation_id: string, @Req() req: InternRequest): Promise<TaskDto> {
     return new TaskDto(removeNullAttributes(await this.tasksService.freeTask(project_id, annotation_id, req.user.userId)));
@@ -56,6 +60,7 @@ export class AnnotationController {
    * Allowed user roles: <code>administrator, project_admin, transcriber</code>
    */
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.transcriber)
+  @UseInterceptors(ProjectAccessInterceptor)
   @Put(':project_id/annotations/:annotation_id/continue')
   async continueAnnotation(@Param('project_id', NumericStringValidationPipe) project_id: string, @Param('annotation_id', NumericStringValidationPipe) annotation_id: string, @Req() req: InternRequest): Promise<TaskDto> {
     return new TaskDto(removeNullAttributes(await this.tasksService.continueTask(project_id, annotation_id, req.user.userId)));
@@ -67,6 +72,7 @@ export class AnnotationController {
    * Allowed user roles: <code>administrator, project_admin, transcriber</code>
    */
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.transcriber)
+  @UseInterceptors(ProjectAccessInterceptor)
   @Put(':project_id/annotations/:annotation_id/resume')
   async resumeAnnotation(@Param('project_id', NumericStringValidationPipe) project_id: string, @Param('annotation_id', NumericStringValidationPipe) annotation_id: string, @Req() req: InternRequest): Promise<TaskDto> {
     return new TaskDto(removeNullAttributes(await this.tasksService.resumeTask(project_id, annotation_id, req.user.userId)));

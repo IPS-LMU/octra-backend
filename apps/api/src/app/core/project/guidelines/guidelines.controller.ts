@@ -1,10 +1,11 @@
-import {Body, Controller, Get, Param, Put} from '@nestjs/common';
+import {Body, Controller, Get, Param, Put, UseInterceptors} from '@nestjs/common';
 import {AccountRole} from '@octra/api-types';
 import {ApiBearerAuth, ApiTags} from '@nestjs/swagger';
 import {GuidelinesDto} from './guidelines.dto';
 import {GuidelinesService} from './guidelines.service';
 import {CombinedRoles} from '../../../obj/decorators/combine.decorators';
-import {NumericStringValidationPipe} from "../../../obj/pipes/numeric-string-validation.pipe";
+import {NumericStringValidationPipe} from '../../../obj/pipes/numeric-string-validation.pipe';
+import {ProjectAccessInterceptor} from '../../../obj/interceptors/project-access.interceptor';
 
 @ApiTags('Guidelines')
 @ApiBearerAuth()
@@ -21,6 +22,7 @@ export class GuidelinesController {
    * Allowed user roles: <code>administrator, project_admin</code>
    */
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator)
+  @UseInterceptors(ProjectAccessInterceptor)
   @Put(':project_id/guidelines')
   async saveGuidelines(@Param('project_id', NumericStringValidationPipe) id: string, @Body() dtos: GuidelinesDto[]): Promise<void> {
     return this.guidelinesService.saveGuidelines(id, dtos);
@@ -33,6 +35,7 @@ export class GuidelinesController {
    * Allowed user roles: <code>administrator, project_admin, transcriber</code>
    */
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.transcriber)
+  @UseInterceptors(ProjectAccessInterceptor)
   @Get(':project_id/guidelines')
   async getGuidelines(@Param('project_id', NumericStringValidationPipe) id: string): Promise<GuidelinesDto[]> {
     return this.guidelinesService.getGuidelines(id);

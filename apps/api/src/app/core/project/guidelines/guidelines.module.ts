@@ -1,10 +1,12 @@
-import {Module} from '@nestjs/common';
+import {forwardRef, Module} from '@nestjs/common';
 import {GuidelinesController} from './guidelines.controller';
 import {GuidelinesService} from './guidelines.service';
-import {GlobalModule} from '../../../global.module';
+import {ProjectModule} from '../project.module';
 
 @Module({
-  imports: [GlobalModule],
+  imports: [
+    forwardRef(() => ProjectModule),
+  ],
   controllers: [GuidelinesController],
   providers: [GuidelinesService],
   exports: [GuidelinesService]

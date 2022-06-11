@@ -2,24 +2,23 @@ import {forwardRef, Module} from '@nestjs/common';
 import {ProjectController} from './project.controller';
 import {TypeOrmModule} from '@nestjs/typeorm';
 import {ProjectService} from './project.service';
-import {ACCOUNT_ENTITIES} from '../account/account.module';
 import {GuidelinesModule} from './guidelines';
 import {TasksModule} from './tasks';
-import {GlobalModule} from '../../global.module';
 import {FileProjectEntity, ProjectEntity, TaskEntity, TaskInputOutputEntity} from '@octra/server-side';
+import {AnnotationModule} from './annotations/annotation.module';
 
 export const PROJECT_ENTITIES = [TaskEntity, ProjectEntity, FileProjectEntity, TaskInputOutputEntity];
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([...ACCOUNT_ENTITIES, ...PROJECT_ENTITIES]),
-    GuidelinesModule,
-    forwardRef(() => TasksModule),
-    GlobalModule
+    TypeOrmModule.forFeature([...PROJECT_ENTITIES]),
+    forwardRef(() => GuidelinesModule),
+    forwardRef(() => AnnotationModule),
+    forwardRef(() => TasksModule)
   ],
   controllers: [ProjectController],
   providers: [ProjectService],
-  exports: [ProjectService, TasksModule, TypeOrmModule]
+  exports: [ProjectService]
 })
 export class ProjectModule {
 }
