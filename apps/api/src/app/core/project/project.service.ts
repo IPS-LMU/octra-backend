@@ -31,7 +31,7 @@ export class ProjectService {
   }
 
   public async getProject(id: string): Promise<ProjectEntity> {
-    const project = await this.projectRepository.findOne({
+    const project = await this.projectRepository.findOneBy({
       id
     });
     return project;
@@ -39,8 +39,7 @@ export class ProjectService {
 
   public async getProjectRoles(id: string, user: CurrentUser, allowedProjectRoles: string[]): Promise<AccountRoleProjectEntity[]> {
     const project = await this.projectRepository.findOne({
-      id
-    }, {
+      where: {id},
       relations: ['roles']
     });
 
@@ -52,8 +51,9 @@ export class ProjectService {
   public async assignProjectRoles(id: string, roles: ProjectAssignRolesRequestDto[], user: CurrentUser, allowedProjectRoles: string[]): Promise<void> {
     return this.databaseService.transaction<void>(async (manager) => {
       const project = await manager.findOne(ProjectEntity, {
-        id
-      }, {
+        where: {
+          id
+        },
         relations: ['roles']
       });
 
@@ -87,7 +87,7 @@ export class ProjectService {
   }
 
   public async changeProject(id: string, dto: ProjectRequestDto, user: CurrentUser, allowedProjectRoles: string[]): Promise<ProjectEntity> {
-    const project = await this.projectRepository.findOne({
+    const project = await this.projectRepository.findOneBy({
       id
     });
 
@@ -112,7 +112,7 @@ export class ProjectService {
         });
       } else {
         // remove all references to tasks of this project
-        const items = await manager.find(TaskEntity, {
+        const items = await manager.findBy(TaskEntity, {
           project_id: id
         });
         for (const item of items) {

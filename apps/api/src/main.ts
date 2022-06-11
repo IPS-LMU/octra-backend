@@ -2,6 +2,7 @@
  * This is not a production server yet!
  * This is only a minimal backend to get started.
  */
+import {ConfigLoader} from './config-loader';
 import {version} from '../package.json'
 import {Logger} from '@nestjs/common';
 import {NestFactory} from '@nestjs/core';
@@ -19,6 +20,8 @@ import * as path from 'path';
 import {IAPIConfiguration} from '@octra/server-side';
 import {getConfigPath} from './app/functions';
 import {IntroView} from './app/view/intro.view';
+
+new ConfigLoader();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {

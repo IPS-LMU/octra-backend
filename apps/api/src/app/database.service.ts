@@ -1,9 +1,9 @@
 import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
-import {Connection, EntityManager} from 'typeorm';
+import {DataSource, EntityManager} from 'typeorm';
 
 @Injectable()
 export class DatabaseService {
-  constructor(private connection: Connection) {
+  constructor(private connection: DataSource) {
   }
 
   public async transaction<T>(callback: (manager: EntityManager) => Promise<T>): Promise<T> {

@@ -9,7 +9,7 @@ import {
   AssignRoleProjectDto,
   ChangePasswordDto
 } from './account.dto';
-import {AccountRoleScope} from '@octra/api-types';
+import {AccountRole, AccountRoleScope} from '@octra/api-types';
 import {ConfigService} from '@nestjs/config';
 import {DatabaseService} from '../../database.service';
 import {
@@ -60,7 +60,7 @@ export class AccountService {
   }
 
   async findAccountByID(id: string): Promise<AccountEntity | undefined> {
-    return this.accountRepository.findOne({
+    return this.accountRepository.findOneBy({
       id
     });
   }
@@ -70,7 +70,7 @@ export class AccountService {
   }
 
   async getAccount(id: string): Promise<AccountEntity> {
-    return await this.accountRepository.findOne({
+    return await this.accountRepository.findOneBy({
       id
     });
   }
@@ -114,7 +114,7 @@ export class AccountService {
         }
       }
 
-      const account = await manager.findOne(AccountEntity, {
+      const account = await manager.findOneBy(AccountEntity, {
         id
       });
       projectIDs = account.roles.map(a => a.project_id)
@@ -132,7 +132,7 @@ export class AccountService {
   }
 
   async changePassword(id: string, changePasswordDto: ChangePasswordDto): Promise<void> {
-    const account = await this.accountRepository.findOne({
+    const account = await this.accountRepository.findOneBy({
       id
     });
 
@@ -155,7 +155,7 @@ export class AccountService {
 
   async removeAccount(id: string): Promise<void> {
     return this.databaseService.transaction<void>(async (manager) => {
-      const account = await manager.findOne(AccountEntity, id);
+      const account = await manager.findOneBy(AccountEntity, {id});
       await manager.update(AccountEntity, {
         id
       }, {
@@ -171,8 +171,8 @@ export class AccountService {
     return this.databaseService.transaction<AccountEntity>(async (manager) => {
       const role = await manager.findOne(RoleEntity, {
         where: {
-          label: (dto instanceof AccountRegisterRequestDto) ? 'user' : (dto as AccountCreateRequestDto).role,
-          scope: 'general'
+          label: (dto instanceof AccountRegisterRequestDto) ? AccountRole.user : (dto as AccountCreateRequestDto).role,
+          scope: AccountRoleScope.general
         }
       });
 
@@ -189,7 +189,10 @@ export class AccountService {
         last_login: new Date()
       });
 
-      return manager.findOne(AccountEntity, insertResult.identifiers[0].id, {
+      return manager.findOne(AccountEntity, {
+        where: {
+          id: insertResult.identifiers[0].id
+        },
         relations: ['account_person', 'roles']
       });
     });

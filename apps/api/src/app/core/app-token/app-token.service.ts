@@ -31,12 +31,12 @@ export class AppTokenService {
     return;
   }
 
-  async refreshAppToken(id: number): Promise<AppTokenEntity> {
+  async refreshAppToken(id: string): Promise<AppTokenEntity> {
     const key = await this.generateAppToken();
     await this.tokenRepository.update(id, {
       key
     });
-    return (removeNullAttributes(await this.tokenRepository.findOne(id)));
+    return (removeNullAttributes(await this.tokenRepository.findOneBy({id})));
   }
 
   async isValidAppToken(token: string, originHost: string): Promise<boolean> {

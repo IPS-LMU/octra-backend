@@ -112,7 +112,10 @@ export class TasksService {
   }
 
   async changeTaskData(project_id: string, task_id: string, body: TaskUploadDto | TaskChangeDto, req: InternRequest): Promise<TaskEntity> {
-    const task = await this.taskRepository.findOne(task_id, {relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file']});
+    const task = await this.taskRepository.findOne({
+      where: {id: task_id},
+      relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file']
+    });
     const inputs = body.inputs;
     const mediaFile = inputs?.find(a => a.mimetype === 'audio/wave');
     const transcriptFile = inputs?.find(a => a.mimetype === 'application/json' || a.mimetype === 'text/plain');
@@ -181,7 +184,7 @@ export class TasksService {
 
   public async removeTask(project_id: string, task_id: string) {
     return this.databaseService.transaction<void>(async (manager) => {
-      const project = await manager.findOne(TaskEntity, {
+      const project = await manager.findOneBy(TaskEntity, {
         id: task_id,
         project_id
       });
@@ -384,9 +387,12 @@ export class TasksService {
 
   public async getTask(project_id: string, task_id: string): Promise<TaskEntity> {
     return this.taskRepository.findOne({
-      id: task_id,
-      project_id
-    }, {relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file']});
+      where: {
+        id: task_id,
+        project_id
+      },
+      relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file']
+    });
   }
 
   public async listTasks(project_id: string): Promise<TaskEntity[]> {
@@ -423,7 +429,10 @@ export class TasksService {
       if (updateResult.affected < 1) {
         throw new InternalServerErrorException('Can\'t update task status to \'BUSY\'.');
       }
-      return await manager.findOne(TaskEntity, task.id, {
+      return await manager.findOne(TaskEntity, {
+        where: {
+          id: task.id
+        },
         relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file'],
       });
     });
@@ -431,7 +440,7 @@ export class TasksService {
 
   public async saveAnnotationData(project_id: string, task_id: string, worker_id: string, dto: SaveAnnotationDto): Promise<TaskEntity> {
     return this.databaseService.transaction<TaskEntity>(async (manager) => {
-      const task = await manager.findOne(TaskEntity, {
+      const task = await manager.findOneBy(TaskEntity, {
         id: task_id
       });
 
@@ -467,7 +476,8 @@ export class TasksService {
       if (updateResult.affected < 1) {
         throw new InternalServerErrorException('Can\'t save annotation to task.');
       }
-      return await manager.findOne(TaskEntity, task.id, {
+      return await manager.findOne(TaskEntity, {
+        where: {id: task.id},
         relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file'],
       });
     });
@@ -475,7 +485,7 @@ export class TasksService {
 
   public async freeTask(project_id: string, task_id: string, worker_id: string): Promise<TaskEntity> {
     return this.databaseService.transaction<TaskEntity>(async (manager) => {
-      const task = await manager.findOne(TaskEntity, {
+      const task = await manager.findOneBy(TaskEntity, {
         id: task_id
       });
 
@@ -496,7 +506,8 @@ export class TasksService {
       if (updateResult.affected < 1) {
         throw new InternalServerErrorException('Can\'t free annotation.');
       }
-      return await manager.findOne(TaskEntity, task.id, {
+      return await manager.findOne(TaskEntity, {
+        where: {id: task.id},
         relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file'],
       });
     });
@@ -504,7 +515,7 @@ export class TasksService {
 
   public async continueTask(project_id: string, task_id: string, worker_id: string): Promise<TaskEntity> {
     return this.databaseService.transaction<TaskEntity>(async (manager) => {
-      const task = await manager.findOne(TaskEntity, {
+      const task = await manager.findOneBy(TaskEntity, {
         id: task_id
       });
 
@@ -521,7 +532,8 @@ export class TasksService {
       }
 
       // don't change status because there's no need.
-      return await manager.findOne(TaskEntity, task.id, {
+      return await manager.findOne(TaskEntity, {
+        where: {id: task.id},
         relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file'],
       });
     });
@@ -529,7 +541,7 @@ export class TasksService {
 
   public async resumeTask(project_id: string, task_id: string, worker_id: string): Promise<TaskEntity> {
     return this.databaseService.transaction<TaskEntity>(async (manager) => {
-      const task = await manager.findOne(TaskEntity, {
+      const task = await manager.findOneBy(TaskEntity, {
         id: task_id
       });
 
@@ -546,7 +558,8 @@ export class TasksService {
       }
 
       // don't change status because there's no need.
-      return await manager.findOne(TaskEntity, task.id, {
+      return await manager.findOne(TaskEntity, {
+        where: {id: task.id},
         relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file'],
       });
     });
@@ -580,13 +593,13 @@ export class TasksService {
   }
 
   private async getFileItemByHash(hash: string): Promise<FileEntity> {
-    return this.fileRepository.findOne({
+    return this.fileRepository.findOneBy({
       hash
     });
   }
 
   private async getFileItemByUrl(url: string): Promise<FileEntity> {
-    return this.fileRepository.findOne({
+    return this.fileRepository.findOneBy({
       url
     });
   }

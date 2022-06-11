@@ -53,7 +53,7 @@ export class AppTokenController {
    */
   @CombinedRoles(AccountRole.administrator)
   @Put('tokens/:id/refresh')
-  async refreshAppToken(@Param('id', NumericStringValidationPipe) id: number): Promise<AppTokenDto> {
+  async refreshAppToken(@Param('id', NumericStringValidationPipe) id: string): Promise<AppTokenDto> {
     return new AppTokenDto(await this.appTokensService.refreshAppToken(id));
   }
 
