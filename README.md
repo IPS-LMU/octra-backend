@@ -65,7 +65,7 @@ octra-cli
 </td>
 <td>CLI for server side administration using the terminal. This tool is needed for upgrade/installation of the DB.</td>
 <td>
-<a href="https://github.com/IPS-LMU/octra-backend/tree/main/libs/cli/">more information</a>
+<a href="https://github.com/IPS-LMU/octra-backend/tree/main/apps/cli/">more information</a>
 </td>
 </tr>
 </tbody>
