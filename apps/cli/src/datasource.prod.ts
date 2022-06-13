@@ -1,10 +1,11 @@
 import * as Path from 'path';
 import {Configuration, getOrmConfig} from '@octra/server-side';
-import {TypeOrmModuleOptions} from '@nestjs/typeorm';
+import {SqlServerConnectionOptions} from 'typeorm/driver/sqlserver/SqlServerConnectionOptions';
+import {DataSource} from 'typeorm';
 
 const config = Configuration.getInstance(); // config is intitialized in dbaware decorator
 
-export const OrmConfig: TypeOrmModuleOptions = {
+export const OrmConfig: SqlServerConnectionOptions = {
   ...getOrmConfig(config),
   driver: (config.database.dbType === 'sqlite') ? require('sqlite3') : undefined,
   entities: [
@@ -18,4 +19,4 @@ export const OrmConfig: TypeOrmModuleOptions = {
   logging: 'error',
   logger: 'advanced-console'
 }
-export default OrmConfig;
+export default new DataSource(OrmConfig);

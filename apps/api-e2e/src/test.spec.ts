@@ -18,7 +18,7 @@ import {
   ProjectRemoveRequestDto,
   ProjectRequestDto
 } from '../../api/src/app/core/project/project.dto';
-import {AccountRole} from '@octra/api-types';
+import {AccountRole, ProjectVisibility} from '@octra/api-types';
 import {ToolCreateRequestDto, ToolDto} from '../../api/src/app/core/tool/tool.dto';
 import {TaskDto, TaskProperties} from '../../api/src/app/core/project/tasks';
 import {SaveAnnotationDto} from '../../api/src/app/core/project/annotations/annotation.dto';
@@ -342,6 +342,7 @@ describe('Projects', () => {
      return authPost('/projects/', {
        'name': tempData.project.name,
        shortname: `${tempData.project.name}_short`,
+       visibility: ProjectVisibility.public,
        'description': 'test description'
      } as ProjectRequestDto).expect(201).then(({body}) => {
        if (!body) {

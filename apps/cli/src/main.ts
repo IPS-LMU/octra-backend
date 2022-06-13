@@ -8,7 +8,7 @@ import {OtherCommands} from './app/commands/others.command';
 import {version} from '../package.json';
 
 const globals = ConfigLoader.globals;
-globals.typeORMPath = `node ${join(globals.nodeModulesPath, '.bin/typeorm')} --config ${join(globals.basePath, globals.dataSorceFile)}`;
+globals.typeORMPath = `node ${join(globals.nodeModulesPath, '.bin/typeorm')} --dataSource ${join(globals.basePath, globals.dataSorceFile)}`;
 
 let argv: any;
 

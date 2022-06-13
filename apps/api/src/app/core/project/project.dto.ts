@@ -1,8 +1,8 @@
-import {IsBoolean, IsNotEmpty, IsNumber, IsString} from 'class-validator';
+import {IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsString} from 'class-validator';
 import {StandardWithTimeDto} from '../standard.dto';
 import {removeProperties} from '../../../../../../libs/server-side/src/lib/functions';
 import {ApiHideProperty} from '@nestjs/swagger';
-import {AccountRole} from '@octra/api-types';
+import {AccountRole, ProjectVisibility} from '@octra/api-types';
 import {RoleDto} from '../account/account.dto';
 import {Expose, Transform} from 'class-transformer';
 import {ProjectEntity} from '@octra/server-side';
@@ -12,6 +12,9 @@ export class ProjectRequestDto extends StandardWithTimeDto {
   name: string;
   @IsNotEmpty()
   shortname: string;
+  @IsNotEmpty()
+  @IsEnum(ProjectVisibility)
+  visibility: ProjectVisibility;
   description?: string;
   configuration?: any;
   startdate?: Date;

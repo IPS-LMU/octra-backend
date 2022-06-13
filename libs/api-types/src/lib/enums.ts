@@ -4,6 +4,11 @@ export enum ProjectUserRole {
   dataDelivery = 'data_delivery',
 }
 
+export enum ProjectVisibility {
+  public = 'public',
+  private = 'private'
+}
+
 export enum GlobalUserRole {
   administrator = 'administrator',
   user = 'user',

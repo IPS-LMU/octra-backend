@@ -21,6 +21,10 @@ export class ProjectEntity extends StandardEntityWithTimestamps {
   @DbAwareColumn({
     type: 'text'
   })
+  visibility!: string;
+  @DbAwareColumn({
+    type: 'text'
+  })
   description!: string;
   @DbAwareColumn({
     type: 'json',

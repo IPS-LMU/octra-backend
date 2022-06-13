@@ -29,7 +29,8 @@
     "src/app/**/*",
     "src/environments/**/*",
     "src/main.ts",
-    "../../libs/**/*"
+    "../../libs/**/*",
+    "src/datasource.ts"
   ],
   "include": [
     "src/migrations/*.ts",

@@ -26,6 +26,10 @@ export class InstallationCommand extends OctraCLICommand {
   name: ${configFile.database.dbName}
   host: ${configFile.database.dbHost}
   port: ${configFile.database.dbPort}
+
+! All secret keys from the config.json file are going to be re-generated!
+  Path to config file:
+  ${join(process.env['configPath'], 'config.json')}
 ------------------------------------------------------------------
 
 Press "y" for "Yes" or "n" for "No" and press ENTER.
@@ -74,12 +78,17 @@ Press "y" for "Yes" or "n" for "No" and press ENTER.
       });
       Configuration.overwrite(configFile);
 
-      console.log('Remove all existing tables...');
-      await ScriptRunner.run(`${this.globals.typeORMPath} schema:drop`, false);
-      console.log('Removed Database.');
-      console.log('Initialize database...');
-      await ScriptRunner.run(`${this.globals.typeORMPath} migration:run`, true);
-      console.log('Installation complete.');
+      try {
+        console.log('Remove all existing tables...');
+        await ScriptRunner.run(`${this.globals.typeORMPath} schema:drop`, false);
+        console.log('Removed Database.');
+        console.log('Initialize database...');
+        await ScriptRunner.run(`${this.globals.typeORMPath} migration:run`, true);
+        console.log('Installation complete.');
+      } catch (e) {
+        console.log(`EROOR: Installation failed.`);
+        console.log(e);
+      }
     } else {
       console.log('Did nothing.');
     }

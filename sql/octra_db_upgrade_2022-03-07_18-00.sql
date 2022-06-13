@@ -208,6 +208,7 @@ $$
     RAISE NOTICE '-> Entferne admin_id aus project Tabelle und konvertiere configuration zu JSONB...';
     ALTER TABLE project
       DROP column IF EXISTS admin_id,
+      ADD COLUMN IF NOT EXISTS visibility text,
       ALTER column configuration TYPE json USING configuration::json;
 
     RAISE NOTICE '-> Entferne alle Einträge aus account_role...';

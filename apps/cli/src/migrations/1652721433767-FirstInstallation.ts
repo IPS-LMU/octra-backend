@@ -275,6 +275,11 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
           isNullable: true
         },
         {
+          name: 'visibility',
+          type: m('text'),
+          isNullable: false
+        },
+        {
           name: 'description',
           type: m('text'),
           isNullable: true

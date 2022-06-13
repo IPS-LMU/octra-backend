@@ -13,7 +13,6 @@
     "**/*.spec.ts",
     "**/*.test.ts",
     "src/migrations/**/*",
-    "src/datasource.ts",
     "src/octra-migration.ts"
   ],
   "include": [
