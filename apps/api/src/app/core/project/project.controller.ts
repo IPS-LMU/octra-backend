@@ -23,7 +23,7 @@ export class ProjectController {
    * returns a list of projects.
    *
    *
-   * Allowed user roles: <code>administrator</code>
+   * Allowed user roles: <code>administrator, user</code>
    */
   @CombinedRoles(AccountRole.administrator, AccountRole.user)
   @Get('')

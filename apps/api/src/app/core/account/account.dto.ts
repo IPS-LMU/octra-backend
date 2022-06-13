@@ -26,8 +26,8 @@ export class RoleDto {
 
     newObj = {
       ...newObj,
-      role: partial.role.label,
-      scope: partial.role.scope
+      role: partial.role?.label,
+      scope: partial.role?.scope
     }
 
     newObj = removeProperties(newObj, ['id', 'role_id', 'account_id']);
