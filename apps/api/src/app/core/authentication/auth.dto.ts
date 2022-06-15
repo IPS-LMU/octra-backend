@@ -1,18 +1,22 @@
-import {IsEmail, IsNotEmpty} from 'class-validator';
+import {IsEmail, IsEnum, IsNotEmpty, IsOptional} from 'class-validator';
+import {AccountLoginMethod} from '@octra/api-types';
 
 export class AuthDto {
-  access_token: string;
-  account_id: string;
+  openURL?: string;
+  access_token?: string;
+  account_id?: string;
 }
 
 export class AuthLoginDto {
-  @IsNotEmpty()
-  type: 'shibboleth' | 'local';
+  @IsEnum(AccountLoginMethod)
+  type: AccountLoginMethod;
+  @IsOptional()
   @IsEmail()
   email: string;
+  @IsOptional()
   @IsNotEmpty()
   username?: string;
-  @IsNotEmpty()
+  @IsOptional()
   password?: string;
 }
 

@@ -19,11 +19,12 @@ import * as path from 'path';
 import {IAPIConfiguration} from '@octra/server-side';
 import {getConfigPath} from './app/functions';
 import {IntroView} from './app/view/intro.view';
+import {NestExpressApplication} from '@nestjs/platform-express';
 
 new ConfigLoader();
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: ['error', 'warn', 'log', 'debug', 'verbose']
   });
   const configService = app.get(ConfigService);
@@ -84,6 +85,9 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({
     transform: true
   }));
+
+  app.setBaseViewsDir(path.join(__dirname, '..', 'views'));
+  app.setViewEngine('ejs');
 
   await app.listen(port, config.host);
   Logger.log(

@@ -9,7 +9,7 @@ import {
   AssignRoleProjectDto,
   ChangePasswordDto
 } from './account.dto';
-import {AccountRole, AccountRoleScope} from '@octra/api-types';
+import {AccountLoginMethod, AccountRole, AccountRoleScope} from '@octra/api-types';
 import {ConfigService} from '@nestjs/config';
 import {DatabaseService} from '../../database.service';
 import {
@@ -181,7 +181,7 @@ export class AccountService {
     });
   }
 
-  async createAccount(dto: AccountRegisterRequestDto | AccountCreateRequestDto): Promise<AccountEntity> {
+  async createAccount(dto: AccountRegisterRequestDto | AccountCreateRequestDto, loginmethod: AccountLoginMethod = AccountLoginMethod.local): Promise<AccountEntity> {
     return this.databaseService.transaction<AccountEntity>(async (manager) => {
       const role = await manager.findOne(RoleEntity, {
         where: {
@@ -192,9 +192,9 @@ export class AccountService {
 
       let insertResult = await manager.insert(AccountPersonEntity, {
         username: dto.name,
-        hash: getPasswordHash(this.configService.get('api.passwordSalt'), dto.password),
+        hash: (loginmethod === AccountLoginMethod.local) ? getPasswordHash(this.configService.get('api.passwordSalt'), dto.password) : dto.password,
         email: dto.email,
-        loginmethod: 'local'
+        loginmethod
       });
 
       insertResult = await manager.insert(AccountEntity, {

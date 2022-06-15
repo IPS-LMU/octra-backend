@@ -14,7 +14,7 @@ import {
   ChangePasswordDto
 } from '../../api/src/app/core/account/account.dto';
 import {ProjectAssignRolesRequestDto, ProjectRequestDto} from '../../api/src/app/core/project/project.dto';
-import {AccountRole, ProjectVisibility} from '@octra/api-types';
+import {AccountLoginMethod, AccountRole, ProjectVisibility} from '@octra/api-types';
 import {ToolCreateRequestDto, ToolDto} from '../../api/src/app/core/tool/tool.dto';
 import {TaskDto, TaskProperties} from '../../api/src/app/core/project/tasks';
 import {SaveAnnotationDto} from '../../api/src/app/core/project/annotations/annotation.dto';
@@ -172,7 +172,8 @@ describe('OCTRA Nest API (e2e)', () => {
       return request(app.getHttpServer())
         .post('/auth/login').send({
           'username': 'Julian',
-          'password': 'Test123'
+          'password': 'Test123',
+          'type': AccountLoginMethod.local
         })
         .set('X-App-Token', `${appToken}`)
         .set('Origin', 'http://localhost:8080')
@@ -183,7 +184,6 @@ describe('OCTRA Nest API (e2e)', () => {
           console.log(e)
         })
     });
-
 
     it('/account/ (POST)', () => {
       tempData.user.name = `TestAccount_${Date.now()}_delivery`;
@@ -206,8 +206,7 @@ describe('OCTRA Nest API (e2e)', () => {
     it('/authentication/login (POST) (user)', () => {
       return request(app.getHttpServer())
         .post('/auth/login').send({
-          'username': tempData.user.name,
-          'password': 'Test1234',
+          'type': AccountLoginMethod.shibboleth
         })
         .set('X-App-Token', `${appToken}`)
         .set('Origin', 'http://localhost:8080')
