@@ -13,11 +13,7 @@ import {
   AssignRoleDto,
   ChangePasswordDto
 } from '../../api/src/app/core/account/account.dto';
-import {
-  ProjectAssignRolesRequestDto,
-  ProjectRemoveRequestDto,
-  ProjectRequestDto
-} from '../../api/src/app/core/project/project.dto';
+import {ProjectAssignRolesRequestDto, ProjectRequestDto} from '../../api/src/app/core/project/project.dto';
 import {AccountRole, ProjectVisibility} from '@octra/api-types';
 import {ToolCreateRequestDto, ToolDto} from '../../api/src/app/core/tool/tool.dto';
 import {TaskDto, TaskProperties} from '../../api/src/app/core/project/tasks';
@@ -172,7 +168,7 @@ describe('OCTRA Nest API (e2e)', () => {
   })
 
   describe('Authentication', () => {
-    it('/authentication/login (POST)', () => {
+    it('/auth/login (POST)', () => {
       return request(app.getHttpServer())
         .post('/auth/login').send({
           'username': 'Julian',
@@ -672,20 +668,22 @@ describe('Projects', () => {
       const t = a;
     });
   });
+  /*
+    it('/projects/project_id/:id/tasks/:task_id (DELETE)', () => {
+      return authDelete(`/projects/${tempData.project.id}/tasks/${tempData.task.id}`, undefined).expect(200);
+    });
 
-  it('/projects/project_id/:id/tasks/:task_id (DELETE)', () => {
-    return authDelete(`/projects/${tempData.project.id}/tasks/${tempData.task.id}`, undefined).expect(200);
-  });
+    it('/projects/:id (DELETE)', () => {
+      return authDelete(`/projects/${tempData.project.id}`, {
+        cutAllReferences: false,
+        removeAllReferences: true,
+        removeProjectFiles: true
+      } as ProjectRemoveRequestDto).expect(200);
+    });
 
-  it('/projects/:id (DELETE)', () => {
-    return authDelete(`/projects/${tempData.project.id}`, {
-      cutAllReferences: false,
-      removeAllReferences: true,
-      removeProjectFiles: true
-    } as ProjectRemoveRequestDto).expect(200);
-  });
+    it('/account/:id (DELETE)', () => {
+      return authDelete(`/account/${tempData.user.id}`, undefined).expect(200);
+    });
 
-  it('/account/:id (DELETE)', () => {
-    return authDelete(`/account/${tempData.user.id}`, undefined).expect(200);
-  });
+   */
 });

@@ -1,16 +1,13 @@
 import * as yargs from 'yargs';
 import {OctraCLICommand} from './command';
-import {ScriptRunner} from '../script-runner';
 import {GlobalVariables} from '../types';
-import * as fs from 'fs';
-import * as Path from 'path';
 
 export class OtherCommands extends OctraCLICommand {
   override init(argv: yargs.Argv, globals: GlobalVariables): yargs.Argv {
     argv = super.init(argv, globals);
     return argv.command('currDir', 'Retrieves the current path.', (args) => {
       console.log(__dirname);
-    }).command('ls [path]', 'shows the files and folders within the pkg snapshot.', (yargs) => {
+    })/* .command('ls [path]', 'shows the files and folders within the pkg snapshot.', (yargs) => {
       yargs.positional('path', {
         type: 'string',
         default: '',
@@ -26,6 +23,6 @@ export class OtherCommands extends OctraCLICommand {
           describe: 'Run command'
         });
         await ScriptRunner.run((yargs.argv as any).command, undefined);
-      });
+      }) */;
   }
 }
