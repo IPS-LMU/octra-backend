@@ -7,6 +7,7 @@ import {ROLES_KEY} from '../../../../role.decorator';
 import {Reflector} from '@nestjs/core';
 import {checkIfProjectAccessAllowed} from '../../functions';
 import {TaskEntity} from '@octra/server-side';
+import {NotFoundException} from '../exceptions';
 
 @Injectable()
 export class ProjectAccessInterceptor implements NestInterceptor {
@@ -20,11 +21,25 @@ export class ProjectAccessInterceptor implements NestInterceptor {
 
     if (request?.params?.project_id) {
       const project = await this.projectService.getProject(request.params.project_id);
-      request.project = project;
       const allowedProjectRoles = this.reflector.get<AccountRole[]>(ROLES_KEY, context.getHandler());
+
+      if (!project) {
+        throw new NotFoundException(`Can't find any project with this id.`)
+      }
+      if (!request?.params?.task_id) {
+        checkIfProjectAccessAllowed(project, undefined, request.user, allowedProjectRoles);
+      }
+      request.project = project;
+
       let task: TaskEntity;
       if (request?.params?.task_id) {
         task = await this.projectService.getTask(request.params.project_id, request.params.task_id);
+
+        if (!task) {
+          throw new NotFoundException(`Can't find any task with this id.`)
+        }
+
+        checkIfProjectAccessAllowed(project, task, request.user, allowedProjectRoles);
         request.task = task;
       }
 

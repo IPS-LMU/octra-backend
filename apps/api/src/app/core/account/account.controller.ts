@@ -28,6 +28,8 @@ import {InternRequest} from '../../obj/types';
 import {Public} from '../authorization/public.decorator';
 import {NumericStringValidationPipe} from '../../obj/pipes/numeric-string-validation.pipe';
 import {removeNullAttributes} from '@octra/server-side';
+import {CustomApiException} from '../../obj/decorators/api-exception.decorators';
+import {BadRequestException, NotFoundException} from '../../obj/exceptions';
 
 @ApiTags('Accounts')
 @ApiBearerAuth()
@@ -43,7 +45,7 @@ export class AccountController {
    */
   @CombinedRoles(AccountRole.administrator)
   @Get()
-  async listUsers(@Req() req: Request): Promise<AccountDto[]> {
+  async listAccounts(@Req() req: Request): Promise<AccountDto[]> {
     return (await this.accountService.getAll()).map(a => removeNullAttributes(new AccountDto(a)));
   }
 
@@ -52,6 +54,7 @@ export class AccountController {
    *
    * Allowed user roles: <code>administrator</code>
    */
+  @CombinedRoles(AccountRole.administrator, AccountRole.user)
   @Get('current')
   async getCurrentAccountInformation(@Req() req: InternRequest): Promise<AccountDto> {
     return new AccountDto(await this.accountService.getAccount(req.user.userId));
@@ -63,6 +66,7 @@ export class AccountController {
    * Allowed user roles: <code>administrator</code>
    */
   @CombinedRoles(AccountRole.administrator)
+  @CustomApiException(new NotFoundException(`Can't find any account with this id.`))
   @Put(':id/roles')
   async assignAccountRoles(@Param('id', NumericStringValidationPipe) id: string, @Body() assignDto: AssignRoleDto): Promise<AssignRoleDto> {
     return this.accountService.assignAccountRoles(id, assignDto);
@@ -72,11 +76,9 @@ export class AccountController {
    * changes the password of the current account.
    */
   @UseInterceptors(ClassSerializerInterceptor)
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'Old password does not match the password from the database.'
-  })
   @ApiResponse({status: HttpStatus.NOT_FOUND, description: 'Can\'t find the account with the specified ID.'})
+  @CustomApiException(new BadRequestException('Incorrect old password.'))
+  @CustomApiException(new NotFoundException('Can\'t find account with this id'))
   @Put('password')
   async changeMyPassword(@Req() req: InternRequest, @Body() changePasswordDto: ChangePasswordDto): Promise<void> {
     return this.accountService.changePassword(req.user.userId, changePasswordDto);
@@ -98,14 +100,16 @@ export class AccountController {
    * Allowed user roles: <code>administrator</code>
    */
   @CombinedRoles(AccountRole.administrator)
+  @CustomApiException(new NotFoundException(`Can't find any account with this id.`))
   @Get(':id')
   async getAccountInformation(@Param('id', NumericStringValidationPipe) id: string): Promise<AccountDto | undefined> {
     return removeNullAttributes(new AccountDto(await this.accountService.findAccountByID(id)));
   }
 
   @CombinedRoles(AccountRole.administrator)
+  @CustomApiException(new NotFoundException(`Can't find any account with this id.`))
   @Delete(':id')
-  removeUser(@Param('id', NumericStringValidationPipe) id: string): Promise<void> {
+  removeAccount(@Param('id', NumericStringValidationPipe) id: string): Promise<void> {
     return this.accountService.removeAccount(id);
   }
 

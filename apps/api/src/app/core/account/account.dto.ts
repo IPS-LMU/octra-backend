@@ -1,9 +1,9 @@
 import {StandardWithTimeDto} from '../standard.dto';
-import {IsEnum, IsNotEmpty} from 'class-validator';
+import {IsEmail, IsEnum, IsNotEmpty} from 'class-validator';
 import {Expose, Transform, Type} from 'class-transformer';
-import {OmitType, PartialType} from '@nestjs/swagger';
-import {AccountRole, AccountRoleScope} from '@octra/api-types';
-import {AccountEntity, AccountRoleProjectEntity, removeProperties, RoleEntity} from '@octra/server-side';
+import {ApiProperty, OmitType, PartialType} from '@nestjs/swagger';
+import {AccountLoginMethod, AccountRole, AccountRoleScope} from '@octra/api-types';
+import {AccountEntity, AccountRoleProjectEntity, removeProperties} from '@octra/server-side';
 
 export class RoleDto {
   @IsNotEmpty()
@@ -77,23 +77,63 @@ export class AssignRoleDto {
 
 export class AccountDto extends StandardWithTimeDto {
   @IsNotEmpty()
+  @ApiProperty({
+    description: 'username of the account',
+    example: 'testuser'
+  })
   username: string;
   @IsNotEmpty()
+  @IsEmail()
+  @ApiProperty({
+    description: 'email address of the account',
+    example: 'email@test.com'
+  })
   email: string;
   @IsNotEmpty()
-  loginmethod: string;
+  @IsEnum(AccountLoginMethod)
+  @ApiProperty({
+    description: 'login method',
+    example: 'local'
+  })
+  loginmethod: AccountLoginMethod;
   @IsNotEmpty()
+  @ApiProperty({
+    description: 'describes if the account is active.',
+    example: true
+  })
   active: boolean;
+  @IsNotEmpty()
+  @ApiProperty({
+    description: 'describes the set of skills of this user.',
+    example: 'orthographic transcription'
+  })
   training?: string;
+  @ApiProperty({
+    description: 'some comment about this account.',
+    example: 'Some comment.'
+  })
   comment?: string;
 
   @IsNotEmpty()
+  @ApiProperty({
+    description: 'the general user role.',
+    example: true
+  })
   @Transform(({value}) => value.label)
-  generalRole: RoleEntity;
+  generalRole: AccountRole;
   @Type(() => AssignAccountRoleDto)
+
+  @ApiProperty({
+    description: 'user roles of this account associated to specific projects.',
+    example: true
+  })
   projectRoles: AssignAccountRoleDto[];
-  last_login?: string;
-  registrations?: boolean;
+
+  @ApiProperty({
+    description: 'date on that this account logged in.',
+    example: new Date()
+  })
+  last_login?: Date;
 
   constructor(partial: Partial<AccountEntity>) {
     super();
@@ -113,26 +153,46 @@ export class AccountDto extends StandardWithTimeDto {
 
 export class ChangePasswordDto {
   @IsNotEmpty()
+  @ApiProperty({
+    description: 'the previous password.',
+    example: '278z42374z2834z72'
+  })
   oldPassword: string;
   @IsNotEmpty()
+  @ApiProperty({
+    description: 'the new password.',
+    example: '2673tg486b72t3678et8w'
+  })
   newPassword: string;
-}
-
-export class ExistsWithHashDto {
-  @IsNotEmpty()
-  hash: string;
 }
 
 export class AccountRegisterRequestDto extends StandardWithTimeDto {
   @IsNotEmpty()
+  @ApiProperty({
+    description: 'account name',
+    example: 'testuser'
+  })
   name: string;
   @IsNotEmpty()
+  @ApiProperty({
+    description: 'password of the account',
+    example: 'asdasda2345345243'
+  })
   password: string;
+  @IsEmail()
+  @ApiProperty({
+    description: 'account email',
+    example: 'test@test.com'
+  })
   email: string;
 }
 
 export class AccountCreateRequestDto extends AccountRegisterRequestDto {
   @IsNotEmpty()
   @IsEnum(AccountRole)
+  @ApiProperty({
+    description: 'general account role',
+    example: 'test@test.com'
+  })
   role: AccountRole;
 }

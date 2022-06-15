@@ -41,3 +41,8 @@ export enum TaskStatus {
 export enum TaskInputOutputCreatorType {
   'user' = 'user'
 }
+
+export enum AccountLoginMethod {
+  'local' = 'local',
+  'shibboleth' = 'shibboleth'
+}

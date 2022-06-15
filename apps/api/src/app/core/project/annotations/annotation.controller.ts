@@ -9,6 +9,8 @@ import {AnnotationService} from './annotation.service';
 import {NumericStringValidationPipe} from '../../../obj/pipes/numeric-string-validation.pipe';
 import {removeNullAttributes} from '@octra/server-side';
 import {ProjectAccessInterceptor} from '../../../obj/interceptors/project-access.interceptor';
+import {CustomApiException} from '../../../obj/decorators/api-exception.decorators';
+import {NotFoundException} from '../../../obj/exceptions';
 
 @ApiTags('Annotations')
 @ApiBearerAuth()
@@ -25,6 +27,7 @@ export class AnnotationController {
    */
   @CombinedRoles(AccountRole.administrator, AccountRole.user, AccountRole.projectAdministrator)
   @UseInterceptors(ProjectAccessInterceptor)
+  @CustomApiException(new NotFoundException(`Can't find any project with this id.`))
   @Post(':project_id/annotations/start')
   async startAnnotation(@Param('project_id', NumericStringValidationPipe) project_id: string, @Req() req: InternRequest): Promise<TaskDto> {
     return new TaskDto(removeNullAttributes(await this.tasksService.giveNextFreeTaskToAccount(project_id, req.user.userId)));
@@ -37,9 +40,10 @@ export class AnnotationController {
    */
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.transcriber)
   @UseInterceptors(ProjectAccessInterceptor)
-  @Put(':project_id/annotations/:annotation_id/save')
+  @CustomApiException(new NotFoundException(`Can't find any project with this id.`))
+  @Put(':project_id/annotations/:task_id/save')
   async saveAnnotation(@Param('project_id', NumericStringValidationPipe) project_id: string, @Param('annotation_id', NumericStringValidationPipe) annotation_id: string, @Body() dto: SaveAnnotationDto, @Req() req: InternRequest): Promise<TaskDto> {
-    return new TaskDto(removeNullAttributes(await this.tasksService.saveAnnotationData(project_id, annotation_id, req.user.userId, dto)));
+    return new TaskDto(removeNullAttributes(await this.tasksService.saveAnnotationData(project_id, annotation_id, req.user.userId, dto, req)));
   }
 
   /**
@@ -49,9 +53,10 @@ export class AnnotationController {
    */
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.transcriber)
   @UseInterceptors(ProjectAccessInterceptor)
-  @Put(':project_id/annotations/:annotation_id/free')
+  @CustomApiException(new NotFoundException(`Can't find any project with this id.`))
+  @Put(':project_id/annotations/:task_id/free')
   async freeAnnotation(@Param('project_id', NumericStringValidationPipe) project_id: string, @Param('annotation_id', NumericStringValidationPipe) annotation_id: string, @Req() req: InternRequest): Promise<TaskDto> {
-    return new TaskDto(removeNullAttributes(await this.tasksService.freeTask(project_id, annotation_id, req.user.userId)));
+    return new TaskDto(removeNullAttributes(await this.tasksService.freeTask(req.user.userId, req)));
   }
 
   /**
@@ -61,9 +66,10 @@ export class AnnotationController {
    */
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.transcriber)
   @UseInterceptors(ProjectAccessInterceptor)
-  @Put(':project_id/annotations/:annotation_id/continue')
+  @CustomApiException(new NotFoundException(`Can't find any project with this id.`))
+  @Put(':project_id/annotations/:task_id/continue')
   async continueAnnotation(@Param('project_id', NumericStringValidationPipe) project_id: string, @Param('annotation_id', NumericStringValidationPipe) annotation_id: string, @Req() req: InternRequest): Promise<TaskDto> {
-    return new TaskDto(removeNullAttributes(await this.tasksService.continueTask(project_id, annotation_id, req.user.userId)));
+    return new TaskDto(removeNullAttributes(await this.tasksService.continueTask(req.user.userId, req)));
   }
 
   /**
@@ -73,8 +79,8 @@ export class AnnotationController {
    */
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.transcriber)
   @UseInterceptors(ProjectAccessInterceptor)
-  @Put(':project_id/annotations/:annotation_id/resume')
+  @Put(':project_id/annotations/:task_id/resume')
   async resumeAnnotation(@Param('project_id', NumericStringValidationPipe) project_id: string, @Param('annotation_id', NumericStringValidationPipe) annotation_id: string, @Req() req: InternRequest): Promise<TaskDto> {
-    return new TaskDto(removeNullAttributes(await this.tasksService.resumeTask(project_id, annotation_id, req.user.userId)));
+    return new TaskDto(removeNullAttributes(await this.tasksService.resumeTask(req.user.userId, req)));
   }
 }

@@ -5,7 +5,7 @@ import {ProjectAssignRolesRequestDto, ProjectRemoveRequestDto, ProjectRequestDto
 import {AppService} from '../../app.service';
 import {FileSystemHandler} from '../../obj/filesystem-handler';
 import {DatabaseService} from '../../database.service';
-import {CurrentUser} from '../../obj/types';
+import {CurrentUser, InternRequest} from '../../obj/types';
 import {Reflector} from '@nestjs/core';
 import {checkIfProjectAccessAllowed} from '../../functions';
 import {
@@ -55,34 +55,20 @@ export class ProjectService {
   }
 
   public async getProject(id: string): Promise<ProjectEntity> {
-    const project = await this.projectRepository.findOneBy({
-      id
-    });
-    return project;
-  }
-
-  public async getProjectRoles(id: string, user: CurrentUser, allowedProjectRoles: string[]): Promise<AccountRoleProjectEntity[]> {
-    const project = await this.projectRepository.findOne({
+    return this.projectRepository.findOne({
       where: {id},
       relations: ['roles']
     });
-
-    checkIfProjectAccessAllowed(project, undefined, user, allowedProjectRoles);
-
-    return project?.roles;
   }
 
-  public async assignProjectRoles(id: string, roles: ProjectAssignRolesRequestDto[], user: CurrentUser, allowedProjectRoles: string[]): Promise<void> {
+  public async getProjectRoles(id: string, req: InternRequest, allowedProjectRoles: string[]): Promise<AccountRoleProjectEntity[]> {
+    checkIfProjectAccessAllowed(req.project, undefined, req.user, allowedProjectRoles);
+
+    return req.project?.roles;
+  }
+
+  public async assignProjectRoles(id: string, roles: ProjectAssignRolesRequestDto[]): Promise<void> {
     return this.databaseService.transaction<void>(async (manager) => {
-      const project = await manager.findOne(ProjectEntity, {
-        where: {
-          id
-        },
-        relations: ['roles']
-      });
-
-      checkIfProjectAccessAllowed(project, undefined, user, allowedProjectRoles);
-
       const roleRows = await manager.find<RoleEntity>(RoleEntity);
 
       for (const role of roles) {
@@ -110,13 +96,7 @@ export class ProjectService {
     return project;
   }
 
-  public async changeProject(id: string, dto: ProjectRequestDto, user: CurrentUser, allowedProjectRoles: string[]): Promise<ProjectEntity> {
-    const project = await this.projectRepository.findOneBy({
-      id
-    });
-
-    checkIfProjectAccessAllowed(project, undefined, user, allowedProjectRoles);
-
+  public async changeProject(id: string, dto: ProjectRequestDto): Promise<ProjectEntity> {
     return this.projectRepository.save({
       id,
       ...dto

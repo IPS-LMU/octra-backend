@@ -21,6 +21,8 @@ import {ShutdownService} from './shutdown.service';
 import {LoggerMiddleware} from './obj/logger.middleware';
 import {GlobalModule} from './global.module';
 import {Configuration, getOrmConfig} from '@octra/server-side';
+import {ServeStaticModule} from '@nestjs/serve-static';
+import {join} from 'path';
 
 console.log('load config in app.module');
 const config = Configuration.getInstance();
@@ -32,6 +34,7 @@ const TypeORMOptions: TypeOrmModuleOptions = {
   logging: 'error'
 };
 
+console.log(`serve ${join(__dirname, 'assets')}`)
 
 @Module({
   imports: [
@@ -51,7 +54,11 @@ const TypeORMOptions: TypeOrmModuleOptions = {
       ttl: 60,
       limit: 10,
     }),
-    GlobalModule
+    GlobalModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, 'assets'),
+      serveRoot: '/assets'
+    }),
   ],
   controllers: [AppController, AppTokenController, FilesController, ProjectController, ToolController],
   providers: [

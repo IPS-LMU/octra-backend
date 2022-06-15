@@ -1,11 +1,12 @@
 import {ExtractJwt, Strategy} from 'passport-jwt';
 import {PassportStrategy} from '@nestjs/passport';
-import {ForbiddenException, Injectable} from '@nestjs/common';
+import {Injectable} from '@nestjs/common';
 import {jwtConstants} from './auth.constants';
 import {JWTPayload} from './jwt.types';
 import {AccountService} from '../account';
 import {CurrentUser} from '../../obj/types';
 import {AccountRoleScope} from '@octra/api-types';
+import {InvalidJwtTokenException} from '../../obj/exceptions/invalid-jwt-token.exception';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -21,7 +22,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const account = await this.accountService.getAccount(payload.sub);
 
     if (!account) {
-      throw new ForbiddenException(`Account not found.`);
+      throw new InvalidJwtTokenException();
     }
     return {
       userId: payload.sub.toString(),

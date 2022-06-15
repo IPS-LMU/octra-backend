@@ -268,7 +268,6 @@ describe('OCTRA Nest API (e2e)', () => {
         description: 'Test description',
         domain: 'fgdfg',
         key: 'sdfgdfgdfgdfgdfgsgf_' + Date.now(),
-        name: 'test',
         registrations: true
       };
       return authPut(`/app/tokens/${tempData.apptoken.addedID}`, dto).expect(200);

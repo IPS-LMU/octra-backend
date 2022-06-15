@@ -31,6 +31,7 @@ import {
   TaskInputOutputEntity,
   TranscriptType
 } from '@octra/server-side';
+import {ForbiddenResource} from '../../../obj/exceptions';
 
 interface ReqData {
   virtual_folder_path?: string;
@@ -112,10 +113,7 @@ export class TasksService {
   }
 
   async changeTaskData(project_id: string, task_id: string, body: TaskUploadDto | TaskChangeDto, req: InternRequest): Promise<TaskEntity> {
-    const task = await this.taskRepository.findOne({
-      where: {id: task_id},
-      relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file']
-    });
+    const task = req.task;
     const inputs = body.inputs;
     const mediaFile = inputs?.find(a => a.mimetype === 'audio/wave');
     const transcriptFile = inputs?.find(a => a.mimetype === 'application/json' || a.mimetype === 'text/plain');
@@ -184,15 +182,6 @@ export class TasksService {
 
   public async removeTask(project_id: string, task_id: string) {
     return this.databaseService.transaction<void>(async (manager) => {
-      const project = await manager.findOneBy(TaskEntity, {
-        id: task_id,
-        project_id
-      });
-
-      if (!project) {
-        throw new HttpException('Task not found.', HttpStatus.BAD_REQUEST);
-      }
-
       // set nexttask from other tasks to null
       await manager.update(TaskEntity, {
         nexttask_id: task_id
@@ -200,7 +189,7 @@ export class TasksService {
         nexttask_id: null
       });
       // remove input outputs
-      const test = await manager.delete(TaskInputOutputEntity, {
+      await manager.delete(TaskInputOutputEntity, {
         task_id
       });
       const result = await manager.delete(TaskEntity, {
@@ -438,15 +427,9 @@ export class TasksService {
     });
   }
 
-  public async saveAnnotationData(project_id: string, task_id: string, worker_id: string, dto: SaveAnnotationDto): Promise<TaskEntity> {
+  public async saveAnnotationData(project_id: string, task_id: string, worker_id: string, dto: SaveAnnotationDto, req: InternRequest): Promise<TaskEntity> {
     return this.databaseService.transaction<TaskEntity>(async (manager) => {
-      const task = await manager.findOneBy(TaskEntity, {
-        id: task_id
-      });
-
-      if (!task) {
-        throw new NotFoundException('Can\'t find task.');
-      }
+      const task = req.task;
 
       if (task.status === TaskStatus.finished) {
         throw new BadRequestException('You can\'t save an annotation of an finished task');
@@ -483,18 +466,12 @@ export class TasksService {
     });
   }
 
-  public async freeTask(project_id: string, task_id: string, worker_id: string): Promise<TaskEntity> {
+  public async freeTask(worker_id: string, req: InternRequest): Promise<TaskEntity> {
     return this.databaseService.transaction<TaskEntity>(async (manager) => {
-      const task = await manager.findOneBy(TaskEntity, {
-        id: task_id
-      });
-
-      if (!task) {
-        throw new NotFoundException('Can\'t find task.');
-      }
+      const task = req.task;
 
       if (task.worker_id.toString() !== worker_id) {
-        throw new MethodNotAllowedException('You can\'t free an annotation that is edited by another worker.');
+        throw new ForbiddenResource();
       }
 
       const updateResult = await manager.update(TaskEntity, {
@@ -513,15 +490,9 @@ export class TasksService {
     });
   }
 
-  public async continueTask(project_id: string, task_id: string, worker_id: string): Promise<TaskEntity> {
+  public async continueTask(worker_id: string, req: InternRequest): Promise<TaskEntity> {
     return this.databaseService.transaction<TaskEntity>(async (manager) => {
-      const task = await manager.findOneBy(TaskEntity, {
-        id: task_id
-      });
-
-      if (!task) {
-        throw new NotFoundException('Can\'t find task.');
-      }
+      const task = req.task;
 
       if (task.worker_id.toString() !== worker_id.toString()) {
         throw new MethodNotAllowedException('You can\'t resume a task that is edited by another worker.');
@@ -539,16 +510,9 @@ export class TasksService {
     });
   }
 
-  public async resumeTask(project_id: string, task_id: string, worker_id: string): Promise<TaskEntity> {
+  public async resumeTask(worker_id: string, req: InternRequest): Promise<TaskEntity> {
     return this.databaseService.transaction<TaskEntity>(async (manager) => {
-      const task = await manager.findOneBy(TaskEntity, {
-        id: task_id
-      });
-
-      if (!task) {
-        throw new NotFoundException('Can\'t find task.');
-      }
-
+      const task = req.task;
       if (task.worker_id.toString() !== worker_id) {
         throw new MethodNotAllowedException('You can\'t resume a task that is edited by another worker.');
       }

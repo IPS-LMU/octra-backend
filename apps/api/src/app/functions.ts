@@ -1,9 +1,9 @@
 import {CurrentUser} from './obj/types';
-import {MethodNotAllowedException} from '@nestjs/common';
 import {AccountRole} from '@octra/api-types';
 import {ProjectEntity, TaskEntity} from '@octra/server-side';
 import {environment} from '../environments/environment';
 import {dirname} from 'path';
+import {ForbiddenResource} from './obj/exceptions';
 
 
 export function isProjectAccessAllowed(project: ProjectEntity, task: TaskEntity, user: CurrentUser, allowedProjectRoles: string[]) {
@@ -38,7 +38,7 @@ export function isProjectAccessAllowed(project: ProjectEntity, task: TaskEntity,
 
 export function checkIfProjectAccessAllowed(project: ProjectEntity, task: TaskEntity, user: CurrentUser, allowedProjectRoles: string[]) {
   if (!isProjectAccessAllowed(project, undefined, user, allowedProjectRoles)) {
-    throw new MethodNotAllowedException(`You don't have access to this method.`);
+    throw new ForbiddenResource();
   }
 }
 

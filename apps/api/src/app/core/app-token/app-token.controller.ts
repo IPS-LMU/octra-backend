@@ -17,6 +17,7 @@ export class AppTokenController {
    * returns a list of app tokens.
    *
    * Allowed user roles: <code>administrator</code>
+   *
    */
   @CombinedRoles(AccountRole.administrator)
   @Get('tokens')
@@ -47,7 +48,7 @@ export class AppTokenController {
   }
 
   /**
-   * generates and overwrites a new app token.
+   * overwrites an existing app token with a new auto-generated token.
    *
    * Allowed user roles: <code>administrator</code>
    */

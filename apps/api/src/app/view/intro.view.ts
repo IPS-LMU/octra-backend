@@ -1,5 +1,8 @@
 export const IntroView = `# Introduction
-The OCTRA-API is a REST-API that allows to interact with the OCTRA-DB.
+The OCTRA-API is a REST-API that allows apps to interact with the OCTRA-DB.
+
+<img src="./assets/octra-backend-diagram.jpg" alt="octra diagram" />
+
 In order to use this API you should meet the following requirements:
 
 1. You have a valid App Token. You can request an APP Token from the administrator (contact ?).<br/>

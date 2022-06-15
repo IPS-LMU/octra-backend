@@ -1,4 +1,4 @@
-import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
+import {Injectable} from '@nestjs/common';
 import {Repository} from 'typeorm';
 import {InjectRepository} from '@nestjs/typeorm';
 import {
@@ -20,6 +20,7 @@ import {
   removeNullAttributes,
   RoleEntity
 } from '@octra/server-side';
+import {BadRequestException, NotFoundException} from '../../obj/exceptions';
 
 @Injectable()
 export class AccountService {
@@ -79,6 +80,14 @@ export class AccountService {
     let projectIDs;
 
     return this.databaseService.transaction<AssignRoleDto>(async (manager) => {
+      let account = await manager.findOneBy(AccountEntity, {
+        id
+      });
+
+      if (!account) {
+        throw new NotFoundException(`Can't find any account with this id.`)
+      }
+
       const roles = await manager.find<RoleEntity>(RoleEntity);
 
       // save global user role if exists
@@ -114,7 +123,7 @@ export class AccountService {
         }
       }
 
-      const account = await manager.findOneBy(AccountEntity, {
+      account = await manager.findOneBy(AccountEntity, {
         id
       });
       projectIDs = account.roles.map(a => a.project_id)
@@ -146,16 +155,21 @@ export class AccountService {
         });
       } else {
         // error
-        throw new HttpException('Incorrect old password.', HttpStatus.UNAUTHORIZED);
+        throw new BadRequestException('Incorrect old password.');
       }
     } else {
-      throw new HttpException('Can\'t find account with this id', HttpStatus.NOT_FOUND);
+      throw new NotFoundException('Can\'t find account with this id');
     }
   }
 
   async removeAccount(id: string): Promise<void> {
     return this.databaseService.transaction<void>(async (manager) => {
       const account = await manager.findOneBy(AccountEntity, {id});
+
+      if (!account) {
+        throw new NotFoundException('Can\'t find account with this id');
+      }
+
       await manager.update(AccountEntity, {
         id
       }, {
