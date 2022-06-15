@@ -57,7 +57,7 @@ console.log(`serve ${join(__dirname, 'assets')}`)
     GlobalModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, 'assets'),
-      serveRoot: '/assets'
+      serveRoot: join(config.api.baseURL, 'assets')
     }),
   ],
   controllers: [AppController, AppTokenController, FilesController, ProjectController, ToolController],

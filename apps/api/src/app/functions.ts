@@ -44,14 +44,11 @@ export function checkIfProjectAccessAllowed(project: ProjectEntity, task: TaskEn
 
 export function getConfigPath() {
   if (process.env['configPath']) {
-    console.log('got env variable: ' + process.env['configPath']);
     return process.env['configPath'];
   } else {
     if (environment.production) {
-      console.log('get dirname of execpath: ' + dirname(process.execPath));
       return dirname(process.execPath);
     } else {
-      console.log('get dirname ' + __dirname);
       return __dirname;
     }
   }
