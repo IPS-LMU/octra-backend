@@ -6,5 +6,9 @@ export class GuidelinesDto {
   language: string;
   @IsNotEmpty()
   @IsObject()
-  json: any;
+  json: any; // TODO add class for GuidelinesJSON
+
+  constructor(data: Partial<GuidelinesDto>) {
+    Object.assign(this, data);
+  }
 }

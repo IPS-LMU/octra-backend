@@ -5,6 +5,12 @@ export class AuthDto {
   openURL?: string;
   access_token?: string;
   account_id?: string;
+
+  constructor(importFromDB?: Partial<AuthDto>) {
+    if (importFromDB) {
+      Object.assign(this, importFromDB);
+    }
+  }
 }
 
 export class AuthLoginDto {

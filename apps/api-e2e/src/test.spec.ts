@@ -206,7 +206,9 @@ describe('OCTRA Nest API (e2e)', () => {
     it('/authentication/login (POST) (user)', () => {
       return request(app.getHttpServer())
         .post('/auth/login').send({
-          'type': AccountLoginMethod.shibboleth
+          'username': tempData.user.name,
+          'password': 'Test1234',
+          'type': AccountLoginMethod.local
         })
         .set('X-App-Token', `${appToken}`)
         .set('Origin', 'http://localhost:8080')

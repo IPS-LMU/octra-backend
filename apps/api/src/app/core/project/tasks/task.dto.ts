@@ -26,6 +26,7 @@ import {
   TranscriptDto,
   TranscriptType
 } from '@octra/server-side';
+import {ApiProperty} from '@nestjs/swagger';
 
 export enum TaskType {
   'annotation' = 'annotation'
@@ -215,6 +216,11 @@ export class TaskUploadDto {
   }, {toClassOnly: true})
   @Type(() => TaskProperties)
   @ValidateNested()
+  @ApiProperty({
+    title: 'properties',
+    name: 'properties',
+    description: 'properties applied to the task'
+  })
   properties: TaskProperties;
 
   /**
@@ -268,6 +274,10 @@ export class TaskUploadDto {
   @IsFiles()
   @HasMimeType(['audio/wave', 'application/json', 'text/plain'], {each: true})
   inputs: FileHashStorage[];
+
+  constructor(partial: Partial<TaskUploadDto>) {
+    Object.assign(this, partial);
+  }
 }
 
 export class TaskChangeDto {

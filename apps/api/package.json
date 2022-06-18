@@ -1,6 +1,6 @@
 {
   "name": "api",
-  "version": "0.4.5",
+  "version": "0.5.0",
   "description": "OCTRA REST API",
   "main": "main.js",
   "author": "Julian Pömp, Christoph Draxler; Institut für Phonetik und Sprachverarbeitung, LMU München",

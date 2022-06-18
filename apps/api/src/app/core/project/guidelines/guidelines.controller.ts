@@ -1,6 +1,6 @@
 import {Body, Controller, Get, Param, Put, UseInterceptors} from '@nestjs/common';
 import {AccountRole} from '@octra/api-types';
-import {ApiBearerAuth, ApiTags} from '@nestjs/swagger';
+import {ApiBearerAuth, ApiBody, ApiTags} from '@nestjs/swagger';
 import {GuidelinesDto} from './guidelines.dto';
 import {GuidelinesService} from './guidelines.service';
 import {CombinedRoles} from '../../../obj/decorators/combine.decorators';
@@ -23,6 +23,23 @@ export class GuidelinesController {
    */
   @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator)
   @UseInterceptors(ProjectAccessInterceptor)
+  @ApiBody({
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['language', 'json'],
+        properties: {
+          language: {
+            type: 'string'
+          },
+          json: {
+            type: 'object'
+          }
+        }
+      }
+    }
+  })
   @Put(':project_id/guidelines')
   async saveGuidelines(@Param('project_id', NumericStringValidationPipe) id: string, @Body() dtos: GuidelinesDto[]): Promise<void> {
     return this.guidelinesService.saveGuidelines(id, dtos);

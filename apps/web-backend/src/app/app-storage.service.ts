@@ -33,7 +33,7 @@ export class AppStorageService {
   }
 
   public login(type: 'local' | 'shibboleth', name?: string, password?: string) {
-    return this.api.loginUser(type, name, password).then(({token, data}) => {
+    return this.api.login(type, name, password).then(({token, data}) => {
       if (data.openURL !== undefined) {
         // need to open windowURL
         console.log(`open window!`);

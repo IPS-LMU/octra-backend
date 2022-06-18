@@ -11,7 +11,7 @@ import {
 import {AuthService} from './auth.service';
 import {Public} from '../authorization/public.decorator';
 import {AuthDto, AuthLoginDto} from './auth.dto';
-import {ApiBody, ApiResponse, ApiTags} from '@nestjs/swagger';
+import {ApiBody, ApiTags} from '@nestjs/swagger';
 import {HttpExceptionFilter} from '../../obj/filters/http-exception.filter';
 import {InvalidCredentialsException} from '../../obj/exceptions';
 import {CustomApiException} from '../../obj/decorators/api-exception.decorators';
@@ -90,14 +90,6 @@ export class AuthController {
     }
   })
 
-  @ApiResponse({
-    status: 201, description: 'authentication successful', schema: {
-      example: {
-        access_token: '32746729834nu329wzhtfwh8zqr87wefq',
-        account_id: '1'
-      }
-    }
-  })
   @CustomApiException(new InvalidCredentialsException())
   @Public()
   @Post('login')

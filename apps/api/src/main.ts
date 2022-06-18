@@ -46,7 +46,8 @@ async function bootstrap() {
       .setVersion(version)
       .addBearerAuth()
       .addSecurity('roles', {
-        type: 'http'
+        type: 'http',
+        scheme: 'bearer'
       })
       .build();
     let redocOptions: RedocOptions = {
@@ -57,7 +58,7 @@ async function bootstrap() {
       tagGroups: [
         {
           name: 'v1',
-          tags: ['Authentication', 'App tokens', 'Accounts', 'Projects', 'Tasks', 'Annotations', 'Tools', 'Files']
+          tags: ['Authentication', 'App tokens', 'Accounts', 'Projects', 'Tasks', 'Annotations', 'Guidelines', 'Tools', 'Files']
         }
       ],
       requiredPropsFirst: true

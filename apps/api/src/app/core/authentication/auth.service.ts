@@ -26,7 +26,7 @@ export class AuthService {
   async login(dto: AuthLoginDto): Promise<AuthDto> {
     try {
       if (dto.type === 'shibboleth') {
-        return {openURL: this.configService.get('api.shibboleth.windowURL')};
+        return new AuthDto({openURL: this.configService.get('api.shibboleth.windowURL')});
       }
 
       const user = await this.validateUser(dto.username, dto.password);
@@ -35,10 +35,10 @@ export class AuthService {
         sub: user.id
       };
 
-      return {
+      return new AuthDto({
         access_token: this.jwtService.sign(payload),
         account_id: user.id
-      }
+      });
     } catch (e) {
       console.log(e);
       throw new InternalServerErrorException(e);

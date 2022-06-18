@@ -1,21 +1,18 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {
-  AnnotationStartResponseDataItem,
-  AppTokenChangeResponseDataItem,
-  AppTokenRefreshResponseDataItem,
-  AppTokenResponseDataItem,
-  CreateGuidelinesRequest,
-  CreateProjectRequest,
-  GuidelinesSaveResponseDataItem,
-  MediaUploadResponse,
-  ProjectResponseDataItem,
-  ProjectTranscriptsGetResponseDataItem,
-  SaveAnnotationRequest,
-  TranscriptGetResponseDataItem,
-  UserInfoResponseDataItem,
-  UserLoginResponse
-} from '@octra/db';
+  AccountDto,
+  AccountLoginMethod,
+  AppTokenDto,
+  AuthDto,
+  GuidelinesDto,
+  ProjectDto,
+  ProjectRequestDto,
+  SaveAnnotationDto,
+  TaskDto,
+  TaskUploadDto
+} from '@octra/api-types';
+import {firstValueFrom} from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -46,25 +43,18 @@ export class OctraAPIService {
     this._initialized = true;
   }
 
-  /***
-   * does the login process.
-   * @param type
-   * @param name
-   * @param password
-   */
-  public loginUser = (type: 'local' | 'shibboleth', name?: string, password?: string): Promise<UserLoginResponse> => {
+  public async login(type: AccountLoginMethod, name?: string, password?: string) {
     console.log(`LOGIN TEST`);
-    return new Promise<UserLoginResponse>((resolve, reject) => {
-      this.http.post(`${this.apiURL}/users/login`, {
+    return new Promise<AuthDto>((resolve, reject) => {
+      firstValueFrom(this.http.post(`${this.apiURL}/users/login`, {
         type, name, password
       }, {
         headers: this.getHeaders(false)
-      }).toPromise<any>().then((result) => {
-        this._authenticated = result.authenticated;
-        if (result.authenticated) {
-          this._webToken = result.token;
+      })).then((result: AuthDto) => {
+        if (!result.openURL && result.accessToken) {
+          this._webToken = result.accessToken;
           resolve(result);
-        } else if (result.data.openURL && result.data.openURL.trim() !== '') {
+        } else if (result.openURL && result.openURL.trim() !== '') {
           resolve(result);
         } else {
           reject('Can\'t read login response');
@@ -79,7 +69,7 @@ export class OctraAPIService {
    * retrieves the jwt from the authentication window.
    * @param windowURL
    */
-  public retrieveTokenFromWindow(windowURL: string): Promise<string> {
+  public async retrieveTokenFromWindow(windowURL: string): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       this.http.get(windowURL).subscribe((result: any) => {
         if (result.token) {
@@ -105,118 +95,107 @@ export class OctraAPIService {
   /***
    * lists the app tokens.
    */
-  public listAppTokens(): Promise<AppTokenResponseDataItem[]> {
+  public async listAppTokens(): Promise<AppTokenDto[]> {
     return this.get('/app/tokens', true);
   }
 
-  public getTranscript(transcriptID: number): Promise<TranscriptGetResponseDataItem[]> {
-    return this.get(`${this.apiURL}/transcripts/${transcriptID}`, true);
+  public async getTask(projectID: number, taskID: number): Promise<TaskDto> {
+    return this.get(`/projects/${projectID}/tasks/${taskID}`, true);
   }
 
-  public getProjectTranscripts(projectName: string): Promise<ProjectTranscriptsGetResponseDataItem[]> {
-    return this.get(`/projects/transcripts/?projectName=${projectName}`, true);
+  public async listTasks(projectID: number): Promise<TaskDto[]> {
+    return this.get(`/projects/${projectID}/tasks/`, true);
   }
 
-  public removeAppToken(id: number): Promise<void> {
-    return this.delete<any>(`/app/tokens/${id}`, true);
+  public async removeAppToken(id: number): Promise<void> {
+    return this.delete(`/app/tokens/${id}`, true);
   }
 
-  public getProject(id: number): Promise<ProjectResponseDataItem> {
+  public async getProject(id: number): Promise<ProjectDto> {
     return this.get(`/projects/${id}`, true);
   }
 
-  public getGuidelines(id: number): Promise<GuidelinesSaveResponseDataItem[]> {
+  public async getGuidelines(id: number): Promise<GuidelinesDto[]> {
     return this.get(`/projects/${id}/guidelines`, true);
   }
 
-  public listUsers(): Promise<UserInfoResponseDataItem[]> {
+  public async listAccounts(): Promise<AccountDto[]> {
     return this.get('/account/', true);
   }
 
-  public listProjects(): Promise<ProjectResponseDataItem[]> {
-    return this.get('/project/', true);
+  public async listProjects(): Promise<ProjectDto[]> {
+    return this.get('/projects/', true);
   }
 
-  public createProject(projectData: CreateProjectRequest): Promise<ProjectResponseDataItem> {
+  public async createProject(projectData: ProjectRequestDto): Promise<ProjectRequestDto> {
     return this.post(`/projects`, projectData, true);
   }
 
-  public saveGuidelines(projectID: number, requestData: CreateGuidelinesRequest[]): Promise<void> {
+  public async saveGuidelines(projectID: number, requestData: GuidelinesDto[]): Promise<void> {
     return this.put(`/projects/${projectID}/guidelines`, requestData, true);
   }
 
-  public removeProject(id: number, reqData: any): Promise<void> {
-    let options = '';
-    if (reqData.cutAllReferences) {
-      options = '?cutAllReferences=true';
-    } else if (reqData.removeAllReferences) {
-      options = '?removeAllReferences=true';
-    }
-
-    return this.delete(`/projects/${id}/${options}`, true);
+  public async removeProject(id: number, reqData: {
+    cutAllReferences: boolean;
+    removeAllReferences: boolean;
+    removeProjectFiles: boolean;
+  }): Promise<void> {
+    return this.delete(`/projects/${id}/`, true, reqData);
   }
 
-  public changeMyPassword(oldPassword: string, password: string): Promise<void> {
+  public async changeMyPassword(oldPassword: string, password: string): Promise<void> {
     return this.put('/account/password', {
       oldPassword,
       password
     }, true);
   }
 
-  public getCurrentUserInformation(): Promise<UserInfoResponseDataItem> {
+  public async getCurrentUserInformation(): Promise<AccountDto> {
     return this.get('/account/current', true);
   }
 
-  public changeProject(id: number, requestData: CreateProjectRequest): Promise<void> {
+  public async changeProject(id: number, requestData: ProjectRequestDto): Promise<void> {
     return this.put(`/projects/${id}`, requestData, true);
   }
 
-  public createAppToken(tokenData: AppTokenResponseDataItem): Promise<boolean> {
+  public async createAppToken(tokenData: AppTokenDto): Promise<boolean> {
     return this.post<any>(`/app/tokens`, tokenData, true);
   }
 
-  public changeAppToken(id: number, tokenData: AppTokenResponseDataItem): Promise<AppTokenChangeResponseDataItem> {
+  public async changeAppToken(id: number, tokenData: AppTokenDto): Promise<AppTokenDto> {
     return this.put(`/app/tokens/${id}`, tokenData, true);
   }
 
-  public refreshAppToken(id: number): Promise<AppTokenRefreshResponseDataItem> {
+  public async refreshAppToken(id: number): Promise<AppTokenDto> {
     return this.put(`/app/tokens/${id}/refresh`, {}, true);
   }
 
-  public startAnnotation(projectID: number): Promise<AnnotationStartResponseDataItem> {
+  public async startAnnotation(projectID: number): Promise<any> { //TODO add missing annotation dto
     return this.post(`/projects/${projectID}/annotations/start`, {}, true);
   }
 
-  public freeAnnotation(projectID: number, annotationID: number): Promise<AnnotationStartResponseDataItem> {
+  public async freeAnnotation(projectID: number, annotationID: number): Promise<any> {
     return this.post(`/projects/${projectID}/annotations/${annotationID}/free`, {}, true);
   }
 
-  public saveAnnotation(projectID: number, annotationID: number, data: SaveAnnotationRequest): Promise<AnnotationStartResponseDataItem> {
+  public async saveAnnotation(projectID: number, annotationID: number, data: SaveAnnotationDto): Promise<TaskDto> {
     return this.post(`/projects/${projectID}/annotations/${annotationID}/save`, data, true);
   }
 
-  public deliverMediaForTranscription(projectID: number, file: File, data: any): Promise<MediaUploadResponse> {
+  public async deliverTaskData(projectID: number, file: File, data: TaskUploadDto): Promise<TaskDto> {
     return this.post(`/media/`, data, true);
   }
 
-  public uploadMediaForTranscription(file: File, data: any): Promise<MediaUploadResponse> {
+  public async uploadTaskData(file: File, data: TaskUploadDto): Promise<TaskDto | undefined> {
     const formData = new FormData();
     formData.append('media', file);
-    data = (!(typeof data === 'string')) ? JSON.stringify(data) : data;
-    formData.append('data', new File([data], 'data.json', {type: 'application/json'}));
-    return this.post(`delivery/media/upload`, formData, true);
+    // data = (!(typeof data === 'string')) ? JSON.stringify(data) : data;
+    // formData.append('data', new File([data], 'data.json', {type: 'application/json'}));
+    // return this.post(`delivery/media/upload`, formData, true);
+    return undefined;
   }
 
-  public uploadMediaItem(file: File): Promise<MediaUploadResponse> {
-    const formData = new FormData();
-    // TODO we need a projectID?
-    // TODO do we need transcript?
-    // TODO or do we rename it to just "uploadFile?" => /files/upload?
-    formData.append('media', file);
-    return this.post(`media/upload`, formData, true);
-  }
-
-  private get<T>(partURL: string, needsJWT: boolean): Promise<T> {
+  private async get<T>(partURL: string, needsJWT: boolean): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       const headers = this.getHeaders(needsJWT);
       partURL = (partURL.indexOf('/') === 0) ? partURL.substr(1) : partURL;
@@ -233,7 +212,7 @@ export class OctraAPIService {
     });
   }
 
-  private post<T>(partURL: string, data: any, needsJWT: boolean): Promise<T> {
+  private async post<T>(partURL: string, data: any, needsJWT: boolean): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       const headers = this.getHeaders(needsJWT);
       partURL = (partURL.indexOf('/') === 0) ? partURL.substr(1) : partURL;
@@ -250,7 +229,7 @@ export class OctraAPIService {
     });
   }
 
-  private put<T>(partURL: string, data: any, needsJWT: boolean): Promise<T> {
+  private async put<T>(partURL: string, data: any, needsJWT: boolean): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       const headers = this.getHeaders(needsJWT);
       partURL = (partURL.indexOf('/') === 0) ? partURL.substr(1) : partURL;
@@ -267,15 +246,21 @@ export class OctraAPIService {
     });
   }
 
-  private delete<T>(partURL: string, needsJWT: boolean): Promise<T> {
+  private async delete<T>(partURL: string, needsJWT: boolean, data: any = undefined): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       const headers = this.getHeaders(needsJWT);
       partURL = (partURL.indexOf('/') === 0) ? partURL.substr(1) : partURL;
-
-      const subscription = this.http.delete(`${this.apiURL}/${partURL}`, {
+      const options: any = {
         responseType: 'json',
-        headers
-      }).subscribe((result: any) => {
+        headers,
+        body: data
+      };
+
+      if (!data) {
+        delete options.body;
+      }
+
+      const subscription = this.http.delete(`${this.apiURL}/${partURL}`, options).subscribe((result: any) => {
         subscription.unsubscribe();
         this.checkResult(result, resolve, reject);
       }, (error) => {
