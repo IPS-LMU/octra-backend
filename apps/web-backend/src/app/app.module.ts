@@ -1,7 +1,5 @@
 import {BrowserModule} from '@angular/platform-browser';
 import {NgModule} from '@angular/core';
-import {ModalModule} from 'ngx-bootstrap/modal';
-import {BsDatepickerModule} from 'ngx-bootstrap/datepicker';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 
 import {AppRoutingModule} from './app-routing.module';
@@ -12,8 +10,6 @@ import {NgxWebstorageModule} from 'ngx-webstorage';
 import {SettingsService} from './settings.service';
 import {JoinPipe} from './pipes/join.pipe';
 import {FaIconLibrary, FontAwesomeModule} from '@fortawesome/angular-fontawesome';
-import {fas} from '@fortawesome/free-solid-svg-icons';
-import {far} from '@fortawesome/free-regular-svg-icons';
 import {LoadingComponent} from './loading/loading.component';
 import {LoginPageComponent} from './pages/login-page/login-page.component';
 import {MembersAreaComponent} from './pages/members-area/members-area.component';
@@ -31,13 +27,18 @@ import {ProfileComponent} from './pages/members-area/profile/profile.component';
 import {ProjectsComponent} from './pages/members-area/projects/projects.component';
 import {AddProjectComponent} from './pages/members-area/projects/add-project/add-project.component';
 import {UserDropdownComponent} from './components/user-dropdown/user-dropdown.component';
-import {BsDropdownModule} from 'ngx-bootstrap/dropdown';
-import {TimepickerModule} from 'ngx-bootstrap/timepicker';
 import {ChoiceModalComponent} from './modals/choice-modal/choice-modal.component';
 import {ProjectConfigModalComponent} from './modals/projectconfig-modal/project-config-modal.component';
-import {TabsModule} from 'ngx-bootstrap/tabs';
 import {NgxCodejarModule} from 'ngx-codejar';
 import {NgxOctraApiModule, OctraAPIService} from '@octra/ngx-octra-api';
+import {ModalModule} from 'ngx-bootstrap/modal';
+import {BsDatepickerModule} from 'ngx-bootstrap/datepicker';
+import {BsDropdownModule} from 'ngx-bootstrap/dropdown';
+import {TimepickerModule} from 'ngx-bootstrap/timepicker';
+import {TabsModule} from 'ngx-bootstrap/tabs';
+import {fas} from '@fortawesome/free-solid-svg-icons';
+import {far} from '@fortawesome/free-regular-svg-icons';
+import {AlertModule} from 'ngx-bootstrap/alert';
 
 @NgModule({
   declarations: [
@@ -67,7 +68,7 @@ import {NgxOctraApiModule, OctraAPIService} from '@octra/ngx-octra-api';
     FormsModule,
     AppRoutingModule,
     HttpClientModule,
-    NgxWebstorageModule.forRoot(),
+    NgxWebstorageModule.forRoot({}),
     FontAwesomeModule,
     ModalModule.forRoot(),
     BrowserAnimationsModule,
@@ -76,13 +77,14 @@ import {NgxOctraApiModule, OctraAPIService} from '@octra/ngx-octra-api';
     TimepickerModule.forRoot(),
     TabsModule.forRoot(),
     NgxCodejarModule,
-    NgxOctraApiModule
+    NgxOctraApiModule,
+    AlertModule
   ],
   providers: [SettingsService, OctraAPIService, ModalsService],
   bootstrap: [AppComponent]
 })
 export class AppModule {
   constructor(library: FaIconLibrary) {
-    library.addIconPacks(fas, far);
+    library.addIconPacks(fas as any, far as any);
   }
 }

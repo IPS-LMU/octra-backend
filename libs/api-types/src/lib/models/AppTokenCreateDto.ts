@@ -16,10 +16,6 @@ export class AppTokenCreateDto {
    */
   'name': string;
   /**
-   * app token for client requests
-   */
-  'key': string;
-  /**
    * domains separated by comma, without 'www'
    */
   'domain'?: string;
@@ -38,12 +34,6 @@ export class AppTokenCreateDto {
     {
       'name': 'name',
       'baseName': 'name',
-      'type': 'string',
-      'format': ''
-    },
-    {
-      'name': 'key',
-      'baseName': 'key',
       'type': 'string',
       'format': ''
     },

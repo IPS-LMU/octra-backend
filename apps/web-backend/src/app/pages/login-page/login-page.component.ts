@@ -3,6 +3,7 @@ import {Router} from '@angular/router';
 import {ModalsService} from '../../modals/modals.service';
 import {OctraAPIService} from '@octra/ngx-octra-api';
 import {AppStorageService} from '../../app-storage.service';
+import {AccountLoginMethod} from '@octra/api-types';
 
 @Component({
   selector: 'ocb-login-page',
@@ -16,16 +17,20 @@ export class LoginPageComponent implements OnInit {
     password: ''
   };
 
+  public get AccountLoginMethod() {
+    return AccountLoginMethod;
+  }
+
   windowChecker: number = -1;
 
-  constructor(public api: OctraAPIService, private router: Router, private modalsService: ModalsService, private appStorage: AppStorageService) {
+  constructor(public api: OctraAPIService, private router: Router, private modalsService: ModalsService, public appStorage: AppStorageService) {
   }
 
   ngOnInit(): void {
 
   }
 
-  onSubmit(type: 'local' | 'shibboleth') {
+  onSubmit(type: AccountLoginMethod) {
     this.appStorage.login(type, this.user.name, this.user.password).catch((error) => {
       this.modalsService.openErrorModal('Error occurred', error);
     });

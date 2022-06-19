@@ -18,9 +18,11 @@
         "inlineStyleLanguage": "scss",
         "assets": [
           "apps/web-backend/src/favicon.ico",
-          "apps/web-backend/src/assets"
+          "apps/web-backend/src/assets",
+          "apps/web-backend/src/config"
         ],
         "styles": [
+          "node_modules/bootstrap/dist/css/bootstrap.min.css",
           "apps/web-backend/src/styles.scss"
         ],
         "scripts": []

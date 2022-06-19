@@ -1,5 +1,4 @@
 import {Component, OnInit} from '@angular/core';
-import {DateTime} from 'luxon';
 import {ModalsService} from '../../../modals/modals.service';
 import {Router} from '@angular/router';
 import {OctraAPIService} from '@octra/ngx-octra-api';
@@ -22,18 +21,12 @@ export class ProjectsComponent implements OnInit {
   }
 
   updateProjects() {
-    this.api.listUsers().then((users) => {
+    this.api.listAccounts().then((users) => {
       this.users = users;
       console.log(this.users);
 
       this.api.listProjects().then((projects) => {
         for (const project of projects) {
-          if (project.startdate) {
-            project.startdate = DateTime.fromISO(project.startdate).toLocaleString(DateTime.DATETIME_SHORT);
-          }
-          if (project.enddate) {
-            project.enddate = DateTime.fromISO(project.enddate).toLocaleString(DateTime.DATETIME_SHORT);
-          }
           /* TODO add project admins
           if (project.admin_id) {
             console.log(`look for admin ${project.admin_id}`);
@@ -83,15 +76,15 @@ export class ProjectsComponent implements OnInit {
         return;
       }
 
-      let reqData;
+      const reqData = {
+        removeAllReferences: false,
+        cutAllReferences: false,
+        removeProjectFiles: false // TODO implement question
+      };
       if (choiceValue === 'remove references') {
-        reqData = {
-          removeAllReferences: true
-        };
+        reqData.removeAllReferences = true;
       } else if (choiceValue === 'cut references') {
-        reqData = {
-          cutAllReferences: true
-        }
+        reqData.cutAllReferences = true;
       }
 
       this.api.removeProject(project.id, reqData).then(() => {

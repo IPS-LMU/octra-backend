@@ -5,9 +5,9 @@ import {deLocale} from 'ngx-bootstrap/locale';
 import {DateTime} from 'luxon';
 import {ModalsService} from '../../../../modals/modals.service';
 import {ActivatedRoute, Router} from '@angular/router';
-import {ChangeProjectRequest, GuidelinesSaveResponseDataItem} from '@octra/db';
 import {UserDropdownComponent} from '../../../../components/user-dropdown/user-dropdown.component';
 import {OctraAPIService} from '@octra/ngx-octra-api';
+import {GuidelinesDto, ProjectRequestDto, ProjectVisibility} from '@octra/api-types';
 
 @Component({
   selector: 'ocb-add-project',
@@ -16,19 +16,19 @@ import {OctraAPIService} from '@octra/ngx-octra-api';
 })
 export class AddProjectComponent implements OnInit {
   isEditPage = false;
-  editingID = -1;
-  formData: ChangeProjectRequest = {
+  editingID = '-1';
+  formData: ProjectRequestDto = {
+    visibility: ProjectVisibility.public,
     name: '',
     shortname: '',
     description: '',
     configuration: null,
     startdate: '',
     enddate: '',
-    active: false,
-    admin_id: -1
+    active: false
   };
 
-  private guidelines: GuidelinesSaveResponseDataItem[] = [];
+  private guidelines: GuidelinesDto[] = [];
 
   adminSelectionLabel = 'Select project administrator';
   projectSchedule: {
@@ -54,8 +54,8 @@ export class AddProjectComponent implements OnInit {
     this.localeService.use(locale);
 
     this.route.queryParams.subscribe((params) => {
-      if (params.edit) {
-        this.editingID = Number(params.edit);
+      if (params['edit']) {
+        this.editingID = params['edit'];
 
         Promise.all([
           this.api.getProject(this.editingID),
@@ -68,12 +68,16 @@ export class AddProjectComponent implements OnInit {
             DateTime.fromISO(this.formData.startdate).toJSDate() : undefined;
           this.projectSchedule.end = (this.formData.enddate && this.formData.enddate !== '')
             ? DateTime.fromISO(this.formData.enddate).toJSDate() : undefined;
-          if (this.formData.admin_id && this.formData.admin_id > -1) {
+
+          /**
+           * TODO fix this code later
+
+           if (this.formData.admin_id && this.formData.admin_id > -1) {
             if (this.userDropdown) {
               this.userDropdown.selectUserById(this.formData.admin_id);
             }
           }
-
+           */
           //read guidelines
           this.guidelines = guidelines;
         }).catch((error) => {
@@ -97,7 +101,9 @@ export class AddProjectComponent implements OnInit {
     if (this.formData.enddate === '') {
       delete this.formData.enddate;
     }
-    this.formData.admin_id = (this.formData.admin_id === null) ? -1 : this.formData.admin_id;
+
+    // TODO fix later
+    // this.formData.admin_id = (this.formData.admin_id === null) ? -1 : this.formData.admin_id;
 
     if (!this.isEditPage) {
       this.api.createProject(this.formData).then((projectResponse) => {
@@ -132,10 +138,12 @@ export class AddProjectComponent implements OnInit {
 
   userSelectionChanged(user: any) {
     if (user) {
-      this.formData.admin_id = user.id;
+      // TODO later
+      // this.formData.admin_id = user.id;
       this.adminSelectionLabel = `Selected project administrator: ${user.username}`;
     } else {
-      this.formData.admin_id = -1;
+      // TODO later
+      // this.formData.admin_id = -1;
       this.adminSelectionLabel = 'Select project administrator';
     }
   }

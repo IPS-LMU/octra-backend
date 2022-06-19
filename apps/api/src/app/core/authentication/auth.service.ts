@@ -1,4 +1,4 @@
-import {Injectable, InternalServerErrorException} from '@nestjs/common';
+import {HttpException, Injectable, InternalServerErrorException} from '@nestjs/common';
 import {AccountService} from '../account';
 import {JwtService} from '@nestjs/jwt';
 import {SHA256} from 'crypto-js';
@@ -6,6 +6,8 @@ import {ConfigService} from '@nestjs/config';
 import {JWTPayload} from './jwt.types';
 import {AuthDto, AuthLoginDto} from './auth.dto';
 import {AccountEntity} from '@octra/server-side';
+import {AccountDto} from '../account/account.dto';
+import {InvalidCredentialsException} from '../../obj/exceptions';
 
 @Injectable()
 export class AuthService {
@@ -24,23 +26,30 @@ export class AuthService {
   }
 
   async login(dto: AuthLoginDto): Promise<AuthDto> {
-    try {
-      if (dto.type === 'shibboleth') {
-        return new AuthDto({openURL: this.configService.get('api.shibboleth.windowURL')});
-      }
 
+    if (dto.type === 'shibboleth') {
+      return new AuthDto({openURL: this.configService.get('api.shibboleth.windowURL')});
+    }
+    try {
       const user = await this.validateUser(dto.username, dto.password);
+
+      if (!user) {
+        throw new InvalidCredentialsException();
+      }
       const payload: JWTPayload = {
         customSalt: this.configService.get<string>('api.jwtSalt'),
         sub: user.id
       };
 
       return new AuthDto({
-        access_token: this.jwtService.sign(payload),
-        account_id: user.id
+        accessToken: this.jwtService.sign(payload),
+        account: new AccountDto(user)
       });
     } catch (e) {
       console.log(e);
+      if (e instanceof HttpException) {
+        throw e;
+      }
       throw new InternalServerErrorException(e);
     }
   }

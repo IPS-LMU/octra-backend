@@ -10,10 +10,12 @@
  * Do not edit the class manually.
  */
 
+import {AccountDto} from './AccountDto';
+
 export class AuthDto {
   'openURL'?: string;
   'accessToken'?: string;
-  'accountId'?: string;
+  'account': AccountDto;
 
   static readonly discriminator: string | undefined = undefined;
 
@@ -26,14 +28,14 @@ export class AuthDto {
     },
     {
       'name': 'accessToken',
-      'baseName': 'access_token',
+      'baseName': 'accessToken',
       'type': 'string',
       'format': ''
     },
     {
-      'name': 'accountId',
-      'baseName': 'account_id',
-      'type': 'string',
+      'name': 'account',
+      'baseName': 'account',
+      'type': 'AccountDto',
       'format': ''
     }];
 

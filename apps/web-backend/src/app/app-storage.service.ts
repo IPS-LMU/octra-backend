@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import {SessionStorage} from 'ngx-webstorage';
 import {Router} from '@angular/router';
 import {OctraAPIService} from '@octra/ngx-octra-api';
-import {UserInfoResponseDataItem} from '@octra/db';
+import {AccountDto, AccountLoginMethod, AccountRole} from '@octra/api-types';
 
 @Injectable({
   providedIn: 'root'
@@ -15,12 +15,14 @@ export class AppStorageService {
   @SessionStorage() private _webToken: string | undefined;
   @SessionStorage() private _authType: 'local' | 'shibboleth' | undefined;
 
-  private _user?: UserInfoResponseDataItem;
+  private _user?: AccountDto;
 
   windowChecker: number = -1;
   private _initialized = false;
 
-  get user(): UserInfoResponseDataItem | undefined {
+  public logoutMessage = '';
+
+  get user(): AccountDto | undefined {
     return this._user;
   }
 
@@ -32,12 +34,12 @@ export class AppStorageService {
     return this._webToken;
   }
 
-  public login(type: 'local' | 'shibboleth', name?: string, password?: string) {
-    return this.api.login(type, name, password).then(({token, data}) => {
-      if (data.openURL !== undefined) {
+  public login(type: AccountLoginMethod, name?: string, password?: string) {
+    return this.api.login(type, name, password).then(({accessToken, openURL, account}) => {
+      if (openURL !== undefined) {
         // need to open windowURL
         console.log(`open window!`);
-        const authWindow = window.open(data.openURL, '_blank', `top:${(window.outerHeight - 400) / 2},width=600,height=400,titlebar=no,status=no,location=no`);
+        const authWindow = window.open(openURL, '_blank', `top:${(window.outerHeight - 400) / 2},width=600,height=400,titlebar=no,status=no,location=no`);
         if (authWindow) {
           authWindow.addEventListener('beforeunload', () => {
             console.log(`window closed`);
@@ -53,7 +55,7 @@ export class AppStorageService {
               this.windowChecker = -1;
               closed = true;
 
-              this.api.retrieveTokenFromWindow(data.openURL as any).then((token) => {
+              this.api.retrieveTokenFromWindow(openURL as any).then((token) => {
                 this._webToken = token;
                 this._authType = type;
                 this.router.navigate(['/loading']);
@@ -63,16 +65,17 @@ export class AppStorageService {
             }
           }, 1000);
         }
-      } else if (data.user) {
-        this._user = data.user;
-        this._webToken = token;
+      } else if (account) {
+        this._user = account;
+        this._webToken = accessToken;
         this._authType = type;
         this.router.navigate(['/loading']);
       }
     });
   }
 
-  public logout() {
+  public logout(message: string = '') {
+    this.logoutMessage = message;
     this._webToken = '';
     this.router.navigate(['/login']);
   }
@@ -92,7 +95,7 @@ export class AppStorageService {
   }
 
   public isAdministrator() {
-    return this._user?.accessRights.find(a => a.role === 'administrator') !== undefined;
+    return this._user?.generalRole === AccountRole.administrator;
   }
 
   constructor(private router: Router, private api: OctraAPIService) {

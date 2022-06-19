@@ -6,7 +6,7 @@ import {JWTPayload} from './jwt.types';
 import {AccountService} from '../account';
 import {CurrentUser} from '../../obj/types';
 import {AccountRoleScope} from '@octra/api-types';
-import {InvalidJwtTokenException} from '../../obj/exceptions/invalid-jwt-token.exception';
+import {InvalidJwtTokenException} from '../../obj/exceptions';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {

@@ -1,8 +1,9 @@
 <main class="form-signin">
+  <bs-alert *ngIf="appStorage.logoutMessage" type="danger">{{appStorage.logoutMessage}}</bs-alert>
   <form>
     <h1 class="h3 mb-3 fw-normal" style="text-align: center;">Please sign in</h1>
 
-    <button class="w-100 btn btn-lg btn-secondary" (click)="onSubmit('shibboleth')">
+    <button class="w-100 btn btn-lg btn-secondary" (click)="onSubmit(AccountLoginMethod.shibboleth)">
       <fa-icon icon="university"></fa-icon>
       Sign in with Shibboleth
     </button>
@@ -22,7 +23,7 @@
            [(ngModel)]="user.password"
            required>
 
-    <button class="w-100 btn btn-lg btn-primary" type="submit" (click)="onSubmit('local')">
+    <button class="w-100 btn btn-lg btn-primary" type="submit" (click)="onSubmit(AccountLoginMethod.local)">
       <fa-icon icon="house-user"></fa-icon>
       Sign in with credentials
     </button>

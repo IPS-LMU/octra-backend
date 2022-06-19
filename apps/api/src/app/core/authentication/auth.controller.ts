@@ -135,9 +135,7 @@ export class AuthController {
           id,
           accessRights: roles
         };
-        const token = jwt.sign(tokenData, this.configService.get('api.secret'), {
-          expiresIn: 86400 // expires in 24 hours
-        });
+        const token = jwt.sign(tokenData, this.configService.get('api.secret'));
 
         return {
           userName: '',

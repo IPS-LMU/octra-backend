@@ -1,10 +1,11 @@
 import {IsEmail, IsEnum, IsNotEmpty, IsOptional} from 'class-validator';
 import {AccountLoginMethod} from '@octra/api-types';
+import {AccountDto} from '../account/account.dto';
 
 export class AuthDto {
   openURL?: string;
-  access_token?: string;
-  account_id?: string;
+  accessToken?: string;
+  account: AccountDto;
 
   constructor(importFromDB?: Partial<AuthDto>) {
     if (importFromDB) {

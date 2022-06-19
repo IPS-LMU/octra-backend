@@ -40,9 +40,7 @@ export class AppTokenDto extends StandardWithTimeDto {
 }
 
 export class AppTokenCreateDto extends OmitType(AppTokenDto,
-  ['id', 'creationdate', 'updatedate'] as const) {
-  @IsNotEmpty()
-  key: string;
+  ['id', 'creationdate', 'updatedate', 'key'] as const) {
 }
 
 export class AppTokenChangeDto extends OmitType(AppTokenDto,
@@ -53,5 +51,4 @@ export class AppTokenChangeDto extends OmitType(AppTokenDto,
     example: 'test token'
   })
   name?: string;
-
 }

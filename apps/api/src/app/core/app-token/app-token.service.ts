@@ -2,7 +2,7 @@ import {Injectable} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Repository} from 'typeorm';
 import {randomBytes} from 'crypto';
-import {AppTokenChangeDto, AppTokenCreateDto} from './app-token.dto';
+import {AppTokenChangeDto, AppTokenCreateDto, AppTokenDto} from './app-token.dto';
 import {AppTokenEntity, removeNullAttributes} from '@octra/server-side';
 
 @Injectable()
@@ -17,8 +17,12 @@ export class AppTokenService {
     return await this.tokenRepository.find();
   }
 
-  async createAppToken(appToken: AppTokenCreateDto): Promise<AppTokenEntity> {
-    return removeNullAttributes(await this.tokenRepository.save(appToken));
+  async createAppToken(data: AppTokenCreateDto): Promise<AppTokenEntity> {
+    const key = await this.generateAppToken();
+    return removeNullAttributes(await this.tokenRepository.save({
+      ...data,
+      key
+    } as AppTokenDto));
   }
 
   async updateAppToken(id: number, appToken: AppTokenChangeDto): Promise<void> {

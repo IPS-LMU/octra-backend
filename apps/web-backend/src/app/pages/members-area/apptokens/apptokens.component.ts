@@ -38,7 +38,7 @@ export class ApptokensComponent implements OnInit {
     });
   }
 
-  onAppTokenRefresh(id: number) {
+  onAppTokenRefresh(id: string) {
     const apptokenData = this.apptokens.find(a => a.id === id);
     this.modalService.openYesNoModal('Refresh app token', `Are you sure to overwrite the old app token for '${apptokenData.name}' with a new one?`, () => {
       this.api.refreshAppToken(id).then(() => {
@@ -50,7 +50,7 @@ export class ApptokensComponent implements OnInit {
     });
   }
 
-  onAppTokenRemove(id: number) {
+  onAppTokenRemove(id: string) {
     this.modalService.openYesNoModal('Remove app token', 'Are you sure to remove the app token permanently?', () => {
       this.api.removeAppToken(id).then(() => {
         this.updateAppTokens();

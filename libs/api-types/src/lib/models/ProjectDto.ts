@@ -46,13 +46,13 @@ export class ProjectDto {
    */
   'configuration'?: any;
   /**
-   * start date of the project
+   * start date of the project (ISO 8601)
    */
-  'startdate'?: Date;
+  'startdate'?: string;
   /**
-   * end date of the project
+   * end date of the project (ISO 8601)
    */
-  'enddate'?: Date;
+  'enddate'?: string;
   'roles': Array<RoleDto>;
 
   static readonly discriminator: string | undefined = undefined;
@@ -109,14 +109,14 @@ export class ProjectDto {
     {
       'name': 'startdate',
       'baseName': 'startdate',
-      'type': 'Date',
-      'format': 'date-time'
+      'type': 'string',
+      'format': ''
     },
     {
       'name': 'enddate',
       'baseName': 'enddate',
-      'type': 'Date',
-      'format': 'date-time'
+      'type': 'string',
+      'format': ''
     },
     {
       'name': 'roles',

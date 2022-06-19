@@ -1,6 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {AppStorageService} from '../app-storage.service';
+import {HttpErrorResponse} from '@angular/common/http';
 
 @Component({
   selector: 'ocb-loading',
@@ -16,14 +17,14 @@ export class LoadingComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
-      let targetRoute = params.origin;
+      let targetRoute = params['origin'];
       if (!targetRoute) {
         targetRoute = 'dashboard';
       }
       const queryParams = {
         ...params
       };
-      delete queryParams.origin;
+      delete queryParams['origin'];
       console.log(`params`);
       console.log(params);
       if (this.appStorage.initialized) {
@@ -38,8 +39,11 @@ export class LoadingComponent implements OnInit {
           this.router.navigate([`/members/${targetRoute}`], {
             queryParams
           });
-        }).catch((error) => {
-          this.errorMessage = error;
+        }).catch((error: HttpErrorResponse) => {
+          if (error.statusText === 'Unauthorized' && error.error?.message === 'Token expired') {
+            this.appStorage.logout(`Token expired.`);
+          }
+          this.errorMessage = error.message;
         });
       }
     });

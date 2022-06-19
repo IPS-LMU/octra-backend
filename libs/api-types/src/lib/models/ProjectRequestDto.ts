@@ -12,14 +12,6 @@
 
 export class ProjectRequestDto {
   /**
-   * date of creation
-   */
-  'creationdate': Date;
-  /**
-   * date of latest update
-   */
-  'updatedate': Date;
-  /**
    * name of the project.
    */
   'name': string;
@@ -40,13 +32,13 @@ export class ProjectRequestDto {
    */
   'configuration'?: any;
   /**
-   * start date of the project
+   * start date of the project (ISO 8601)
    */
-  'startdate'?: Date;
+  'startdate'?: string;
   /**
-   * end date of the project
+   * end date of the project (ISO 8601)
    */
-  'enddate'?: Date;
+  'enddate'?: string;
   /**
    * describes if the project is active
    */
@@ -55,18 +47,6 @@ export class ProjectRequestDto {
   static readonly discriminator: string | undefined = undefined;
 
   static readonly attributeTypeMap: Array<{ name: string, baseName: string, type: string, format: string }> = [
-    {
-      'name': 'creationdate',
-      'baseName': 'creationdate',
-      'type': 'Date',
-      'format': 'date-time'
-    },
-    {
-      'name': 'updatedate',
-      'baseName': 'updatedate',
-      'type': 'Date',
-      'format': 'date-time'
-    },
     {
       'name': 'name',
       'baseName': 'name',
@@ -100,14 +80,14 @@ export class ProjectRequestDto {
     {
       'name': 'startdate',
       'baseName': 'startdate',
-      'type': 'Date',
-      'format': 'date-time'
+      'type': 'string',
+      'format': ''
     },
     {
       'name': 'enddate',
       'baseName': 'enddate',
-      'type': 'Date',
-      'format': 'date-time'
+      'type': 'string',
+      'format': ''
     },
     {
       'name': 'active',

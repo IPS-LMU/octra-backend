@@ -6,7 +6,7 @@ import {RoleDto} from '../account/account.dto';
 import {Expose, Transform} from 'class-transformer';
 import {ProjectEntity, removeProperties} from '@octra/server-side';
 
-export class ProjectRequestDto extends OmitType(StandardWithTimeDto, ['id']) {
+export class ProjectRequestDto extends OmitType(StandardWithTimeDto, ['id', 'creationdate', 'updatedate']) {
   @IsNotEmpty()
   @ApiProperty({
     description: 'name of the project.',
@@ -39,13 +39,15 @@ export class ProjectRequestDto extends OmitType(StandardWithTimeDto, ['id']) {
   })
   configuration?: any;
   @ApiProperty({
-    description: 'start date of the project',
-    example: new Date()
+    description: 'start date of the project (ISO 8601)',
+    example: new Date(),
+    type: 'string'
   })
   startdate?: Date;
   @ApiProperty({
-    description: 'end date of the project',
-    example: new Date()
+    description: 'end date of the project (ISO 8601)',
+    example: new Date(),
+    type: 'string'
   })
   enddate?: Date;
   @ApiProperty({
@@ -53,11 +55,6 @@ export class ProjectRequestDto extends OmitType(StandardWithTimeDto, ['id']) {
     example: true
   })
   active?: boolean;
-  @ApiHideProperty()
-  creationdate: Date;
-  @ApiHideProperty()
-  updatedate: Date;
-
 
   constructor(partial: Partial<ProjectDto>) {
     super();
@@ -101,16 +98,18 @@ export class ProjectDto extends StandardWithTimeDto {
     groups: [AccountRole.administrator, AccountRole.projectAdministrator]
   })
   @ApiProperty({
-    description: 'start date of the project',
-    example: new Date()
+    description: 'start date of the project (ISO 8601)',
+    example: new Date(),
+    type: 'string'
   })
   startdate?: Date;
   @Expose({
     groups: [AccountRole.administrator, AccountRole.projectAdministrator]
   })
   @ApiProperty({
-    description: 'end date of the project',
-    example: new Date()
+    description: 'end date of the project (ISO 8601)',
+    example: new Date(),
+    type: 'string'
   })
   enddate?: Date;
   @Expose({

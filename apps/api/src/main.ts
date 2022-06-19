@@ -90,6 +90,7 @@ async function bootstrap() {
   app.setBaseViewsDir(path.join(__dirname, '..', 'views'));
   app.setViewEngine('ejs');
 
+  app.enableCors();
   await app.listen(port, config.host);
   Logger.log(
     `🚀 Application is running on: http://localhost:${port}${config.baseURL}reference`

@@ -3,6 +3,8 @@ import {HttpClient} from '@angular/common/http';
 import {
   AccountDto,
   AccountLoginMethod,
+  AppTokenChangeDto,
+  AppTokenCreateDto,
   AppTokenDto,
   AuthDto,
   GuidelinesDto,
@@ -43,11 +45,11 @@ export class OctraAPIService {
     this._initialized = true;
   }
 
-  public async login(type: AccountLoginMethod, name?: string, password?: string) {
+  public async login(type: AccountLoginMethod, username?: string, password?: string) {
     console.log(`LOGIN TEST`);
     return new Promise<AuthDto>((resolve, reject) => {
-      firstValueFrom(this.http.post(`${this.apiURL}/users/login`, {
-        type, name, password
+      firstValueFrom(this.http.post<AuthDto>(`${this.apiURL}/auth/login`, {
+        type, username, password
       }, {
         headers: this.getHeaders(false)
       })).then((result: AuthDto) => {
@@ -103,19 +105,19 @@ export class OctraAPIService {
     return this.get(`/projects/${projectID}/tasks/${taskID}`, true);
   }
 
-  public async listTasks(projectID: number): Promise<TaskDto[]> {
+  public async listTasks(projectID: string): Promise<TaskDto[]> {
     return this.get(`/projects/${projectID}/tasks/`, true);
   }
 
-  public async removeAppToken(id: number): Promise<void> {
+  public async removeAppToken(id: string): Promise<void> {
     return this.delete(`/app/tokens/${id}`, true);
   }
 
-  public async getProject(id: number): Promise<ProjectDto> {
+  public async getProject(id: string): Promise<ProjectDto> {
     return this.get(`/projects/${id}`, true);
   }
 
-  public async getGuidelines(id: number): Promise<GuidelinesDto[]> {
+  public async getGuidelines(id: string): Promise<GuidelinesDto[]> {
     return this.get(`/projects/${id}/guidelines`, true);
   }
 
@@ -127,18 +129,18 @@ export class OctraAPIService {
     return this.get('/projects/', true);
   }
 
-  public async createProject(projectData: ProjectRequestDto): Promise<ProjectRequestDto> {
+  public async createProject(projectData: ProjectRequestDto): Promise<ProjectDto> {
     return this.post(`/projects`, projectData, true);
   }
 
-  public async saveGuidelines(projectID: number, requestData: GuidelinesDto[]): Promise<void> {
+  public async saveGuidelines(projectID: string, requestData: GuidelinesDto[]): Promise<void> {
     return this.put(`/projects/${projectID}/guidelines`, requestData, true);
   }
 
-  public async removeProject(id: number, reqData: {
-    cutAllReferences: boolean;
-    removeAllReferences: boolean;
-    removeProjectFiles: boolean;
+  public async removeProject(id: string, reqData: {
+    cutAllReferences?: boolean;
+    removeAllReferences?: boolean;
+    removeProjectFiles?: boolean;
   }): Promise<void> {
     return this.delete(`/projects/${id}/`, true, reqData);
   }
@@ -154,35 +156,35 @@ export class OctraAPIService {
     return this.get('/account/current', true);
   }
 
-  public async changeProject(id: number, requestData: ProjectRequestDto): Promise<void> {
+  public async changeProject(id: string, requestData: ProjectRequestDto): Promise<void> {
     return this.put(`/projects/${id}`, requestData, true);
   }
 
-  public async createAppToken(tokenData: AppTokenDto): Promise<boolean> {
+  public async createAppToken(tokenData: AppTokenCreateDto): Promise<boolean> {
     return this.post<any>(`/app/tokens`, tokenData, true);
   }
 
-  public async changeAppToken(id: number, tokenData: AppTokenDto): Promise<AppTokenDto> {
+  public async changeAppToken(id: string, tokenData: AppTokenChangeDto): Promise<AppTokenDto> {
     return this.put(`/app/tokens/${id}`, tokenData, true);
   }
 
-  public async refreshAppToken(id: number): Promise<AppTokenDto> {
+  public async refreshAppToken(id: string): Promise<AppTokenDto> {
     return this.put(`/app/tokens/${id}/refresh`, {}, true);
   }
 
-  public async startAnnotation(projectID: number): Promise<any> { //TODO add missing annotation dto
+  public async startAnnotation(projectID: string): Promise<any> { //TODO add missing annotation dto
     return this.post(`/projects/${projectID}/annotations/start`, {}, true);
   }
 
-  public async freeAnnotation(projectID: number, annotationID: number): Promise<any> {
+  public async freeAnnotation(projectID: string, annotationID: number): Promise<any> {
     return this.post(`/projects/${projectID}/annotations/${annotationID}/free`, {}, true);
   }
 
-  public async saveAnnotation(projectID: number, annotationID: number, data: SaveAnnotationDto): Promise<TaskDto> {
+  public async saveAnnotation(projectID: string, annotationID: number, data: SaveAnnotationDto): Promise<TaskDto> {
     return this.post(`/projects/${projectID}/annotations/${annotationID}/save`, data, true);
   }
 
-  public async deliverTaskData(projectID: number, file: File, data: TaskUploadDto): Promise<TaskDto> {
+  public async deliverTaskData(projectID: string, file: File, data: TaskUploadDto): Promise<TaskDto> {
     return this.post(`/media/`, data, true);
   }
 
@@ -196,85 +198,45 @@ export class OctraAPIService {
   }
 
   private async get<T>(partURL: string, needsJWT: boolean): Promise<T> {
-    return new Promise<T>((resolve, reject) => {
-      const headers = this.getHeaders(needsJWT);
-      partURL = (partURL.indexOf('/') === 0) ? partURL.substr(1) : partURL;
-
-      const subscription = this.http.get(`${this.apiURL}/${partURL}`, {
-        responseType: 'json',
-        headers
-      }).subscribe((result: any) => {
-        subscription.unsubscribe();
-        this.checkResult(result, resolve, reject);
-      }, (error) => {
-        reject((error.error?.message) ? error.error.message : error.message);
-      })
-    });
+    const headers = this.getHeaders(needsJWT);
+    partURL = (partURL.indexOf('/') === 0) ? partURL.substr(1) : partURL;
+    return firstValueFrom(this.http.get<T>(`${this.apiURL}/${partURL}`, {
+      responseType: 'json',
+      headers
+    }));
   }
 
   private async post<T>(partURL: string, data: any, needsJWT: boolean): Promise<T> {
-    return new Promise<T>((resolve, reject) => {
-      const headers = this.getHeaders(needsJWT);
-      partURL = (partURL.indexOf('/') === 0) ? partURL.substr(1) : partURL;
-
-      const subscription = this.http.post(`${this.apiURL}/${partURL}`, data, {
-        responseType: 'json',
-        headers
-      }).subscribe((result: any) => {
-        subscription.unsubscribe();
-        this.checkResult(result, resolve, reject);
-      }, (error) => {
-        reject((error.error?.message) ? error.error.message : error.message);
-      })
-    });
+    const headers = this.getHeaders(needsJWT);
+    partURL = (partURL.indexOf('/') === 0) ? partURL.substr(1) : partURL;
+    return firstValueFrom(this.http.post<T>(`${this.apiURL}/${partURL}`, data, {
+      responseType: 'json',
+      headers
+    }));
   }
 
   private async put<T>(partURL: string, data: any, needsJWT: boolean): Promise<T> {
-    return new Promise<T>((resolve, reject) => {
-      const headers = this.getHeaders(needsJWT);
-      partURL = (partURL.indexOf('/') === 0) ? partURL.substr(1) : partURL;
-
-      const subscription = this.http.put(`${this.apiURL}/${partURL}`, data, {
-        responseType: 'json',
-        headers
-      }).subscribe((result: any) => {
-        subscription.unsubscribe();
-        this.checkResult(result, resolve, reject);
-      }, (error) => {
-        reject((error.error?.message) ? error.error.message : error.message);
-      })
-    });
+    const headers = this.getHeaders(needsJWT);
+    partURL = (partURL.indexOf('/') === 0) ? partURL.substr(1) : partURL;
+    return firstValueFrom(this.http.put<T>(`${this.apiURL}/${partURL}`, data, {
+      responseType: 'json',
+      headers
+    }));
   }
 
   private async delete<T>(partURL: string, needsJWT: boolean, data: any = undefined): Promise<T> {
-    return new Promise<T>((resolve, reject) => {
-      const headers = this.getHeaders(needsJWT);
-      partURL = (partURL.indexOf('/') === 0) ? partURL.substr(1) : partURL;
-      const options: any = {
-        responseType: 'json',
-        headers,
-        body: data
-      };
+    const headers = this.getHeaders(needsJWT);
+    partURL = (partURL.indexOf('/') === 0) ? partURL.substr(1) : partURL;
+    const options: any = {
+      responseType: 'json',
+      headers,
+      body: data
+    };
 
-      if (!data) {
-        delete options.body;
-      }
-
-      const subscription = this.http.delete(`${this.apiURL}/${partURL}`, options).subscribe((result: any) => {
-        subscription.unsubscribe();
-        this.checkResult(result, resolve, reject);
-      }, (error) => {
-        reject((error.error?.message) ? error.error.message : error.message);
-      });
-    });
-  }
-
-  private checkResult<T>(result: any, resolve: (result: T) => void, reject: (error: Error | string) => void) {
-    if (result.status === 'success') {
-      resolve(result.data as T);
-    } else {
-      reject(new Error(result.message));
+    if (!data) {
+      delete options.body;
     }
+    return firstValueFrom(this.http.delete(`${this.apiURL}/${partURL}`, options) as any);
   }
 
   private getHeaders(needsJWT: boolean) {

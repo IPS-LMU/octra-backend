@@ -17,7 +17,7 @@ import {AccountEntity, AccountPersonEntity, AccountRoleProjectEntity, RoleEntity
     TypeOrmModule.forFeature([AccountPersonEntity, AccountEntity, AccountRoleProjectEntity, RoleEntity]),
     AccountModule, PassportModule, JwtModule.register({
       secret: jwtConstants.secret,
-      signOptions: {expiresIn: '60s'},
+      signOptions: {expiresIn: '1 day'}, // TODO set expiration time to config.json
     })
   ],
   providers: [AccountService, AuthService, LocalStrategy, JwtStrategy, DatabaseService],
