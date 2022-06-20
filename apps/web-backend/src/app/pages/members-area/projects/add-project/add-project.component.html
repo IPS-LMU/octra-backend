@@ -4,44 +4,39 @@
 </ng-template>
 <form (ngSubmit)="onSubmit()" #form="ngForm">
   <div class="row">
-    <div class="col-12">
-      <div class="form-group">
-        <label for="projectName">Name</label>
-        <input type="text" class="form-control" id="projectName" placeholder="Enter a name" name="projectName"
-               [(ngModel)]="formData.name" required="required">
-      </div>
+    <div class="col-12 mb-3">
+      <label for="projectName" class="form-label">Project name</label>
+      <input type="email" class="form-control" id="projectName" placeholder="A new project" name="projectName"
+             [(ngModel)]="formData.name" required="required">
     </div>
-    <div class="col-12">
-      <div class="form-group">
-        <label for="shortName">Short name</label>
-        <input type="text" class="form-control" id="shortName" placeholder="Enter a short name" name="shortName"
-               [(ngModel)]="formData.shortname" required="required">
-      </div>
+    <div class="col-12 mb-3">
+      <label for="shortName" class="form-label">Short name</label>
+      <input type="email" class="form-control" id="shortName" placeholder="newProject" name="shortName"
+             [(ngModel)]="formData.shortname" required="required">
     </div>
-    <div class="col-12">
-      <div class="form-group">
-        <label for="description">Description</label>
-        <textarea class="form-control" id="description" placeholder="Enter a description" name="description"
-                  [(ngModel)]="formData.description"></textarea>
-      </div>
+    <div class="col-12 mb-3">
+      <label for="description" class="form-label">Description</label>
+      <textarea class="form-control" id="description" placeholder="Enter a description" name="description"
+                [(ngModel)]="formData.description"></textarea>
     </div>
     <div class="col-12">
       <div class="row">
         <div class="col-sm-12 col-md-12 col-lg-6">
           <div class="row">
-            <div class="col-12">
+            <div class="col-12 mb-2">
               <label for="startDatePicker">Start date</label>
             </div>
           </div>
-          <div class="row">
+          <div class="row border rounded-2 mx-0">
             <div class="col-7 form-group my-auto">
-              <input type="text" [bsConfig]="{
+              <input type="text"
+                     [bsConfig]="{
                     containerClass: 'theme-dark-blue'
                  }"
                      (bsValueChange)="onScheduleChange($event, 'start')"
                      [bsValue]="projectSchedule.start"
-                     placeholder="Datepicker"
                      id="startDatePicker"
+                     placeholder="Datepicker"
                      class="form-control"
                      bsDatepicker>
             </div>
@@ -53,11 +48,11 @@
 
         <div class="col-sm-12 col-md-12 col-lg-6">
           <div class="row">
-            <div class="col-12">
+            <div class="col-12 mb-2">
               <label for="endDatePicker">End date</label>
             </div>
           </div>
-          <div class="row">
+          <div class="row border rounded-2 mx-0">
             <div class="col-7 form-group my-auto">
               <input type="text" [bsConfig]="{
                     containerClass: 'theme-dark-blue'
