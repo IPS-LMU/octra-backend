@@ -6,7 +6,6 @@ import {
   AccountRegisterRequestDto,
   AssignAccountRoleDto,
   AssignRoleDto,
-  AssignRoleProjectDto,
   ChangePasswordDto
 } from './account.dto';
 import {AccountLoginMethod, AccountRole, AccountRoleScope} from '@octra/api-types';
@@ -112,15 +111,13 @@ export class AccountService {
 
       // add project roles
       for (const project of roleDto.projects) {
-        for (const role of project.roles) {
-          await manager.insert(AccountRoleProjectEntity, new AccountRoleProjectEntity({
-            account_id: id,
-            role_id: roles.find(a => a.scope === AccountRoleScope.project && a.label === role.role).id,
-            project_id: project.project_id,
-            valid_startdate: role.valid_startdate ? new Date(role.valid_startdate) : undefined,
-            valid_enddate: role.valid_enddate ? new Date(role.valid_enddate) : undefined
-          }));
-        }
+        await manager.insert(AccountRoleProjectEntity, new AccountRoleProjectEntity({
+          account_id: id,
+          role_id: roles.find(a => a.scope === AccountRoleScope.project && a.label === project.role).id,
+          project_id: project.project_id,
+          valid_startdate: project.valid_startdate ? new Date(project.valid_startdate) : undefined,
+          valid_enddate: project.valid_enddate ? new Date(project.valid_enddate) : undefined
+        }));
       }
 
       account = await manager.findOneBy(AccountEntity, {
@@ -132,10 +129,13 @@ export class AccountService {
 
       return new AssignRoleDto({
         general: account.generalRole.label,
-        projects: removeNullAttributes(projectIDs.map(a => new AssignRoleProjectDto({
-          project_id: a,
-          roles: account.roles.filter(b => b.project_id === a).map(b => new AssignAccountRoleDto(b))
-        })))
+        projects: removeNullAttributes(projectIDs.map((a) => {
+          const accountRole: AccountRoleProjectEntity = account.roles.filter(b => b.project_id === a)[0];
+          return new AssignAccountRoleDto({
+            ...accountRole,
+            project_id: a
+          });
+        }))
       });
     });
   }

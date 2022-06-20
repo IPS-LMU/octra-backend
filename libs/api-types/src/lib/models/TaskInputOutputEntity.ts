@@ -15,12 +15,12 @@ import {TaskEntity} from './TaskEntity';
 import {TranscriptDto} from './TranscriptDto';
 
 export class TaskInputOutputEntity {
-  'taskId': string;
+  'task_id': string;
   'task': TaskEntity;
-  'fileProjectId'?: string;
-  'fileProject': FileProjectEntity;
+  'file_project_id'?: string;
+  'file_project': FileProjectEntity;
   'type': any;
-  'creatorType': TaskInputOutputEntityCreatorTypeEnum;
+  'creator_type': TaskInputOutputEntityCreatorTypeEnum;
   'label': string;
   'description'?: string;
   'filename'?: string;
@@ -31,7 +31,7 @@ export class TaskInputOutputEntity {
 
   static readonly attributeTypeMap: Array<{ name: string, baseName: string, type: string, format: string }> = [
     {
-      'name': 'taskId',
+      'name': 'task_id',
       'baseName': 'task_id',
       'type': 'string',
       'format': ''
@@ -43,13 +43,13 @@ export class TaskInputOutputEntity {
       'format': ''
     },
     {
-      'name': 'fileProjectId',
+      'name': 'file_project_id',
       'baseName': 'file_project_id',
       'type': 'string',
       'format': ''
     },
     {
-      'name': 'fileProject',
+      'name': 'file_project',
       'baseName': 'file_project',
       'type': 'FileProjectEntity',
       'format': ''
@@ -61,7 +61,7 @@ export class TaskInputOutputEntity {
       'format': ''
     },
     {
-      'name': 'creatorType',
+      'name': 'creator_type',
       'baseName': 'creator_type',
       'type': 'TaskInputOutputEntityCreatorTypeEnum',
       'format': ''

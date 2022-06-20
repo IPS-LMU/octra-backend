@@ -12,7 +12,7 @@
 
 export class ProjectRemoveRequestDto {
   /**
-   * describes if all references to this project shal be deleted.
+   * describes if all references to this project shall be deleted.
    */
   'removeAllReferences': boolean;
   /**

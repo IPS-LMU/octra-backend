@@ -17,6 +17,12 @@ export class AppTokenService {
     return await this.tokenRepository.find();
   }
 
+  async getOne(id: string): Promise<AppTokenEntity> {
+    return await this.tokenRepository.findOneBy({
+      id
+    });
+  }
+
   async createAppToken(data: AppTokenCreateDto): Promise<AppTokenEntity> {
     const key = await this.generateAppToken();
     return removeNullAttributes(await this.tokenRepository.save({
@@ -25,12 +31,12 @@ export class AppTokenService {
     } as AppTokenDto));
   }
 
-  async updateAppToken(id: number, appToken: AppTokenChangeDto): Promise<void> {
+  async updateAppToken(id: string, appToken: AppTokenChangeDto): Promise<void> {
     await this.tokenRepository.update(id, appToken);
     return;
   }
 
-  async removeAppToken(id: number): Promise<void> {
+  async removeAppToken(id: string): Promise<void> {
     await this.tokenRepository.delete(id);
     return;
   }

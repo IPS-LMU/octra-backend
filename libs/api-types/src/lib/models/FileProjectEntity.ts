@@ -14,18 +14,18 @@ import {FileEntity} from './FileEntity';
 import {ProjectEntity} from './ProjectEntity';
 
 export class FileProjectEntity {
-  'fileId': string;
+  'file_id': string;
   'file': FileEntity;
-  'projectId': string;
+  'project_id': string;
   'project': ProjectEntity;
-  'virtualFolderPath': string;
-  'virtualFilename': string;
+  'virtual_folder_path': string;
+  'virtual_filename': string;
 
   static readonly discriminator: string | undefined = undefined;
 
   static readonly attributeTypeMap: Array<{ name: string, baseName: string, type: string, format: string }> = [
     {
-      'name': 'fileId',
+      'name': 'file_id',
       'baseName': 'file_id',
       'type': 'string',
       'format': ''
@@ -37,7 +37,7 @@ export class FileProjectEntity {
       'format': ''
     },
     {
-      'name': 'projectId',
+      'name': 'project_id',
       'baseName': 'project_id',
       'type': 'string',
       'format': ''
@@ -49,13 +49,13 @@ export class FileProjectEntity {
       'format': ''
     },
     {
-      'name': 'virtualFolderPath',
+      'name': 'virtual_folder_path',
       'baseName': 'virtual_folder_path',
       'type': 'string',
       'format': ''
     },
     {
-      'name': 'virtualFilename',
+      'name': 'virtual_filename',
       'baseName': 'virtual_filename',
       'type': 'string',
       'format': ''

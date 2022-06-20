@@ -11,7 +11,6 @@ export * from './AssignAccountRoleDto';
 export * from './AssignAccountRoles404Response';
 export * from './AssignProjectRolesRequestInner';
 export * from './AssignRoleDto';
-export * from './AssignRoleProjectDto';
 export * from './AudioDurationDto';
 export * from './AuthDto';
 export * from './ChangeMyPassword400Response';
@@ -35,8 +34,8 @@ export * from './ProjectDto';
 export * from './ProjectEntity';
 export * from './ProjectRemoveRequestDto';
 export * from './ProjectRequestDto';
+export * from './ProjectRoleDto';
 export * from './Properties';
-export * from './RoleDto';
 export * from './RoleEntity';
 export * from './SaveAnnotationDto';
 export * from './SaveGuidelinesRequestInner';
@@ -69,7 +68,6 @@ import {AssignAccountRoleDto, AssignAccountRoleDtoRoleEnum} from './AssignAccoun
 import {AssignAccountRoles404Response} from './AssignAccountRoles404Response';
 import {AssignProjectRolesRequestInner, AssignProjectRolesRequestInnerRoleEnum} from './AssignProjectRolesRequestInner';
 import {AssignRoleDto, AssignRoleDtoGeneralEnum} from './AssignRoleDto';
-import {AssignRoleProjectDto} from './AssignRoleProjectDto';
 import {AudioDurationDto} from './AudioDurationDto';
 import {AuthDto} from './AuthDto';
 import {ChangeMyPassword400Response} from './ChangeMyPassword400Response';
@@ -89,12 +87,12 @@ import {Login401Response} from './Login401Response';
 import {LoginRequest, LoginRequestTypeEnum} from './LoginRequest';
 import {LoginRequestOneOf, LoginRequestOneOfTypeEnum} from './LoginRequestOneOf';
 import {LoginRequestOneOf1, LoginRequestOneOf1TypeEnum} from './LoginRequestOneOf1';
-import {ProjectDto} from './ProjectDto';
+import {ProjectDto, ProjectDtoVisibilityEnum} from './ProjectDto';
 import {ProjectEntity} from './ProjectEntity';
 import {ProjectRemoveRequestDto} from './ProjectRemoveRequestDto';
 import {ProjectRequestDto, ProjectRequestDtoVisibilityEnum} from './ProjectRequestDto';
+import {ProjectRoleDto, ProjectRoleDtoRoleEnum} from './ProjectRoleDto';
 import {Properties, PropertiesStatusEnum, PropertiesTypeEnum} from './Properties';
-import {RoleDto, RoleDtoRoleEnum, RoleDtoScopeEnum} from './RoleDto';
 import {RoleEntity, RoleEntityLabelEnum, RoleEntityScopeEnum} from './RoleEntity';
 import {SaveAnnotationDto} from './SaveAnnotationDto';
 import {SaveGuidelinesRequestInner} from './SaveGuidelinesRequestInner';
@@ -148,11 +146,11 @@ let enumsMap: Set<string> = new Set<string>([
   'LoginRequestTypeEnum',
   'LoginRequestOneOfTypeEnum',
   'LoginRequestOneOf1TypeEnum',
+  'ProjectDtoVisibilityEnum',
   'ProjectRequestDtoVisibilityEnum',
+  'ProjectRoleDtoRoleEnum',
   'PropertiesTypeEnum',
   'PropertiesStatusEnum',
-  'RoleDtoRoleEnum',
-  'RoleDtoScopeEnum',
   'RoleEntityLabelEnum',
   'RoleEntityScopeEnum',
   'TaskChangeDtoTranscriptTypeEnum',
@@ -181,7 +179,6 @@ let typeMap: { [index: string]: any } = {
   'AssignAccountRoles404Response': AssignAccountRoles404Response,
   'AssignProjectRolesRequestInner': AssignProjectRolesRequestInner,
   'AssignRoleDto': AssignRoleDto,
-  'AssignRoleProjectDto': AssignRoleProjectDto,
   'AudioDurationDto': AudioDurationDto,
   'AuthDto': AuthDto,
   'ChangeMyPassword400Response': ChangeMyPassword400Response,
@@ -205,8 +202,8 @@ let typeMap: { [index: string]: any } = {
   'ProjectEntity': ProjectEntity,
   'ProjectRemoveRequestDto': ProjectRemoveRequestDto,
   'ProjectRequestDto': ProjectRequestDto,
+  'ProjectRoleDto': ProjectRoleDto,
   'Properties': Properties,
-  'RoleDto': RoleDto,
   'RoleEntity': RoleEntity,
   'SaveAnnotationDto': SaveAnnotationDto,
   'SaveGuidelinesRequestInner': SaveGuidelinesRequestInner,

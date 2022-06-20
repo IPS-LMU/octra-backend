@@ -10,11 +10,11 @@
  * Do not edit the class manually.
  */
 
-import {AssignRoleProjectDto} from './AssignRoleProjectDto';
+import {AssignAccountRoleDto} from './AssignAccountRoleDto';
 
 export class AssignRoleDto {
   'general'?: AssignRoleDtoGeneralEnum;
-  'projects'?: Array<AssignRoleProjectDto>;
+  'projects'?: Array<AssignAccountRoleDto>;
 
   static readonly discriminator: string | undefined = undefined;
 
@@ -28,7 +28,7 @@ export class AssignRoleDto {
     {
       'name': 'projects',
       'baseName': 'projects',
-      'type': 'Array<AssignRoleProjectDto>',
+      'type': 'Array<AssignAccountRoleDto>',
       'format': ''
     }];
 

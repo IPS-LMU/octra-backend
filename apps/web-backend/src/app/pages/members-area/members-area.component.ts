@@ -7,7 +7,7 @@ import {AppStorageService} from '../../app-storage.service';
   styleUrls: ['./members-area.component.css']
 })
 export class MembersAreaComponent implements OnInit {
-
+  public navbarCollapsed = true;
   constructor(public appStorage: AppStorageService) {
   }
 

@@ -35,10 +35,10 @@ export class TaskDto {
   'enddate': string;
   'log': any;
   'comment': string;
-  'toolId': string;
-  'adminComment': string;
-  'workerId': string;
-  'nexttaskId': string;
+  'tool_id': string;
+  'admin_comment': string;
+  'worker_id': string;
+  'nexttask_id': string;
   'type': string;
   'inputs': Array<TaskInputOutputDto>;
   'outputs': Array<TaskInputOutputDto>;
@@ -125,25 +125,25 @@ export class TaskDto {
       'format': ''
     },
     {
-      'name': 'toolId',
+      'name': 'tool_id',
       'baseName': 'tool_id',
       'type': 'string',
       'format': ''
     },
     {
-      'name': 'adminComment',
+      'name': 'admin_comment',
       'baseName': 'admin_comment',
       'type': 'string',
       'format': ''
     },
     {
-      'name': 'workerId',
+      'name': 'worker_id',
       'baseName': 'worker_id',
       'type': 'string',
       'format': ''
     },
     {
-      'name': 'nexttaskId',
+      'name': 'nexttask_id',
       'baseName': 'nexttask_id',
       'type': 'string',
       'format': ''

@@ -9,13 +9,11 @@ import {HttpClientModule} from '@angular/common/http';
 import {NgxWebstorageModule} from 'ngx-webstorage';
 import {SettingsService} from './settings.service';
 import {JoinPipe} from './pipes/join.pipe';
-import {FaIconLibrary, FontAwesomeModule} from '@fortawesome/angular-fontawesome';
 import {LoadingComponent} from './loading/loading.component';
 import {LoginPageComponent} from './pages/login-page/login-page.component';
 import {MembersAreaComponent} from './pages/members-area/members-area.component';
 import {DashboardComponent} from './pages/members-area/dashboard-page/dashboard.component';
 import {ApptokensComponent} from './pages/members-area/apptokens/apptokens.component';
-import {UsersPage} from './pages/members-area/users-page/users.page';
 import {SettingsComponent} from './pages/members-area/settings/settings.component';
 import {ModalsComponent} from './modals/modals.component';
 import {ModalsService} from './modals/modals.service';
@@ -36,9 +34,10 @@ import {BsDatepickerModule} from 'ngx-bootstrap/datepicker';
 import {BsDropdownModule} from 'ngx-bootstrap/dropdown';
 import {TimepickerModule} from 'ngx-bootstrap/timepicker';
 import {TabsModule} from 'ngx-bootstrap/tabs';
-import {fas} from '@fortawesome/free-solid-svg-icons';
-import {far} from '@fortawesome/free-regular-svg-icons';
 import {AlertModule} from 'ngx-bootstrap/alert';
+import {AccountsPage} from './pages/members-area/accounts/accounts.page';
+import {TooltipModule} from 'ngx-bootstrap/tooltip';
+import {CollapseModule} from 'ngx-bootstrap/collapse';
 
 @NgModule({
   declarations: [
@@ -47,7 +46,7 @@ import {AlertModule} from 'ngx-bootstrap/alert';
     DashboardComponent,
     ApptokensComponent,
     MembersAreaComponent,
-    UsersPage,
+    AccountsPage,
     SettingsComponent,
     JoinPipe,
     LoadingComponent,
@@ -69,7 +68,6 @@ import {AlertModule} from 'ngx-bootstrap/alert';
     AppRoutingModule,
     HttpClientModule,
     NgxWebstorageModule.forRoot({}),
-    FontAwesomeModule,
     ModalModule.forRoot(),
     BrowserAnimationsModule,
     BsDatepickerModule.forRoot(),
@@ -78,13 +76,14 @@ import {AlertModule} from 'ngx-bootstrap/alert';
     TabsModule.forRoot(),
     NgxCodejarModule,
     NgxOctraApiModule,
-    AlertModule
+    AlertModule,
+    TooltipModule,
+    CollapseModule
   ],
   providers: [SettingsService, OctraAPIService, ModalsService],
   bootstrap: [AppComponent]
 })
 export class AppModule {
-  constructor(library: FaIconLibrary) {
-    library.addIconPacks(fas as any, far as any);
+  constructor() {
   }
 }

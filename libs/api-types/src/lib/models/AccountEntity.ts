@@ -17,12 +17,12 @@ import {RoleEntity} from './RoleEntity';
 export class AccountEntity {
   'training': string;
   'comment': string;
-  'roleId': string;
+  'role_id': string;
   'generalRole': RoleEntity;
   'roles': Array<AccountRoleProjectEntity>;
-  'lastLogin'?: Date;
-  'accountPersonId': string;
-  'accountPerson': AccountPersonEntity;
+  'last_login'?: Date;
+  'account_person_id': string;
+  'account_person': AccountPersonEntity;
 
   static readonly discriminator: string | undefined = undefined;
 
@@ -40,7 +40,7 @@ export class AccountEntity {
       'format': ''
     },
     {
-      'name': 'roleId',
+      'name': 'role_id',
       'baseName': 'role_id',
       'type': 'string',
       'format': ''
@@ -58,19 +58,19 @@ export class AccountEntity {
       'format': ''
     },
     {
-      'name': 'lastLogin',
+      'name': 'last_login',
       'baseName': 'last_login',
       'type': 'Date',
       'format': 'date-time'
     },
     {
-      'name': 'accountPersonId',
+      'name': 'account_person_id',
       'baseName': 'account_person_id',
       'type': 'string',
       'format': ''
     },
     {
-      'name': 'accountPerson',
+      'name': 'account_person',
       'baseName': 'account_person',
       'type': 'AccountPersonEntity',
       'format': ''

@@ -16,12 +16,20 @@ h1 {
   cursor: pointer;
 }
 
-fa-icon[icon='edit'] {
+.bi-pencil-square {
   color: cornflowerblue;
 }
 
-fa-icon[icon='redo'] {
+.bi-arrow-clockwise {
   color: purple;
+}
+
+.bi-check-circle-fill {
+  color: darkgreen;
+}
+
+.bi-minus-circle-fill {
+  color: red;
 }
 
 #actions-bar {
@@ -31,4 +39,13 @@ fa-icon[icon='redo'] {
 
 .codejar-linenumbers * {
   color: white !important;
+}
+
+.row-header {
+  font-weight: bolder;
+  text-align: left;
+}
+
+.badge {
+  font-weight: normal;
 }

@@ -16,9 +16,9 @@ export class FileEntity {
   'url': string;
   'type'?: string;
   'size'?: number;
-  'uploaderId'?: string;
+  'uploader_id'?: string;
   'uploader': AccountEntity;
-  'originalName'?: string;
+  'original_name'?: string;
   'hash'?: string;
   'metadata'?: any;
 
@@ -44,7 +44,7 @@ export class FileEntity {
       'format': ''
     },
     {
-      'name': 'uploaderId',
+      'name': 'uploader_id',
       'baseName': 'uploader_id',
       'type': 'string',
       'format': ''
@@ -56,7 +56,7 @@ export class FileEntity {
       'format': ''
     },
     {
-      'name': 'originalName',
+      'name': 'original_name',
       'baseName': 'original_name',
       'type': 'string',
       'format': ''

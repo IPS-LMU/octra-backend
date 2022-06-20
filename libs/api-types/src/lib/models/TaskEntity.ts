@@ -26,14 +26,14 @@ export class TaskEntity {
   'enddate': Date;
   'log': any;
   'comment': string;
-  'toolId': string;
+  'tool_id': string;
   'tool': ToolEntity;
-  'projectId': string;
+  'project_id': string;
   'project': ProjectEntity;
-  'adminComment': string;
-  'workerId': string;
+  'admin_comment': string;
+  'worker_id': string;
   'worker': AccountEntity;
-  'nexttaskId': string;
+  'nexttask_id': string;
   'nexttask': TaskEntity;
   'type': string;
   'inputsOutputs': Array<TaskInputOutputEntity>;
@@ -102,7 +102,7 @@ export class TaskEntity {
       'format': ''
     },
     {
-      'name': 'toolId',
+      'name': 'tool_id',
       'baseName': 'tool_id',
       'type': 'string',
       'format': ''
@@ -114,7 +114,7 @@ export class TaskEntity {
       'format': ''
     },
     {
-      'name': 'projectId',
+      'name': 'project_id',
       'baseName': 'project_id',
       'type': 'string',
       'format': ''
@@ -126,13 +126,13 @@ export class TaskEntity {
       'format': ''
     },
     {
-      'name': 'adminComment',
+      'name': 'admin_comment',
       'baseName': 'admin_comment',
       'type': 'string',
       'format': ''
     },
     {
-      'name': 'workerId',
+      'name': 'worker_id',
       'baseName': 'worker_id',
       'type': 'string',
       'format': ''
@@ -144,7 +144,7 @@ export class TaskEntity {
       'format': ''
     },
     {
-      'name': 'nexttaskId',
+      'name': 'nexttask_id',
       'baseName': 'nexttask_id',
       'type': 'string',
       'format': ''

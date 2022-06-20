@@ -33,7 +33,7 @@ export class SaveAnnotationDto {
   /**
    * id of the tool that should be used for this task
    */
-  'toolId'?: string;
+  'tool_id'?: string;
   /**
    * logging data from task
    */
@@ -74,7 +74,7 @@ export class SaveAnnotationDto {
       'format': ''
     },
     {
-      'name': 'toolId',
+      'name': 'tool_id',
       'baseName': 'tool_id',
       'type': 'string',
       'format': ''

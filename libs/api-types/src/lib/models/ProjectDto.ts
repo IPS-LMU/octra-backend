@@ -10,7 +10,7 @@
  * Do not edit the class manually.
  */
 
-import {RoleDto} from './RoleDto';
+import {ProjectRoleDto} from './ProjectRoleDto';
 
 export class ProjectDto {
   /**
@@ -34,6 +34,10 @@ export class ProjectDto {
    */
   'active': boolean;
   /**
+   * visibility of the project.
+   */
+  'visibility': ProjectDtoVisibilityEnum;
+  /**
    * short identifier of the project.
    */
   'shortname'?: string;
@@ -53,7 +57,7 @@ export class ProjectDto {
    * end date of the project (ISO 8601)
    */
   'enddate'?: string;
-  'roles': Array<RoleDto>;
+  'roles': Array<ProjectRoleDto>;
 
   static readonly discriminator: string | undefined = undefined;
 
@@ -89,6 +93,12 @@ export class ProjectDto {
       'format': ''
     },
     {
+      'name': 'visibility',
+      'baseName': 'visibility',
+      'type': 'ProjectDtoVisibilityEnum',
+      'format': ''
+    },
+    {
       'name': 'shortname',
       'baseName': 'shortname',
       'type': 'string',
@@ -121,7 +131,7 @@ export class ProjectDto {
     {
       'name': 'roles',
       'baseName': 'roles',
-      'type': 'Array<RoleDto>',
+      'type': 'Array<ProjectRoleDto>',
       'format': ''
     }];
 
@@ -132,4 +142,7 @@ export class ProjectDto {
   public constructor() {
   }
 }
+
+
+export type ProjectDtoVisibilityEnum = 'public' | 'private';
 

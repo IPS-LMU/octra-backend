@@ -1,10 +1,10 @@
 import {IsBoolean, IsEnum, IsNotEmpty, IsString} from 'class-validator';
 import {StandardWithTimeDto} from '../standard.dto';
-import {ApiHideProperty, ApiProperty, OmitType} from '@nestjs/swagger';
+import {ApiHideProperty, ApiProperty, OmitType, PartialType} from '@nestjs/swagger';
 import {AccountRole, ProjectVisibility} from '@octra/api-types';
 import {RoleDto} from '../account/account.dto';
 import {Expose, Transform} from 'class-transformer';
-import {ProjectEntity, removeProperties} from '@octra/server-side';
+import {AccountRoleProjectEntity, ProjectEntity, removeProperties} from '@octra/server-side';
 
 export class ProjectRequestDto extends OmitType(StandardWithTimeDto, ['id', 'creationdate', 'updatedate']) {
   @IsNotEmpty()
@@ -77,6 +77,13 @@ export class ProjectDto extends StandardWithTimeDto {
     example: true
   })
   active: boolean;
+  @IsNotEmpty()
+  @IsEnum(ProjectVisibility)
+  @ApiProperty({
+    description: 'visibility of the project.',
+    example: 'public'
+  })
+  visibility: ProjectVisibility;
   @ApiProperty({
     description: 'short identifier of the project.',
     example: 'testproj'
@@ -128,11 +135,13 @@ export class ProjectDto extends StandardWithTimeDto {
   })
   @Transform(({value}) => {
     if (value) {
-      return value.map(a => new RoleDto(a));
+      return value.map((a) => {
+        return new ProjectRoleDto(a);
+      });
     }
     return value;
   })
-  roles: RoleDto[];
+  roles: ProjectRoleDto[];
 
   constructor(partial: Partial<ProjectEntity>) {
     super();
@@ -140,13 +149,9 @@ export class ProjectDto extends StandardWithTimeDto {
   }
 }
 
-export class ProjectAssignRolesRequestDto {
-  @IsNotEmpty()
-  @ApiProperty({
-    description: 'account id',
-    example: '24365'
-  })
-  account_id: string;
+export class ProjectRoleDto extends PartialType(
+  OmitType(RoleDto, ['project_name', 'project_id', 'scope'] as const)
+) {
   @IsNotEmpty()
   @IsString()
   @ApiProperty({
@@ -154,13 +159,74 @@ export class ProjectAssignRolesRequestDto {
     example: 'project_admin'
   })
   role: AccountRole;
+
+  @IsNotEmpty()
+  @ApiProperty({
+    description: 'account id',
+    example: '24365'
+  })
+  account_id: string;
+
+  @ApiProperty({
+    description: 'account name',
+    example: 'testUser'
+  })
+  account_name?: string;
+
+  constructor(partial: Partial<AccountRoleProjectEntity>) {
+    super();
+    let newObj: ProjectRoleDto = partial as any;
+
+    newObj = {
+      ...newObj,
+      role: partial.role.label,
+      account_id: partial.account_id,
+      account_name: partial.account?.account_person.username
+    }
+
+    newObj = removeProperties(newObj, ['id', 'role_id', 'project_id', 'project_name', 'scope']);
+    Object.assign(this, newObj);
+  }
+}
+
+export class ProjectAssignRoleDto extends PartialType(
+  OmitType(RoleDto, ['project_name', 'project_id', 'scope'] as const)
+) {
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty({
+    description: 'role of the account',
+    example: 'project_admin'
+  })
+  role: AccountRole;
+
+  @IsNotEmpty()
+  @ApiProperty({
+    description: 'account id',
+    example: '24365'
+  })
+  account_id: string;
+
+  constructor(partial: Partial<AccountRoleProjectEntity>) {
+    super();
+    let newObj: ProjectRoleDto = partial as any;
+
+    newObj = {
+      ...newObj,
+      role: partial.role.label,
+      account_id: partial.account_id
+    }
+
+    newObj = removeProperties(newObj, ['id', 'role_id', 'project_id', 'project_name', 'scope']);
+    Object.assign(this, newObj);
+  }
 }
 
 export class ProjectRemoveRequestDto {
   @IsNotEmpty()
   @IsBoolean()
   @ApiProperty({
-    description: 'describes if all references to this project shal be deleted.',
+    description: 'describes if all references to this project shall be deleted.',
     example: false
   })
   removeAllReferences: boolean;

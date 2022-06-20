@@ -26,6 +26,18 @@ export class AppTokenController {
   }
 
   /**
+   * returns one specific app token.
+   *
+   * Allowed user roles: <code>administrator</code>
+   *
+   */
+  @CombinedRoles(AccountRole.administrator)
+  @Get('tokens/:id')
+  async getAppToken(@Param('id', NumericStringValidationPipe) id: string): Promise<AppTokenDto> {
+    return new AppTokenDto(await this.appTokensService.getOne(id));
+  }
+
+  /**
    * creates a new app token.
    *
    * Allowed user roles: <code>administrator</code>
@@ -43,7 +55,7 @@ export class AppTokenController {
    */
   @CombinedRoles(AccountRole.administrator)
   @Put('tokens/:id')
-  async changeAppToken(@Body() token: AppTokenChangeDto, @Param('id', NumericStringValidationPipe) id: number): Promise<void> {
+  async changeAppToken(@Body() token: AppTokenChangeDto, @Param('id', NumericStringValidationPipe) id: string): Promise<void> {
     return this.appTokensService.updateAppToken(id, token);
   }
 
@@ -65,7 +77,7 @@ export class AppTokenController {
    */
   @CombinedRoles(AccountRole.administrator)
   @Delete('tokens/:id')
-  async removeAppToken(@Param('id', NumericStringValidationPipe) id: number): Promise<void> {
+  async removeAppToken(@Param('id', NumericStringValidationPipe) id: string): Promise<void> {
     return this.appTokensService.removeAppToken(id);
   }
 }

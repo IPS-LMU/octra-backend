@@ -1,7 +1,7 @@
 import {Injectable} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Repository} from 'typeorm';
-import {ProjectAssignRolesRequestDto, ProjectRemoveRequestDto, ProjectRequestDto} from './project.dto';
+import {ProjectAssignRoleDto, ProjectRemoveRequestDto, ProjectRequestDto} from './project.dto';
 import {AppService} from '../../app.service';
 import {FileSystemHandler} from '../../obj/filesystem-handler';
 import {DatabaseService} from '../../database.service';
@@ -31,12 +31,13 @@ export class ProjectService {
 
   public async listProjects(user: CurrentUser): Promise<ProjectEntity[]> {
     if (user.roles.find(a => a.role === AccountRole.administrator)) {
-      return this.projectRepository.find({relations: ['roles']});
+      return this.projectRepository.find({relations: ['roles', 'roles.account']});
     }
 
     let projects = await this.projectRepository
       .createQueryBuilder('project')
       .leftJoinAndSelect('project.roles', 'roles')
+      .leftJoinAndSelect('roles.role', 'role')
       .where('project.visibility =:visibility', {
         visibility: ProjectVisibility.public
       })
@@ -67,7 +68,7 @@ export class ProjectService {
     return req.project?.roles;
   }
 
-  public async assignProjectRoles(id: string, roles: ProjectAssignRolesRequestDto[]): Promise<void> {
+  public async assignProjectRoles(id: string, roles: ProjectAssignRoleDto[]): Promise<void> {
     return this.databaseService.transaction<void>(async (manager) => {
       const roleRows = await manager.find<RoleEntity>(RoleEntity);
 

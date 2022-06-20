@@ -1,24 +1,59 @@
-<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark" style="margin-bottom: 60px;">
+<nav class="navbar navbar-expand-md navbar-dark bg-dark">
   <div class="container-fluid">
     <a class="navbar-brand" href="#">OCTRA Web-Backend</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault"
-            aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+            aria-controls="navbarsExampleDefault" [attr.aria-expanded]="navbarCollapsed" aria-label="Toggle navigation"
+            (click)="navbarCollapsed = !navbarCollapsed">
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+    <div class="collapse navbar-collapse" id="navbarsExampleDefault" [collapse]="navbarCollapsed" [isAnimated]="true">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-
+        <li class="nav-item" *ngIf="appStorage.isAdministrator()">
+          <a class="nav-link" [routerLinkActive]="['active']" aria-current="page"
+             [routerLink]="['/members/dashboard']">
+            <i class="bi bi-speedometer"></i>
+            Dashboard
+          </a>
+        </li>
+        <li class="nav-item" *ngIf="appStorage.isAdministrator()">
+          <a class="nav-link" [routerLinkActive]="['active']" aria-current="page"
+             [routerLink]="['/members/projects']">
+            <i class="bi bi-box"></i>
+            Projects
+          </a>
+        </li>
+        <li class="nav-item" *ngIf="appStorage.isAdministrator()">
+          <a class="nav-link" [routerLinkActive]="['active']" aria-current="page"
+             [routerLink]="['/members/accounts']">
+            <i class="bi bi-people-fill"></i>
+            Accounts
+          </a>
+        </li>
+        <li class="nav-item" *ngIf="appStorage.isAdministrator()">
+          <a class="nav-link" [routerLinkActive]="['active']" aria-current="page"
+             [routerLink]="['/members/apptokens']">
+            <i class="bi bi-tags-fill"></i>
+            Apptokens
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [routerLinkActive]="['active']" aria-current="page"
+             [routerLink]="['/members/settings']">
+            <i class="bi bi-gear-wide-connected"></i>
+            Settings
+          </a>
+        </li>
       </ul>
       <ul class="navbar-nav d-flex">
         <li class="nav-item" style="border-right: 1px solid gray;">
           <a class="nav-link" [routerLink]="['/members/profile']">
-            <fa-icon icon="user-circle"></fa-icon>
+            <i class="bi bi-person-circle"></i>
             {{appStorage.user?.username}}</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" (click)="appStorage.logout('')">Sign out
-            <fa-icon icon="door-open"></fa-icon>
+            <i class="bi bi-door-open"></i>
           </a>
         </li>
       </ul>
@@ -29,40 +64,40 @@
 <div class="container-fluid">
   <div class="row">
     <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse vh-100">
-      <div class="d-flex flex-column flex-shrink-0 p-3 h-100">
+      <div class="d-flex flex-column flex-shrink-0 p-2 h-100">
         <ul class="nav nav-pills flex-column mb-auto bg-light">
           <li class="nav-item" *ngIf="appStorage.isAdministrator()">
             <a class="nav-link" [routerLinkActive]="['active']" aria-current="page"
                [routerLink]="['/members/dashboard']">
-              <fa-icon icon="tachometer-alt"></fa-icon>
+              <i class="bi bi-speedometer"></i>
               Dashboard
             </a>
           </li>
           <li class="nav-item" *ngIf="appStorage.isAdministrator()">
             <a class="nav-link" [routerLinkActive]="['active']" aria-current="page"
-               [routerLink]="['/members/project']">
-              <fa-icon icon="tags"></fa-icon>
+               [routerLink]="['/members/projects']">
+              <i class="bi bi-box"></i>
               Projects
             </a>
           </li>
           <li class="nav-item" *ngIf="appStorage.isAdministrator()">
             <a class="nav-link" [routerLinkActive]="['active']" aria-current="page"
-               [routerLink]="['/members/account']">
-              <fa-icon icon="users"></fa-icon>
-              Users
+               [routerLink]="['/members/accounts']">
+              <i class="bi bi-people-fill"></i>
+              Accounts
             </a>
           </li>
           <li class="nav-item" *ngIf="appStorage.isAdministrator()">
             <a class="nav-link" [routerLinkActive]="['active']" aria-current="page"
                [routerLink]="['/members/apptokens']">
-              <fa-icon icon="tags"></fa-icon>
+              <i class="bi bi-tags-fill"></i>
               Apptokens
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" [routerLinkActive]="['active']" aria-current="page"
                [routerLink]="['/members/settings']">
-              <fa-icon icon="cogs"></fa-icon>
+              <i class="bi bi-gear-wide-connected"></i>
               Settings
             </a>
           </li>
@@ -71,7 +106,7 @@
     </nav>
 
     <main class="col-md-9 col-lg-10 p-0">
-      <div style="background-color:white;padding:1.5em; padding-top:90px;height:100%;">
+      <div class="p-0 p-sm-3 p-md-5" style="background-color:white;height:100%;">
         <router-outlet></router-outlet>
       </div>
     </main>

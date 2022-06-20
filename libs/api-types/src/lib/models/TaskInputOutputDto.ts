@@ -12,7 +12,7 @@
 
 export class TaskInputOutputDto {
   'type': any;
-  'creatorType': TaskInputOutputDtoCreatorTypeEnum;
+  'creator_type': TaskInputOutputDtoCreatorTypeEnum;
   'label': string;
   'description'?: string;
   'filename': string;
@@ -32,7 +32,7 @@ export class TaskInputOutputDto {
       'format': ''
     },
     {
-      'name': 'creatorType',
+      'name': 'creator_type',
       'baseName': 'creator_type',
       'type': 'TaskInputOutputDtoCreatorTypeEnum',
       'format': ''

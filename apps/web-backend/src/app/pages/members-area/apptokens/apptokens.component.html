@@ -1,13 +1,12 @@
 <h1>App tokens</h1>
 <div id="actions-bar">
   <a class="btn btn-primary" [routerLink]="['/members/apptokens/add']">
-    <fa-icon icon="plus"></fa-icon>
+    <i class="bi bi-plus-lg"></i>
     Add new app token</a>
 </div>
 <table class="table table-striped w-100 table-sm">
   <thead>
   <tr>
-    <th>ID</th>
     <th>Name</th>
     <th>Description</th>
     <th>Domain</th>
@@ -18,23 +17,26 @@
   </thead>
   <tbody>
   <tr *ngFor="let apptoken of apptokens">
-    <td>{{apptoken.id}}</td>
+    <td><span [tooltip]="'ID ' + apptoken.id" [tooltipPlacement]="'right'">{{apptoken.name}}</span></td>
     <td>{{apptoken.name}}</td>
-    <td style="max-width:200px;clip: auto; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">{{apptoken.description}}</td>
+    <td
+      style="max-width:200px;clip: auto; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">{{apptoken.description}}</td>
     <td>{{apptoken.domain}}</td>
     <td>{{apptoken.key}}</td>
     <td style="text-align: center;">
-      <fa-icon [icon]="(apptoken.registrations) ? ['fas','check-circle']: ['fas','minus-circle']"
-               [ngStyle]="{
+      <i class="bi" [ngClass]="{
+      'bi-dash-circle': !apptoken.registrations,
+      'bi-check-circle': apptoken.registrations
+      }" [ngStyle]="{
       color: (apptoken.registrations) ? 'darkgreen' : 'red'
-    }"></fa-icon>
+    }"></i>
     </td>
     <td>
-      <fa-icon icon="edit" class="action-icon" title="Edit app token" (click)="onAppTokenEdit(apptoken.id)"></fa-icon>
-      <fa-icon *ngIf="!checkEqualAppToken(apptoken)" icon="redo" class="action-icon"
-               title="Refresh app token" (click)="onAppTokenRefresh(apptoken.id)"></fa-icon>
-      <fa-icon *ngIf="!checkEqualAppToken(apptoken)" icon="trash" class="action-icon"
-               title="Remove app token" (click)="onAppTokenRemove(apptoken.id)"></fa-icon>
+      <i class="bi bi-pencil-square action-icon" title="Edit app token" (click)="onAppTokenEdit(apptoken.id)"></i>
+      <i class="bi bi-arrow-clockwise action-icon" *ngIf="!checkEqualAppToken(apptoken.key)" title="Refresh app token"
+         (click)="onAppTokenRefresh(apptoken.id)"></i>
+      <i class="bi bi-trash3-fill action-icon" *ngIf="!checkEqualAppToken(apptoken.key)" title="Remove app token"
+         (click)="onAppTokenRemove(apptoken.id)"></i>
     </td>
   </tr>
   </tbody>

@@ -15,26 +15,26 @@ import {ProjectEntity} from './ProjectEntity';
 import {RoleEntity} from './RoleEntity';
 
 export class AccountRoleProjectEntity {
-  'accountId'?: string;
-  'roleId': string;
+  'account_id'?: string;
+  'role_id': string;
   'role': RoleEntity;
-  'projectId': string;
+  'project_id': string;
   'project': ProjectEntity;
-  'validStartdate'?: Date;
-  'validEnddate'?: Date;
+  'valid_startdate'?: Date;
+  'valid_enddate'?: Date;
   'account': AccountEntity;
 
   static readonly discriminator: string | undefined = undefined;
 
   static readonly attributeTypeMap: Array<{ name: string, baseName: string, type: string, format: string }> = [
     {
-      'name': 'accountId',
+      'name': 'account_id',
       'baseName': 'account_id',
       'type': 'string',
       'format': ''
     },
     {
-      'name': 'roleId',
+      'name': 'role_id',
       'baseName': 'role_id',
       'type': 'string',
       'format': ''
@@ -46,7 +46,7 @@ export class AccountRoleProjectEntity {
       'format': ''
     },
     {
-      'name': 'projectId',
+      'name': 'project_id',
       'baseName': 'project_id',
       'type': 'string',
       'format': ''
@@ -58,13 +58,13 @@ export class AccountRoleProjectEntity {
       'format': ''
     },
     {
-      'name': 'validStartdate',
+      'name': 'valid_startdate',
       'baseName': 'valid_startdate',
       'type': 'Date',
       'format': 'date-time'
     },
     {
-      'name': 'validEnddate',
+      'name': 'valid_enddate',
       'baseName': 'valid_enddate',
       'type': 'Date',
       'format': 'date-time'

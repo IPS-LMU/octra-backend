@@ -49,19 +49,19 @@ export class TaskProperties {
   /**
    * id of the tool that should be used for this task
    */
-  'toolId'?: string;
+  'tool_id'?: string;
   /**
    * comment by project administrator
    */
-  'adminComment'?: string;
+  'admin_comment'?: string;
   /**
    * id of the worker who should do this task
    */
-  'workerId'?: string;
+  'worker_id'?: string;
   /**
    * id of the next task. The task must already exist.
    */
-  'nexttaskId'?: string;
+  'nexttask_id'?: string;
   'media'?: TaskPropertiesMedia;
   /**
    * logging data from task
@@ -127,25 +127,25 @@ export class TaskProperties {
       'format': ''
     },
     {
-      'name': 'toolId',
+      'name': 'tool_id',
       'baseName': 'tool_id',
       'type': 'string',
       'format': ''
     },
     {
-      'name': 'adminComment',
+      'name': 'admin_comment',
       'baseName': 'admin_comment',
       'type': 'string',
       'format': ''
     },
     {
-      'name': 'workerId',
+      'name': 'worker_id',
       'baseName': 'worker_id',
       'type': 'string',
       'format': ''
     },
     {
-      'name': 'nexttaskId',
+      'name': 'nexttask_id',
       'baseName': 'nexttask_id',
       'type': 'string',
       'format': ''

@@ -11,14 +11,25 @@
  */
 
 export class AssignProjectRolesRequestInner {
-  'accountId': string;
+  /**
+   * the account id
+   */
+  'account_id': string;
   'role': AssignProjectRolesRequestInnerRoleEnum;
+  /**
+   * the start date (ISO 8601)
+   */
+  'valid_startdate'?: string;
+  /**
+   * the end date (ISO 8601)
+   */
+  'valid_enddate'?: Date;
 
   static readonly discriminator: string | undefined = undefined;
 
   static readonly attributeTypeMap: Array<{ name: string, baseName: string, type: string, format: string }> = [
     {
-      'name': 'accountId',
+      'name': 'account_id',
       'baseName': 'account_id',
       'type': 'string',
       'format': ''
@@ -27,6 +38,18 @@ export class AssignProjectRolesRequestInner {
       'name': 'role',
       'baseName': 'role',
       'type': 'AssignProjectRolesRequestInnerRoleEnum',
+      'format': ''
+    },
+    {
+      'name': 'valid_startdate',
+      'baseName': 'valid_startdate',
+      'type': 'string',
+      'format': ''
+    },
+    {
+      'name': 'valid_enddate',
+      'baseName': 'valid_enddate',
+      'type': 'Date',
       'format': ''
     }];
 

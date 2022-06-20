@@ -4,10 +4,10 @@ import {AccountDto} from '@octra/api-types';
 
 @Component({
   selector: 'ocb-account',
-  templateUrl: './users.page.html',
-  styleUrls: ['./users.page.css']
+  templateUrl: './accounts.page.html',
+  styleUrls: ['./accounts.page.css']
 })
-export class UsersPage implements OnInit {
+export class AccountsPage implements OnInit {
   public users: AccountDto[];
 
   constructor(private api: OctraAPIService) {

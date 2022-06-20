@@ -101,6 +101,13 @@ export class OctraAPIService {
     return this.get('/app/tokens', true);
   }
 
+  /***
+   * returns one specific apptoken.
+   */
+  public async getAppToken(id: string): Promise<AppTokenDto> {
+    return this.get(`/app/tokens/${id}`, true);
+  }
+
   public async getTask(projectID: number, taskID: number): Promise<TaskDto> {
     return this.get(`/projects/${projectID}/tasks/${taskID}`, true);
   }

@@ -11,7 +11,6 @@ import {AppTokenCreateDto} from '@octra/api-types';
 })
 export class AddAppTokenComponent implements OnInit {
   formData: AppTokenCreateDto = {
-    key: '', // ignored
     name: '',
     description: '',
     domain: '',
@@ -27,11 +26,8 @@ export class AddAppTokenComponent implements OnInit {
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
       if (params['edit']) {
-        this.api.listAppTokens().then((appTokens) => {
-          console.log(appTokens);
+        this.api.getAppToken(params['edit']).then((appToken) => {
           this.editingID = params['edit'];
-          const appToken = appTokens.find(a => a.id === this.editingID);
-          console.log(appToken);
 
           if (appToken) {
             this.formData = appToken;

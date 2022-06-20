@@ -2,6 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {ModalsService} from '../../../modals/modals.service';
 import {Router} from '@angular/router';
 import {OctraAPIService} from '@octra/ngx-octra-api';
+import {ProjectDto, ProjectRoleDto, ProjectUserRole} from '@octra/api-types';
 
 @Component({
   selector: 'ocb-project',
@@ -10,7 +11,7 @@ import {OctraAPIService} from '@octra/ngx-octra-api';
 })
 export class ProjectsComponent implements OnInit {
 
-  projects: any[] = [];
+  projects: ProjectDto[] = [];
   users: any[] = [];
 
   constructor(private api: OctraAPIService, private modalService: ModalsService, private router: Router) {
@@ -18,6 +19,11 @@ export class ProjectsComponent implements OnInit {
 
   ngOnInit(): void {
     this.updateProjects();
+  }
+
+  getProjectAdmin(project: ProjectDto): ProjectRoleDto | undefined {
+    console.log(project);
+    return project.roles.find(a => a.role === ProjectUserRole.projectAdministrator);
   }
 
   updateProjects() {

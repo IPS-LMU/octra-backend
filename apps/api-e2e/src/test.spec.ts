@@ -13,7 +13,7 @@ import {
   AssignRoleDto,
   ChangePasswordDto
 } from '../../api/src/app/core/account/account.dto';
-import {ProjectAssignRolesRequestDto, ProjectRequestDto} from '../../api/src/app/core/project/project.dto';
+import {ProjectRequestDto, ProjectRoleDto} from '../../api/src/app/core/project/project.dto';
 import {AccountLoginMethod, AccountRole, ProjectVisibility} from '@octra/api-types';
 import {ToolCreateRequestDto, ToolDto} from '../../api/src/app/core/tool/tool.dto';
 import {TaskDto, TaskProperties} from '../../api/src/app/core/project/tasks';
@@ -178,8 +178,8 @@ describe('OCTRA Nest API (e2e)', () => {
         .set('X-App-Token', `${appToken}`)
         .set('Origin', 'http://localhost:8080')
         .expect(201).then(({body}: { body: AuthDto }) => {
-          tempData.admin.jwtToken = body.access_token;
-          tempData.admin.id = body.account_id;
+          tempData.admin.jwtToken = body.accessToken;
+          tempData.admin.id = body.account.id;
         }).catch((e) => {
           console.log(e)
         })
@@ -213,8 +213,8 @@ describe('OCTRA Nest API (e2e)', () => {
         .set('X-App-Token', `${appToken}`)
         .set('Origin', 'http://localhost:8080')
         .expect(201).then(({body}: { body: AuthDto }) => {
-          tempData.user.jwtToken = body.access_token;
-          tempData.user.id = body.account_id;
+          tempData.user.jwtToken = body.accessToken;
+          tempData.user.id = body.account.id;
         })
     });
   })
@@ -351,8 +351,10 @@ describe('Projects', () => {
   it('/projects/:id/roles (POST)', () => {
     return authPost(`/projects/${tempData.project.id}/roles`, [{
       account_id: tempData.user.id,
-      role: AccountRole.projectAdministrator
-    }] as ProjectAssignRolesRequestDto[]).expect((a) => a.status === 200 || a.status === 201).then((({body}) => {
+      role: AccountRole.projectAdministrator,
+      valid_startdate: new Date(),
+      valid_enddate: new Date()
+    }] as ProjectRoleDto[]).expect((a) => a.status === 200 || a.status === 201).then((({body}) => {
       const t = body;
     }));
   });
@@ -371,11 +373,7 @@ describe('Projects', () => {
       projects: [
         {
           project_id: tempData.project.id,
-          roles: [
-            {
-              role: AccountRole.projectAdministrator
-            }
-          ]
+          role: AccountRole.projectAdministrator
         }
       ]
     } as AssignRoleDto, true).expect(200).then(({body}) => {

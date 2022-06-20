@@ -60,7 +60,7 @@ export class AccountDto {
   /**
    * date on that this account logged in.
    */
-  'lastLogin'?: Date;
+  'last_login'?: Date;
 
   static readonly discriminator: string | undefined = undefined;
 
@@ -132,7 +132,7 @@ export class AccountDto {
       'format': ''
     },
     {
-      'name': 'lastLogin',
+      'name': 'last_login',
       'baseName': 'last_login',
       'type': 'Date',
       'format': 'date-time'

@@ -2,7 +2,7 @@ import {Body, Controller, Delete, Get, Param, Post, Put, Req, UseInterceptors} f
 import {ProjectService} from './project.service';
 import {CombinedRoles} from '../../obj/decorators/combine.decorators';
 import {AccountRole} from '@octra/api-types';
-import {ProjectAssignRolesRequestDto, ProjectDto, ProjectRemoveRequestDto, ProjectRequestDto} from './project.dto';
+import {ProjectAssignRoleDto, ProjectDto, ProjectRemoveRequestDto, ProjectRequestDto} from './project.dto';
 import {ApiBearerAuth, ApiBody, ApiTags} from '@nestjs/swagger';
 import {NumericStringValidationPipe} from '../../obj/pipes/numeric-string-validation.pipe';
 import {ROLES_KEY} from '../../../../role.decorator';
@@ -75,18 +75,27 @@ export class ProjectController {
         required: ['account_id', 'role'],
         properties: {
           account_id: {
-            type: 'string'
+            type: 'string',
+            description: 'the account id'
           },
           role: {
             type: 'string',
             enum: ['user', 'project_admin', 'transcriber']
-          }
+          },
+          valid_startdate: {
+            type: 'string',
+            description: 'the start date (ISO 8601)'
+          },
+          valid_enddate: {
+            type: 'date-time',
+            description: 'the end date (ISO 8601)'
+          },
         }
       }
     }
   })
   @Post(':project_id/roles')
-  async assignProjectRoles(@Param('project_id', NumericStringValidationPipe) id: string, @Body() dto: ProjectAssignRolesRequestDto[]): Promise<void> {
+  async assignProjectRoles(@Param('project_id', NumericStringValidationPipe) id: string, @Body() dto: ProjectAssignRoleDto[]): Promise<void> {
     return removeNullAttributes(await this.projectService.assignProjectRoles(id, dto));
   }
 

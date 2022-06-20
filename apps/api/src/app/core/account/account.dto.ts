@@ -15,9 +15,19 @@ export class RoleDto {
   @Expose({
     groups: [AccountRole.administrator]
   })
+  @ApiProperty({
+    description: 'start date (ISO 8601)',
+    example: new Date(),
+    type: 'string'
+  })
   valid_startdate?: string;
   @Expose({
     groups: [AccountRole.administrator]
+  })
+  @ApiProperty({
+    description: 'end date (ISO 8601)',
+    example: new Date(),
+    type: 'string'
   })
   valid_enddate?: string;
 
@@ -36,7 +46,7 @@ export class RoleDto {
 }
 
 export class AssignAccountRoleDto extends PartialType(
-  OmitType(RoleDto, ['project_id', 'project_name', 'scope'] as const)
+  OmitType(RoleDto, ['project_name', 'scope'] as const)
 ) {
   @IsNotEmpty()
   role: AccountRole;
@@ -56,19 +66,9 @@ export class AssignAccountRoleDto extends PartialType(
   }
 }
 
-export class AssignRoleProjectDto {
-  project_id: string;
-  @Type(() => RoleDto)
-  roles: AssignAccountRoleDto[];
-
-  constructor(partial: Partial<AssignRoleProjectDto>) {
-    Object.assign(this, partial);
-  }
-}
-
 export class AssignRoleDto {
   general?: AccountRole;
-  projects?: AssignRoleProjectDto[];
+  projects?: AssignAccountRoleDto[];
 
   constructor(partial: Partial<AssignRoleDto>) {
     Object.assign(this, partial);

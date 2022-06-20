@@ -10,33 +10,76 @@
  * Do not edit the class manually.
  */
 
-import {AssignAccountRoleDto} from './AssignAccountRoleDto';
-
-export class AssignRoleProjectDto {
-  'projectId': string;
-  'roles': Array<AssignAccountRoleDto>;
+export class ProjectRoleDto {
+  /**
+   * start date (ISO 8601)
+   */
+  'valid_startdate'?: string;
+  /**
+   * end date (ISO 8601)
+   */
+  'valid_enddate'?: string;
+  /**
+   * role of the account
+   */
+  'role': ProjectRoleDtoRoleEnum;
+  /**
+   * account id
+   */
+  'account_id': string;
+  /**
+   * account name
+   */
+  'account_name'?: string;
 
   static readonly discriminator: string | undefined = undefined;
 
   static readonly attributeTypeMap: Array<{ name: string, baseName: string, type: string, format: string }> = [
     {
-      'name': 'projectId',
-      'baseName': 'project_id',
+      'name': 'valid_startdate',
+      'baseName': 'valid_startdate',
       'type': 'string',
       'format': ''
     },
     {
-      'name': 'roles',
-      'baseName': 'roles',
-      'type': 'Array<AssignAccountRoleDto>',
+      'name': 'valid_enddate',
+      'baseName': 'valid_enddate',
+      'type': 'string',
+      'format': ''
+    },
+    {
+      'name': 'role',
+      'baseName': 'role',
+      'type': 'ProjectRoleDtoRoleEnum',
+      'format': ''
+    },
+    {
+      'name': 'account_id',
+      'baseName': 'account_id',
+      'type': 'string',
+      'format': ''
+    },
+    {
+      'name': 'account_name',
+      'baseName': 'account_name',
+      'type': 'string',
       'format': ''
     }];
 
   static getAttributeTypeMap() {
-    return AssignRoleProjectDto.attributeTypeMap;
+    return ProjectRoleDto.attributeTypeMap;
   }
 
   public constructor() {
   }
 }
+
+
+export type ProjectRoleDtoRoleEnum =
+  'administrator'
+  | 'transcriber'
+  | 'project_admin'
+  | 'data_delivery'
+  | 'public'
+  | 'user';
 

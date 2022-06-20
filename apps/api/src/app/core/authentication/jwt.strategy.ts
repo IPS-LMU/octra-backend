@@ -36,8 +36,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
           role: a.role.label,
           project_id: a.project_id,
           project_name: a.project?.name,
-          valid_startdate: a.valid_startdate?.toISOString(),
-          valid_enddate: a.valid_enddate?.toISOString(),
+          valid_startdate: a.valid_startdate.toISOString(),
+          valid_enddate: a.valid_enddate.toISOString(),
         }))
       ],
       username: account?.account_person?.username

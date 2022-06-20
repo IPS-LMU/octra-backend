@@ -11,13 +11,32 @@
  */
 
 export class AssignAccountRoleDto {
+  /**
+   * start date (ISO 8601)
+   */
+  'valid_startdate'?: string;
+  /**
+   * end date (ISO 8601)
+   */
+  'valid_enddate'?: string;
   'role': AssignAccountRoleDtoRoleEnum;
-  'validStartdate'?: string;
-  'validEnddate'?: string;
+  'project_id'?: string;
 
   static readonly discriminator: string | undefined = undefined;
 
   static readonly attributeTypeMap: Array<{ name: string, baseName: string, type: string, format: string }> = [
+    {
+      'name': 'valid_startdate',
+      'baseName': 'valid_startdate',
+      'type': 'string',
+      'format': ''
+    },
+    {
+      'name': 'valid_enddate',
+      'baseName': 'valid_enddate',
+      'type': 'string',
+      'format': ''
+    },
     {
       'name': 'role',
       'baseName': 'role',
@@ -25,14 +44,8 @@ export class AssignAccountRoleDto {
       'format': ''
     },
     {
-      'name': 'validStartdate',
-      'baseName': 'valid_startdate',
-      'type': 'string',
-      'format': ''
-    },
-    {
-      'name': 'validEnddate',
-      'baseName': 'valid_enddate',
+      'name': 'project_id',
+      'baseName': 'project_id',
       'type': 'string',
       'format': ''
     }];

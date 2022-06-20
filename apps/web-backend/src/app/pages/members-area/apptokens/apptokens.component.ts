@@ -24,6 +24,7 @@ export class ApptokensComponent implements OnInit {
   updateAppTokens() {
     this.api.listAppTokens().then((rows) => {
         this.apptokens = rows;
+      console.log(this.apptokens);
       }
     ).catch((error) => {
       console.error(error);

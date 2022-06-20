@@ -5,7 +5,6 @@ import {DbAwareColumn} from '../decorators';
 import {AccountRoleProjectEntity} from './account-role-project.entity';
 import {FileEntity} from './file.entity';
 import {dateTransformer, jsonTransformer} from '../transformers';
-import {Transform} from 'class-transformer';
 
 @Entity({name: 'project'})
 export class ProjectEntity extends StandardEntityWithTimestamps {
@@ -51,9 +50,6 @@ export class ProjectEntity extends StandardEntityWithTimestamps {
   @JoinColumn({
     name: 'id',
     referencedColumnName: 'project_id'
-  })
-  @Transform(({value}: { value: AccountRoleProjectEntity }) => {
-    return value.role.label;
   })
   roles!: AccountRoleProjectEntity[];
 
