@@ -1,10 +1,10 @@
-import {IsBoolean, IsEnum, IsNotEmpty, IsString} from 'class-validator';
+import {IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString} from 'class-validator';
 import {StandardWithTimeDto} from '../standard.dto';
 import {ApiHideProperty, ApiProperty, OmitType, PartialType} from '@nestjs/swagger';
 import {AccountRole, ProjectVisibility} from '@octra/api-types';
 import {RoleDto} from '../account/account.dto';
 import {Expose, Transform} from 'class-transformer';
-import {AccountRoleProjectEntity, ProjectEntity, removeProperties} from '@octra/server-side';
+import {AccountRoleProjectEntity, IsOptionalString, ProjectEntity, removeProperties} from '@octra/server-side';
 
 export class ProjectRequestDto extends OmitType(StandardWithTimeDto, ['id', 'creationdate', 'updatedate']) {
   @IsNotEmpty()
@@ -13,12 +13,14 @@ export class ProjectRequestDto extends OmitType(StandardWithTimeDto, ['id', 'cre
     example: 'TestProject'
   })
   name: string;
+
   @IsNotEmpty()
   @ApiProperty({
     description: 'short identifier of the project.',
     example: 'testproj'
   })
   shortname: string;
+
   @IsNotEmpty()
   @IsEnum(ProjectVisibility)
   @ApiProperty({
@@ -26,11 +28,16 @@ export class ProjectRequestDto extends OmitType(StandardWithTimeDto, ['id', 'cre
     example: 'public'
   })
   visibility: ProjectVisibility;
+
+  @IsOptionalString()
   @ApiProperty({
     description: 'short description of the project',
     example: 'This project is for the orthographic transcription of speech recordings.'
   })
   description?: string;
+
+
+  @IsOptional()
   @ApiProperty({
     description: 'projectConfiguration',
     example: {
@@ -38,18 +45,30 @@ export class ProjectRequestDto extends OmitType(StandardWithTimeDto, ['id', 'cre
     }
   })
   configuration?: any;
+
+  @IsOptional()
   @ApiProperty({
     description: 'start date of the project (ISO 8601)',
     example: new Date(),
     type: 'string'
   })
+  @Transform(({value}) => {
+    if (typeof value === 'string') {
+      return new Date(value);
+    }
+    return value;
+  })
   startdate?: Date;
+
+  @IsOptional()
   @ApiProperty({
     description: 'end date of the project (ISO 8601)',
     example: new Date(),
     type: 'string'
   })
   enddate?: Date;
+
+  @IsOptional()
   @ApiProperty({
     description: 'describes if the project is active',
     example: true
@@ -58,7 +77,7 @@ export class ProjectRequestDto extends OmitType(StandardWithTimeDto, ['id', 'cre
 
   constructor(partial: Partial<ProjectDto>) {
     super();
-    partial = removeProperties(partial, ['id']);
+    partial = removeProperties(partial, ['id', 'roles']);
     Object.assign(this, partial);
   }
 }

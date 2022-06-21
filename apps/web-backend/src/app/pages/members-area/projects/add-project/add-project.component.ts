@@ -8,6 +8,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {UserDropdownComponent} from '../../../../components/user-dropdown/user-dropdown.component';
 import {OctraAPIService} from '@octra/ngx-octra-api';
 import {GuidelinesDto, ProjectRequestDto, ProjectVisibility} from '@octra/api-types';
+import {removeProperties} from '../../../../obj/functions';
 
 @Component({
   selector: 'ocb-add-project',
@@ -39,6 +40,9 @@ export class AddProjectComponent implements OnInit {
     end: new Date()
   }
 
+  public timezone = '';
+  public showMeridian = true;
+
   @ViewChild('userDropdown') userDropdown: UserDropdownComponent | undefined;
 
   constructor(private localeService: BsLocaleService, private api: OctraAPIService,
@@ -50,6 +54,13 @@ export class AddProjectComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.timezone = DateTime.now().offsetNameShort;
+
+    if (DateTime.now().toLocaleString(DateTime.TIME_WITH_SECONDS).indexOf('PM') > -1) {
+      this.showMeridian = true;
+      65
+    }
+
     const locale = window.navigator.language.replace(/([^\-]+).*/g, '$1');
     this.localeService.use(locale);
 
@@ -62,7 +73,11 @@ export class AddProjectComponent implements OnInit {
           this.api.getGuidelines(this.editingID)
         ]).then(([project, guidelines]) => {
           // read project
-          this.formData = project as any;
+          this.formData = {
+            ...project
+          } as any;
+          removeProperties(this.formData, ['creationdate', 'updatedate', 'id', 'roles']);
+
           this.isEditPage = true;
           this.projectSchedule.start = (this.formData.startdate && this.formData.startdate !== '') ?
             DateTime.fromISO(this.formData.startdate).toJSDate() : undefined;
@@ -92,8 +107,8 @@ export class AddProjectComponent implements OnInit {
   }
 
   onSubmit() {
-    this.formData.startdate = (this.projectSchedule.start) ? DateTime.fromJSDate(this.projectSchedule.start).toJSON() : undefined;
-    this.formData.enddate = (this.projectSchedule.end) ? DateTime.fromJSDate(this.projectSchedule.end).toJSON() : undefined;
+    this.formData.startdate = (this.projectSchedule.start) ? this.projectSchedule.start.toISOString() : undefined;
+    this.formData.enddate = (this.projectSchedule.end) ? this.projectSchedule.end.toISOString() : undefined;
 
     if (this.formData.startdate === '') {
       delete this.formData.startdate;
@@ -108,8 +123,8 @@ export class AddProjectComponent implements OnInit {
     if (!this.isEditPage) {
       this.api.createProject(this.formData).then((projectResponse) => {
         this.api.saveGuidelines(projectResponse.id, this.guidelines).then(() => {
-          this.modalService.openSuccessModal('Project created', 'The project was created successfully').then(() => {
-            this.router.navigate(['members/project']);
+          this.modalService.openSuccessModal('Project created', 'The project was created successfully.').then(() => {
+            this.router.navigate(['members/projects']);
           });
         }).catch((error) => {
           this.modalService.openErrorModal('Guidelines not saved', error);
@@ -120,18 +135,20 @@ export class AddProjectComponent implements OnInit {
         this.modalService.openErrorModal('Project not created', 'Project could not be created.');
       });
     } else {
+      const data = this.formData;
+      console.log(data);
       this.api.changeProject(this.editingID, this.formData).then(() => {
         this.api.saveGuidelines(this.editingID, this.guidelines).then(() => {
-          this.modalService.openSuccessModal('Project changed', 'The project was changed successfully').then(() => {
-            this.router.navigate(['members/project']);
+          this.modalService.openSuccessModal('Project changed', 'The project was changed successfully.').then(() => {
+            this.router.navigate(['members/projects']);
           });
         }).catch((error) => {
-          this.modalService.openErrorModal('Guidelines not saved', error);
+          this.modalService.openErrorModal('Guidelines not saved', error.error.message);
           console.error(error);
         });
       }).catch((error) => {
         console.error(error);
-        this.modalService.openErrorModal('Project not changed', error);
+        this.modalService.openErrorModal('Project not changed', error.error.message);
       });
     }
   }

@@ -13,15 +13,13 @@
  */
 
 .sidebar {
+  position: fixed;
   top: 0;
-  /* rtl:raw:
-  right: 0;
-  */
   bottom: 0;
-  /* rtl:remove */
   left: 0;
-  z-index: 100; /* Behind the navbar */
-  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+  z-index: 100;
+  padding: 60px 0 0;
+  box-shadow: inset -1px 0 0 rgb(0 0 0 / 10%);
 }
 
 #sidebarMenu ul li .active {
@@ -38,7 +36,6 @@
   position: relative;
   top: 0;
   height: calc(100vh - 48px);
-  padding-top: .5rem;
   overflow-x: hidden;
   overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
 }
@@ -95,6 +92,7 @@
 
 main {
   padding: 0;
+  margin-top: 55px;
 }
 
 .nav-item {

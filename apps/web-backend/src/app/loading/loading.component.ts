@@ -43,7 +43,7 @@ export class LoadingComponent implements OnInit {
           if (error.statusText === 'Unauthorized' && error.error?.message === 'Token expired') {
             this.appStorage.logout(`Token expired.`);
           }
-          this.errorMessage = error.message;
+          this.errorMessage = error.error?.message ?? error.message;
         });
       }
     });

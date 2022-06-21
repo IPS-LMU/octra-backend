@@ -1,98 +1,94 @@
-<h2><span *ngIf="!isEditPage; else isEditPageTemplate">Add new</span> project</h2>
-<ng-template #isEditPageTemplate>
-  Edit
-</ng-template>
-<form (ngSubmit)="onSubmit()" #form="ngForm">
-  <div class="row">
-    <div class="col-12 mb-3">
-      <label for="projectName" class="form-label">Project name</label>
-      <input type="email" class="form-control" id="projectName" placeholder="A new project" name="projectName"
-             [(ngModel)]="formData.name" required="required">
-    </div>
-    <div class="col-12 mb-3">
-      <label for="shortName" class="form-label">Short name</label>
-      <input type="email" class="form-control" id="shortName" placeholder="newProject" name="shortName"
-             [(ngModel)]="formData.shortname" required="required">
-    </div>
-    <div class="col-12 mb-3">
-      <label for="description" class="form-label">Description</label>
-      <textarea class="form-control" id="description" placeholder="Enter a description" name="description"
-                [(ngModel)]="formData.description"></textarea>
-    </div>
-    <div class="col-12">
-      <div class="row">
-        <div class="col-sm-12 col-md-12 col-lg-6">
-          <div class="row">
-            <div class="col-12 mb-2">
-              <label for="startDatePicker">Start date</label>
-            </div>
-          </div>
-          <div class="row border rounded-2 mx-0">
-            <div class="col-7 form-group my-auto">
-              <input type="text"
-                     [bsConfig]="{
-                    containerClass: 'theme-dark-blue'
-                 }"
-                     (bsValueChange)="onScheduleChange($event, 'start')"
-                     [bsValue]="projectSchedule.start"
-                     id="startDatePicker"
-                     placeholder="Datepicker"
-                     class="form-control"
-                     bsDatepicker>
-            </div>
-            <div class="col-5 form-group my-auto">
-              <timepicker [(ngModel)]="projectSchedule.start" name="starttime"></timepicker>
-            </div>
-          </div>
-        </div>
+<ocb-page-header [title]="(isEditPage) ? 'Edit project ' : 'Add new project'">
+  <button class="btn btn-secondary" (click)="openProjectConfiguration()"><i class="bi bi-gear-fill"></i> Edit project
+    configuration
+  </button>
+  <button class="btn btn-primary" type="submit" [disabled]="!form.valid">Save</button>
+</ocb-page-header>
+<div class="p-3">
 
-        <div class="col-sm-12 col-md-12 col-lg-6">
-          <div class="row">
-            <div class="col-12 mb-2">
-              <label for="endDatePicker">End date</label>
+  <form (ngSubmit)="onSubmit()" #form="ngForm">
+    <div class="row">
+      <div class="col-12 mb-3">
+        <label for="projectName" class="form-label">Project name</label>
+        <input type="email" class="form-control" id="projectName" placeholder="A new project" name="projectName"
+               [(ngModel)]="formData.name" required="required">
+      </div>
+      <div class="col-12 mb-3">
+        <label for="shortName" class="form-label">Short name</label>
+        <input type="email" class="form-control" id="shortName" placeholder="newProject" name="shortName"
+               [(ngModel)]="formData.shortname" required="required">
+      </div>
+      <div class="col-12 mb-3">
+        <label for="description" class="form-label">Description</label>
+        <textarea class="form-control" id="description" placeholder="Enter a description" name="description"
+                  [(ngModel)]="formData.description"></textarea>
+      </div>
+      <div class="col-12">
+        <div class="row">
+          <div class="col-sm-12 col-md-12 col-lg-6">
+            <div class="row">
+              <div class="col-12 mb-2">
+                <label for="startDatePicker">Start date ({{timezone}})</label>
+              </div>
             </div>
-          </div>
-          <div class="row border rounded-2 mx-0">
-            <div class="col-7 form-group my-auto">
-              <input type="text" [bsConfig]="{
+            <div class="row border rounded-2 mx-0 mb-3">
+              <div class="col-4 col-md-5 form-group my-auto">
+                <input type="text"
+                       [bsConfig]="{
                     containerClass: 'theme-dark-blue'
                  }"
-                     (bsValueChange)="onScheduleChange($event, 'end')"
-                     [minDate]="projectSchedule.start"
-                     [bsValue]="projectSchedule.end"
-                     placeholder="Datepicker"
-                     id="endDatePicker"
-                     class="form-control"
-                     bsDatepicker>
+                       (bsValueChange)="onScheduleChange($event, 'start')"
+                       [bsValue]="projectSchedule.start"
+                       id="startDatePicker"
+                       placeholder="Datepicker"
+                       class="form-control"
+                       bsDatepicker>
+              </div>
+              <div class="col-8 col-md-7 form-group my-auto">
+                <timepicker [(ngModel)]="projectSchedule.start" name="starttime"
+                            [showMeridian]="showMeridian"></timepicker>
+              </div>
             </div>
-            <div class="col-5 form-group my-auto">
-              <timepicker [(ngModel)]="projectSchedule.end" name="endtime"></timepicker>
+          </div>
+
+          <div class="col-sm-12 col-md-12 col-lg-6 mb-3">
+            <div class="row">
+              <div class="col-12 mb-2">
+                <label for="endDatePicker">End date ({{timezone}})</label>
+              </div>
+            </div>
+            <div class="row border rounded-2 mx-0">
+              <div class="col-4 col-md-5 form-group my-auto">
+                <input type="text" [bsConfig]="{
+                    containerClass: 'theme-dark-blue'
+                 }"
+                       (bsValueChange)="onScheduleChange($event, 'end')"
+                       [minDate]="projectSchedule.start"
+                       [bsValue]="projectSchedule.end"
+                       placeholder="Datepicker"
+                       id="endDatePicker"
+                       class="form-control"
+                       bsDatepicker>
+              </div>
+              <div class="col-8 col-md-7 form-group my-auto">
+                <timepicker [(ngModel)]="projectSchedule.end" name="endtime" [showMeridian]="showMeridian"></timepicker>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-    <div class="col-12">
-      <div class="form-group">
-        <a class="btn btn-outline-info" (click)="openProjectConfiguration()">Edit project configuration</a>
-      </div>
-    </div>
-    <div class="col-12">
-      <div class="form-group">
-        <ocb-user-dropdown #userDropdown [label]="adminSelectionLabel" (selectionChange)="userSelectionChanged($event)">
-        </ocb-user-dropdown>
-      </div>
-    </div>
-    <div class="col-12">
-      <div class="form-group">
-        <div class="custom-control custom-switch">
-          <input type="checkbox" class="custom-control-input" id="active" name="active" [(ngModel)]="formData.active">
-          <label class="custom-control-label" for="active">is active</label>
+      <div class="col-12">
+        <div class="form-group">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="active" name="active"
+                   [(ngModel)]="formData.active">
+            <label class="form-check-label" for="active">is active</label>
+          </div>
         </div>
       </div>
+      <div class="col-12" style="text-align: right;">
+        <button class="btn btn-primary" type="submit" [disabled]="!form.valid">Save</button>
+      </div>
     </div>
-    <div class="col-12" style="text-align: right;">
-      <button class="btn btn-primary" type="submit" [disabled]="!form.valid">Save</button>
-    </div>
-  </div>
-</form>
+  </form>
+</div>

@@ -84,7 +84,11 @@ async function bootstrap() {
   }
 
   app.useGlobalPipes(new ValidationPipe({
-    transform: true
+    transform: true,
+    whitelist: true,
+    enableDebugMessages: true,
+    forbidNonWhitelisted: true,
+    disableErrorMessages: false
   }));
 
   app.setBaseViewsDir(path.join(__dirname, '..', 'views'));

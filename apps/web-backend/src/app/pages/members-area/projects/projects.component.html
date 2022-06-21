@@ -1,58 +1,61 @@
-<h1>Projects</h1>
-<ng-container *ngIf="projects !== undefined">
-  <div id="actions-bar">
-    <a class="btn btn-primary" [routerLink]="['/members/project/add']">
-      <!-- <fa-icon icon="plus"></fa-icon> -->
-      Add new project</a>
-  </div>
-  <div class="list-group mx-0">
-    <div class="list-group-item">
-      <div class="row">
-        <div class="col-auto p-0 p-sm-1">
-          <input class="form-check-input flex-shrink-0" type="checkbox" value="">
+<ocb-page-header [title]="'Projects'">
+  <button class="btn btn-primary" [routerLink]="['/members/project/add']">
+    <!-- <fa-icon icon="plus"></fa-icon> -->
+    <i class="bi bi-plus-lg"></i> Add new project
+  </button>
+</ocb-page-header>
+<div class="p-3">
+  <ng-container *ngIf="projects !== undefined">
+    <div class="list-group mx-0">
+      <div class="list-group-item">
+        <div class="row">
+          <div class="col-auto p-0 p-sm-1">
+            <input class="form-check-input flex-shrink-0" type="checkbox" value="">
+          </div>
         </div>
       </div>
-    </div>
-    <div class="list-group-item list-group-item-action" *ngFor="let project of projects" style="cursor: pointer;"
-    >
-      <div class="row">
-        <div class="col col-sm-auto p-0 p-sm-1 order-0 order-md-0">
-          <input class="form-check-input flex-shrink-0" type="checkbox" [value]="project.id"
-                 [tooltip]="'ID ' + project.id" [tooltipPlacement]="'right'"><br class="d-none d-md-block"/>
-          <i class="bi mx-1 mx-sm-2 mx-md-0" [tooltip]="project.active ? 'active' : 'inactive'" [ngClass]="{
+      <div class="list-group-item list-group-item-action" *ngFor="let project of projects" style="cursor: pointer;"
+      >
+        <div class="row">
+          <div class="col col-sm-auto p-0 p-sm-1 order-0 order-md-0">
+            <input class="form-check-input flex-shrink-0" type="checkbox" [value]="project.id"
+                   [tooltip]="'ID ' + project.id" [tooltipPlacement]="'right'"><br class="d-none d-md-block"/>
+            <i class="bi mx-1 mx-sm-2 mx-md-0" [tooltip]="project.active ? 'active' : 'inactive'" [ngClass]="{
         'bi-dash-circle-fill': !project.active,
         'bi-check-circle-fill': project.active
         }" [ngStyle]="{
         color: (project.active) ? 'darkgreen' : 'red'
       }"></i><br class="d-none d-md-block"/>
-          <i class="bi mx-1 mx-sm-0 mx-md-0" [tooltip]="project.visibility" [ngClass]="{
+            <i class="bi mx-1 mx-sm-0 mx-md-0" [tooltip]="project.visibility" [ngClass]="{
         'bi-eye-slash-fill': project.visibility !== 'public',
-        'bi-check-circle-fill': project.visibility === 'public'
+        'bi-eye-fill': project.visibility === 'public'
         }" [ngStyle]="{
         color: (project.visibility === 'public') ? 'cornflowerblue' : 'lightgray'
       }"></i>
-        </div>
-        <div class="col-md order-2 order-md-1"
-             (click)="onProjectEdit(project)">
+          </div>
+          <div class="col-md order-2 order-md-1"
+               (click)="onProjectEdit(project)">
           <span class="text-break">
             {{project.name}} ({{project.shortname}})
             <small class="d-block text-muted">{{project.description}}</small>
           </span>
-          <span class="badge rounded-pill bg-secondary" *ngFor="let admin of project.roles">
+            <span class="badge rounded-pill bg-secondary" *ngFor="let admin of project.roles">
             <ng-container *ngIf="admin?.role === 'project_admin'">
               <i class="bi bi-person-badge-fill"></i> Admin: {{admin.account_name ?? '-'}}
             </ng-container>
           </span>
-          <span class="badge rounded-pill bg-info mx-1"><i
-            class="bi bi-calendar-date-fill"></i> Start: {{project.startdate ?? '-'}}</span>
-          <span class="badge rounded-pill bg-info mx-1"><i
-            class="bi bi-calendar-date-fill"></i> End: {{project.startdate ?? '-'}}</span>
-        </div>
-        <div class="col-10 col-sm-10 p-0 col-md-4 order-1 order-md-2" style="text-align: right;vertical-align: middle">
-          <i class="bi bi-pencil-square action-icon" title="Edit project" (click)="onProjectEdit(project)"></i>
-          <i class="bi bi-trash3-fill action-icon" title="Remove project" (click)="onProjectRemove(project)"></i>
+            <span class="badge rounded-pill bg-info mx-1"><i
+              class="bi bi-calendar-date-fill"></i> Start: {{project.startdate ?? '-'}}</span>
+            <span class="badge rounded-pill bg-info mx-1"><i
+              class="bi bi-calendar-date-fill"></i> End: {{project.startdate ?? '-'}}</span>
+          </div>
+          <div class="col-10 col-sm-10 p-0 col-md-4 order-1 order-md-2"
+               style="text-align: right;vertical-align: middle">
+            <i class="bi bi-pencil-square action-icon" title="Edit project" (click)="onProjectEdit(project)"></i>
+            <i class="bi bi-trash3-fill action-icon" title="Remove project" (click)="onProjectRemove(project)"></i>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</ng-container>
+  </ng-container>
+</div>

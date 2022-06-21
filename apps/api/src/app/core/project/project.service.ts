@@ -98,10 +98,8 @@ export class ProjectService {
   }
 
   public async changeProject(id: string, dto: ProjectRequestDto): Promise<ProjectEntity> {
-    return this.projectRepository.save({
-      id,
-      ...dto
-    });
+    await this.projectRepository.update({id}, dto);
+    return this.projectRepository.findOneBy({id});
   }
 
   public async removeProject(id: string, dto: ProjectRemoveRequestDto): Promise<void> {

@@ -38,6 +38,7 @@ import {AlertModule} from 'ngx-bootstrap/alert';
 import {AccountsPage} from './pages/members-area/accounts/accounts.page';
 import {TooltipModule} from 'ngx-bootstrap/tooltip';
 import {CollapseModule} from 'ngx-bootstrap/collapse';
+import {PageHeaderComponent} from './components/page-header/page-header.component';
 
 @NgModule({
   declarations: [
@@ -60,7 +61,8 @@ import {CollapseModule} from 'ngx-bootstrap/collapse';
     ProjectsComponent,
     AddProjectComponent,
     UserDropdownComponent,
-    ProjectConfigModalComponent
+    ProjectConfigModalComponent,
+    PageHeaderComponent
   ],
   imports: [
     BrowserModule,

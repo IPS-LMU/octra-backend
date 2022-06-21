@@ -4,7 +4,7 @@ body {
 }
 
 body {
-  background-color: #f5f5f5;
+  background-color: white;
 }
 
 h1 {
@@ -48,4 +48,13 @@ h1 {
 
 .badge {
   font-weight: normal;
+}
+
+.buttons button {
+  margin-top: 10px;
+  margin-left: 5px;
+}
+
+.buttons button:first-of-type {
+  margin-left: 0;
 }
