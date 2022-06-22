@@ -17,7 +17,9 @@
     "output": "api",
     "assets": [
       "../../../node_modules/nestjs-redoc/views/*",
+      "../../../node_modules/ejs/**/*",
       "assets/**/*",
+      "views/**/*",
       "../../../node_modules/sqlite3/**/*",
       "../../../node_modules/node-addon-api/**/*",
       "../../../node_modules/node-gyp/**/*",

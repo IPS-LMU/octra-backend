@@ -26,7 +26,6 @@ export class AuthService {
   }
 
   async login(dto: AuthLoginDto): Promise<AuthDto> {
-
     if (dto.type === 'shibboleth') {
       return new AuthDto({openURL: this.configService.get('api.shibboleth.windowURL')});
     }

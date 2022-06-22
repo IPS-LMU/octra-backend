@@ -352,8 +352,8 @@ describe('Projects', () => {
     return authPost(`/projects/${tempData.project.id}/roles`, [{
       account_id: tempData.user.id,
       role: AccountRole.projectAdministrator,
-      valid_startdate: new Date(),
-      valid_enddate: new Date()
+      valid_startdate: new Date().toISOString(),
+      valid_enddate: new Date().toISOString()
     }] as ProjectRoleDto[]).expect((a) => a.status === 200 || a.status === 201).then((({body}) => {
       const t = body;
     }));

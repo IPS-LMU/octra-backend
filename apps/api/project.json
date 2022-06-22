@@ -23,6 +23,7 @@
         ],
         "assets": [
           "apps/api/src/assets",
+          "apps/api/src/views",
           "apps/api/src/config.json",
           "apps/api/src/LICENSE"
         ]

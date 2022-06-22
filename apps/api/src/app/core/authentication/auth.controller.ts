@@ -49,8 +49,7 @@ export class AuthController {
       'Shibboleth': {
         description: 'Authenticate via shibboleth',
         value: {
-          type: 'shibboleth',
-          email: 'my-email@example.com'
+          type: 'shibboleth'
         }
       }
     },
@@ -62,7 +61,7 @@ export class AuthController {
           properties: {
             type: {
               type: 'string',
-              enum: ['local', 'shibboleth']
+              enum: ['local']
             },
             username: {
               type: 'string'
@@ -76,13 +75,21 @@ export class AuthController {
           required: ['type', 'email'],
           properties: {
             type: {
-              enum: ['local', 'shibboleth']
+              enum: ['local']
             },
             email: {
               type: 'string'
             },
             password: {
               type: 'string'
+            }
+          }
+        },
+        {
+          required: ['type'],
+          properties: {
+            type: {
+              enum: ['shibboleth']
             }
           }
         }
@@ -140,8 +147,8 @@ export class AuthController {
         return {
           userName: '',
           email: '',
-          token: token,
-          windowURL: windowURL
+          token,
+          windowURL
         };
       }
 
@@ -179,7 +186,7 @@ export class AuthController {
             shibToken: body.shibToken,
             token: '',
             windowURL: ''
-          };
+          }; // TODO check windowURL in EJS template
         }
       }
     } else {

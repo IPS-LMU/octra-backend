@@ -31,7 +31,10 @@ export class LoginPageComponent implements OnInit {
   }
 
   onSubmit(type: AccountLoginMethod) {
-    this.appStorage.login(type, this.user.name, this.user.password).catch((error) => {
+    const name = type === AccountLoginMethod.local ? this.user.name : undefined;
+    const password = type === AccountLoginMethod.local ? this.user.password : undefined;
+
+    this.appStorage.login(type, name, password).catch((error) => {
       this.modalsService.openErrorModal('Error occurred', error);
     });
   }

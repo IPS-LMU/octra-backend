@@ -91,7 +91,7 @@ async function bootstrap() {
     disableErrorMessages: false
   }));
 
-  app.setBaseViewsDir(path.join(__dirname, '..', 'views'));
+  app.setBaseViewsDir(path.join(__dirname, (environment.production) ? '' : '..', 'views'));
   app.setViewEngine('ejs');
 
   app.enableCors();

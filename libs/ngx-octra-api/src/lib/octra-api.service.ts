@@ -15,6 +15,7 @@ import {
   TaskUploadDto
 } from '@octra/api-types';
 import {firstValueFrom} from 'rxjs';
+import {removeNullAttributes} from './functions';
 
 @Injectable({
   providedIn: 'root'
@@ -48,9 +49,11 @@ export class OctraAPIService {
   public async login(type: AccountLoginMethod, username?: string, password?: string) {
     console.log(`LOGIN TEST`);
     return new Promise<AuthDto>((resolve, reject) => {
-      firstValueFrom(this.http.post<AuthDto>(`${this.apiURL}/auth/login`, {
+      let data: any = {
         type, username, password
-      }, {
+      };
+      data = removeNullAttributes(data);
+      firstValueFrom(this.http.post<AuthDto>(`${this.apiURL}/auth/login`, data, {
         headers: this.getHeaders(false)
       })).then((result: AuthDto) => {
         if (!result.openURL && result.accessToken) {

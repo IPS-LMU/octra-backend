@@ -1,4 +1,4 @@
-import {CanActivate, ExecutionContext, Injectable} from '@nestjs/common';
+import {CanActivate, ExecutionContext, ForbiddenException, Injectable} from '@nestjs/common';
 import {Observable} from 'rxjs';
 import {Reflector} from '@nestjs/core';
 import {InternRequest} from '../types';
@@ -14,7 +14,7 @@ export class AppTokenOriginGuard implements CanActivate {
   ): boolean | Promise<boolean> | Observable<boolean> {
     const req: InternRequest = context.switchToHttp().getRequest();
     let originHost = req.get('origin')
-    let appToken = req.get('X-App-Token');
+    let appToken = req.get('X-App-Token') ?? req.query.t?.toString();
 
     if (appToken) {
       originHost = (originHost) ? originHost = originHost.replace(/:[0-9]{1,5}$/g, '').replace(/^https?:\/\//g, '') : '';
@@ -25,6 +25,6 @@ export class AppTokenOriginGuard implements CanActivate {
       return this.appTokenService.isValidAppToken(appToken, originHost);
     }
 
-    return false;
+    throw new ForbiddenException(`Missing Apptoken or invalid origin.`);
   }
 }

@@ -17,7 +17,7 @@ export class AppStorageService {
 
   private _user?: AccountDto;
 
-  windowChecker: number = -1;
+  windowChecker: any = -1;
   private _initialized = false;
 
   public logoutMessage = '';
