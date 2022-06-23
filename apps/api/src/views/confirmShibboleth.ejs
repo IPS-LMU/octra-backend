@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -7,24 +8,57 @@
 
     <title>Shibboleth Confirmation</title>
     <!-- Bootstrap core CSS -->
-    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../assets/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css">
 
     <!-- Custom styles for this template -->
-    <link href="authenticators/shibboleth/style.css" rel="stylesheet" type="text/css">
+    <link href="../assets/authenticators/shibboleth/style.css" rel="stylesheet" type="text/css">
+    <script type="application/javascript">
+      function message_broadcast(key, value) {
+        value = typeof value === "object" ? JSON.stringify(value) : value;
+        var cid = "<%= locals.cid %>";
+        localStorage.setItem(key + "_" + cid, value);
+      }
+
+      function checkInputs(inputUserName, inputEmail, submitButton) {
+        if ((inputUserName && inputUserName.value.trim() === "") || (inputEmail && inputEmail.value.trim() === "")) {
+          submitButton.setAttribute("disabled", "disabled");
+        } else {
+          submitButton.removeAttribute("disabled");
+        }
+      }
+
+      window.onload = function () {
+        var inputUserName = document.getElementById("inputUserName");
+        var inputEmail = document.getElementById("inputEmail");
+        var submitButton = document.getElementById("submitButton");
+        var jwtToken = "<%= locals.token %>";
+
+        if (jwtToken.trim() !== "") {
+          message_broadcast("token", "<%= locals.token %>");
+          window.close();
+        }
+
+        if (inputUserName || inputEmail) {
+          if (inputUserName) {
+            inputUserName.addEventListener("keyup", checkInputs);
+          }
+
+          if (inputEmail) {
+            inputEmail.addEventListener("keyup", checkInputs);
+          }
+          checkInputs(inputUserName, inputEmail, submitButton);
+        }
+      };
+    </script>
 </head>
 <body class="text-center">
-<%
-var tokenBody = {
-    userInformation: {
-        mail: "",
-        displayName: ""
-    }
-}
-%>
-<% if(windowURL.trim() === "" && token.trim() === ""){ %>
+<noscript>
+    Please enable Javascript.
+</noscript>
+<% if(locals.windowURL.trim() === "" && locals.token.trim() === ""){ %>
     <form class="form-signin" id="signinForm" method="post">
         <h1 class="h3 mb-3 font-weight-normal" style="text-align: center;">Please register</h1>
-        <% if(!userName || userName.trim() === ""){ %>
+        <% if(!locals.userName || locals.userName.trim() === ""){ %>
             <div class="form-group">
                 <label for="inputUserName">First Name and Last Name</label>
                 <input type="text" id="inputUserName" class="form-control" name="userName"
@@ -32,7 +66,7 @@ var tokenBody = {
                        required="required" autofocus="">
             </div>
         <% } %>
-        <% if(!email || email.trim() === ""){ %>
+        <% if(!locals.email || locals.email.trim() === ""){ %>
             <div class="form-group">
                 <label for="inputEmail">Email Address</label>
                 <input type="email" id="inputEmail" class="form-control" name="email" placeholder="Email address"
@@ -41,53 +75,13 @@ var tokenBody = {
             </div>
         <% } %>
         <div class="form-group" style="display: none;">
-            <input type="hidden" name="shibToken" value="<%= shibToken %>"/>
+            <input type="hidden" name="shibToken" value="<%= locals.shibToken %>"/>
         </div>
         <button class="btn btn-lg btn-primary btn-block" id="submitButton" disabled="disabled" type="submit">Sign in
         </button>
     </form>
 <% } else { %>
-    <form id="redirectForm" action="<%= windowURL %>" method="post" style="display: none;">
-        <input type="text" name="token" value="<%= token %>"/>
-    </form>
+    <p style="width:100%; text-align: center;">You are authenticated. Please close this window.</p>
 <% } %>
-<script type="application/javascript">
-    var signInForm = document.getElementById("signinForm");
-    var inputUserName = document.getElementById("inputUserName");
-    var inputEmail = document.getElementById("inputEmail");
-    var submitButton = document.getElementById("submitButton");
-    var windowURL = "<%= windowURL %>";
-    var jwtToken = "<%= token %>";
-
-    function redirect() {
-        if (windowURL && windowURL !== "") {
-            console.log("redirect");
-            document.getElementById("redirectForm").submit();
-        }
-    }
-
-    function checkInputs() {
-        if ((inputUserName && inputUserName.value.trim() === "") || (inputEmail && inputEmail.value.trim() === "")) {
-            submitButton.setAttribute("disabled", "disabled");
-        } else {
-            submitButton.removeAttribute("disabled");
-        }
-    }
-
-    if (windowURL.trim() !== "" && jwtToken.trim() !== "") {
-        redirect();
-    }
-
-    if (inputUserName || inputEmail) {
-        if (inputUserName) {
-            inputUserName.addEventListener("keyup", checkInputs);
-        }
-
-        if (inputEmail) {
-            inputEmail.addEventListener("keyup", checkInputs);
-        }
-        checkInputs();
-    }
-</script>
 </body>
 </html>

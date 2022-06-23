@@ -3,6 +3,7 @@ import {SessionStorage} from 'ngx-webstorage';
 import {Router} from '@angular/router';
 import {OctraAPIService} from '@octra/ngx-octra-api';
 import {AccountDto, AccountLoginMethod, AccountRole} from '@octra/api-types';
+import {interval, Subscription} from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +18,7 @@ export class AppStorageService {
 
   private _user?: AccountDto;
 
-  windowChecker: any = -1;
+  private authWindowSubscription!: Subscription;
   private _initialized = false;
 
   public logoutMessage = '';
@@ -38,37 +39,34 @@ export class AppStorageService {
     return this.api.login(type, name, password).then(({accessToken, openURL, account}) => {
       if (openURL !== undefined) {
         // need to open windowURL
-        console.log(`open window!`);
-        const authWindow = window.open(openURL, '_blank', `top:${(window.outerHeight - 400) / 2},width=600,height=400,titlebar=no,status=no,location=no`);
+        console.log(`open window! ${openURL}`);
+        const cid = Date.now();
+        const authWindow = window.open(`${openURL}?cid=${cid}`, '_blank', `top:${(window.outerHeight - 400) / 2},width=600,height=400,titlebar=no,status=no,location=no`);
         if (authWindow) {
-          authWindow.addEventListener('beforeunload', () => {
-            console.log(`window closed`);
-          });
-
-          if (this.windowChecker > -1) {
-            clearInterval(this.windowChecker);
+          if (this.authWindowSubscription) {
+            this.authWindowSubscription.unsubscribe();
           }
-          let closed = false;
-          this.windowChecker = setInterval(() => {
-            if (!closed && authWindow.closed) {
-              clearInterval(this.windowChecker);
-              this.windowChecker = -1;
-              closed = true;
 
-              this.api.retrieveTokenFromWindow(openURL as any).then((token) => {
-                this._webToken = token;
-                this._authType = type;
-                this.router.navigate(['/loading']);
-              }).catch((error) => {
-                console.error(error);
-              });
+          this.authWindowSubscription = interval(250).subscribe(() => {
+            const token = localStorage.getItem(`token_${cid}`);
+
+            if (token) {
+              console.log(`GOT VALID TOKEN!`);
+              console.log(token);
+              this._webToken = token;
+              this._authType = type;
+              authWindow.close();
+              localStorage.removeItem(`token_${cid}`);
+              this.authWindowSubscription.unsubscribe();
+              this.router.navigate(['/loading']);
             }
-          }, 1000);
+          });
         }
       } else if (account) {
         this._user = account;
         this._webToken = accessToken;
         this._authType = type;
+        console.log(`navigate because account set`);
         this.router.navigate(['/loading']);
       }
     });

@@ -26,6 +26,7 @@ export interface IAPIConfiguration {
   secret: string,
   passwordSalt: string,
   jwtSalt: string,
+  jwtSecret: string,
   files: {
     uploadPath: string,
     projectsPath: string;

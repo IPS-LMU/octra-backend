@@ -5,7 +5,6 @@ import {DatabaseService} from './database.service';
 import {Configuration} from '@octra/server-side';
 import {getConfigPath} from './functions';
 
-console.log('load config in global.module');
 const config = Configuration.getInstance(
   getConfigPath()
 );

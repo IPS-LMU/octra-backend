@@ -752,6 +752,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       })
     ]);
 
+    // TODO generate app token
     console.log(`-> Create first apptoken: a810c2e6e76774fadf03d8edd1fc9d1954cc27d6`);
     await queryRunner.manager.insert(AppTokenEntity, {
       name: 'dev token',

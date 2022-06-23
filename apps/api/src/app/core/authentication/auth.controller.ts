@@ -1,10 +1,12 @@
 import {
   Body,
   Controller,
+  Get,
   InternalServerErrorException,
   Post,
   Query,
   Render,
+  Res,
   UnauthorizedException,
   UseFilters
 } from '@nestjs/common';
@@ -19,12 +21,15 @@ import * as jwt from 'jsonwebtoken';
 import {ConfigService} from '@nestjs/config';
 import {SHA256} from 'crypto-js';
 import {AccountService} from '../account';
-import {AccountLoginMethod} from '@octra/api-types';
+import {AccountLoginMethod, AccountRole} from '@octra/api-types';
+import {Response} from 'express';
+import {JWTPayload} from './jwt.types';
+import {JwtService} from '@nestjs/jwt';
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService, private configService: ConfigService, private accountService: AccountService) {
+  constructor(private authService: AuthService, private configService: ConfigService, private accountService: AccountService, private jwtService: JwtService) {
   }
 
   /**
@@ -105,14 +110,21 @@ export class AuthController {
     return this.authService.login(dto);
   }
 
+
+  @Public()
+  @Render('confirmShibboleth')
+  @Get('confirmShibboleth')
+  async introduceShibboleth(@Body() body: any, @Query('windowURL') windowURL: string, @Res() res: Response) {
+    res.redirect(this.configService.get('api.shibboleth.windowURL'));
+  }
+
   @Public()
   @Render('confirmShibboleth')
   @Post('confirmShibboleth')
-  async confirmShibboleth(@Body() body: any, @Query('windowURL') windowURL: string) {
+  async confirmShibboleth(@Body() body: any, @Query('windowURL') windowURL: string, @Query('cid') cid: string, @Res() res: Response) {
     let tokenBody;
     try {
       tokenBody = await this.jwtVerfiy(body.shibToken, this.configService.get('api.shibboleth.secret'));
-      console.log(tokenBody);
     } catch (e) {
       throw new UnauthorizedException('Invalid Web Token. Please authenticate again.');
     }
@@ -131,40 +143,34 @@ export class AuthController {
     }
 
     if (UUID !== '') {
-      // save user
+      // hash uuid of user
       UUID = SHA256(UUID).toString();
-      console.log(`UUID is ${UUID}`);
       // check if user exists
-      const user = await this.accountService.findAccountByHash(UUID);
-
-      const redirectWithToken = (id: string, roles: any[]) => {
-        const tokenData = {
-          id,
-          accessRights: roles
+      const redirectWithToken = (user: any) => {
+        const payload: JWTPayload = {
+          customSalt: this.configService.get<string>('api.jwtSalt'),
+          sub: user.id
         };
-        const token = jwt.sign(tokenData, this.configService.get('api.secret'));
-
-        return {
+        res.render('confirmShibboleth', {
           userName: '',
           email: '',
-          token,
+          cid,
+          token: this.jwtService.sign(payload),
           windowURL
-        };
+        });
       }
 
+      const user = await this.accountService.findAccountByHash(UUID);
+
       if (user) {
-        console.log(`user exists`);
-        redirectWithToken(user.id, user.roles);
+        redirectWithToken(user);
       } else {
-        console.log(`user does not exist`);
 
         const userName = (tokenBody.userInformation.displayName && tokenBody.userInformation.displayName.trim() !== '')
           ? tokenBody.userInformation.displayName : body.userName;
 
         const email = (tokenBody.userInformation.mail && tokenBody.userInformation.mail.trim() !== '')
           ? tokenBody.userInformation.mail : body.email;
-
-        console.log(`userName: ${userName}, email: ${email}`);
         if (userName && userName.trim() !== '' && email && email.trim() !== '') {
           // save user
           const newUser = await this.accountService.createAccount({
@@ -172,21 +178,21 @@ export class AuthController {
             email,
             creationdate: new Date(),
             id: undefined,
-            role: undefined,
+            role: AccountRole.user,
             updatedate: new Date(),
             password: UUID
           }, AccountLoginMethod.shibboleth);
-
-          console.log(`user created with id ${newUser.id}`);
-          redirectWithToken(newUser.id, newUser.roles);
+          redirectWithToken(newUser);
         } else {
-          return {
+
+          res.render('confirmShibboleth', {
             userName: tokenBody.userInformation.displayName,
             email: tokenBody.userInformation.mail,
             shibToken: body.shibToken,
+            cid,
             token: '',
             windowURL: ''
-          }; // TODO check windowURL in EJS template
+          });
         }
       }
     } else {

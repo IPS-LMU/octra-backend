@@ -31,8 +31,10 @@ async function bootstrap() {
   const config = configService.get<IAPIConfiguration>('api');
   app.enableShutdownHooks();
   app.setGlobalPrefix(config.baseURL);
+
   app.use(helmet({
-    crossOriginEmbedderPolicy: false
+    crossOriginEmbedderPolicy: false,
+    contentSecurityPolicy: false // TODO find a better way to remove script-src
   }));
   app.use(bodyParser.json({limit: '50mb'}));
   app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));

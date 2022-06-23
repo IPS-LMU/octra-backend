@@ -70,25 +70,6 @@ export class OctraAPIService {
     });
   }
 
-  /***
-   * retrieves the jwt from the authentication window.
-   * @param windowURL
-   */
-  public async retrieveTokenFromWindow(windowURL: string): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
-      this.http.get(windowURL).subscribe((result: any) => {
-        if (result.token) {
-          this._webToken = result.token;
-          resolve(this._webToken);
-        } else {
-          reject('No web token.')
-        }
-      }, (e) => {
-        reject('HTTP request failed.')
-      });
-    });
-  }
-
   /**
    * does logout process
    */

@@ -10,7 +10,6 @@ import {getConfigPath} from '../../../functions';
 import {ProjectModule} from '../project.module';
 
 export const TASK_ENTITIES = [TaskEntity, FileEntity];
-console.log('load config in tasks.module');
 const config = Configuration.getInstance(
   getConfigPath()
 );

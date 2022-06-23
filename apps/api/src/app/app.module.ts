@@ -24,7 +24,6 @@ import {Configuration, getOrmConfig} from '@octra/server-side';
 import {ServeStaticModule} from '@nestjs/serve-static';
 import {join} from 'path';
 
-console.log('load config in app.module');
 const config = Configuration.getInstance();
 
 const TypeORMOptions: TypeOrmModuleOptions = {
@@ -33,8 +32,6 @@ const TypeORMOptions: TypeOrmModuleOptions = {
   autoLoadEntities: true,
   logging: 'error'
 };
-
-console.log(`serve ${join(__dirname, 'assets')}`)
 
 @Module({
   imports: [
