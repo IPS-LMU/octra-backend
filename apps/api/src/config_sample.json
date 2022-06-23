@@ -1,31 +1,54 @@
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "database": {
-    "dbVersion": "0.1.0",
-    "dbType": "PostgreSQL",
-    "dbHost": "",
-    "dbPort": 54321,
-    "dbName": "",
+    "dbType": "sqlite",
+    "dbHost": "localhost",
+    "dbPort": 5432,
+    "dbName": "test.sql",
     "dbUser": "",
-    "dbPassword": "",
-    "ssl": {
-      "rejectUnauthorized": false,
-      "ca": "",
-      "key": "",
-      "cert": ""
-    }
+    "dbPassword": ""
   },
   "api": {
     "url": "http://localhost",
     "host": "",
     "port": 8080,
-    "debugging": false,
-    "uploadPath": "data",
-    "secret": "",
-    "passwordSalt": "",
-    "shibboleth": {
-      "secret": "",
-      "windowURL": ""
+    "baseURL": "/",
+    "debugging": true,
+    "security": {
+      "trustProxy": false,
+      "keys": {
+        "password": {
+          "secret": "",
+          "salt": ""
+        },
+        "jwt": {
+          "secret": "",
+          "salt": ""
+        },
+        "url": {
+          "secret": "",
+          "salt": ""
+        }
+      }
+    },
+    "paths": {
+      "projectsFolder": "",
+      "uploadFolder": ""
+    },
+    "plugins": {
+      "reference": {
+        "enabled": false,
+        "protection": {
+          "enabled": false,
+          "username": "",
+          "password": ""
+        }
+      },
+      "shibboleth": {
+        "enabled": false,
+        "secret": "",
+        "windowURL": ""
+      }
     }
   }
 }

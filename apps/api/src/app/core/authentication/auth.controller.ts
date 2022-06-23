@@ -124,7 +124,7 @@ export class AuthController {
   async confirmShibboleth(@Body() body: any, @Query('windowURL') windowURL: string, @Query('cid') cid: string, @Res() res: Response) {
     let tokenBody;
     try {
-      tokenBody = await this.jwtVerfiy(body.shibToken, this.configService.get('api.shibboleth.secret'));
+      tokenBody = await this.jwtVerfiy(body.shibToken, this.configService.get('api.plugins.shibboleth.secret'));
     } catch (e) {
       throw new UnauthorizedException('Invalid Web Token. Please authenticate again.');
     }
@@ -148,7 +148,7 @@ export class AuthController {
       // check if user exists
       const redirectWithToken = (user: any) => {
         const payload: JWTPayload = {
-          customSalt: this.configService.get<string>('api.jwtSalt'),
+          customSalt: this.configService.get<string>('api.security.keys.jwt.salt'),
           sub: user.id
         };
         res.render('confirmShibboleth', {

@@ -19,7 +19,7 @@ const config = Configuration.getInstance(
     TypeOrmModule.forFeature([...TASK_ENTITIES]),
     NestjsFormDataModule.config({
       storage: FileHashStorage,
-      fileSystemStoragePath: path.join(config.api.files.uploadPath, 'tmp')
+      fileSystemStoragePath: path.join(config.api.paths.uploadFolder, 'tmp')
     }),
     forwardRef(() => ProjectModule)
   ],

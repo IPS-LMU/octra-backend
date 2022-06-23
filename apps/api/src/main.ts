@@ -41,7 +41,7 @@ async function bootstrap() {
 
   const port = config.port;
 
-  if (config.reference.enabled) {
+  if (config.plugins?.reference?.enabled) {
     const swaggerConfig = new DocumentBuilder()
       .setTitle('OCTRA API')
       .setDescription(IntroView)
@@ -66,11 +66,11 @@ async function bootstrap() {
       requiredPropsFirst: true
     };
 
-    if (config.reference.protection) {
+    if (config.plugins?.reference?.protection) {
       redocOptions.auth = {
-        enabled: config.reference.protection.enabled,
-        user: config.reference.protection.username,
-        password: config.reference.protection.password
+        enabled: config.plugins.reference.protection.enabled,
+        user: config.plugins.reference.protection.username,
+        password: config.plugins.reference.protection.password
       }
     }
 

@@ -17,11 +17,13 @@ import {
   RoleEntity
 } from '@octra/server-side';
 
+console.log('JWT SECRET ' + Configuration.getInstance().api.security.keys.jwt.secret);
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([AccountPersonEntity, AccountEntity, AccountRoleProjectEntity, RoleEntity]),
     AccountModule, PassportModule, JwtModule.register({
-      secret: Configuration.getInstance().api.jwtSecret,
+      secret: Configuration.getInstance().api.security.keys.jwt.secret,
       signOptions: {expiresIn: '1 day'}, // TODO set expiration time to config.json
     })
   ],

@@ -11,7 +11,7 @@ export class ShutdownService implements OnApplicationShutdown {
   async onApplicationShutdown(signal?: string): Promise<void> {
     console.log(`\nAPI is shutting down...`);
     try {
-      await FileSystemHandler.removeFolder(Path.join(this.configService.get('api.files.uploadPath'), 'tmp'));
+      await FileSystemHandler.removeFolder(Path.join(this.configService.get('api.paths.uploadFolder'), 'tmp'));
       console.log(`-> Remove temporary folder OK`)
     } catch (e) {
       console.log(`ERROR: ${e}`);

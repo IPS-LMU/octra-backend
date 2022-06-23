@@ -5,6 +5,7 @@ import {
   AppTokenEntity,
   DBPostgresType,
   getPasswordHash,
+  getRandomString,
   RoleEntity
 } from '@octra/server-side';
 import {AccountRole, AccountRoleScope} from '@octra/api-types';
@@ -16,6 +17,10 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
   }
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    if (!process.env['ADMIN_NAME'] || !process.env['ADMIN_MAIL'] || !process.env['ADMIN_PW']) {
+      throw new Error('Missing credentials for new administrator account.');
+    }
+
     const m = (postgresType: DBPostgresType) => {
       return this.sqlMapper.map(postgresType);
     };
@@ -752,19 +757,14 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       })
     ]);
 
-    // TODO generate app token
-    console.log(`-> Create first apptoken: a810c2e6e76774fadf03d8edd1fc9d1954cc27d6`);
+    console.log(`-> Create first apptoken...`);
     await queryRunner.manager.insert(AppTokenEntity, {
-      name: 'dev token',
-      key: 'a810c2e6e76774fadf03d8edd1fc9d1954cc27d6',
+      name: 'first token',
+      key: getRandomString(30),
       domain: 'localhost',
-      description: 'apptoken for testing',
+      description: 'First App Token',
       registrations: false
     });
-
-    if (!process.env['ADMIN_NAME'] || !process.env['ADMIN_MAIL'] || !process.env['ADMIN_PW']) {
-      throw new Error('Misseing credentials for new administrator account.');
-    }
 
     const admin_name = process.env['ADMIN_NAME'];
     const password = process.env['ADMIN_PW'];
@@ -774,7 +774,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       username: admin_name,
       email: process.env['ADMIN_MAIL'],
       loginmethod: 'local',
-      hash: getPasswordHash(this.config.api.passwordSalt, password),
+      hash: getPasswordHash(this.config.api.security.keys.password.salt, password),
       active: true
     });
     await queryRunner.manager.insert(AccountEntity, {

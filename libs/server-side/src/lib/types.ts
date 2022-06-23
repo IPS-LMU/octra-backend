@@ -7,7 +7,6 @@ export interface IAppConfiguration {
 }
 
 export interface IDBConfiguration {
-  dbVersion: string;
   dbType: DBType,
   dbHost: string,
   dbPort: number,
@@ -17,35 +16,43 @@ export interface IDBConfiguration {
   ssl?: IDBSSLConfiguration
 }
 
+export interface SecretSaltPair {
+  secret: string;
+  salt: string;
+}
+
 export interface IAPIConfiguration {
   url: string,
   baseURL: string,
   host: string,
   port: number,
   debugging?: boolean,
-  secret: string,
-  passwordSalt: string,
-  jwtSalt: string,
-  jwtSecret: string,
-  files: {
-    uploadPath: string,
-    projectsPath: string;
-    urlEncryption: {
-      secret: string,
-      salt: string
+  security: {
+    trustProxy?: boolean;
+    keys: {
+      password: SecretSaltPair;
+      jwt: SecretSaltPair;
+      url: SecretSaltPair;
     }
   },
-  'reference': {
-    'enabled': boolean,
-    'protection': {
-      'enabled': boolean,
-      'username': string,
-      'password': string
-    }
+  paths: {
+    projectsFolder: string;
+    uploadFolder: string;
   },
-  shibboleth: {
-    secret: string,
-    windowURL: string
+  plugins?: {
+    reference?: {
+      enabled: boolean;
+      protection?: {
+        enabled: boolean;
+        username: string;
+        password: string;
+      }
+    },
+    shibboleth: {
+      enabled: boolean;
+      secret: string;
+      windowURL: string;
+    }
   }
 }
 

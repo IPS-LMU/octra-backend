@@ -3,7 +3,7 @@ import * as CryptoJS from 'crypto-js';
 import {DateTime} from 'luxon';
 import * as http from 'http';
 import * as https from 'https';
-import {IAPIConfiguration} from "@octra/server-side";
+import {IAPIConfiguration} from '@octra/server-side';
 
 export class PathBuilder {
   public readonly uploadPath: string;
@@ -16,11 +16,11 @@ export class PathBuilder {
 
   constructor(settings: IAPIConfiguration) {
     this.settings = settings;
-    this.uploadPath = settings.files.uploadPath;
-    this.projectsPath = settings.files.projectsPath;
+    this.uploadPath = settings.paths.uploadFolder;
+    this.projectsPath = settings.paths.projectsFolder;
     this.urlEncryption = {
-      key: CryptoJS.enc.Utf8.parse(settings.files.urlEncryption.secret),
-      iv: CryptoJS.enc.Utf8.parse(settings.files.urlEncryption.salt)
+      key: CryptoJS.enc.Utf8.parse(settings.security.keys.url.secret),
+      iv: CryptoJS.enc.Utf8.parse(settings.security.keys.url.salt)
     };
   }
 

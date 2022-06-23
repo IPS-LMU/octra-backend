@@ -36,7 +36,7 @@ export class AuthService {
         throw new InvalidCredentialsException();
       }
       const payload: JWTPayload = {
-        customSalt: this.configService.get<string>('api.jwtSalt'),
+        customSalt: this.configService.get<string>('api.security.keys.jwt.salt'),
         sub: user.id
       };
 

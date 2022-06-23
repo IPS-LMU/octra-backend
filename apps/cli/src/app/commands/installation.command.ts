@@ -38,11 +38,8 @@ Press "y" for "Yes" or "n" for "No" and press ENTER.
 `);
 
     if (answer === 'y') {
-      const adminName = await this.askQuestion('Please choose a user name for the new administrator account and press ENTER:\n');
-      process.env['ADMIN_NAME'] = adminName;
-
-      const adminEmail = await this.askQuestion('Please set an e-mail address for the new administrator account and press ENTER:\n');
-      process.env['ADMIN_MAIL'] = adminEmail;
+      process.env['ADMIN_NAME'] = await this.askQuestion('Please choose a user name for the new administrator account and press ENTER:\n');
+      process.env['ADMIN_MAIL'] = await this.askQuestion('Please set an e-mail address for the new administrator account and press ENTER:\n');
 
       const adminPassword = await this.askPassword('Please set a password for the new administrator account and press ENTER:\n');
       const adminPassword2 = await this.askPassword('Please repeat the password and press ENTER:\n');
@@ -58,20 +55,28 @@ Press "y" for "Yes" or "n" for "No" and press ENTER.
         ...configFile,
         api: {
           ...configFile.api,
-          passwordSalt: getRandomString(30),
-          secret: getRandomString(30),
-          jwtSalt: getRandomString(30),
-          files: {
-            ...configFile.api.files,
-            urlEncryption: {
-              ...configFile.api.files.urlEncryption,
-              secret: getRandomString(30),
-              salt: getRandomString(30)
+          security: {
+            keys: {
+              password: {
+                secret: getRandomString(30),
+                salt: getRandomString(30)
+              },
+              jwt: {
+                secret: getRandomString(30),
+                salt: getRandomString(30)
+              },
+              url: {
+                secret: getRandomString(30),
+                salt: getRandomString(30)
+              }
             }
           },
-          shibboleth: {
-            ...configFile.api.shibboleth,
-            secret: getRandomString(30)
+          plugins: {
+            ...configFile.api.plugins,
+            shibboleth: {
+              ...configFile.api.plugins.shibboleth,
+              secret: getRandomString(30)
+            }
           }
         }
       };
