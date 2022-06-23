@@ -757,7 +757,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       })
     ]);
 
-    console.log(`-> Create first apptoken...`);
+    console.log(`-> Create first app token...`);
     await queryRunner.manager.insert(AppTokenEntity, {
       name: 'first token',
       key: getRandomString(30),
@@ -765,6 +765,18 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       description: 'First App Token',
       registrations: false
     });
+
+    const domainMatches = (this.config.api.plugins?.webBackend?.url) ? /(?:https?:\/\/)?(?:www\.)?([^/]+)/g.exec(this.config.api.plugins.webBackend.url) : [];
+    if (domainMatches.length > 1 && this.config.api.plugins?.webBackend?.appToken) {
+      console.log(`-> Create app token for webbackend...`);
+      await queryRunner.manager.insert(AppTokenEntity, {
+        name: 'Web Backend',
+        key: this.config.api.plugins?.webBackend?.appToken,
+        domain: domainMatches[1],
+        description: 'Apptoken for the web-backend',
+        registrations: false
+      });
+    }
 
     const admin_name = process.env['ADMIN_NAME'];
     const password = process.env['ADMIN_PW'];

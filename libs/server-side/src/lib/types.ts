@@ -48,10 +48,15 @@ export interface IAPIConfiguration {
         password: string;
       }
     },
-    shibboleth: {
+    shibboleth?: {
       enabled: boolean;
       secret: string;
       windowURL: string;
+    },
+    webBackend?: {
+      enabled: boolean;
+      appToken: string;
+      url: string;
     }
   }
 }
