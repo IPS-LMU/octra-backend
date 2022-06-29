@@ -11,13 +11,15 @@ project management and the definition of annotation tasks. Users can authenticat
 
 ## Overview
 
-<table>
+### Apps
+
+<table style="width:100%;">
 <tbody>
 <tr>
 <td>
 octra-api
 </td>
-<td>API for communication with the OCTRA-Database.</td>
+<td>REST-API for communication with the OCTRA-DB.</td>
 <td>
 <a href="https://github.com/IPS-LMU/octra-backend/tree/main/apps/api/">more information</a>
 </td>
@@ -31,6 +33,22 @@ web-backend
 <a href="https://github.com/IPS-LMU/octra-backend/tree/main/apps/web-backend/">more information</a>
 </td>
 </tr>
+<tr>
+<td>
+octra-cli
+</td>
+<td>CLI for server side administration using the terminal. This tool is needed for upgrade/installation of the DB.</td>
+<td>
+<a href="https://github.com/IPS-LMU/octra-backend/tree/main/apps/cli/">more information</a>
+</td>
+</tr>
+</tbody>
+</table>
+
+### Libraries
+
+<table style="width:100%;">
+<tbody>
 <tr>
 <td>
 api-types
@@ -57,15 +75,6 @@ ngx-octra-api
 <td>Library for Angular projects to easily connect with the Octra-API.</td>
 <td>
 <a href="https://github.com/IPS-LMU/octra-backend/tree/main/libs/ngx-octra-api/">more information</a>
-</td>
-</tr>
-<tr>
-<td>
-octra-cli
-</td>
-<td>CLI for server side administration using the terminal. This tool is needed for upgrade/installation of the DB.</td>
-<td>
-<a href="https://github.com/IPS-LMU/octra-backend/tree/main/apps/cli/">more information</a>
 </td>
 </tr>
 </tbody>
