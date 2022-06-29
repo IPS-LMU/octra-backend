@@ -1,6 +1,6 @@
 {
   "name": "api",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "OCTRA REST API",
   "main": "main.js",
   "author": "Julian Pömp, Christoph Draxler; Institut für Phonetik und Sprachverarbeitung, LMU München",
@@ -10,7 +10,6 @@
     "url": "https://github.com/IPS-LMU/octra-backend"
   },
   "dependencies": {
-    "better-sqlite3": "^7.5.0"
   },
   "pkg": {
     "outputPath": "./dist/builds",
@@ -20,7 +19,6 @@
       "../../../node_modules/ejs/**/*",
       "assets/**/*",
       "views/**/*",
-      "../../../node_modules/better-sqlite3/**/*",
       "../../../node_modules/@journeyapps/sqlcipher/**/*",
       "../../../node_modules/node-addon-api/**/*",
       "../../../node_modules/node-gyp/**/*",

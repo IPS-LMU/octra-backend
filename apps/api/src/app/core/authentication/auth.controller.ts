@@ -112,10 +112,17 @@ export class AuthController {
 
 
   @Public()
-  @Render('confirmShibboleth')
   @Get('confirmShibboleth')
   async introduceShibboleth(@Body() body: any, @Query('windowURL') windowURL: string, @Res() res: Response) {
-    res.redirect(this.configService.get('api.shibboleth.windowURL'));
+    // res.redirect(this.configService.get('api.shibboleth.windowURL'));
+    res.render('confirmShibboleth', {
+      userName: 'displayName',
+      email: 'someEmail',
+      shibToken: 'shib token',
+      cid: 435345,
+      token: '',
+      windowURL: ''
+    });
   }
 
   @Public()
@@ -131,7 +138,7 @@ export class AuthController {
 
     if (!((tokenBody.userInformation.mail && tokenBody.userInformation.mail.trim() !== '') ||
       (tokenBody.userInformation.oidEduPersonPrincipalName || tokenBody.userInformation.oidEduPersonPrincipalName.trim() !== ''))) {
-      throw new UnauthorizedException('Shibboleth response does not contain eduPrincipalName or mail attributes.');
+      throw new UnauthorizedException('You can\'t authenticate with the server because of missing parameters. Please contact the administrators: '); // TODO add admin mail from DB
     }
 
     // generate UUID
@@ -144,7 +151,7 @@ export class AuthController {
 
     if (UUID !== '') {
       // hash uuid of user
-      UUID = SHA256(UUID).toString();
+      UUID = SHA256(UUID + '67t7wqe78ze87w4zr87zt348t0743z5nj').toString();
       // check if user exists
       const redirectWithToken = (user: any) => {
         const payload: JWTPayload = {
@@ -165,17 +172,12 @@ export class AuthController {
       if (user) {
         redirectWithToken(user);
       } else {
-
-        const userName = (tokenBody.userInformation.displayName && tokenBody.userInformation.displayName.trim() !== '')
-          ? tokenBody.userInformation.displayName : body.userName;
-
-        const email = (tokenBody.userInformation.mail && tokenBody.userInformation.mail.trim() !== '')
-          ? tokenBody.userInformation.mail : body.email;
-        if (userName && userName.trim() !== '' && email && email.trim() !== '') {
+        if (body.dataPolicyAccepted === 'yes' && body.termsAccepted === 'yes' && body.username?.trim() !== '' && body.email?.trim() !== '' && body.shibToken?.trim() !== '') {
+          // user wants to create a new account
           // save user
           const newUser = await this.accountService.createAccount({
-            name: userName,
-            email,
+            name: body.username,
+            email: body.email,
             creationdate: new Date(),
             id: undefined,
             role: AccountRole.user,
@@ -184,10 +186,16 @@ export class AuthController {
           }, AccountLoginMethod.shibboleth);
           redirectWithToken(newUser);
         } else {
+          // ask for account creation
+          const userName = (tokenBody.userInformation.displayName && tokenBody.userInformation.displayName.trim() !== '')
+            ? tokenBody.userInformation.displayName : body.userName;
+
+          const email = (tokenBody.userInformation.mail && tokenBody.userInformation.mail.trim() !== '')
+            ? tokenBody.userInformation.mail : body.email;
 
           res.render('confirmShibboleth', {
-            userName: tokenBody.userInformation.displayName,
-            email: tokenBody.userInformation.mail,
+            userName,
+            email,
             shibToken: body.shibToken,
             cid,
             token: '',

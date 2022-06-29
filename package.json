@@ -1,11 +1,11 @@
 {
   "name": "octra-backend",
-  "version": "0.2.0",
+  "version": "0.5.1",
   "author": "Julian Pömp, Christoph Draxler; Institut für Phonetik und Sprachverarbeitung, LMU München",
   "license": "MIT",
   "scripts": {
     "ng": "nx",
-    "postinstall": "node ./decorate-angular-cli.js && sh ./postinstall.sh && node check_napi.js",
+    "postinstall": "node ./decorate-angular-cli.js && sh ./postinstall.sh",
     "start": "nx serve",
     "start:backend": "nx serve web-backend",
     "start:api": "npm run build:api && nx serve api",
@@ -68,7 +68,6 @@
     "@nestjs/throttler": "^2.0.1",
     "@nestjs/typeorm": "^8.1.4",
     "@nrwl/angular": "14.3.6",
-    "better-sqlite3": "^7.5.3",
     "bootstrap": "^5.1.3",
     "bootstrap-icons": "^1.8.3",
     "class-transformer": "^0.5.1",

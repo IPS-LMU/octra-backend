@@ -17,9 +17,8 @@ function getBetterSQLitePath() {
 }
 
 export function getOrmConfig(config: IAppConfiguration) {
-  console.log('RUN getOrmConfig!');
   let OrmDatabaseConfig: any = {
-    type: (config.database.dbType === 'sqlite') ? 'better-sqlite3' : config.database.dbType,
+    type: config.database.dbType,
     host: config.database.dbHost,
     port: config.database.dbPort,
     username: config.database.dbUser,
@@ -40,6 +39,14 @@ export function getOrmConfig(config: IAppConfiguration) {
         cert: config.database.ssl.cert ? fs.readFileSync(config.database.ssl.cert).toString() : undefined
       }
     });
+  }
+
+  if (config.database.dbType === 'sqlite') {
+    OrmDatabaseConfig = {
+      ...OrmDatabaseConfig,
+      driver: require('@journeyapps/sqlcipher'),
+      key: config.database.dbPassword
+    }
   }
 
   OrmDatabaseConfig = {

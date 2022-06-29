@@ -1,6 +1,6 @@
 {
   "name": "cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "OCTRA CLI for servers",
   "main": "main.js",
   "author": "Julian Pömp, Christoph Draxler; Institut für Phonetik und Sprachverarbeitung, LMU München",
@@ -125,7 +125,6 @@
       "../../../node_modules/yargs-parser/**/*",
       "../../../node_modules/thenify/**/*",
       "../../../node_modules/highlight.js/**/*",
-      "../../../node_modules/better-sqlite3/**/*",
       "../../../node_modules/libphonenumber-js/**/*",
       "../../../node_modules/class-transformer/**/*",
       "../../../node_modules/node-gyp/**/*",

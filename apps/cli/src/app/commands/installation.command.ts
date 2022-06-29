@@ -7,8 +7,6 @@ import {readJSON, writeJSON} from 'fs-extra';
 import {Configuration, getRandomString, IAppConfiguration} from '@octra/server-side';
 import {join} from 'path';
 
-// TODO ask the domain of the backend
-
 export class InstallationCommand extends OctraCLICommand {
   override init(argv: yargs.Argv, globals: GlobalVariables): yargs.Argv {
     argv = super.init(argv, globals);
