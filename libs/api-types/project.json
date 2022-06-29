@@ -13,7 +13,8 @@
         "main": "libs/api-types/src/index.ts",
         "tsConfig": "libs/api-types/tsconfig.lib.json",
         "assets": [
-          "libs/api-types/*.md"
+          "libs/api-types/*.md",
+          "libs/api-types/LICENSE"
         ]
       }
     },

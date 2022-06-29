@@ -13,7 +13,8 @@
         "main": "libs/server-side/src/index.ts",
         "tsConfig": "libs/server-side/tsconfig.lib.json",
         "assets": [
-          "libs/server-side/*.md"
+          "libs/server-side/*.md",
+          "libs/server-side/LICENSE"
         ]
       }
     },

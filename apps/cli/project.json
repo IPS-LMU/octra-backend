@@ -15,7 +15,8 @@
         "assets": [
           "apps/cli/src/assets",
           "apps/cli/src/README.md",
-          "apps/cli/src/package.dev.json"
+          "apps/cli/src/package.dev.json",
+          "apps/cli/src/LICENSE"
         ]
       },
       "configurations": {
