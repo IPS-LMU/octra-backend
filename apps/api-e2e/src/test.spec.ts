@@ -306,7 +306,7 @@ describe('Accounts', () => {
 
   it('/account/hash (GET)', () => {
     return request(app.getHttpServer())
-      .get('/account/hash?b07e7c6156b937d17d55362793052f225571764e7f6cf2a15742a534319ee7c6')
+      .get('/account/hash/b07e7c6156b937d17d55362793052f225571764e7f6cf2a15742a534319ee7c6')
       .set('X-App-Token', `${appToken}`)
       .set('Origin', 'http://localhost:8080')
       .expect(200);

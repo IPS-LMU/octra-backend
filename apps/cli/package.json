@@ -17,6 +17,7 @@
       "./octra-migration.js",
       "./migrations/**/*",
       "../../../node_modules/.bin/*",
+      "../../../node_modules/@journeyapps/sqlcipher/**/*",
       "../../../node_modules/@octra/server-side/**/*",
       "../../../node_modules/@octra/api-types/**/*",
       "../../../node_modules/@nestjs/common/**/*",
@@ -124,7 +125,7 @@
       "../../../node_modules/yargs-parser/**/*",
       "../../../node_modules/thenify/**/*",
       "../../../node_modules/highlight.js/**/*",
-      "../../../node_modules/sqlite3/**/*",
+      "../../../node_modules/better-sqlite3/**/*",
       "../../../node_modules/libphonenumber-js/**/*",
       "../../../node_modules/class-transformer/**/*",
       "../../../node_modules/node-gyp/**/*",
@@ -387,11 +388,6 @@
       "src/environments/**/*",
       "src/app/**/*",
       "src/datasource.js"
-    ],
-    "targets": [
-      "node12-macos-x64",
-      "node12-win-x64",
-      "node12-linux-x64"
     ]
   }
 }

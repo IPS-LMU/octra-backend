@@ -8,46 +8,43 @@
 
     <title>Shibboleth Confirmation</title>
     <!-- Bootstrap core CSS -->
-    <link href="../assets/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="/assets/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css">
 
     <!-- Custom styles for this template -->
-    <link href="../assets/authenticators/shibboleth/style.css" rel="stylesheet" type="text/css">
+    <link href="/assets/authenticators/shibboleth/style.css" rel="stylesheet" type="text/css">
     <script type="application/javascript">
-      function message_broadcast(key, value) {
-        value = typeof value === "object" ? JSON.stringify(value) : value;
-        var cid = "<%= locals.cid %>";
-        localStorage.setItem(key + "_" + cid, value);
-      }
-
-      function checkInputs(inputUserName, inputEmail, submitButton) {
-        if ((inputUserName && inputUserName.value.trim() === "") || (inputEmail && inputEmail.value.trim() === "")) {
-          submitButton.setAttribute("disabled", "disabled");
-        } else {
-          submitButton.removeAttribute("disabled");
-        }
-      }
-
       window.onload = function () {
         var inputUserName = document.getElementById("inputUserName");
         var inputEmail = document.getElementById("inputEmail");
         var submitButton = document.getElementById("submitButton");
+        var checkDataPolicy = document.getElementById("checkDataPolicy");
+        var checkTerms = document.getElementById("checkTerms");
         var jwtToken = "<%= locals.token %>";
+
+        function message_broadcast(key, value) {
+          value = typeof value === "object" ? JSON.stringify(value) : value;
+          var cid = "<%= locals.cid %>";
+          localStorage.setItem(key + "_" + cid, value);
+        }
+
+        function checkInputs() {
+          if ((window.inputUserName === undefined || window.inputUserName.value?.trim() === "") || (window.inputEmail === undefined || window.inputEmail.value.trim() === "") || !window.checkDataPolicy.checked || !window.checkTerms.checked) {
+            submitButton.setAttribute("disabled", "disabled");
+          } else {
+            submitButton.removeAttribute("disabled");
+          }
+        }
 
         if (jwtToken.trim() !== "") {
           message_broadcast("token", "<%= locals.token %>");
           window.close();
         }
 
-        if (inputUserName || inputEmail) {
-          if (inputUserName) {
-            inputUserName.addEventListener("keyup", checkInputs);
-          }
-
-          if (inputEmail) {
-            inputEmail.addEventListener("keyup", checkInputs);
-          }
-          checkInputs(inputUserName, inputEmail, submitButton);
-        }
+        inputUserName.addEventListener("keyup", checkInputs);
+        inputEmail.addEventListener("keyup", checkInputs);
+        checkDataPolicy.addEventListener("change", checkInputs);
+        checkTerms.addEventListener("change", checkInputs);
+        checkInputs();
       };
     </script>
 </head>
@@ -58,24 +55,35 @@
 <% if(locals.windowURL.trim() === "" && locals.token.trim() === ""){ %>
     <form class="form-signin" id="signinForm" method="post">
         <h1 class="h3 mb-3 font-weight-normal" style="text-align: center;">Please register</h1>
-        <% if(!locals.userName || locals.userName.trim() === ""){ %>
-            <div class="form-group">
-                <label for="inputUserName">First Name and Last Name</label>
-                <input type="text" id="inputUserName" class="form-control" name="userName"
-                       placeholder="First & Last Name"
-                       required="required" autofocus="">
-            </div>
-        <% } %>
-        <% if(!locals.email || locals.email.trim() === ""){ %>
-            <div class="form-group">
-                <label for="inputEmail">Email Address</label>
-                <input type="email" id="inputEmail" class="form-control" name="email" placeholder="Email address"
-                       required="required"
-                       autofocus="">
-            </div>
-        <% } %>
+        <p style="text-align: justify;">In order to use our services you need to create an account. The account is
+            connected to your account
+            authenticated by Shibboleth.</p>
+        <div class="form-group mb-3 mt-3">
+            <label for="inputUserName">User name</label>
+            <input type="text" id="inputUserName" class="form-control" name="userName"
+                   placeholder="Username"
+                   required="required" autofocus="">
+        </div>
+        <div class="form-group mb-3">
+            <label for="inputEmail">Email Address</label>
+            <input type="email" id="inputEmail" class="form-control" name="email" placeholder="Email address"
+                   required="required"
+                   autofocus="">
+        </div>
         <div class="form-group" style="display: none;">
             <input type="hidden" name="shibToken" value="<%= locals.shibToken %>"/>
+        </div>
+        <div class="form-group mt-3">
+            <input id="checkDataPolicy" type="checkbox" name="dataPolicyAccepted" value="yes" style="cursor: pointer;"/>
+            <label for="checkDataPolicy" style="cursor: pointer;">I accept the <a href="" target="_blank">data
+                    policy</a> <span
+                        class="text-danger">*</span></label>
+        </div>
+        <div class="form-group mb-3">
+            <input id="checkTerms" type="checkbox" name="termsAccepted" value="yes" style="cursor: pointer;"/>
+            <label for="checkTerms" style="cursor: pointer;">I accept the <a href="" target="_blank">terms of
+                    service</a> <span
+                        class="text-danger">*</span></label>
         </div>
         <button class="btn btn-lg btn-primary btn-block" id="submitButton" disabled="disabled" type="submit">Sign in
         </button>

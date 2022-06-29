@@ -2,16 +2,32 @@ import * as fs from 'fs';
 import {removeNullAttributes} from '../functions';
 import {IAppConfiguration} from '../types';
 import {DbNamingStrategy} from '../typeorm';
+import {join} from 'path';
+import * as os from 'os';
+
+function getBetterSQLitePath() {
+  if (process.env['dev']) {
+    if (process.env['test']) {
+      return join(__dirname, `../../../../../node_modules/better-sqlite3/build/Release/better_sqlite3-${os.platform()}-${os.arch()}.node`)
+    }
+    return join(__dirname, `../../../node_modules/better-sqlite3/build/Release/better_sqlite3-${os.platform()}-${os.arch()}.node`)
+  }
+
+  return join(__dirname, `../../../../../better-sqlite3/build/Release/better_sqlite3-${os.platform()}-${os.arch()}.node`)
+}
 
 export function getOrmConfig(config: IAppConfiguration) {
+  console.log('RUN getOrmConfig!');
   let OrmDatabaseConfig: any = {
-    type: config.database.dbType,
+    type: (config.database.dbType === 'sqlite') ? 'better-sqlite3' : config.database.dbType,
     host: config.database.dbHost,
     port: config.database.dbPort,
     username: config.database.dbUser,
     password: config.database.dbPassword,
     database: config.database.dbName,
-    synchronize: false
+    verbose: console.log,
+    synchronize: false,
+    nativeBinding: (config.database.dbType === 'sqlite') ? getBetterSQLitePath() : undefined
   }
 
   if (config.database.ssl) {

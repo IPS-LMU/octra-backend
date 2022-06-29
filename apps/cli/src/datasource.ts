@@ -7,7 +7,6 @@ const config = Configuration.getInstance(); // config is intitialized in dbaware
 
 export const OrmConfig: SqlServerConnectionOptions = {
   ...getOrmConfig(config),
-  driver: (config.database.dbType === 'sqlite') ? require('sqlite3') : undefined,
   entities: ['./node_modules/@octra/server-side/src/lib/typeorm/entities/*.js'],
   migrationsTableName: 'typeorm_migrations',
   migrations: [Path.join(__dirname, 'migrations/*.js')],

@@ -90,7 +90,7 @@ Press "y" for "Yes" or "n" for "No" and press ENTER.
         await ScriptRunner.run(`${this.globals.typeORMPath} schema:drop`, false);
         console.log('Removed Database.');
         console.log('Initialize database...');
-        await ScriptRunner.run(`${this.globals.typeORMPath} migration:run`, true);
+        await ScriptRunner.run(`${this.globals.typeORMPath} migration:run`, false);
         console.log('Installation complete.');
       } catch (e) {
         console.log(`EROOR: Installation failed.`);

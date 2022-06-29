@@ -3,10 +3,11 @@ import {SQLTypeMapper} from '../sql-type-mapper';
 import {Configuration} from '../../config';
 import {applyDecorators} from '@nestjs/common';
 import {dateTransformer} from '../transformers';
+import {join} from 'path';
 
 function getConfigPath() {
-  if (!process.env['configPath']) {
-    throw new Error('configPath env variable not set!');
+  if (process.env['dev'] && !process.env['configPath']) {
+    return join(__dirname, `../../../`)
   }
 
   return process.env['configPath'];

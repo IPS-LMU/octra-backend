@@ -54,7 +54,7 @@ export class AuthService {
   }
 
   private getPasswordHash(password: string): string {
-    let salt = this.configService.get('api.passwordSalt');
+    let salt = this.configService.get('api.security.keys.password.salt');
     salt = SHA256(salt).toString();
     return SHA256(password + salt).toString();
   }

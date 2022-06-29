@@ -8,7 +8,6 @@ import {
   Param,
   Post,
   Put,
-  Query,
   Req,
   UseInterceptors
 } from '@nestjs/common';
@@ -89,9 +88,9 @@ export class AccountController {
    */
   @Public()
   @UseInterceptors(ClassSerializerInterceptor)
-  @Get('hash')
-  async existsWithHash(@Query() hash: string): Promise<boolean> {
-    return (await this.accountService.findAccountByHash(hash) !== undefined);
+  @Get('hash/:hash')
+  async existsWithHash(@Param('hash') hash: string): Promise<boolean> {
+    return (await this.accountService.findAccountByHash(hash) !== null);
   }
 
   /**

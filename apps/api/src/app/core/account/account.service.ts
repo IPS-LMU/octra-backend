@@ -146,12 +146,12 @@ export class AccountService {
     });
 
     if (account) {
-      if (account.account_person.hash === getPasswordHash(this.configService.get('api.passwordSalt'), changePasswordDto.oldPassword)) {
+      if (account.account_person.hash === getPasswordHash(this.configService.get('api.security.keys.password.salt'), changePasswordDto.oldPassword)) {
         // change
         await this.accountPersonRepository.update({
           id: account.account_person.id
         }, {
-          hash: getPasswordHash(this.configService.get('api.passwordSalt'), changePasswordDto.newPassword)
+          hash: getPasswordHash(this.configService.get('api.security.keys.password.salt'), changePasswordDto.newPassword)
         });
       } else {
         // error
@@ -192,7 +192,7 @@ export class AccountService {
 
       let insertResult = await manager.insert(AccountPersonEntity, {
         username: dto.name,
-        hash: (loginmethod === AccountLoginMethod.local) ? getPasswordHash(this.configService.get('api.passwordSalt'), dto.password) : dto.password,
+        hash: (loginmethod === AccountLoginMethod.local) ? getPasswordHash(this.configService.get('api.security.keys.password.salt'), dto.password) : dto.password,
         email: dto.email,
         loginmethod
       });

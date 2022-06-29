@@ -10,7 +10,7 @@
     "url": "https://github.com/IPS-LMU/octra-backend"
   },
   "dependencies": {
-    "sqlite3": "^5.0.8"
+    "better-sqlite3": "^7.5.0"
   },
   "pkg": {
     "outputPath": "./dist/builds",
@@ -20,7 +20,8 @@
       "../../../node_modules/ejs/**/*",
       "assets/**/*",
       "views/**/*",
-      "../../../node_modules/sqlite3/**/*",
+      "../../../node_modules/better-sqlite3/**/*",
+      "../../../node_modules/@journeyapps/sqlcipher/**/*",
       "../../../node_modules/node-addon-api/**/*",
       "../../../node_modules/node-gyp/**/*",
       "../../../node_modules/graceful-fs/**/*",
@@ -185,11 +186,6 @@
       "../../../node_modules/webidl-conversions/**/*",
       "../../../node_modules/semver/**/*",
       "../../../node_modules/tar/**/*"
-    ],
-    "targets": [
-      "node12-macos-x64",
-      "node12-win-x64",
-      "node12-linux-x64"
     ]
   }
 }
