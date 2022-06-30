@@ -51,6 +51,7 @@ export interface IAPIConfiguration {
     shibboleth?: {
       enabled: boolean;
       secret: string;
+      uuidSalt: string;
       windowURL: string;
     },
     webBackend?: {

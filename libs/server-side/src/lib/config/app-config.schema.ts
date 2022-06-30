@@ -158,13 +158,16 @@ export const AppConfigurationSchema: Schema = {
 
             },
             shibboleth: {
-              required: ['enabled', 'secret', 'windowURL'],
+              required: ['enabled', 'secret', 'uuidSalt', 'windowURL'],
               type: 'object',
               properties: {
                 enabled: {
                   type: 'boolean'
                 },
                 secret: {
+                  type: 'string'
+                },
+                uuidSalt: {
                   type: 'string'
                 },
                 windowURL: {

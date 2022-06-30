@@ -73,7 +73,8 @@ Press "y" for "Yes" or "n" for "No" and press ENTER.
             ...configFile.api.plugins,
             shibboleth: {
               ...configFile.api.plugins.shibboleth,
-              secret: getRandomString(30)
+              secret: getRandomString(30),
+              uuidSalt: getRandomString(30)
             }
           }
         }

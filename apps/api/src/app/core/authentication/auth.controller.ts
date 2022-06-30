@@ -151,7 +151,7 @@ export class AuthController {
 
     if (UUID !== '') {
       // hash uuid of user
-      UUID = SHA256(UUID + '67t7wqe78ze87w4zr87zt348t0743z5nj').toString();
+      UUID = SHA256(UUID + this.configService.get('api.plugins.shibboleth.uuidSalt')).toString();
       // check if user exists
       const redirectWithToken = (user: any) => {
         const payload: JWTPayload = {
