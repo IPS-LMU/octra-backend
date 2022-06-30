@@ -8,17 +8,17 @@ import * as os from 'os';
 function getBetterSQLitePath() {
   if (process.env['dev']) {
     if (process.env['test']) {
-      return join(__dirname, `../../../../../node_modules/better-sqlite3/build/Release/better_sqlite3-${os.platform()}-${os.arch()}.node`)
+      return join(__dirname, `../../../../../node_modules/better-sqlite3-multiple-ciphers/build/Release/better_sqlite3-${os.platform()}-${os.arch()}.node`)
     }
-    return join(__dirname, `../../../node_modules/better-sqlite3/build/Release/better_sqlite3-${os.platform()}-${os.arch()}.node`)
+    return join(__dirname, `../../../node_modules/better-sqlite3-multiple-ciphers/build/Release/better_sqlite3-${os.platform()}-${os.arch()}.node`)
   }
 
-  return join(__dirname, `../../../../../better-sqlite3/build/Release/better_sqlite3-${os.platform()}-${os.arch()}.node`)
+  return join(__dirname, `../../../../../better-sqlite3-multiple-ciphers/build/Release/better_sqlite3-${os.platform()}-${os.arch()}.node`)
 }
 
 export function getOrmConfig(config: IAppConfiguration) {
   let OrmDatabaseConfig: any = {
-    type: config.database.dbType,
+    type: (config.database.dbType === 'sqlite') ? 'better-sqlite3' : config.database.dbType,
     host: config.database.dbHost,
     port: config.database.dbPort,
     username: config.database.dbUser,
@@ -44,7 +44,8 @@ export function getOrmConfig(config: IAppConfiguration) {
   if (config.database.dbType === 'sqlite') {
     OrmDatabaseConfig = {
       ...OrmDatabaseConfig,
-      driver: require('@journeyapps/sqlcipher'),
+      driver: require('better-sqlite3-multiple-ciphers'),
+      nativeBinding: getBetterSQLitePath(),
       key: config.database.dbPassword
     }
   }

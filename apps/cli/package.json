@@ -17,7 +17,7 @@
       "./octra-migration.js",
       "./migrations/**/*",
       "../../../node_modules/.bin/*",
-      "../../../node_modules/@journeyapps/sqlcipher/**/*",
+      "../../../node_modules/better-sqlite3-multiple-ciphers/**/*",
       "../../../node_modules/@octra/server-side/**/*",
       "../../../node_modules/@octra/api-types/**/*",
       "../../../node_modules/@nestjs/common/**/*",

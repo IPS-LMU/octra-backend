@@ -24,10 +24,9 @@ platform="${platform}-${arch}"
 echo $platform
 
 # remove custom napi files
-rm -rf "node_modules/@journeyapps/sqlcipher/lib/binding"
-mkdir "node_modules/@journeyapps/sqlcipher/lib/binding"
+rm node_modules/better-sqlite3-multiple-ciphers/build/Release/better_sqlite3*
 
 # add custom napi files
-cp -rf "napi/napi-v6-${platform}" "node_modules/@journeyapps/sqlcipher/lib/binding/"
+cp "napi/better_sqlite3-${platform}.node" "node_modules/better-sqlite3-multiple-ciphers/build/Release/"
 
 pkg "./dist/apps/${app}/main.js" --compress GZip -c "./dist/apps/${app}/package.json" -t "$target" -o "dist/builds/${app}-${system}-${arch}"

@@ -632,6 +632,8 @@ EinsZweiDrei.wav
 .angular
 /cli
 test.sql
+test.sql-shm
+test.sql-wal
 
 /apps/api/src/assets/bootstrap/
 /napi
