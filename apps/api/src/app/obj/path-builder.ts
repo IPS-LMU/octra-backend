@@ -7,7 +7,7 @@ import {IAPIConfiguration} from '@octra/server-side';
 
 export class PathBuilder {
   public readonly uploadPath: string;
-  private readonly projectsPath: string;
+  public readonly projectsPath: string;
   private readonly settings: IAPIConfiguration;
   private readonly urlEncryption: {
     key: CryptoJS.lib.WordArray;
@@ -47,6 +47,10 @@ export class PathBuilder {
     return Path.join(this.projectsPath, this.getProjectFolderPath(projectID));
   }
 
+  public getAbsoluteProjectFilesPath(projectID: string) {
+    return Path.join(this.projectsPath, this.getProjectFolderPath(projectID), 'files');
+  }
+
   public getAbsoluteGuidelinesPath(projectID: string) {
     return Path.join(this.getAbsoluteProjectPath(projectID), 'guidelines');
   }
@@ -55,22 +59,14 @@ export class PathBuilder {
     return Path.join(this.getProjectFolderPath(projectID), 'guidelines');
   }
 
-  public getEncryptedProjectFileURL(projectID: string, fileName: string) {
-    return this.settings.url + Path.join('/v1/files/public/', this.encryptFilePath(Path.join(`{projects}`, `project_${projectID}`)), Path.basename(fileName));
-  }
-
-  public getEncryptedUploadURL(relativePath: string, virtual_filename: string) {
-    if (relativePath && /https?:\/\//g.exec(relativePath) === null) {
-
-      const folder = Path.join(`{uploads}`, Path.parse(relativePath).dir);
-      const fileName = Path.basename(relativePath);
-      return this.settings.url + (this.settings.port ? `:${this.settings.port}` : '') + Path.join('/v1/files/public/', this.encryptFilePath(folder), fileName);
-    }
-    return relativePath;
+  public getEncryptedFileURL(path: string) {
+    const folder = Path.parse(path).dir;
+    const fileName = Path.basename(path);
+    return this.settings.url + (this.settings.port ? `:${this.settings.port}` : '') + Path.join(this.settings.baseURL, '/files/', this.encryptFilePath(folder), Path.basename(path));
   }
 
   public getEncryptedGuidelinesFileURL(projectID: string, fileName: string) {
-    return this.settings.url + Path.join('/v1/files/public/', this.encryptFilePath(Path.join('{projects}', `project_${projectID}`)), Path.basename(fileName));
+    return this.settings.url + Path.join('/files/', this.encryptFilePath(Path.join('{projects}', `project_${projectID}`)), Path.basename(fileName));
   }
 
   public getAbsoluteUploadPath() {
@@ -110,5 +106,18 @@ export class PathBuilder {
         reject('Can\'t find file from URL.');
       }).end();
     });
+  }
+
+  public isEncryptedURL(url: string): boolean {
+    const regex = new RegExp(`^${Path.join(this.settings.url, 'files')}`);
+    return (regex.exec(url) !== null);
+  }
+
+  public isURL(url: string): boolean {
+    return (url && url.trim() !== '' && /^https?:\/\//g.exec(url).length > 0);
+  }
+
+  public isLocalPath(path: string): boolean {
+    return (path && path.trim() !== '' && /^\{projects}/g.exec(path).length > 0);
   }
 }

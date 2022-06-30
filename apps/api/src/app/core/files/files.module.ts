@@ -1,9 +1,9 @@
 import {Module} from '@nestjs/common';
 import {FilesController} from './files.controller';
 import {TypeOrmModule} from '@nestjs/typeorm';
-import {FileEntity} from '@octra/server-side';
+import {ProjectEntity} from '@octra/server-side';
 
-export const FILE_ENTITIES = [FileEntity];
+export const FILE_ENTITIES = [ProjectEntity];
 
 @Module({
   imports: [TypeOrmModule.forFeature(FILE_ENTITIES)],

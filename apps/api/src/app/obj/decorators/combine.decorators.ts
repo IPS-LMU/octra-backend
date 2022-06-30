@@ -15,3 +15,11 @@ export function CombinedRoles(...roles: AccountRole[]) {
     CustomApiException(new InvalidJwtTokenException())
   );
 }
+
+export function CombinedRolesWithoutSerialization(...roles: AccountRole[]) {
+  return applyDecorators(
+    Roles(...roles),
+    CustomApiException(new ForbiddenResource()),
+    CustomApiException(new InvalidJwtTokenException())
+  );
+}

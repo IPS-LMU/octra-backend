@@ -49,7 +49,7 @@ export class TasksController {
     const createdTask = await this.tasksService.uploadTaskData(id, body, req);
     createdTask.inputsOutputs = createdTask.inputsOutputs.map(a => ({
       ...a,
-      url: a.url ?? this.appService.pathBuilder.getEncryptedUploadURL(a.file_project?.file.url, a.file_project?.virtual_filename)
+      url: this.tasksService.getURLForInputOutPut(a)
     }));
     let data = new TaskDto(createdTask);
     data = removeNullAttributes(data);
@@ -57,7 +57,8 @@ export class TasksController {
   }
 
   /**
-   * changes a task and it's data.
+   * changes a task and it's data. If `properties.files_destination` is set it is going to be applied only on a new
+   * media file. If you want to move a already uploaded file, use moveProjectFile() method.
    *
    * Allowed user roles: <code>administrator, project_admin, data_delivery</code>
    */
@@ -71,7 +72,7 @@ export class TasksController {
     const createdTask = await this.tasksService.changeTaskData(id, task_id, body, req);
     createdTask.inputsOutputs = createdTask.inputsOutputs.map(a => ({
       ...a,
-      url: a.url ?? this.appService.pathBuilder.getEncryptedUploadURL(a.file_project?.file.url, a.file_project?.virtual_filename)
+      url: this.tasksService.getURLForInputOutPut(a)
     }));
     let data = new TaskDto(createdTask);
     data = removeNullAttributes(data);
@@ -107,7 +108,7 @@ export class TasksController {
     }
     createdTask.inputsOutputs = createdTask.inputsOutputs?.map(a => ({
       ...a,
-      url: a.url ?? this.appService.pathBuilder.getEncryptedUploadURL(a.file_project?.file.url, a.file_project?.virtual_filename)
+      url: this.tasksService.getURLForInputOutPut(a)
     }));
     let data = new TaskDto(createdTask);
     data = removeNullAttributes(data);
@@ -128,7 +129,7 @@ export class TasksController {
       ...a,
       inputsOutputs: a.inputsOutputs?.map(a => ({
         ...a,
-        url: a.url ?? this.appService.pathBuilder.getEncryptedUploadURL(a.file_project?.file.url, a.file_project?.virtual_filename)
+        url: this.tasksService.getURLForInputOutPut(a)
       }))
     })));
   }

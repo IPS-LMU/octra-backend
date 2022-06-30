@@ -388,9 +388,9 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       })
     ]);
 
-    console.log(`-> Create table "file"...`);
+    console.log(`-> Create table "file_project"...`);
     await queryRunner.createTable(new Table({
-      name: 'file',
+      name: 'file_project',
       columns: [
         {
           name: 'id',
@@ -400,7 +400,16 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
           generationStrategy: 'increment'
         },
         {
-          name: 'url',
+          name: 'project_id',
+          type: m('bigint'),
+          isUnique: false
+        },
+        {
+          name: 'uploader_id',
+          type: m('bigint')
+        },
+        {
+          name: 'real_name',
           type: m('text')
         },
         {
@@ -414,12 +423,12 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
           isNullable: true
         },
         {
-          name: 'uploader_id',
-          type: m('bigint'),
+          name: 'path',
+          type: m('text'),
           isNullable: true
         },
         {
-          name: 'original_name',
+          name: 'url',
           type: m('text'),
           isNullable: true
         },
@@ -447,68 +456,16 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       ]
     }), true);
 
-    await queryRunner.createForeignKeys('file', [
-      new TableForeignKey({
-        referencedTableName: 'account',
-        referencedColumnNames: ['id'],
-        columnNames: ['uploader_id']
-      })
-    ]);
-
-    console.log(`-> Create table "file_project"...`);
-    await queryRunner.createTable(new Table({
-      name: 'file_project',
-      columns: [
-        {
-          name: 'id',
-          type: m('bigint'),
-          isPrimary: true,
-          isGenerated: true,
-          generationStrategy: 'increment'
-        },
-        {
-          name: 'file_id',
-          type: m('bigint')
-        },
-        {
-          name: 'project_id',
-          type: m('bigint'),
-          isNullable: true
-        },
-        {
-          name: 'virtual_folder_path',
-          type: m('text'),
-          isNullable: true
-        },
-        {
-          name: 'virtual_filename',
-          type: m('text'),
-          isNullable: true
-        },
-        {
-          name: 'creationdate',
-          default: 'CURRENT_TIMESTAMP',
-          type: m('timestamp without time zone'),
-        },
-        {
-          name: 'updatedate',
-          type: m('timestamp without time zone'),
-          default: 'CURRENT_TIMESTAMP',
-          onUpdate: 'CURRENT_TIMESTAMP'
-        }
-      ]
-    }), true);
-
     await queryRunner.createForeignKeys('file_project', [
-      new TableForeignKey({
-        referencedTableName: 'file',
-        referencedColumnNames: ['id'],
-        columnNames: ['file_id']
-      }),
       new TableForeignKey({
         referencedTableName: 'project',
         referencedColumnNames: ['id'],
         columnNames: ['project_id']
+      }),
+      new TableForeignKey({
+        referencedTableName: 'account',
+        referencedColumnNames: ['id'],
+        columnNames: ['uploader_id']
       })
     ]);
 
@@ -793,7 +750,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       training: '',
       comment: '',
       account_person_id: insertResult.identifiers[0].id,
-      role_id: '1',
+      role_id: '1', a
       last_login: new Date()
     });
   }

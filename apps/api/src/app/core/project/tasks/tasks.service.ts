@@ -13,9 +13,9 @@ import {InternRequest} from '../../../obj/types';
 import {ConfigService} from '@nestjs/config';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Repository} from 'typeorm';
-import {FileCreateDto} from '../../files/file.dto';
 import {TaskChangeDto, TaskProperties, TaskType, TaskUploadDto} from './task.dto';
 import * as Path from 'path';
+import {join} from 'path';
 import {FileSystemHandler} from '../../../obj/filesystem-handler';
 import {FileHashStorage} from '../../../obj/file-hash-storage';
 import {TaskInputOutputCreatorType, TaskStatus} from '@octra/api-types';
@@ -23,7 +23,6 @@ import {DatabaseService} from '../../../database.service';
 import {SaveAnnotationDto} from '../annotations/annotation.dto';
 import {
   AnnotJSONType,
-  FileEntity,
   FileProjectEntity,
   removeNullAttributes,
   removeProperties,
@@ -32,10 +31,11 @@ import {
   TranscriptType
 } from '@octra/server-side';
 import {ForbiddenResource} from '../../../obj/exceptions';
+import {FileProjectCreateDto} from '../../files/file.project.dto';
 
 interface ReqData {
-  virtual_folder_path?: string;
-  virtual_filename: string;
+  real_filename?: string;
+  path?: string;
 }
 
 @Injectable()
@@ -44,8 +44,8 @@ export class TasksService {
               private configService: ConfigService,
               @InjectRepository(TaskEntity)
               private taskRepository: Repository<TaskEntity>,
-              @InjectRepository(FileEntity)
-              private fileRepository: Repository<FileEntity>,
+              @InjectRepository(FileProjectEntity)
+              private fileProjectRepository: Repository<FileProjectEntity>,
               private databaseService: DatabaseService) {
   }
 
@@ -66,11 +66,13 @@ export class TasksService {
     }
 
     let reqData: ReqData = {
-      virtual_filename: undefined,
-      virtual_folder_path: undefined
+      real_filename: undefined
     }
 
-    const {virtual_filename, dbFile} = await this.checkMediaFile(req, mediaFile, reqData, taskProperties);
+    const {
+      real_filename,
+      dbFile
+    } = await this.checkMediaFile(project_id, req, mediaFile, reqData, taskProperties, body.properties.files_destination);
 
     if (transcriptFile) {
       //read transcript file
@@ -102,8 +104,8 @@ export class TasksService {
 
 
     reqData = {
-      virtual_filename,
-      virtual_folder_path: ''
+      real_filename,
+      path: dbFile.path ?? dbFile.url
     }
 
     body = await this.adaptConvertedTranscript(body, mediaFile, dbFile) as any;
@@ -129,16 +131,16 @@ export class TasksService {
     }
 
     let reqData: ReqData = {
-      virtual_filename: undefined,
-      virtual_folder_path: undefined
+      real_filename: undefined,
+      path: undefined
     }
 
-    let virtual_filename;
+    let real_filename;
     let dbFile;
 
     if (mediaFile) {
-      const result = await this.checkMediaFile(req, mediaFile, reqData, taskProperties);
-      virtual_filename = result.virtual_filename;
+      const result = await this.checkMediaFile(project_id, req, mediaFile, reqData, taskProperties, body.properties.files_destination);
+      real_filename = result.real_filename;
       dbFile = result.dbFile;
     }
 
@@ -171,8 +173,8 @@ export class TasksService {
     }
 
     reqData = {
-      virtual_filename,
-      virtual_folder_path: ''
+      real_filename,
+      path: ''
     }
 
     body = await this.adaptConvertedTranscript(body, mediaFile, dbFile);
@@ -203,14 +205,15 @@ export class TasksService {
     });
   }
 
-  private async addChangeNewTask(project_id: string, body: TaskUploadDto | TaskChangeDto, audioDBFile: FileEntity, reqData: ReqData, taskProperties: TaskProperties, task?: TaskEntity): Promise<string> {
+  private async addChangeNewTask(project_id: string, body: TaskUploadDto | TaskChangeDto, audioDBFile: FileProjectEntity, reqData: ReqData, taskProperties: TaskProperties, task?: TaskEntity): Promise<string> {
     return await this.databaseService.transaction<string>(async (manager) => {
       let task_id = task?.id;
       const audioFileProject = {
-        file_id: audioDBFile?.id,
+        ...audioDBFile,
+        id: undefined,
         project_id,
-        virtual_folder_path: reqData.virtual_folder_path,
-        virtual_filename: reqData.virtual_filename,
+        real_name: reqData.real_filename,
+        url: reqData.path
       } as FileProjectEntity;
       const newTaskProperties = removeNullAttributes({
         pid: taskProperties.pid,
@@ -289,17 +292,18 @@ export class TasksService {
     });
   }
 
-  private async checkMediaFile(req: InternRequest, mediaFile: FileHashStorage, reqData: any, taskProperties: TaskProperties): Promise<{
-    dbFile: FileEntity,
-    virtual_filename: string
+  private async checkMediaFile(project_id: string, req: InternRequest, mediaFile: FileHashStorage, reqData: any, taskProperties: TaskProperties, filesDestination?: string): Promise<{
+    dbFile: FileProjectEntity;
+    real_filename: string;
   }> {
-    let dbFile: FileEntity;
+    let dbFile: FileProjectEntity;
     let virtual_filename: string;
 
     if (mediaFile) {
-      const uploadPath = this.appService.pathBuilder.getAbsoluteUploadPath();
+      let uploadPath = this.appService.pathBuilder.getAbsoluteProjectFilesPath(project_id);
+      uploadPath = filesDestination ? join(uploadPath, filesDestination.replace(/(\.+\/+)|(\.+\\+)/g, '')) : uploadPath;
       await FileSystemHandler.createDirIfNotExists(uploadPath);
-      dbFile = await this.getFileItemByHash(mediaFile.hash);
+      dbFile = await this.getFileItemByHash(project_id, mediaFile.hash);
 
       if (!dbFile) {
         // file doesn't exists in DB
@@ -307,58 +311,56 @@ export class TasksService {
         await FileSystemHandler.moveFile(mediaFile.path, newFilePath);
         const audioInformation = await FileSystemHandler.readAudioFileInformation(newFilePath);
 
-        dbFile = await this.fileRepository.save({
+        dbFile = await this.fileProjectRepository.save({
+          project_id,
           hash: mediaFile.hash,
           metadata: audioInformation,
-          original_name: mediaFile.originalName,
+          real_name: mediaFile.originalName,
           size: mediaFile.size,
           type: mediaFile.mimetype,
           uploader_id: req.user.userId,
-          url: newFilePath
-            .replace(this.appService.pathBuilder.uploadPath, '')
-            .replace(/^\//g, '')
+          path: join('{projects}', newFilePath
+            .replace(this.appService.pathBuilder.projectsPath, ''))
         });
       } else {
         // file already exists, remove temp file
         await unlink(mediaFile.path);
       }
-
-      virtual_filename = mediaFile.originalName;
     } else {
       // no media file uploaded
       const url = taskProperties.media.url;
-      if (!url || url.trim() === '' || !(new RegExp('^https?://').exec(url))) {
+      if (!this.appService.pathBuilder.isURL(url)) {
         throw new BadRequestException('Can\'t find url in url property');
       }
 
-      const regex = new RegExp(`^${Path.join(this.configService.get('api.url'), 'v1/links')}`);
-
       const originalName = this.appService.pathBuilder.extractFileNameFromURL(url);
-      if (regex.exec(url)) {
+      if (this.appService.pathBuilder.isEncryptedURL(url)) {
         // is intern link
         const relativePath = reqData.file.url.replace(/^.+links\/([/]+)\/(.+)/g, (g0, g1, g2) => {
           return `${this.appService.pathBuilder.decryptFilePath(g1)}/${g2}`;
         });
 
-        dbFile = await this.getFileItemByUrl(relativePath);
+        dbFile = await this.getFileItemByUrl(project_id, relativePath);
         if (!dbFile) {
           //add fileitem
           dbFile = await this.addFileItem({
-            original_name: originalName,
+            project_id,
+            real_name: originalName,
             uploader_id: req.user.userId,
-            url: relativePath
+            path: join('{projects}', relativePath)
           });
         }
         virtual_filename = this.appService.pathBuilder.extractFileNameFromURL(relativePath);
       } else {
-        dbFile = await this.getFileItemByUrl(url);
+        dbFile = await this.getFileItemByUrl(project_id, url);
         if (!dbFile) {
           //add fileitem
           const urlInfo = await this.appService.pathBuilder.getInformationFomURL(url);
           dbFile = await this.addFileItem({
+            project_id,
             size: urlInfo.size,
             type: urlInfo.type,
-            original_name: originalName,
+            real_name: originalName,
             uploader_id: req.user.userId,
             url
           });
@@ -369,7 +371,7 @@ export class TasksService {
     }
 
     return {
-      virtual_filename,
+      real_filename: dbFile.real_name,
       dbFile
     };
   }
@@ -380,7 +382,7 @@ export class TasksService {
         id: task_id,
         project_id
       },
-      relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file']
+      relations: ['inputsOutputs', 'inputsOutputs.file_project']
     });
   }
 
@@ -389,7 +391,7 @@ export class TasksService {
       where: {
         project_id
       },
-      relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file']
+      relations: ['inputsOutputs', 'inputsOutputs.file_project']
     });
   }
 
@@ -422,7 +424,7 @@ export class TasksService {
         where: {
           id: task.id
         },
-        relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file'],
+        relations: ['inputsOutputs', 'inputsOutputs.file_project'],
       });
     });
   }
@@ -461,7 +463,7 @@ export class TasksService {
       }
       return await manager.findOne(TaskEntity, {
         where: {id: task.id},
-        relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file'],
+        relations: ['inputsOutputs', 'inputsOutputs.file_project'],
       });
     });
   }
@@ -485,7 +487,7 @@ export class TasksService {
       }
       return await manager.findOne(TaskEntity, {
         where: {id: task.id},
-        relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file'],
+        relations: ['inputsOutputs', 'inputsOutputs.file_project'],
       });
     });
   }
@@ -494,7 +496,7 @@ export class TasksService {
     return this.databaseService.transaction<TaskEntity>(async (manager) => {
       const task = req.task;
 
-      if (task.worker_id.toString() !== worker_id.toString()) {
+      if (task.worker_id && task.worker_id.toString() !== worker_id.toString()) {
         throw new MethodNotAllowedException('You can\'t resume a task that is edited by another worker.');
       }
 
@@ -505,7 +507,7 @@ export class TasksService {
       // don't change status because there's no need.
       return await manager.findOne(TaskEntity, {
         where: {id: task.id},
-        relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file'],
+        relations: ['inputsOutputs', 'inputsOutputs.file_project'],
       });
     });
   }
@@ -513,7 +515,7 @@ export class TasksService {
   public async resumeTask(worker_id: string, req: InternRequest): Promise<TaskEntity> {
     return this.databaseService.transaction<TaskEntity>(async (manager) => {
       const task = req.task;
-      if (task.worker_id.toString() !== worker_id) {
+      if (task.worker_id && task.worker_id.toString() !== worker_id) {
         throw new MethodNotAllowedException('You can\'t resume a task that is edited by another worker.');
       }
 
@@ -524,12 +526,12 @@ export class TasksService {
       // don't change status because there's no need.
       return await manager.findOne(TaskEntity, {
         where: {id: task.id},
-        relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file'],
+        relations: ['inputsOutputs', 'inputsOutputs.file_project'],
       });
     });
   }
 
-  private async adaptConvertedTranscript(body: TaskUploadDto | TaskChangeDto, mediaFile: FileHashStorage, dbFile: FileEntity) {
+  private async adaptConvertedTranscript(body: TaskUploadDto | TaskChangeDto, mediaFile: FileHashStorage, dbFile: FileProjectEntity) {
     if (body.transcript && body.transcriptType === TranscriptType.Text) {
       // adapt transcript
       body.transcript.annotates = mediaFile.originalName;
@@ -556,19 +558,25 @@ export class TasksService {
     }
   }
 
-  private async getFileItemByHash(hash: string): Promise<FileEntity> {
-    return this.fileRepository.findOneBy({
+  private async getFileItemByHash(project_id: string, hash: string): Promise<FileProjectEntity> {
+    return this.fileProjectRepository.findOneBy({
+      project_id,
       hash
     });
   }
 
-  private async getFileItemByUrl(url: string): Promise<FileEntity> {
-    return this.fileRepository.findOneBy({
+  private async getFileItemByUrl(project_id: string, url: string): Promise<FileProjectEntity> {
+    return this.fileProjectRepository.findOneBy({
+      project_id,
       url
     });
   }
 
-  private async addFileItem(fileItem: FileCreateDto): Promise<FileEntity> {
-    return this.fileRepository.save(fileItem);
+  private async addFileItem(fileItem: FileProjectCreateDto): Promise<FileProjectEntity> {
+    return this.fileProjectRepository.save(fileItem);
+  }
+
+  public getURLForInputOutPut(io: TaskInputOutputEntity) {
+    return (io.url && io.url.trim() !== '') ? io.url : ((io.file_project && io.file_project.path?.trim() !== '') ? this.appService.pathBuilder.getEncryptedFileURL(io.file_project?.path) : io.file_project?.url);
   }
 }

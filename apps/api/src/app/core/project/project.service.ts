@@ -159,7 +159,7 @@ export class ProjectService {
         id: task_id,
         project_id
       },
-      relations: ['inputsOutputs', 'inputsOutputs.file_project', 'inputsOutputs.file_project.file']
+      relations: ['inputsOutputs', 'inputsOutputs.file_project']
     });
   }
 }

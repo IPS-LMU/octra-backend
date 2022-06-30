@@ -26,6 +26,7 @@
     "package:cli:prod": "./package.sh cli node12-macos-x64 && ./package.sh cli node12-linux-x64 && ./package.sh cli node12-win-x64",
     "release:cli:after": "rm -rf node_modules/@octra",
     "release:cli:prod": "npm run build:cli:prod && npm run package:cli:prod && npm run release:cli:after",
+    "release:cli:prod:mac": "npm run build:cli:prod && ./package.sh cli node12-macos-x64 && npm run release:cli:after",
     "release:api:prod": "npm run build:api:prod && npm run package:api:prod && npm run release:cli:after",
     "test": "nx test",
     "affected:apps": "nx affected:apps",
@@ -105,7 +106,7 @@
     "rxjs": "^7.5.5",
     "swagger-ui-express": "^4.4.0",
     "tslib": "^2.0.0",
-    "typeorm": "file:typeorm-0.3.6.tgz",
+    "typeorm": "^0.3.7",
     "url-parse": "^1.5.10",
     "yargs": "^17.5.1",
     "zone.js": "~0.11.4"

@@ -3,8 +3,9 @@ import {TaskEntity} from './task.entity';
 import {StandardEntityWithTimestamps} from './standard-entities';
 import {DbAwareColumn} from '../decorators';
 import {AccountRoleProjectEntity} from './account-role-project.entity';
-import {FileEntity} from './file.entity';
 import {dateTransformer, jsonTransformer} from '../transformers';
+import {AccountEntity} from './account.entity';
+import {AudioFileMetaData} from '@octra/api-types';
 
 @Entity({name: 'project'})
 export class ProjectEntity extends StandardEntityWithTimestamps {
@@ -66,16 +67,6 @@ export class FileProjectEntity extends StandardEntityWithTimestamps {
   @DbAwareColumn({
     type: 'bigint'
   })
-  file_id!: string;
-  @ManyToOne(() => FileEntity)
-  @JoinColumn({
-    name: 'file_id',
-    referencedColumnName: 'id'
-  })
-  file!: FileEntity;
-  @DbAwareColumn({
-    type: 'bigint'
-  })
   project_id!: string;
 
   @ManyToOne(() => ProjectEntity)
@@ -84,12 +75,62 @@ export class FileProjectEntity extends StandardEntityWithTimestamps {
     referencedColumnName: 'id'
   })
   project!: ProjectEntity;
+
+
   @DbAwareColumn({
-    type: 'text'
+    type: 'text',
+    nullable: true
   })
-  virtual_folder_path!: string;
+  path: string;
+
   @DbAwareColumn({
-    type: 'text'
+    type: 'text',
+    nullable: true
   })
-  virtual_filename!: string;
+  url: string;
+
+  @DbAwareColumn({
+    type: 'text',
+    nullable: true
+  })
+  type?: string;
+
+  @DbAwareColumn({
+    type: 'bigint',
+    nullable: true
+  })
+  size?: number;
+
+  @DbAwareColumn({
+    type: 'bigint',
+    nullable: true
+  })
+  uploader_id?: string;
+
+  @ManyToOne(() => AccountEntity)
+  @JoinColumn({
+    name: 'uploader_id',
+    referencedColumnName: 'id'
+  })
+  uploader!: AccountEntity;
+
+  @DbAwareColumn({
+    type: 'bigint',
+    nullable: true
+  })
+  real_name?: string;
+
+  @DbAwareColumn({
+    type: 'text',
+    nullable: true,
+    unique: true
+  })
+  hash?: string;
+
+  @DbAwareColumn({
+    type: 'jsonb',
+    nullable: true,
+    transformer: jsonTransformer
+  })
+  metadata?: AudioFileMetaData;
 }

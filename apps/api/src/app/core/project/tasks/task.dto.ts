@@ -60,7 +60,6 @@ export class TaskUploadMediaDto {
   @IsOptional()
   @IsBoolean()
   lossless?: boolean;
-
 }
 
 export class TaskProperties {
@@ -107,6 +106,9 @@ export class TaskProperties {
   /* id of the next task. The task must already exist. */
   @IsOptionalNumber()
   nexttask_id?: string;
+  /* destination where the files need to be uploaded to. */
+  @IsOptionalString()
+  files_destination?: string;
 
   /* only fill in this data if you don't upload a media file. The URL of the media file must exist. */
   @IsOptional()
@@ -179,12 +181,12 @@ export class TaskDto extends StandardWithTimeDto {
       creator_type: a.creator_type,
       label: a.label,
       description: a.description,
-      filename: a.filename ?? a.file_project?.virtual_filename,
-      url: a.url ?? a.file_project?.file?.url,
+      filename: a.filename ?? a.file_project?.real_name,
+      url: a.url ?? (a.file_project?.path ?? a.file_project?.url),
       content: a.content,
-      fileType: a.file_project?.file?.type,
-      size: a.file_project?.file?.size,
-      metadata: a.file_project?.file?.metadata
+      fileType: a.file_project?.type,
+      size: a.file_project?.size,
+      metadata: a.file_project?.metadata
     }));
 
     let obj = {

@@ -5,11 +5,11 @@ import * as path from 'path';
 import {TypeOrmModule} from '@nestjs/typeorm';
 import {NestjsFormDataModule} from 'nestjs-form-data';
 import {FileHashStorage} from '../../../obj/file-hash-storage';
-import {Configuration, FileEntity, TaskEntity} from '@octra/server-side';
+import {Configuration, FileProjectEntity, TaskEntity} from '@octra/server-side';
 import {getConfigPath} from '../../../functions';
 import {ProjectModule} from '../project.module';
 
-export const TASK_ENTITIES = [TaskEntity, FileEntity];
+export const TASK_ENTITIES = [TaskEntity, FileProjectEntity];
 const config = Configuration.getInstance(
   getConfigPath()
 );

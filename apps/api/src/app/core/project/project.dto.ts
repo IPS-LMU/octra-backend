@@ -200,7 +200,7 @@ export class ProjectRoleDto extends PartialType(
       ...newObj,
       role: partial.role.label,
       account_id: partial.account_id,
-      account_name: partial.account?.account_person.username
+      account_name: partial.account?.account_person?.username
     }
 
     newObj = removeProperties(newObj, ['id', 'role_id', 'project_id', 'project_name', 'scope']);

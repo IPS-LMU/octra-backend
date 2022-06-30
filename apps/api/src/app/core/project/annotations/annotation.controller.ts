@@ -11,13 +11,14 @@ import {removeNullAttributes} from '@octra/server-side';
 import {ProjectAccessInterceptor} from '../../../obj/interceptors/project-access.interceptor';
 import {CustomApiException} from '../../../obj/decorators/api-exception.decorators';
 import {NotFoundException} from '../../../obj/exceptions';
+import {AppService} from '../../../app.service';
 
 @ApiTags('Annotations')
 @ApiBearerAuth()
 @Controller('projects')
 export class AnnotationController {
 
-  constructor(private annotationService: AnnotationService, private tasksService: TasksService) {
+  constructor(private annotationService: AnnotationService, private tasksService: TasksService, private appService: AppService) {
   }
 
   /**
@@ -30,7 +31,20 @@ export class AnnotationController {
   @CustomApiException(new NotFoundException(`Can't find any project with this id.`))
   @Post(':project_id/annotations/start')
   async startAnnotation(@Param('project_id', NumericStringValidationPipe) project_id: string, @Req() req: InternRequest): Promise<TaskDto> {
-    return new TaskDto(removeNullAttributes(await this.tasksService.giveNextFreeTaskToAccount(project_id, req.user.userId)));
+    let result = await this.tasksService.giveNextFreeTaskToAccount(project_id, req.user.userId);
+
+    if (result) {
+      result = {
+        ...result,
+        inputsOutputs: result.inputsOutputs.map((a) => {
+          return {
+            ...a,
+            url: this.tasksService.getURLForInputOutPut(a)
+          }
+        })
+      };
+    }
+    return new TaskDto(removeNullAttributes(result));
   }
 
   /**

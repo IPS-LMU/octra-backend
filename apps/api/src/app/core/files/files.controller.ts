@@ -5,7 +5,7 @@ import {pathExists} from 'fs-extra';
 import {InternRequest} from '../../obj/types';
 import {AppService} from '../../app.service';
 import {createReadStream} from 'fs';
-import {CombinedRoles} from '../../obj/decorators/combine.decorators';
+import {CombinedRolesWithoutSerialization} from '../../obj/decorators/combine.decorators';
 import {AccountRole} from '@octra/api-types';
 
 @ApiTags('Files')
@@ -19,8 +19,8 @@ export class FilesController {
    *
    * Allowed user roles: <code>administrator, user</code>
    */
-  @CombinedRoles(AccountRole.administrator, AccountRole.user)
-  @Get('/public/:encryptedPath/:fileName')
+  @CombinedRolesWithoutSerialization(AccountRole.administrator, AccountRole.user)
+  @Get('/:encryptedPath/:fileName')
   async getFile(@Param('encryptedPath') encryptedPath: string, @Param('fileName') fileName: string, @Req() req: InternRequest, @Res() res: any): Promise<any> {
     try {
       let decryptedPath = this.appService.pathBuilder.decryptFilePath(encryptedPath);

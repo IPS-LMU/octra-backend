@@ -14,7 +14,7 @@ import {
   ChangePasswordDto
 } from '../../api/src/app/core/account/account.dto';
 import {ProjectRequestDto, ProjectRoleDto} from '../../api/src/app/core/project/project.dto';
-import {AccountLoginMethod, AccountRole, ProjectVisibility} from '@octra/api-types';
+import {AccountLoginMethod, AccountRole, ProjectRemoveRequestDto, ProjectVisibility} from '@octra/api-types';
 import {ToolCreateRequestDto, ToolDto} from '../../api/src/app/core/tool/tool.dto';
 import {TaskDto, TaskProperties} from '../../api/src/app/core/project/tasks';
 import {SaveAnnotationDto} from '../../api/src/app/core/project/annotations/annotation.dto';
@@ -420,7 +420,8 @@ describe('Projects', () => {
       .set('Origin', 'http://localhost:8080')
       .field('properties', JSON.stringify({
         type: 'annotation',
-        orgtext: 'asdas'
+        orgtext: 'asdas',
+        files_destination: 'test/../../../test2'
       }))
       .field('transcriptType', 'AnnotJSON')
       .field('transcript', JSON.stringify({
@@ -435,6 +436,7 @@ describe('Projects', () => {
       .auth(tempData.admin.jwtToken, {type: 'bearer'})
       .expect(201).then(({body}: { body: TaskDto }) => {
         tempData.task.id = body.id;
+        tempData.mediaItem.url = body.inputs[0].url;
       })
   });
 
@@ -667,22 +669,24 @@ describe('Projects', () => {
       const t = a;
     });
   });
-  /*
-    it('/projects/project_id/:id/tasks/:task_id (DELETE)', () => {
-      return authDelete(`/projects/${tempData.project.id}/tasks/${tempData.task.id}`, undefined).expect(200);
-    });
 
-    it('/projects/:id (DELETE)', () => {
-      return authDelete(`/projects/${tempData.project.id}`, {
-        cutAllReferences: false,
-        removeAllReferences: true,
-        removeProjectFiles: true
+  it('/:encryptedPath/:fileName (GET)', () => {
+    return authGet(tempData.mediaItem.url.replace(/^.*8080/g, ''), undefined).expect(200);
+  });
+
+  it('/projects/project_id/:id/tasks/:task_id (DELETE)', () => {
+    return authDelete(`/projects/${tempData.project.id}/tasks/${tempData.task.id}`, undefined).expect(200);
+  });
+
+  it('/projects/:id (DELETE)', () => {
+    return authDelete(`/projects/${tempData.project.id}`, {
+      cutAllReferences: false,
+      removeAllReferences: true,
+      removeProjectFiles: true
       } as ProjectRemoveRequestDto).expect(200);
     });
 
     it('/account/:id (DELETE)', () => {
       return authDelete(`/account/${tempData.user.id}`, undefined).expect(200);
     });
-
-   */
 });
