@@ -251,20 +251,24 @@ export class TasksService {
       if (audioDBFile) {
         // insert or update audioFileDB
         if (audioInputDB) {
-          // update reference only
-          await manager.update(FileProjectEntity, {
-            id: audioInputDB.file_project_id
-          }, audioFileProject);
+          // update input reference only
+          await manager.update(TaskInputOutputEntity, {
+            id: audioInputDB.id,
+            task_id
+          }, {
+            file_project_id: audioDBFile.id,
+            creator_type: TaskInputOutputCreatorType.user,
+            label: 'audio'
+          });
         } else {
-          // add new file_project for audio file
-          const fileProject = await manager.insert(FileProjectEntity, audioFileProject);
+          // add new input file for audio file
           await manager.insert(TaskInputOutputEntity, {
-            task_id: task_id,
-            file_project_id: fileProject.identifiers[0].id,
+            task_id,
+            file_project_id: audioDBFile.id,
             type: 'input',
             creator_type: TaskInputOutputCreatorType.user,
             label: 'audio'
-          } as TaskInputOutputEntity);
+          });
         }
       }
 
@@ -301,13 +305,16 @@ export class TasksService {
 
     if (mediaFile) {
       let uploadPath = this.appService.pathBuilder.getAbsoluteProjectFilesPath(project_id);
-      uploadPath = filesDestination ? join(uploadPath, filesDestination.replace(/(\.+\/+)|(\.+\\+)/g, '')) : uploadPath;
+      filesDestination = filesDestination ? filesDestination.replace(/(\.+\/+)|(\.+\\+)/g, '') : undefined;
+      uploadPath = filesDestination ? join(uploadPath, filesDestination) : uploadPath;
       await FileSystemHandler.createDirIfNotExists(uploadPath);
       dbFile = await this.getFileItemByHash(project_id, mediaFile.hash);
+      const newFilePath = Path.join(uploadPath, `${Path.basename(mediaFile.path)}`);
+      const newProjectFilesPath = filesDestination ? join('{projects}', `project_${project_id}`, filesDestination) : undefined;
+      const folder = dbFile?.path ? Path.parse(dbFile.path).dir : '';
 
-      if (!dbFile) {
+      if (!dbFile || ((!dbFile.url || dbFile.url.trim() === '') && filesDestination && folder !== newProjectFilesPath)) {
         // file doesn't exists in DB
-        const newFilePath = Path.join(uploadPath, `${Path.basename(mediaFile.path)}`);
         await FileSystemHandler.moveFile(mediaFile.path, newFilePath);
         const audioInformation = await FileSystemHandler.readAudioFileInformation(newFilePath);
 
@@ -356,7 +363,7 @@ export class TasksService {
         if (!dbFile) {
           //add fileitem
           const urlInfo = await this.appService.pathBuilder.getInformationFomURL(url);
-          dbFile = await this.addFileItem({
+          dbFile = await this.addFileItem({ // TODO fix files are added multiple times!
             project_id,
             size: urlInfo.size,
             type: urlInfo.type,

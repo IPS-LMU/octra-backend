@@ -446,7 +446,8 @@ describe('Projects', () => {
       .set('Origin', 'http://localhost:8080')
       .field('properties', JSON.stringify({
         type: 'annotation',
-        orgtext: 'asdas'
+        orgtext: 'asdas',
+        files_destination: 'test/../../../test3'
       }))
       .field('transcriptType', 'AnnotJSON')
       .attach('inputs[]', './testfiles/WebTranscribe.wav', 'WebTranscribe.wav')

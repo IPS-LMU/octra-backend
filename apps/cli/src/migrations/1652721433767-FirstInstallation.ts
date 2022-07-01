@@ -750,12 +750,11 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       training: '',
       comment: '',
       account_person_id: insertResult.identifiers[0].id,
-      role_id: '1', a
+      role_id: '1',
       last_login: new Date()
     });
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
   }
-
 }
