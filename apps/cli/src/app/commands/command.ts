@@ -3,6 +3,13 @@ import {GlobalVariables} from '../types';
 import * as readline from 'readline';
 import {Writable} from 'stream';
 
+export interface OctraCLIArgv {
+  argv: {
+    verbose?: boolean;
+    help?: string;
+  }
+}
+
 export class OctraCLICommand {
   protected globals: GlobalVariables;
 

@@ -1,19 +1,23 @@
 import * as yargs from 'yargs';
-import {Argv} from 'yargs';
-import {OctraCLICommand} from './command';
+import {OctraCLIArgv, OctraCLICommand} from './command';
 import {ScriptRunner} from '../script-runner';
 import {GlobalVariables} from '../types';
 import {readJSON, writeJSON} from 'fs-extra';
 import {Configuration, getRandomString, IAppConfiguration} from '@octra/server-side';
 import {join} from 'path';
 
+
 export class InstallationCommand extends OctraCLICommand {
   override init(argv: yargs.Argv, globals: GlobalVariables): yargs.Argv {
     argv = super.init(argv, globals);
-    return argv.command('install', 'Installs a new Octra-DB on the given connection in config.json.', this.install);
+    return argv.command('install', 'Installs a new Octra-DB on the given connection in config.json.', this.install as any);
   }
 
-  private install = async (args: Argv) => {
+  private install = async (args: OctraCLIArgv) => {
+    if (args.argv.help) {
+      return;
+    }
+
     let configFile: IAppConfiguration = await this.readJSON(join(process.env['configPath'], 'config.json'));
     if (!configFile) {
       throw new Error('Can\'t read config file');
@@ -108,10 +112,10 @@ Press "y" for "Yes" or "n" for "No" and press ENTER.
 
       try {
         console.log('Remove all existing tables...');
-        await ScriptRunner.run(`${this.globals.typeORMPath} schema:drop`, false);
+        await ScriptRunner.run(`${this.globals.typeORMPath} schema:drop`, args.argv.verbose);
         console.log('Removed Database.');
         console.log('Initialize database...');
-        await ScriptRunner.run(`${this.globals.typeORMPath} migration:run`, false);
+        await ScriptRunner.run(`${this.globals.typeORMPath} migration:run`, args.argv.verbose);
         console.log('Installation complete.');
       } catch (e) {
         console.log(`EROOR: Installation failed.`);
