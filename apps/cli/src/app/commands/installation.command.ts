@@ -36,18 +36,40 @@ Press "y" for "Yes" or "n" for "No" and press ENTER.
 `);
 
     if (answer === 'y') {
-      process.env['ADMIN_NAME'] = await this.askQuestion('Please choose a user name for the new administrator account and press ENTER:\n');
-      process.env['ADMIN_MAIL'] = await this.askQuestion('Please set an e-mail address for the new administrator account and press ENTER:\n');
-
-      const adminPassword = await this.askPassword('Please set a password for the new administrator account and press ENTER:\n');
-      const adminPassword2 = await this.askPassword('Please repeat the password and press ENTER:\n');
-
-      if (adminPassword !== adminPassword2) {
-        console.log(`Both passwords must be equal. Aborting...`);
-        return;
+      let confirmedAdminName = '';
+      while (confirmedAdminName === '') {
+        const adminName = await this.askQuestion('\nPlease choose a user name for the new administrator account and press ENTER:\n');
+        if (adminName.trim().length < 3) {
+          console.log(`The admin name must have more than 3 letters. Please try again:\n`);
+        } else {
+          confirmedAdminName = adminName;
+        }
       }
-      process.env['ADMIN_PW'] = adminPassword;
+      process.env['ADMIN_NAME'] = confirmedAdminName;
 
+      let confirmedEmail = '';
+      while (confirmedEmail === '') {
+        const adminMail = await this.askQuestion('\nPlease set an e-mail address for the new administrator account and press ENTER:\n');
+        if (adminMail.trim().length < 3 || !(/[^@]+@[^.]+\.[^.]+/g.exec(adminMail))) {
+          console.log(`The admin email address must be valid. Please try again:\n`);
+        } else {
+          confirmedEmail = adminMail;
+        }
+      }
+      process.env['ADMIN_MAIL'] = confirmedEmail;
+
+      let confirmedPassword = '';
+      while (confirmedPassword === '') {
+        const adminPassword = await this.askPassword('\nPlease set a password for the new administrator account and press ENTER:\n');
+        const adminPassword2 = await this.askPassword('\nPlease repeat the password and press ENTER:\n');
+
+        if (adminPassword !== adminPassword2) {
+          console.log(`Both passwords must be equal. Please try again:\n`);
+        } else {
+          confirmedPassword = adminPassword;
+        }
+      }
+      process.env['ADMIN_PW'] = confirmedPassword;
 
       configFile = {
         ...configFile,
