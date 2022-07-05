@@ -6,6 +6,7 @@ import {
   DBPostgresType,
   getPasswordHash,
   getRandomString,
+  OptionEntity,
   RoleEntity
 } from '@octra/server-side';
 import {AccountRole, AccountRoleScope} from '@octra/api-types';
@@ -25,7 +26,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       return this.sqlMapper.map(postgresType);
     };
 
-    console.log(`-> Create table "options"...`);
+    console.log(`-> Create table "option"...`);
     await queryRunner.createTable(new Table({
       name: 'option',
       columns: [
@@ -752,6 +753,22 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       account_person_id: insertResult.identifiers[0].id,
       role_id: '1',
       last_login: new Date()
+    });
+    await queryRunner.manager.insert(OptionEntity, {
+      name: 'db_version',
+      value: '1.0.0'
+    });
+    await queryRunner.manager.insert(OptionEntity, {
+      name: 'mail_support_address',
+      value: process.env['ADMIN_MAIL']
+    });
+    await queryRunner.manager.insert(OptionEntity, {
+      name: 'data_policy_urls',
+      value: null
+    });
+    await queryRunner.manager.insert(OptionEntity, {
+      name: 'terms_conditions_urls',
+      value: null
     });
   }
 
