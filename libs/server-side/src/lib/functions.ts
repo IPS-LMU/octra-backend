@@ -6,7 +6,9 @@ export function isFunction(functionToCheck) {
 }
 
 export function removeNullAttributes<T>(obj: T): T {
-
+  if (!obj) {
+    return obj;
+  }
   if (Array.isArray(obj)) {
     for (let i = 0; i < obj.length; i++) {
       obj[i] = removeNullAttributes(obj[i]);

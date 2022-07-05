@@ -1,4 +1,11 @@
-import {applyDecorators, ClassSerializerInterceptor, SerializeOptions, UseInterceptors} from '@nestjs/common';
+import {
+  applyDecorators,
+  ClassSerializerInterceptor,
+  SerializeOptions,
+  UseInterceptors,
+  UsePipes,
+  ValidationPipe
+} from '@nestjs/common';
 import {AccountRole} from '@octra/api-types';
 import {Roles} from '../../../../role.decorator';
 import {CustomApiException} from './api-exception.decorators';
@@ -12,7 +19,14 @@ export function CombinedRoles(...roles: AccountRole[]) {
     }),
     UseInterceptors(ClassSerializerInterceptor),
     CustomApiException(new ForbiddenResource()),
-    CustomApiException(new InvalidJwtTokenException())
+    CustomApiException(new InvalidJwtTokenException()),
+    UsePipes(new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      enableDebugMessages: true,
+      forbidNonWhitelisted: true,
+      disableErrorMessages: false
+    }))
   );
 }
 

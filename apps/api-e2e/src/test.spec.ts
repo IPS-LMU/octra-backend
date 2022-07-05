@@ -20,6 +20,7 @@ import {TaskDto, TaskProperties} from '../../api/src/app/core/project/tasks';
 import {SaveAnnotationDto} from '../../api/src/app/core/project/annotations/annotation.dto';
 import {GuidelinesDto} from 'apps/api/src/app/core/project/guidelines/guidelines.dto';
 import {AnnotJSONType, TranscriptDto} from '@octra/server-side';
+import {GeneralSettingsDto} from '../../api/src/app/core/settings/settings.dto';
 
 const tempData = {
   apptoken: {
@@ -251,7 +252,6 @@ describe('OCTRA Nest API (e2e)', () => {
       const dto = {
         description: 'Test description',
         domain: 'fgdfg',
-        key: 'sdfgdfgdfgdfgdfgsgf_' + Date.now(),
         name: 'test',
         registrations: false
       };
@@ -264,7 +264,6 @@ describe('OCTRA Nest API (e2e)', () => {
       const dto = {
         description: 'Test description',
         domain: 'fgdfg',
-        key: 'sdfgdfgdfgdfgdfgsgf_' + Date.now(),
         registrations: true
       };
       return authPut(`/app/tokens/${tempData.apptoken.addedID}`, dto).expect(200);
@@ -684,10 +683,30 @@ describe('Projects', () => {
       cutAllReferences: false,
       removeAllReferences: true,
       removeProjectFiles: true
-      } as ProjectRemoveRequestDto).expect(200);
-    });
+    } as ProjectRemoveRequestDto).expect(200);
+  });
 
-    it('/account/:id (DELETE)', () => {
-      return authDelete(`/account/${tempData.user.id}`, undefined).expect(200);
+  it('/account/:id (DELETE)', () => {
+    return authDelete(`/account/${tempData.user.id}`, undefined).expect(200);
+  });
+});
+
+describe('Settings', () => {
+  it('/settings/general (PUT)', () => {
+    return authPut('/settings/general', {
+      mail_support_address: 'anyemail@email.com',
+      data_policy_urls: [
+        {
+          language: 'de',
+          url: 'https://test.de'
+        }
+      ]
+    } as GeneralSettingsDto).expect(200);
+  });
+
+  it('/settings/general (GET)', () => {
+    return authGet('/settings/general').expect(200).then(({body}) => {
+      const t = body;
     });
+  });
 });

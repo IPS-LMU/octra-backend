@@ -23,6 +23,7 @@ import {GlobalModule} from './global.module';
 import {Configuration, getOrmConfig} from '@octra/server-side';
 import {ServeStaticModule} from '@nestjs/serve-static';
 import {join} from 'path';
+import {SettingsModule} from './core/settings/settings.module';
 
 const config = Configuration.getInstance();
 
@@ -42,6 +43,7 @@ const TypeORMOptions: TypeOrmModuleOptions = {
     AccountModule,
     ProjectModule,
     ToolModule,
+    SettingsModule,
     ConfigModule.forRoot({
       load: [() => (config)],
       ignoreEnvFile: true,

@@ -1,5 +1,5 @@
 import {StandardWithTimeDto} from '../standard.dto';
-import {OmitType} from '@nestjs/swagger';
+import {OmitType, PartialType} from '@nestjs/swagger';
 import {AudioFileMetaData} from '@octra/api-types';
 
 export class FileProjectDto extends StandardWithTimeDto {
@@ -14,6 +14,6 @@ export class FileProjectDto extends StandardWithTimeDto {
   metadata?: AudioFileMetaData;
 }
 
-export class FileProjectCreateDto extends OmitType(FileProjectDto, ['id', 'creationdate', 'updatedate']) {
+export class FileProjectCreateDto extends PartialType(OmitType(FileProjectDto, ['id', 'creationdate', 'updatedate'])) {
   uploader_id: string;
 }

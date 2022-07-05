@@ -125,6 +125,9 @@ export class TaskProperties {
   status?: TaskStatus;
 
   constructor(partial: Partial<TaskProperties>) {
+    if (!partial) {
+      return;
+    }
     partial = {
       ...partial,
       startdate: partial.startdate ? new Date(partial.startdate) : undefined,
@@ -214,7 +217,10 @@ export class TaskUploadDto {
    * properties of the task
    */
   @Transform(({value}) => {
-    return new TaskProperties(JSON.parse(value));
+    if (typeof value === 'string') {
+      return new TaskProperties(JSON.parse(value));
+    }
+    return value;
   }, {toClassOnly: true})
   @Type(() => TaskProperties)
   @ValidateNested()
@@ -237,7 +243,10 @@ export class TaskUploadDto {
    */
   @Transform(({obj, value}: { obj: TaskUploadDto, value: string }) => {
     if (obj.transcriptType === TranscriptType.AnnotJSON) {
-      return plainToInstance(TranscriptDto, JSON.parse(value));
+      if (typeof value === 'string') {
+        return plainToInstance(TranscriptDto, JSON.parse(value));
+      }
+      return value;
     }
     return plainToInstance(TranscriptDto, new TranscriptDto({
       sampleRate: 0,
@@ -287,7 +296,10 @@ export class TaskChangeDto {
    * properties of the task
    */
   @Transform(({value}) => {
-    return new TaskProperties(JSON.parse(value));
+    if (typeof value === 'string') {
+      return new TaskProperties(JSON.parse(value));
+    }
+    return value;
   }, {toClassOnly: true})
   @Type(() => TaskProperties)
   @ValidateNested()
@@ -305,7 +317,10 @@ export class TaskChangeDto {
    */
   @Transform(({obj, value}: { obj: TaskUploadDto, value: string }) => {
     if (obj.transcriptType === TranscriptType.AnnotJSON) {
-      return plainToInstance(TranscriptDto, JSON.parse(value));
+      if (typeof value === 'string') {
+        return plainToInstance(TranscriptDto, JSON.parse(value));
+      }
+      return value;
     }
     return plainToInstance(TranscriptDto, new TranscriptDto({
       sampleRate: 0,

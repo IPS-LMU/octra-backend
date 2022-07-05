@@ -6,7 +6,7 @@ import {RoleDto} from '../account/account.dto';
 import {Expose, Transform} from 'class-transformer';
 import {AccountRoleProjectEntity, IsOptionalString, ProjectEntity, removeProperties} from '@octra/server-side';
 
-export class ProjectRequestDto extends OmitType(StandardWithTimeDto, ['id', 'creationdate', 'updatedate']) {
+export class ProjectRequestDto extends PartialType(OmitType(StandardWithTimeDto, ['id', 'creationdate', 'updatedate'])) {
   @IsNotEmpty()
   @ApiProperty({
     description: 'name of the project.',

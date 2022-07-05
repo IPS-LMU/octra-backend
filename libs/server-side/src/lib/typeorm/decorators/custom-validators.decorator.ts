@@ -1,5 +1,5 @@
 import {applyDecorators} from '@nestjs/common';
-import {IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidationOptions} from 'class-validator';
+import {IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidationOptions} from 'class-validator';
 
 export function IsOptionalString(validationOptions?: ValidationOptions) {
   return applyDecorators(
@@ -19,6 +19,13 @@ export function IsOptionalEnum(entity: object, validationOptions?: ValidationOpt
   return applyDecorators(
     IsOptional(validationOptions),
     IsEnum(entity, validationOptions)
+  );
+}
+
+export function IsOptionalBoolean(validationOptions?: ValidationOptions) {
+  return applyDecorators(
+    IsOptional(validationOptions),
+    IsBoolean(validationOptions)
   );
 }
 

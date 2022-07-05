@@ -1,9 +1,9 @@
 import {StandardWithTimeDto} from '../standard.dto';
-import {IsEmail, IsEnum, IsNotEmpty} from 'class-validator';
+import {IsArray, IsEmail, IsEnum, IsNotEmpty, IsOptional} from 'class-validator';
 import {Expose, Transform, Type} from 'class-transformer';
 import {ApiProperty, OmitType, PartialType} from '@nestjs/swagger';
 import {AccountLoginMethod, AccountRole, AccountRoleScope} from '@octra/api-types';
-import {AccountEntity, AccountRoleProjectEntity, removeProperties} from '@octra/server-side';
+import {AccountEntity, AccountRoleProjectEntity, IsOptionalEnum, removeProperties} from '@octra/server-side';
 
 export class RoleDto {
   @IsNotEmpty()
@@ -67,7 +67,10 @@ export class AssignAccountRoleDto extends PartialType(
 }
 
 export class AssignRoleDto {
+  @IsOptionalEnum(AccountRole)
   general?: AccountRole;
+  @IsOptional()
+  @IsArray()
   projects?: AssignAccountRoleDto[];
 
   constructor(partial: Partial<AssignRoleDto>) {
@@ -144,8 +147,8 @@ export class AccountDto extends StandardWithTimeDto {
       ...removeProperties(partial.account_person, ['id', 'hash']),
       projectRoles: partial.roles.map(a => removeProperties(new RoleDto(a), ['scope', 'id']))
     }
-    // add transformation if account person doesnt exist
-    newObj = removeProperties(newObj, ['account_person', 'role_id', 'roles']);
+    // add transformation if account person doesn't exist
+    newObj = removeProperties(newObj, ['account_person', 'account_person_id', 'role_id', 'roles']);
 
     Object.assign(this, newObj);
   }
