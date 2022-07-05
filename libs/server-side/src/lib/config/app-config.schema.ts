@@ -132,6 +132,7 @@ export const AppConfigurationSchema: Schema = {
         },
         plugins: {
           type: 'object',
+          required: ['reference'],
           properties: {
             reference: {
               required: ['enabled'],
@@ -155,7 +156,6 @@ export const AppConfigurationSchema: Schema = {
                   }
                 }
               }
-
             },
             shibboleth: {
               required: ['enabled', 'secret', 'uuidSalt', 'windowURL'],
@@ -173,6 +173,21 @@ export const AppConfigurationSchema: Schema = {
                 windowURL: {
                   type: 'string'
                 }
+              }
+            },
+            webBackend: {
+              required: ['enabled', 'url', 'appToken'],
+              type: 'object',
+              properties: {
+                enabled: {
+                  type: 'boolean'
+                },
+                url: {
+                  type: 'string'
+                },
+                appToken: {
+                  type: 'string'
+                },
               }
             }
           }

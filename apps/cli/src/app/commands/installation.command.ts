@@ -5,7 +5,7 @@ import {GlobalVariables} from '../types';
 import {readJSON, writeJSON} from 'fs-extra';
 import {Configuration, getRandomString, IAppConfiguration} from '@octra/server-side';
 import {join} from 'path';
-
+import * as chalk from 'chalk';
 
 export class InstallationCommand extends OctraCLICommand {
   override init(argv: yargs.Argv, globals: GlobalVariables): yargs.Argv {
@@ -23,26 +23,30 @@ export class InstallationCommand extends OctraCLICommand {
       throw new Error('Can\'t read config file');
     }
 
-    const answer = await this.askQuestion(`Are you sure to install the database to the destination given in the config.json? All existing data in the database is going to be deleted.
-------------------------------------------------------------------
-! All data from the following connection are going to be deleted: !
+    const answer = await this.askQuestion(() => {
+      console.log(chalk.blue(`Are you sure to install the database to the destination given in the config.json? All existing data in the database is going to be deleted.
+`));
+      console.log(chalk.red(`------------------------------------------------------------------
+! All data from the following connection are going to be deleted permanently:
   type: ${configFile.database.dbType}
   name: ${configFile.database.dbName}
   host: ${configFile.database.dbHost}
   port: ${configFile.database.dbPort}
 
-! All secret keys from the config.json file are going to be re-generated!
+! All secret keys from the config.json file are going to be re-generated.
   Path to config file:
   ${join(process.env['configPath'], 'config.json')}
-------------------------------------------------------------------
 
-Press "y" for "Yes" or "n" for "No" and press ENTER.
-`);
+  If you don't want to lose these data make sure to create a backup before doing a fresh installation.
+------------------------------------------------------------------
+`));
+      console.log(chalk.blue(`-> Press "y" for "Yes" or "n" for "No" and press ENTER.`))
+    });
 
     if (answer === 'y') {
       let confirmedAdminName = '';
       while (confirmedAdminName === '') {
-        const adminName = await this.askQuestion('\nPlease choose a user name for the new administrator account and press ENTER:\n');
+        const adminName = await this.askQuestion('\n-> Please choose a user name for the new administrator account and press ENTER:');
         if (adminName.trim().length < 3) {
           console.log(`The admin name must have more than 3 letters. Please try again:\n`);
         } else {
@@ -53,7 +57,7 @@ Press "y" for "Yes" or "n" for "No" and press ENTER.
 
       let confirmedEmail = '';
       while (confirmedEmail === '') {
-        const adminMail = await this.askQuestion('\nPlease set an e-mail address for the new administrator account and press ENTER:\n');
+        const adminMail = await this.askQuestion('\n-> Please set an e-mail address for the new administrator account and press ENTER:');
         if (adminMail.trim().length < 3 || !(/[^@]+@[^.]+\.[^.]+/g.exec(adminMail))) {
           console.log(`The admin email address must be valid. Please try again:\n`);
         } else {
@@ -64,16 +68,22 @@ Press "y" for "Yes" or "n" for "No" and press ENTER.
 
       let confirmedPassword = '';
       while (confirmedPassword === '') {
-        const adminPassword = await this.askPassword('\nPlease set a password for the new administrator account and press ENTER:\n');
-        const adminPassword2 = await this.askPassword('\nPlease repeat the password and press ENTER:\n');
+        const adminPassword = await this.askPassword('\n-> Please set a password for the new administrator account and press ENTER (your input is hidden):');
+        const adminPassword2 = await this.askPassword('\n-> Please repeat the password and press ENTER (your input is hidden)');
 
         if (adminPassword !== adminPassword2) {
-          console.log(`Both passwords must be equal. Please try again:\n`);
+          console.log(chalk.red(`Both passwords must be equal. Please try again:\n`));
         } else {
           confirmedPassword = adminPassword;
         }
       }
       process.env['ADMIN_PW'] = confirmedPassword;
+
+      let webBackendURL = '';
+
+      if (!configFile.api.plugins?.webBackend?.url) {
+        webBackendURL = await this.askQuestion(`\n-> What is the public URL of the web-backend? (full URL incl. 'https://') Leave empty if you don't want to use the web-backend`);
+      }
 
       configFile = {
         ...configFile,
@@ -99,26 +109,48 @@ Press "y" for "Yes" or "n" for "No" and press ENTER.
             ...configFile.api.plugins,
             shibboleth: {
               ...configFile.api.plugins.shibboleth,
+              enabled: true,
+              windowURL: '',
               secret: getRandomString(30),
               uuidSalt: getRandomString(30)
             }
           }
         }
       };
+
+      if (configFile.api.plugins?.webBackend?.url || (webBackendURL && webBackendURL.trim() !== '')) {
+        configFile = {
+          ...configFile,
+          api: {
+            ...configFile.api,
+            plugins: {
+              ...configFile.api.plugins,
+              webBackend: {
+                ...configFile.api.plugins.webBackend,
+                enabled: true,
+                url: configFile.api.plugins?.webBackend?.url ?? webBackendURL,
+                appToken: configFile.api.plugins?.webBackend?.appToken ?? getRandomString(30)
+              }
+            }
+          }
+        }
+      }
+
       await writeJSON(join(process.env['configPath'], 'config.json'), configFile, {
         spaces: 2
       });
       Configuration.overwrite(configFile);
 
       try {
-        console.log('Remove all existing tables...');
+        console.log('\n\n* Start installation of octra-db...');
+        console.log('... Remove all existing tables');
         await ScriptRunner.run(`${this.globals.typeORMPath} schema:drop`, args.argv.verbose);
-        console.log('Removed Database.');
-        console.log('Initialize database...');
+        console.log('... Removed database');
+        console.log('... Initialize database');
         await ScriptRunner.run(`${this.globals.typeORMPath} migration:run`, args.argv.verbose);
-        console.log('Installation complete.');
+        console.log('... Installation completed successfully!\n');
       } catch (e) {
-        console.log(`EROOR: Installation failed.`);
+        console.log(chalk.red(`EROOR: Installation failed.`));
         console.log(e);
       }
     } else {
