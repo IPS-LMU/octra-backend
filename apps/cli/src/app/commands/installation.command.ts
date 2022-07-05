@@ -150,7 +150,7 @@ export class InstallationCommand extends OctraCLICommand {
         await ScriptRunner.run(`${this.globals.typeORMPath} migration:run`, args.argv.verbose);
         console.log('... Installation completed successfully!\n');
       } catch (e) {
-        console.log(chalk.red(`EROOR: Installation failed.`));
+        console.log(chalk.red(`ERROR: Installation failed.`));
         console.log(e);
       }
     } else {
