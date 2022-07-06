@@ -102,9 +102,9 @@ export class ProjectController {
   /**
    * creates a new project.
    *
-   * Allowed user roles: <code>administrator, project_admin</code>
+   * Allowed user roles: <code>administrator</code>
    */
-  @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator)
+  @CombinedRoles(AccountRole.administrator)
   @UseInterceptors(ProjectAccessInterceptor)
   @Post('')
   async createProject(@Body() dto: ProjectRequestDto): Promise<ProjectDto> {

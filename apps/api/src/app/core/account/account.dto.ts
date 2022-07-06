@@ -1,5 +1,5 @@
 import {StandardWithTimeDto} from '../standard.dto';
-import {IsArray, IsEmail, IsEnum, IsNotEmpty, IsOptional} from 'class-validator';
+import {IsArray, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString} from 'class-validator';
 import {Expose, Transform, Type} from 'class-transformer';
 import {ApiProperty, OmitType, PartialType} from '@nestjs/swagger';
 import {AccountLoginMethod, AccountRole, AccountRoleScope} from '@octra/api-types';
@@ -156,12 +156,14 @@ export class AccountDto extends StandardWithTimeDto {
 
 export class ChangePasswordDto {
   @IsNotEmpty()
+  @IsString()
   @ApiProperty({
     description: 'the previous password.',
     example: '278z42374z2834z72'
   })
   oldPassword: string;
   @IsNotEmpty()
+  @IsString()
   @ApiProperty({
     description: 'the new password.',
     example: '2673tg486b72t3678et8w'

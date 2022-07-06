@@ -51,7 +51,7 @@ export class AccountController {
   /**
    * returns information about the own account.
    *
-   * Allowed user roles: <code>administrator</code>
+   * Allowed user roles: <code>administrator, user</code>
    */
   @CombinedRoles(AccountRole.administrator, AccountRole.user)
   @Get('current')
