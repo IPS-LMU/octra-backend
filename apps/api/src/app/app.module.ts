@@ -1,4 +1,4 @@
-import {MiddlewareConsumer, Module} from '@nestjs/common';
+import {CacheInterceptor, CacheModule, MiddlewareConsumer, Module} from '@nestjs/common';
 import {AppController} from './app.controller';
 import {AuthModule} from './core/authentication';
 import {AccountModule} from './core/account/account.module';
@@ -10,7 +10,7 @@ import {AppTokenModule} from './core/app-token/app-token.module';
 import {FilesModule} from './core/files/files.module';
 import {ProjectModule} from './core/project/project.module';
 import {ToolModule} from './core/tool/tool.module';
-import {APP_GUARD} from '@nestjs/core';
+import {APP_GUARD, APP_INTERCEPTOR} from '@nestjs/core';
 import {JwtAuthGuard} from './core/authentication/jwt-auth.guard';
 import {ConfigModule} from '@nestjs/config';
 import {TypeOrmModule, TypeOrmModuleOptions} from '@nestjs/typeorm';
@@ -36,6 +36,10 @@ const TypeORMOptions: TypeOrmModuleOptions = {
 
 @Module({
   imports: [
+    CacheModule.register({
+      ttl: 5,
+      max: 50
+    }),
     TypeOrmModule.forRoot(TypeORMOptions),
     AuthModule,
     AppTokenModule,
@@ -61,6 +65,10 @@ const TypeORMOptions: TypeOrmModuleOptions = {
   ],
   controllers: [AppController, AppTokenController, FilesController, ProjectController, ToolController],
   providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: CacheInterceptor,
+    },
     {
       provide: APP_GUARD,
       useClass: AppTokenOriginGuard,
