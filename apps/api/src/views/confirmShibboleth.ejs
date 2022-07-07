@@ -8,10 +8,10 @@
 
     <title>Shibboleth Confirmation</title>
     <!-- Bootstrap core CSS -->
-    <link href="/assets/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="<%= locals.baseURL %>assets/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css">
 
     <!-- Custom styles for this template -->
-    <link href="/assets/authenticators/shibboleth/style.css" rel="stylesheet" type="text/css">
+    <link href="<%= locals.baseURL %>assets/authenticators/shibboleth/style.css" rel="stylesheet" type="text/css">
     <script type="application/javascript">
       window.onload = function () {
         var inputUserName = document.getElementById("inputUserName");
@@ -20,6 +20,7 @@
         var checkDataPolicy = document.getElementById("checkDataPolicy");
         var checkTerms = document.getElementById("checkTerms");
         var jwtToken = "<%= locals.token %>";
+        var redirectTo = "<%= locals.redirectTo %>";
 
         function message_broadcast(key, value) {
           value = typeof value === "object" ? JSON.stringify(value) : value;
@@ -37,7 +38,13 @@
 
         if (jwtToken.trim() !== "") {
           message_broadcast("token", "<%= locals.token %>");
-          window.close();
+          if (redirectTo === "") {
+            // opened in other window
+            window.close();
+          } else {
+            // opened in same window
+            document.location.href = redirectTo;
+          }
         }
 
         inputUserName.addEventListener("keyup", checkInputs);
@@ -55,9 +62,14 @@
 <% if(locals.windowURL.trim() === "" && locals.token.trim() === ""){ %>
     <form class="form-signin" id="signinForm" method="post">
         <h1 class="h3 mb-3 font-weight-normal" style="text-align: center;">Please register</h1>
-        <p style="text-align: justify;">In order to use our services you need to create an account. The account is
-            connected to your account
-            authenticated by Shibboleth.</p>
+        <p style="text-align: justify;">
+            In order to use our services you need to create an account. The account is
+            connected to your account authenticated by Shibboleth.
+        </p>
+        <p>
+            Please fill in the form. All required fields are marked with <span
+                    class="text-danger">*</span>.
+        </p>
         <div class="form-group mb-3 mt-3">
             <label for="inputUserName">User name</label>
             <input type="text" id="inputUserName" class="form-control" name="userName"
@@ -75,13 +87,15 @@
         </div>
         <div class="form-group mt-3">
             <input id="checkDataPolicy" type="checkbox" name="dataPolicyAccepted" value="yes" style="cursor: pointer;"/>
-            <label for="checkDataPolicy" style="cursor: pointer;">I accept the <a href="" target="_blank">data
+            <label for="checkDataPolicy" style="cursor: pointer;">I accept the <a href="<%= locals.dataPolicyURL %>"
+                                                                                  target="_blank">data
                     policy</a> <span
                         class="text-danger">*</span></label>
         </div>
         <div class="form-group mb-3">
             <input id="checkTerms" type="checkbox" name="termsAccepted" value="yes" style="cursor: pointer;"/>
-            <label for="checkTerms" style="cursor: pointer;">I accept the <a href="" target="_blank">terms of
+            <label for="checkTerms" style="cursor: pointer;">I accept the <a href="<%= locals.termsConditionsURL %>"
+                                                                             target="_blank">terms of
                     service</a> <span
                         class="text-danger">*</span></label>
         </div>

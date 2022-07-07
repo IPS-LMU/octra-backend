@@ -98,8 +98,9 @@ async function bootstrap() {
 
   app.enableCors();
   await app.listen(port, config.host);
+  const url = config.url && config.url.trim() !== '' ? config.url : `http://localhost:${port}${config.baseURL}`;
   Logger.log(
-    `🚀 Application is running on: http://localhost:${port}${config.baseURL}reference`
+    `🚀 Application is running on: ${path.join(url, 'reference')}`
   );
 }
 

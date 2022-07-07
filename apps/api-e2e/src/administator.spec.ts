@@ -5,7 +5,12 @@ import {AuthDto} from '../../api/src/app/core/authentication/auth.dto';
 import {AppTokenDto} from '../../api/src/app/core/app-token/app-token.dto';
 import {BadRequestException, ValidationPipe} from '@nestjs/common';
 import {ValidationError} from 'class-validator';
-import {AssignRoleDto, ChangePasswordDto} from '../../api/src/app/core/account/account.dto';
+import {
+  AccountDto,
+  AccountRegisterRequestDto,
+  AssignRoleDto,
+  ChangePasswordDto
+} from '../../api/src/app/core/account/account.dto';
 import {ProjectRequestDto, ProjectRoleDto} from '../../api/src/app/core/project/project.dto';
 import {AccountLoginMethod, AccountRole, ProjectRemoveRequestDto, ProjectVisibility} from '@octra/api-types';
 import {ToolCreateRequestDto, ToolDto} from '../../api/src/app/core/tool/tool.dto';
@@ -37,6 +42,25 @@ describe('OCTRA Nest API admin (e2e)', () => {
     await app.init();
     Auth.init(app);
   });
+
+  describe('Registration', () => {
+    testState.user.name = `TestAccount_${Date.now()}`;
+    testState.user.email = `test_${Date.now()}@email.com`;
+    it('/account/register (POST)', () => {
+      return request(app.getHttpServer())
+        .post('/account/register').send({
+          'name': testState.user.name,
+          'password': 'Test123',
+          'email': testState.user.email
+        } as AccountRegisterRequestDto)
+        .set('X-App-Token', `${appToken}`)
+        .set('Origin', 'http://localhost:8080')
+        .expect(201).then(({body}: { body: AccountDto }) => {
+          testState.user.id = body.id;
+        })
+    });
+  })
+
 
   describe('Authentication', () => {
     it('/auth/login (POST)', () => {
@@ -122,7 +146,6 @@ describe('OCTRA Nest API admin (e2e)', () => {
         if (!Array.isArray(body)) {
           throw new Error('Body must be of type array.');
         }
-        testState.user.id = body[0].id;
       })
     });
     it('/account/current (GET)', () => {

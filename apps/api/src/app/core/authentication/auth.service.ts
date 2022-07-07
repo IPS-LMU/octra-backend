@@ -27,7 +27,10 @@ export class AuthService {
 
   async login(dto: AuthLoginDto): Promise<AuthDto> {
     if (dto.type === 'shibboleth') {
-      return new AuthDto({openURL: this.configService.get('api.shibboleth.windowURL')});
+      const authDto = new AuthDto({openURL: this.configService.get('api.plugins.shibboleth.windowURL')});
+      console.log('return auth dto');
+      console.log(authDto);
+      return authDto;
     }
     try {
       const user = await this.validateUser(dto.username, dto.password);

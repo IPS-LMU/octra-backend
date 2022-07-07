@@ -5,7 +5,7 @@ import {
   InternalServerErrorException,
   Post,
   Query,
-  Render,
+  Req,
   Res,
   UnauthorizedException,
   UseFilters
@@ -22,14 +22,16 @@ import {ConfigService} from '@nestjs/config';
 import {SHA256} from 'crypto-js';
 import {AccountService} from '../account';
 import {AccountLoginMethod, AccountRole} from '@octra/api-types';
-import {Response} from 'express';
+import {Request, Response} from 'express';
 import {JWTPayload} from './jwt.types';
 import {JwtService} from '@nestjs/jwt';
+import {SettingsService} from '../settings/settings.service';
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService, private configService: ConfigService, private accountService: AccountService, private jwtService: JwtService) {
+  constructor(private authService: AuthService, private configService: ConfigService, private accountService: AccountService, private jwtService: JwtService,
+              private settingsService: SettingsService) {
   }
 
   /**
@@ -102,8 +104,8 @@ export class AuthController {
     }
   })
 
-  @CustomApiException(new InvalidCredentialsException())
   @Public()
+  @CustomApiException(new InvalidCredentialsException())
   @Post('login')
   @UseFilters(new HttpExceptionFilter())
   async login(@Body() dto: AuthLoginDto): Promise<AuthDto> {
@@ -111,25 +113,33 @@ export class AuthController {
   }
 
 
+  // TODO remove this function as soon as development finished
   @Public()
   @Get('confirmShibboleth')
-  async introduceShibboleth(@Body() body: any, @Query('windowURL') windowURL: string, @Res() res: Response) {
-    // res.redirect(this.configService.get('api.shibboleth.windowURL'));
+  async introduceShibboleth(@Body() body: any, @Query('windowURL') windowURL: string, @Query('r') redirectTo: string, @Res() res: Response, @Req() req: Request) {
+    // res.redirect(this.configService.get('api.plugins.shibboleth.windowURL'));
+    const {dataPolicyURL, termsConditionsURL} = await this.getURLS(req);
+
     res.render('confirmShibboleth', {
       userName: 'displayName',
       email: 'someEmail',
       shibToken: 'shib token',
       cid: 435345,
       token: '',
-      windowURL: ''
+      windowURL: '',
+      baseURL: this.configService.get('api.baseURL'),
+      dataPolicyURL,
+      termsConditionsURL,
+      redirectTo: redirectTo ?? ''
     });
   }
 
   @Public()
-  @Render('confirmShibboleth')
   @Post('confirmShibboleth')
-  async confirmShibboleth(@Body() body: any, @Query('windowURL') windowURL: string, @Query('cid') cid: string, @Res() res: Response) {
+  async confirmShibboleth(@Body() body: any, @Query('windowURL') windowURL: string, @Query('cid') cid: string, @Res() res: Response, @Req() req: Request) {
     let tokenBody;
+    const {dataPolicyURL, termsConditionsURL} = await this.getURLS(req);
+
     try {
       tokenBody = await this.jwtVerfiy(body.shibToken, this.configService.get('api.plugins.shibboleth.secret'));
     } catch (e) {
@@ -163,6 +173,9 @@ export class AuthController {
           email: '',
           cid,
           token: this.jwtService.sign(payload),
+          baseURL: this.configService.get('api.baseURL'),
+          dataPolicyURL,
+          termsConditionsURL,
           windowURL
         });
       }
@@ -187,19 +200,15 @@ export class AuthController {
           redirectWithToken(newUser);
         } else {
           // ask for account creation
-          const userName = (tokenBody.userInformation.displayName && tokenBody.userInformation.displayName.trim() !== '')
-            ? tokenBody.userInformation.displayName : body.userName;
-
-          const email = (tokenBody.userInformation.mail && tokenBody.userInformation.mail.trim() !== '')
-            ? tokenBody.userInformation.mail : body.email;
 
           res.render('confirmShibboleth', {
-            userName,
-            email,
             shibToken: body.shibToken,
             cid,
             token: '',
-            windowURL: ''
+            baseURL: this.configService.get('api.baseURL'),
+            windowURL: '',
+            dataPolicyURL,
+            termsConditionsURL,
           });
         }
       }
@@ -218,5 +227,19 @@ export class AuthController {
         }
       })
     });
+  }
+
+  private async getURLS(req: Request) {
+    const languages = req.header('ACCEPT-LANGUAGE') || 'en-US';
+    const language = languages.split(';')[0].split(',')[0];
+    const generalSettings = await this.settingsService.getGeneralSettings();
+    const dataPolicyURLObject = generalSettings.data_policy_urls && generalSettings.data_policy_urls.length > 0 ? generalSettings.data_policy_urls.find(a => a.language.indexOf(language) > -1) : undefined;
+    const dataPolicyURL = dataPolicyURLObject ?? (generalSettings.data_policy_urls && generalSettings.data_policy_urls.length > 0) ? generalSettings.data_policy_urls[0].url : '';
+    const termsConditionsURLObject = generalSettings.terms_conditions_urls && generalSettings.terms_conditions_urls.length > 0 ? generalSettings.terms_conditions_urls.find(a => a.language.indexOf(language) > -1) : undefined;
+    const termsConditionsURL = termsConditionsURLObject ?? (generalSettings.terms_conditions_urls && generalSettings.terms_conditions_urls.length > 0) ? generalSettings.terms_conditions_urls[0].url : '';
+
+    return {
+      dataPolicyURL, termsConditionsURL
+    };
   }
 }

@@ -14,20 +14,20 @@ import {
   AccountPersonEntity,
   AccountRoleProjectEntity,
   Configuration,
+  OptionEntity,
   RoleEntity
 } from '@octra/server-side';
-
-console.log('JWT SECRET ' + Configuration.getInstance().api.security.keys.jwt.secret);
+import {SettingsService} from '../settings/settings.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([AccountPersonEntity, AccountEntity, AccountRoleProjectEntity, RoleEntity]),
+    TypeOrmModule.forFeature([AccountPersonEntity, AccountEntity, AccountRoleProjectEntity, RoleEntity, OptionEntity]),
     AccountModule, PassportModule, JwtModule.register({
       secret: Configuration.getInstance().api.security.keys.jwt.secret,
       signOptions: {expiresIn: '1 day'}, // TODO set expiration time to config.json
     })
   ],
-  providers: [AccountService, AuthService, LocalStrategy, JwtStrategy, DatabaseService],
+  providers: [AccountService, AuthService, LocalStrategy, JwtStrategy, DatabaseService, SettingsService],
   controllers: [AuthController],
   exports: [AuthService]
 })
