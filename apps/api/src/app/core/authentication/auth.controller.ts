@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Header,
   InternalServerErrorException,
   Post,
   Query,
@@ -26,6 +27,8 @@ import {Request, Response} from 'express';
 import {JWTPayload} from './jwt.types';
 import {JwtService} from '@nestjs/jwt';
 import {SettingsService} from '../settings/settings.service';
+import {AccountCreateRequestDto} from '../account/account.dto';
+import {GeneralSettingsDto} from '../settings/settings.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -115,10 +118,12 @@ export class AuthController {
 
   // TODO remove this function as soon as development finished
   @Public()
+  @Header('content-type', 'text/html')
   @Get('confirmShibboleth')
   async introduceShibboleth(@Body() body: any, @Query('windowURL') windowURL: string, @Query('r') redirectTo: string, @Res() res: Response, @Req() req: Request) {
     // res.redirect(this.configService.get('api.plugins.shibboleth.windowURL'));
-    const {dataPolicyURL, termsConditionsURL} = await this.getURLS(req);
+    const generalSettings = await this.settingsService.getGeneralSettings();
+    const {dataPolicyURL, termsConditionsURL} = await this.getURLS(generalSettings, req);
 
     res.render('confirmShibboleth', {
       userName: 'displayName',
@@ -135,10 +140,12 @@ export class AuthController {
   }
 
   @Public()
+  @Header('content-type', 'text/html')
   @Post('confirmShibboleth')
-  async confirmShibboleth(@Body() body: any, @Query('windowURL') windowURL: string, @Query('cid') cid: string, @Res() res: Response, @Req() req: Request) {
+  async confirmShibboleth(@Body() body: any, @Query('windowURL') windowURL: string, @Query('cid') cid: string, @Query('r') redirectTo: string, @Res() res: Response, @Req() req: Request) {
     let tokenBody;
-    const {dataPolicyURL, termsConditionsURL} = await this.getURLS(req);
+    const generalSettings = await this.settingsService.getGeneralSettings();
+    const {dataPolicyURL, termsConditionsURL} = await this.getURLS(generalSettings, req);
 
     try {
       tokenBody = await this.jwtVerfiy(body.shibToken, this.configService.get('api.plugins.shibboleth.secret'));
@@ -148,7 +155,7 @@ export class AuthController {
 
     if (!((tokenBody.userInformation.mail && tokenBody.userInformation.mail.trim() !== '') ||
       (tokenBody.userInformation.oidEduPersonPrincipalName || tokenBody.userInformation.oidEduPersonPrincipalName.trim() !== ''))) {
-      throw new UnauthorizedException('You can\'t authenticate with the server because of missing parameters. Please contact the administrators: '); // TODO add admin mail from DB
+      throw new UnauthorizedException(`You can\'t authenticate with the server because of missing parameters. Please contact : <a href="mailto:${generalSettings?.mail_support_address}">${generalSettings?.mail_support_address}</a>`);
     }
 
     // generate UUID
@@ -176,6 +183,7 @@ export class AuthController {
           baseURL: this.configService.get('api.baseURL'),
           dataPolicyURL,
           termsConditionsURL,
+          redirectTo: redirectTo ?? '',
           windowURL
         });
       }
@@ -188,15 +196,16 @@ export class AuthController {
         if (body.dataPolicyAccepted === 'yes' && body.termsAccepted === 'yes' && body.username?.trim() !== '' && body.email?.trim() !== '' && body.shibToken?.trim() !== '') {
           // user wants to create a new account
           // save user
-          const newUser = await this.accountService.createAccount({
+          const createUser: AccountCreateRequestDto = {
             name: body.username,
             email: body.email,
-            creationdate: new Date(),
             id: undefined,
             role: AccountRole.user,
+            creationdate: new Date(),
             updatedate: new Date(),
             password: UUID
-          }, AccountLoginMethod.shibboleth);
+          };
+          const newUser = await this.accountService.createAccount(createUser, AccountLoginMethod.shibboleth);
           redirectWithToken(newUser);
         } else {
           // ask for account creation
@@ -207,6 +216,7 @@ export class AuthController {
             token: '',
             baseURL: this.configService.get('api.baseURL'),
             windowURL: '',
+            redirectTo: redirectTo ?? '',
             dataPolicyURL,
             termsConditionsURL,
           });
@@ -229,10 +239,9 @@ export class AuthController {
     });
   }
 
-  private async getURLS(req: Request) {
+  private async getURLS(generalSettings: GeneralSettingsDto, req: Request) {
     const languages = req.header('ACCEPT-LANGUAGE') || 'en-US';
     const language = languages.split(';')[0].split(',')[0];
-    const generalSettings = await this.settingsService.getGeneralSettings();
     const dataPolicyURLObject = generalSettings.data_policy_urls && generalSettings.data_policy_urls.length > 0 ? generalSettings.data_policy_urls.find(a => a.language.indexOf(language) > -1) : undefined;
     const dataPolicyURL = dataPolicyURLObject ?? (generalSettings.data_policy_urls && generalSettings.data_policy_urls.length > 0) ? generalSettings.data_policy_urls[0].url : '';
     const termsConditionsURLObject = generalSettings.terms_conditions_urls && generalSettings.terms_conditions_urls.length > 0 ? generalSettings.terms_conditions_urls.find(a => a.language.indexOf(language) > -1) : undefined;

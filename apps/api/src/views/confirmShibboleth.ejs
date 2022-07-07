@@ -13,6 +13,7 @@
     <!-- Custom styles for this template -->
     <link href="<%= locals.baseURL %>assets/authenticators/shibboleth/style.css" rel="stylesheet" type="text/css">
     <script type="application/javascript">
+
       window.onload = function () {
         var inputUserName = document.getElementById("inputUserName");
         var inputEmail = document.getElementById("inputEmail");
@@ -43,7 +44,9 @@
             window.close();
           } else {
             // opened in same window
-            document.location.href = redirectTo;
+            window.setTimeout(() => {
+              document.location.href = redirectTo;
+            }, 1000);
           }
         }
 
@@ -72,7 +75,7 @@
         </p>
         <div class="form-group mb-3 mt-3">
             <label for="inputUserName">User name</label>
-            <input type="text" id="inputUserName" class="form-control" name="userName"
+            <input type="text" id="inputUserName" class="form-control" name="username"
                    placeholder="Username"
                    required="required" autofocus="">
         </div>
@@ -103,7 +106,10 @@
         </button>
     </form>
 <% } else { %>
-    <p style="width:100%; text-align: center;">You are authenticated. Please close this window.</p>
+    <p style="width:100%; text-align: center;">You are going to be redirected. Please wait...
+        <br/>
+        If the redirection does not work, click <a href="<%= locals.redirectTo %>">here.</a>.
+    </p>
 <% } %>
 </body>
 </html>

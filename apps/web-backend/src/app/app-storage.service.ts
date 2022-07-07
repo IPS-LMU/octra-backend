@@ -3,7 +3,6 @@ import {SessionStorage} from 'ngx-webstorage';
 import {Router} from '@angular/router';
 import {OctraAPIService} from '@octra/ngx-octra-api';
 import {AccountDto, AccountLoginMethod, AccountRole} from '@octra/api-types';
-import {DateTime} from 'luxon';
 
 @Injectable({
   providedIn: 'root'
@@ -34,8 +33,6 @@ export class AppStorageService {
     return this._webToken;
   }
 
-  public lastUpdate = 'test';
-
   public login(type: AccountLoginMethod, name?: string, password?: string) {
     return this.api.login(type, name, password).then(({accessToken, openURL, account}) => {
       if (openURL !== undefined) {
@@ -43,7 +40,6 @@ export class AppStorageService {
         const cid = Date.now();
         const url = `${openURL}?cid=${cid}&r=${encodeURIComponent(document.location.href)}`;
         localStorage.setItem('cid', cid.toString());
-        alert('redirect to ' + url)
         document.location.href = url;
       } else if (account) {
         this._user = account;
@@ -84,10 +80,8 @@ export class AppStorageService {
 
     if (cid) {
       const token = localStorage.getItem(`token_${cid}`);
-      this.lastUpdate = DateTime.now().toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS);
 
       if (token) {
-        this.lastUpdate = `GOT VALID TOKEN!`;
         console.log(token);
         this._webToken = token;
         this._authType = 'shibboleth';
