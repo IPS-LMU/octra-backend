@@ -62,7 +62,7 @@ describe('OCTRA Nest API admin (e2e)', () => {
   })
 
 
-  describe('Authentication', () => {
+  describe.only('Authentication', () => {
     it('/auth/login (POST)', () => {
       return request(app.getHttpServer())
         .post('/auth/login').send({
@@ -80,64 +80,65 @@ describe('OCTRA Nest API admin (e2e)', () => {
         })
     });
 
-    describe('Tools', () => {
-      it('/tool/ (POST)', () => {
-        return Auth.post('/tool', {
-          name: `Tool_${Date.now()}`,
-          version: '1.0.0',
-          description: 'some description'
-        } as ToolCreateRequestDto)
-          .expect(201).then(({body}: { body: ToolDto }) => {
-            if (typeof body !== 'object') {
-              throw new Error('Body must be of type object.');
-            }
-          });
-      });
-      it('/tool/ (DELETE)', () => {
-        return Auth.delete(`/tool/${testState.tool.id}`, undefined)
-          .expect(200);
-      });
-    })
+  });
 
-    describe('AppTokens', () => {
-      it('/app/tokens (GET)', () => {
-        return Auth.get('/app/tokens').expect(200).then(({body}) => {
-          if (!Array.isArray(body)) {
-            throw new Error('Body must be of type array.');
+  describe('Tools', () => {
+    it('/tool/ (POST)', () => {
+      return Auth.post('/tool', {
+        name: `Tool_${Date.now()}`,
+        version: '1.0.0',
+        description: 'some description'
+      } as ToolCreateRequestDto)
+        .expect(201).then(({body}: { body: ToolDto }) => {
+          if (typeof body !== 'object') {
+            throw new Error('Body must be of type object.');
           }
-        })
-      });
-
-      it('/app/tokens (POST)', () => {
-        const dto = {
-          description: 'Test description',
-          domain: 'fgdfg',
-          name: 'test',
-          registrations: false
-        };
-        return Auth.post('/app/tokens', dto).expect(201).then(({body}: { body: AppTokenDto }) => {
-          testState.apptoken.addedID = body.id;
         });
-      });
+    });
+    it('/tool/ (DELETE)', () => {
+      return Auth.delete(`/tool/${testState.tool.id}`, undefined)
+        .expect(200);
+    });
+  })
 
-      it('/app/tokens/:id (PUT)', () => {
-        const dto = {
-          description: 'Test description',
-          domain: 'fgdfg',
-          registrations: true
-        };
-        return Auth.put(`/app/tokens/${testState.apptoken.addedID}`, dto).expect(200);
+  describe('AppTokens', () => {
+    it('/app/tokens (GET)', () => {
+      return Auth.get('/app/tokens').expect(200).then(({body}) => {
+        if (!Array.isArray(body)) {
+          throw new Error('Body must be of type array.');
+        }
+      })
+    });
+
+    it('/app/tokens (POST)', () => {
+      const dto = {
+        description: 'Test description',
+        domain: 'fgdfg',
+        name: 'test',
+        registrations: false
+      };
+      return Auth.post('/app/tokens', dto).expect(201).then(({body}: { body: AppTokenDto }) => {
+        testState.apptoken.addedID = body.id;
       });
+    });
+
+    it('/app/tokens/:id (PUT)', () => {
+      const dto = {
+        description: 'Test description',
+        domain: 'fgdfg',
+        registrations: true
+      };
+      return Auth.put(`/app/tokens/${testState.apptoken.addedID}`, dto).expect(200);
+    });
 
 
-      it('/app/tokens/:id/refresh (PUT)', () => {
-        return Auth.put(`/app/tokens/${testState.apptoken.addedID}/refresh`, undefined).expect(200);
-      });
+    it('/app/tokens/:id/refresh (PUT)', () => {
+      return Auth.put(`/app/tokens/${testState.apptoken.addedID}/refresh`, undefined).expect(200);
+    });
 
-      it('/app/tokens/:id (DELETE)', () => {
-        return Auth.delete(`/app/tokens/${testState.apptoken.addedID}`, undefined).expect(200);
-      });
-    })
+    it('/app/tokens/:id (DELETE)', () => {
+      return Auth.delete(`/app/tokens/${testState.apptoken.addedID}`, undefined).expect(200);
+    });
   });
 
   describe('Accounts', () => {

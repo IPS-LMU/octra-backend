@@ -26,8 +26,6 @@ import {join} from 'path';
 import {SettingsModule} from './core/settings/settings.module';
 
 const config = Configuration.getInstance();
-console.log(`SERVE assets on root ${join(__dirname, 'assets')}`);
-console.log(`SERVE assets on serveRoot ${join(config.api.baseURL, 'assets')}`);
 
 const TypeORMOptions: TypeOrmModuleOptions = {
   ...getOrmConfig(config),

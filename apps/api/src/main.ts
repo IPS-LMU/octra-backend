@@ -20,6 +20,7 @@ import {IAPIConfiguration} from '@octra/server-side';
 import {getConfigPath} from './app/functions';
 import {IntroView} from './app/view/intro.view';
 import {NestExpressApplication} from '@nestjs/platform-express';
+import {AppClusterService} from './app/app-cluster.service';
 
 new ConfigLoader();
 
@@ -104,4 +105,4 @@ async function bootstrap() {
   );
 }
 
-bootstrap();
+AppClusterService.buildCluster(bootstrap);

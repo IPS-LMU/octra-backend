@@ -69,6 +69,35 @@ export const AppConfigurationSchema: Schema = {
         debugging: {
           type: 'boolean'
         },
+        paths: {
+          type: 'object',
+          required: ['projectsFolder', 'uploadFolder'],
+          properties: {
+            projectsFolder: {
+              type: 'string'
+            },
+            uploadFolder: {
+              type: 'string'
+            }
+          }
+        },
+        performance: {
+          type: 'object',
+          properties: {
+            cluster: {
+              type: 'object',
+              properties: {
+                enabled: {
+                  type: 'boolean'
+                },
+                maxParallelWorkers: {
+                  type: 'number',
+                  description: 'number of parallel threads.'
+                }
+              }
+            }
+          }
+        },
         security: {
           type: 'object',
           properties: {
@@ -115,18 +144,6 @@ export const AppConfigurationSchema: Schema = {
                   }
                 }
               }
-            }
-          }
-        },
-        paths: {
-          type: 'object',
-          required: ['projectsFolder', 'uploadFolder'],
-          properties: {
-            projectsFolder: {
-              type: 'string'
-            },
-            uploadFolder: {
-              type: 'string'
             }
           }
         },

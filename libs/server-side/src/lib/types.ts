@@ -27,6 +27,16 @@ export interface IAPIConfiguration {
   host: string,
   port: number,
   debugging?: boolean,
+  paths: {
+    projectsFolder: string;
+    uploadFolder: string;
+  },
+  performance?: {
+    cluster?: {
+      enabled: boolean;
+      maxParallelWorkers: number;
+    }
+  },
   security: {
     trustProxy?: boolean;
     keys: {
@@ -34,10 +44,6 @@ export interface IAPIConfiguration {
       jwt: SecretSaltPair;
       url: SecretSaltPair;
     }
-  },
-  paths: {
-    projectsFolder: string;
-    uploadFolder: string;
   },
   plugins?: {
     reference?: {

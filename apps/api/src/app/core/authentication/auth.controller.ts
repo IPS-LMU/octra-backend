@@ -112,6 +112,7 @@ export class AuthController {
   @Post('login')
   @UseFilters(new HttpExceptionFilter())
   async login(@Body() dto: AuthLoginDto): Promise<AuthDto> {
+    console.log('login');
     return this.authService.login(dto);
   }
 

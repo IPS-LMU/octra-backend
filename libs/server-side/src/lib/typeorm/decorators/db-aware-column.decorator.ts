@@ -7,6 +7,7 @@ import {join} from 'path';
 
 function getConfigPath() {
   if (process.env['dev'] && !process.env['configPath']) {
+    console.log(`DEV!`);
     return join(__dirname, `../../../`)
   }
 
