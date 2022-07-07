@@ -62,7 +62,7 @@ describe('OCTRA Nest API admin (e2e)', () => {
   })
 
 
-  describe.only('Authentication', () => {
+  describe('Authentication', () => {
     it('/auth/login (POST)', () => {
       return request(app.getHttpServer())
         .post('/auth/login').send({
