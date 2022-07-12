@@ -116,13 +116,10 @@ export class AuthController {
     return this.authService.login(dto);
   }
 
-
-  // TODO remove this function as soon as development finished
   @Public()
   @Header('content-type', 'text/html')
   @Get('confirmShibboleth')
   async introduceShibboleth(@Body() body: any, @Query('windowURL') windowURL: string, @Query('r') redirectTo: string, @Res() res: Response, @Req() req: Request) {
-    // res.redirect(this.configService.get('api.plugins.shibboleth.windowURL'));
     const generalSettings = await this.settingsService.getGeneralSettings();
     const {dataPolicyURL, termsConditionsURL} = await this.getURLS(generalSettings, req);
 

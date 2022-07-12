@@ -61,7 +61,7 @@ async function bootstrap() {
       tagGroups: [
         {
           name: 'v1',
-          tags: ['Authentication', 'App tokens', 'Accounts', 'Projects', 'Tasks', 'Annotations', 'Guidelines', 'Tools', 'Files', 'Settings']
+          tags: ['Authentication', 'App tokens', 'Accounts', 'Projects', 'Tasks', 'Annotations', 'Guidelines', 'Tools', 'Files', 'Policies', 'Settings']
         }
       ],
       requiredPropsFirst: true

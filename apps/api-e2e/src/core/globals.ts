@@ -25,6 +25,9 @@ export const testState = {
     url: '',
     delivery_url: ''
   },
+  policy: {
+    id: '0'
+  },
   task: {
     id: '0'
   },

@@ -12,7 +12,13 @@ import {
   ChangePasswordDto
 } from '../../api/src/app/core/account/account.dto';
 import {ProjectRequestDto, ProjectRoleDto} from '../../api/src/app/core/project/project.dto';
-import {AccountLoginMethod, AccountRole, ProjectRemoveRequestDto, ProjectVisibility} from '@octra/api-types';
+import {
+  AccountLoginMethod,
+  AccountRole,
+  PolicyType,
+  ProjectRemoveRequestDto,
+  ProjectVisibility
+} from '@octra/api-types';
 import {ToolCreateRequestDto} from '../../api/src/app/core/tool/tool.dto';
 import {TaskProperties} from '../../api/src/app/core/project/tasks';
 import {SaveAnnotationDto} from '../../api/src/app/core/project/annotations/annotation.dto';
@@ -466,6 +472,54 @@ describe('Projects', () => {
 
   it('/account/:id (DELETE)', () => {
     return Auth.delete(`/account/${testState.user.id}`, undefined, false).expect(403);
+  });
+});
+
+describe('Policies', () => {
+  it('/policies (POST) add new file', () => {
+    return request(app.getHttpServer()).post(`/policies`)
+      .set('X-App-Token', `${appToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .auth(testState.user.jwtToken, {type: 'bearer'})
+      .attach('inputs[]', './testfiles/test_policy.pdf', 'test_policy.pdf')
+      .field('type', PolicyType.privacy)
+      .field('publishdate', '2022-07-12T09:31:18.997Z')
+      .expect(403);
+  });
+
+  it('/policies (PUT) updates publishdate', () => {
+    return request(app.getHttpServer()).put(`/policies/${testState.policy.id}/`)
+      .set('X-App-Token', `${appToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .auth(testState.user.jwtToken, {type: 'bearer'})
+      .field('type', PolicyType.privacy)
+      .field('publishdate', '2022-07-11T09:31:18.997Z')
+      .expect(403);
+  });
+
+  it('/policies (DELETE)', () => {
+    return Auth.delete(`/policies/1/`, undefined, false).expect(403);
+  });
+
+  it('/policies (POST) add new text', () => {
+    return request(app.getHttpServer()).post(`/policies`)
+      .set('X-App-Token', `${appToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .auth(testState.user.jwtToken, {type: 'bearer'})
+      .field('type', PolicyType.privacy)
+      .field('text', 'This is a test')
+      .field('publishdate', '2022-07-12T09:31:18.997Z')
+      .expect(403)
+  });
+
+  it('/policies (PUT) updates text', () => {
+    return request(app.getHttpServer()).put(`/policies/${testState.policy.id}/`)
+      .set('X-App-Token', `${appToken}`)
+      .set('Origin', 'http://localhost:8080')
+      .auth(testState.user.jwtToken, {type: 'bearer'})
+      .field('type', PolicyType.privacy)
+      .field('text', 'This is a second test')
+      .expect(403);
   });
 });
 

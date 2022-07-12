@@ -260,6 +260,102 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
     ]);
 
 
+    console.log(`-> Create table "policy"...`);
+    await queryRunner.createTable(new Table({
+      name: 'policy',
+      columns: [
+        {
+          name: 'id',
+          type: m('integer'),
+          isPrimary: true,
+          isGenerated: true,
+          generationStrategy: 'increment'
+        },
+        {
+          name: 'type',
+          type: m('text'),
+        },
+        {
+          name: 'url',
+          type: m('text'),
+          isNullable: true
+        },
+        {
+          name: 'text',
+          type: m('text'),
+          isNullable: true
+        },
+        {
+          name: 'version',
+          type: m('integer')
+        },
+        {
+          name: 'author_id',
+          type: m('bigint')
+        },
+        {
+          name: 'publishdate',
+          isNullable: true,
+          type: m('timestamp without time zone')
+        },
+        {
+          name: 'creationdate',
+          default: 'CURRENT_TIMESTAMP',
+          type: m('timestamp without time zone')
+        },
+      ]
+    }), true);
+
+    await queryRunner.createForeignKeys('policy', [
+      new TableForeignKey({
+        referencedTableName: 'account',
+        referencedColumnNames: ['id'],
+        columnNames: ['author_id']
+      })
+    ]);
+
+
+    console.log(`-> Create table "policy_account_consent"...`);
+    await queryRunner.createTable(new Table({
+      name: 'policy_account_consent',
+      columns: [
+        {
+          name: 'id',
+          type: m('integer'),
+          isPrimary: true,
+          isGenerated: true,
+          generationStrategy: 'increment'
+        },
+        {
+          name: 'policy_id',
+          type: m('integer'),
+        },
+        {
+          name: 'account_id',
+          type: m('bigint')
+        },
+        {
+          name: 'consentdate',
+          default: 'CURRENT_TIMESTAMP',
+          type: m('timestamp without time zone')
+        },
+      ]
+    }), true);
+
+
+    await queryRunner.createForeignKeys('policy_account_consent', [
+      new TableForeignKey({
+        referencedTableName: 'policy',
+        referencedColumnNames: ['id'],
+        columnNames: ['policy_id']
+      }),
+      new TableForeignKey({
+        referencedTableName: 'account',
+        referencedColumnNames: ['id'],
+        columnNames: ['account_id']
+      })
+    ]);
+
     // create project table
     await queryRunner.createTable(new Table({
       name: 'project',

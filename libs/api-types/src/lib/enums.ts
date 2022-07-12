@@ -46,3 +46,8 @@ export enum AccountLoginMethod {
   'local' = 'local',
   'shibboleth' = 'shibboleth'
 }
+
+export enum PolicyType {
+  'privacy' = 'privacy',
+  'terms_and_conditions' = 'terms and conditions'
+}

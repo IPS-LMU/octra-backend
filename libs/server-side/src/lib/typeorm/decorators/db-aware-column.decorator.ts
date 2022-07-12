@@ -2,7 +2,7 @@ import {Column, ColumnOptions, CreateDateColumn, UpdateDateColumn} from 'typeorm
 import {SQLTypeMapper} from '../sql-type-mapper';
 import {Configuration} from '../../config';
 import {applyDecorators} from '@nestjs/common';
-import {dateTransformer} from '../transformers';
+import {dateTransformer, jsonTransformer} from '../transformers';
 import {join} from 'path';
 
 function getConfigPath() {
@@ -37,6 +37,11 @@ export function DbAwareColumn(columnOptions?: ColumnOptions) {
         ...columnOptions
       }
     }
+
+    if (dbType === 'sqlite' && (columnOptions.type === 'json' || columnOptions.type === 'jsonb')) {
+      columnOptions.transformer = jsonTransformer;
+    }
+
     columnOptions.type = newType;
   }
   return Column(columnOptions as any);

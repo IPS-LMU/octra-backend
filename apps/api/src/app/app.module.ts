@@ -24,6 +24,7 @@ import {Configuration, getOrmConfig} from '@octra/server-side';
 import {ServeStaticModule} from '@nestjs/serve-static';
 import {join} from 'path';
 import {SettingsModule} from './core/settings/settings.module';
+import {PolicyModule} from './core/policy/policy.module';
 
 const config = Configuration.getInstance();
 
@@ -47,6 +48,7 @@ const TypeORMOptions: TypeOrmModuleOptions = {
     AccountModule,
     ProjectModule,
     ToolModule,
+    PolicyModule,
     SettingsModule,
     ConfigModule.forRoot({
       load: [() => (config)],

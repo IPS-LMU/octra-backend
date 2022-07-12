@@ -24,7 +24,8 @@ export class FilesController {
   async getFile(@Param('encryptedPath') encryptedPath: string, @Param('fileName') fileName: string, @Req() req: InternRequest, @Res() res: any): Promise<any> {
     try {
       let decryptedPath = this.appService.pathBuilder.decryptFilePath(encryptedPath);
-      decryptedPath = Path.join(this.appService.pathBuilder.readPublicURL(decryptedPath), fileName);
+      const t = this.appService.pathBuilder.readPathFromDB(decryptedPath);
+      decryptedPath = Path.join(this.appService.pathBuilder.readPathFromDB(decryptedPath), fileName);
       if (await pathExists(decryptedPath)) {
         const file = createReadStream(decryptedPath);
         return file.pipe(res);

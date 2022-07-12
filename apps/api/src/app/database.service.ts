@@ -18,12 +18,12 @@ export class DatabaseService {
       return result;
     } catch (err) {
       // since we have errors lets rollback the changes we made
-      console.log(`!!-- SQL ERROR! ${Object.keys(err)}`);
-      console.log(JSON.stringify(err));
       await queryRunner.rollbackTransaction();
       if (err instanceof HttpException) {
         throw err;
       } else {
+        console.log(`!!-- SQL ERROR! ${Object.keys(err)}`);
+        console.log(JSON.stringify(err));
         throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
       }
     } finally {

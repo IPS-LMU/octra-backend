@@ -3,7 +3,7 @@ import {TaskEntity} from './task.entity';
 import {StandardEntityWithTimestamps} from './standard-entities';
 import {DbAwareColumn} from '../decorators';
 import {AccountRoleProjectEntity} from './account-role-project.entity';
-import {dateTransformer, jsonTransformer} from '../transformers';
+import {dateTransformer} from '../transformers';
 import {AccountEntity} from './account.entity';
 import {AudioFileMetaData} from '@octra/api-types';
 
@@ -27,8 +27,7 @@ export class ProjectEntity extends StandardEntityWithTimestamps {
   })
   description!: string;
   @DbAwareColumn({
-    type: 'json',
-    transformer: jsonTransformer
+    type: 'json'
   })
   configuration: any;
   @DbAwareColumn({
@@ -75,7 +74,6 @@ export class FileProjectEntity extends StandardEntityWithTimestamps {
     referencedColumnName: 'id'
   })
   project!: ProjectEntity;
-
 
   @DbAwareColumn({
     type: 'text',
@@ -129,8 +127,7 @@ export class FileProjectEntity extends StandardEntityWithTimestamps {
 
   @DbAwareColumn({
     type: 'jsonb',
-    nullable: true,
-    transformer: jsonTransformer
+    nullable: true
   })
   metadata?: AudioFileMetaData;
 }

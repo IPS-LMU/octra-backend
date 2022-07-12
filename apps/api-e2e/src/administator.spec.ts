@@ -12,7 +12,13 @@ import {
   ChangePasswordDto
 } from '../../api/src/app/core/account/account.dto';
 import {ProjectRequestDto, ProjectRoleDto} from '../../api/src/app/core/project/project.dto';
-import {AccountLoginMethod, AccountRole, ProjectRemoveRequestDto, ProjectVisibility} from '@octra/api-types';
+import {
+  AccountLoginMethod,
+  AccountRole,
+  PolicyType,
+  ProjectRemoveRequestDto,
+  ProjectVisibility
+} from '@octra/api-types';
 import {ToolCreateRequestDto, ToolDto} from '../../api/src/app/core/tool/tool.dto';
 import {TaskDto, TaskProperties} from '../../api/src/app/core/project/tasks';
 import {SaveAnnotationDto} from '../../api/src/app/core/project/annotations/annotation.dto';
@@ -509,8 +515,8 @@ describe('OCTRA Nest API admin (e2e)', () => {
       });
     });
 
-    it('/:encryptedPath/:fileName (GET)', () => {
-      return Auth.get(testState.mediaItem.url.replace(/^.*8080/g, ''), undefined).expect(200);
+    it('/files/:encryptedPath/:fileName (GET)', () => {
+      return Auth.get(testState.mediaItem.url.replace(/^.*8080/g, '')).expect(200);
     });
 
     it('/projects/project_id/:id/tasks/:task_id (DELETE)', () => {
@@ -527,6 +533,75 @@ describe('OCTRA Nest API admin (e2e)', () => {
 
     it('/account/:id (DELETE)', () => {
       return Auth.delete(`/account/${testState.user.id}`, undefined).expect(200);
+    });
+
+  });
+
+  describe('Policies', () => {
+    it('/policies (POST) add new file', () => {
+      return request(app.getHttpServer()).post(`/policies`)
+        .set('X-App-Token', `${appToken}`)
+        .set('Origin', 'http://localhost:8080')
+        .auth(testState.admin.jwtToken, {type: 'bearer'})
+        .attach('inputs[]', './testfiles/test_policy.pdf', 'test_policy.pdf')
+        .field('type', PolicyType.privacy)
+        .field('publishdate', '2022-07-12T09:31:18.997Z')
+        .expect(201).then(({body}: { body: TaskDto }) => {
+          testState.policy.id = body.id;
+        })
+    });
+
+    it('/policies (GET)', () => {
+      return Auth.get('/policies').expect(200).then(({body}) => {
+        if (!Array.isArray(body)) {
+          throw new Error('policies is not of type array');
+        }
+      });
+    });
+
+    it('/policies (PUT) updates publishdate', () => {
+      return request(app.getHttpServer()).put(`/policies/${testState.policy.id}/`)
+        .set('X-App-Token', `${appToken}`)
+        .set('Origin', 'http://localhost:8080')
+        .auth(testState.admin.jwtToken, {type: 'bearer'})
+        .field('type', PolicyType.privacy)
+        .field('publishdate', '2022-07-11T09:31:18.997Z')
+        .expect(200).then(({body}: { body: TaskDto }) => {
+          testState.policy.id = body.id;
+        })
+    });
+
+    it('/policies (DELETE) policy with file', () => {
+      return Auth.delete(`/policies/${testState.policy.id}/`, undefined).expect(200);
+    });
+
+    it('/policies (POST) add new text', () => {
+      return request(app.getHttpServer()).post(`/policies`)
+        .set('X-App-Token', `${appToken}`)
+        .set('Origin', 'http://localhost:8080')
+        .auth(testState.admin.jwtToken, {type: 'bearer'})
+        .field('type', PolicyType.privacy)
+        .field('text', 'This is a test')
+        .field('publishdate', '2022-07-12T09:31:18.997Z')
+        .expect(201).then(({body}: { body: TaskDto }) => {
+          testState.policy.id = body.id;
+        })
+    });
+
+    it('/policies (PUT) updates text', () => {
+      return request(app.getHttpServer()).put(`/policies/${testState.policy.id}/`)
+        .set('X-App-Token', `${appToken}`)
+        .set('Origin', 'http://localhost:8080')
+        .auth(testState.admin.jwtToken, {type: 'bearer'})
+        .field('type', PolicyType.privacy)
+        .field('text', 'This is a second test')
+        .expect(200).then(({body}: { body: TaskDto }) => {
+          testState.policy.id = body.id;
+        })
+    });
+
+    it('/policies (DELETE) policy with text', () => {
+      return Auth.delete(`/policies/${testState.policy.id}/`, undefined).expect(200);
     });
   });
 

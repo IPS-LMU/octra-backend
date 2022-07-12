@@ -4,6 +4,7 @@ import {DateTime} from 'luxon';
 import * as http from 'http';
 import * as https from 'https';
 import {IAPIConfiguration} from '@octra/server-side';
+import {PolicyType} from '@octra/api-types';
 
 export class PathBuilder {
   public readonly uploadPath: string;
@@ -43,6 +44,30 @@ export class PathBuilder {
     return Path.join(`project_${projectID}`);
   }
 
+  public getNewPolicyFileName(type: PolicyType, policy_version: number, extension: string) {
+    let filename = '';
+
+    switch (type) {
+      case PolicyType.privacy:
+        filename = 'privacy_statement';
+        break;
+
+      case PolicyType.terms_and_conditions:
+        filename = 'terms_and_conditions';
+        break;
+    }
+
+    return Path.join(`${filename}_${policy_version}${extension}`);
+  }
+
+  public getPoliciesFolderPath() {
+    return Path.join(this.uploadPath, 'policies');
+  }
+
+  public getPoliciesFolderDBPath() {
+    return Path.join('{policies}');
+  }
+
   public getAbsoluteProjectPath(projectID: string) {
     return Path.join(this.projectsPath, this.getProjectFolderPath(projectID));
   }
@@ -76,12 +101,19 @@ export class PathBuilder {
     return Path.join(this.uploadPath, `${folder}`)
   }
 
-  public readPublicURL(publicURL: string) {
-    return publicURL.replace(/((?:{uploads})|(?:{projects}))/g, (g0, g1) => {
-      if (g1 === '{uploads}') {
-        return this.uploadPath;
-      } else if (g1 === '{projects}') {
-        return this.projectsPath;
+  public readPathFromDB(publicURL: string) {
+    if (!publicURL) {
+      return undefined;
+    }
+
+    return publicURL.replace(/((?:{uploads})|(?:{projects})|(?:{policies}))/g, (g0, g1) => {
+      switch (g1) {
+        case('{uploads}'):
+          return this.uploadPath;
+        case('{projects}'):
+          return this.projectsPath;
+        case('{policies}'):
+          return this.getPoliciesFolderPath();
       }
       return g1;
     });
