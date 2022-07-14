@@ -378,7 +378,6 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       ]
     }), true);
 
-
     await queryRunner.createForeignKeys('policy_account_consent', [
       new TableForeignKey({
         referencedTableName: 'policy',
@@ -391,6 +390,78 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
         columnNames: ['account_id']
       })
     ]);
+
+    console.log(`-> Create table "account_field_definition"...`);
+    await queryRunner.createTable(new Table({
+      name: 'account_field_definition',
+      columns: [
+        {
+          name: 'id',
+          type: m('bigint'),
+          isPrimary: true,
+          isGenerated: true,
+          generationStrategy: 'increment'
+        },
+        {
+          name: 'name',
+          type: m('text'),
+        },
+        {
+          name: 'definition',
+          type: m('jsonb')
+        },
+        {
+          name: 'type',
+          type: m('text')
+        },
+        {
+          name: 'remove_on_account_delete',
+          type: m('boolean'),
+          default: false
+        }
+      ]
+    }), true);
+
+    console.log(`-> Create table "account_field_value"...`);
+    await queryRunner.createTable(new Table({
+      name: 'account_field_value',
+      columns: [
+        {
+          name: 'id',
+          type: m('bigint'),
+          isPrimary: true,
+          isGenerated: true,
+          generationStrategy: 'increment'
+        },
+        {
+          name: 'account_field_definition_id',
+          type: m('bigint'),
+        },
+        {
+          name: 'account_id',
+          type: m('bigint'),
+        },
+        {
+          name: 'value',
+          type: m('jsonb'),
+          isNullable: true
+        }
+      ]
+    }), true);
+
+    await queryRunner.createForeignKeys('account_field_value', [
+      new TableForeignKey({
+        referencedTableName: 'account',
+        referencedColumnNames: ['id'],
+        columnNames: ['account_id']
+      }),
+      new TableForeignKey({
+        referencedTableName: 'account_field_definition',
+        referencedColumnNames: ['id'],
+        columnNames: ['account_field_definition_id']
+      })
+    ]);
+
 
     // create project table
     await queryRunner.createTable(new Table({
