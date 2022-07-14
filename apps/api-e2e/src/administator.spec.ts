@@ -27,6 +27,7 @@ import {AnnotJSONType, TranscriptDto} from '@octra/server-side';
 import {GeneralSettingsDto} from '../../api/src/app/core/settings/settings.dto';
 import {appToken, testState} from './core/globals';
 import {Auth} from './core/functions';
+import {PolicyDto, PolicyTranslationDto} from '../../api/src/app/core/policy/policy.dto';
 
 let app;
 
@@ -539,17 +540,50 @@ describe('OCTRA Nest API admin (e2e)', () => {
 
   describe('Policies', () => {
     it('/policies (POST) add new file', () => {
-      return request(app.getHttpServer()).post(`/policies`)
+      return Auth.post(`/policies`, {
+        type: PolicyType.privacy,
+        publishdate: '2022-07-12T09:31:18.997Z'
+      }).expect(201).then(({body}: { body: PolicyDto }) => {
+        testState.policy.id = body.id;
+      })
+    });
+
+    it('/policies/:id/translations (POST) add a new translation file', () => {
+      return request(app.getHttpServer()).post(`/policies/${testState.policy.id}/translations`)
         .set('X-App-Token', `${appToken}`)
         .set('Origin', 'http://localhost:8080')
         .auth(testState.admin.jwtToken, {type: 'bearer'})
-        .attach('inputs[]', './testfiles/test_policy.pdf', 'test_policy.pdf')
-        .field('type', PolicyType.privacy)
-        .field('publishdate', '2022-07-12T09:31:18.997Z')
-        .expect(201).then(({body}: { body: TaskDto }) => {
-          testState.policy.id = body.id;
-        })
+        .field('language', 'en-US')
+        .attach('inputs[]', './testfiles/test_policy.pdf', 'test2.pdf')
+        .expect(201).then(({body}: { body: PolicyTranslationDto }) => {
+          const t = '';
+        });
     });
+
+    it('/policies/:id/translations (POST) add a text translation', () => {
+      return request(app.getHttpServer()).post(`/policies/${testState.policy.id}/translations`)
+        .set('X-App-Token', `${appToken}`)
+        .set('Origin', 'http://localhost:8080')
+        .auth(testState.admin.jwtToken, {type: 'bearer'})
+        .field('language', 'de-DE')
+        .field('text', '<h1>Datenschutzerklärung</h1><p>Das ist ein Test</p>')
+        .expect(201).then(({body}: { body: PolicyTranslationDto }) => {
+          testState.policy.translationID = body.id;
+        });
+    });
+
+    it('/policies/:id/:id2 (PUT) updates a text translation', () => {
+      return request(app.getHttpServer()).put(`/policies/${testState.policy.id}/translations/${testState.policy.translationID}`)
+        .set('X-App-Token', `${appToken}`)
+        .set('Origin', 'http://localhost:8080')
+        .auth(testState.admin.jwtToken, {type: 'bearer'})
+        .field('language', 'de-DE')
+        .field('text', '<h1>Datenschutzerklärung</h1><p>Das ist ein Test 2</p>')
+        .expect(200).then(({body}: { body: PolicyTranslationDto }) => {
+          testState.policy.translationID = body.id;
+        });
+    });
+
 
     it('/policies (GET)', () => {
       return Auth.get('/policies').expect(200).then(({body}) => {
@@ -559,24 +593,28 @@ describe('OCTRA Nest API admin (e2e)', () => {
       });
     });
 
-    it('/policies (PUT) updates publishdate', () => {
-      return request(app.getHttpServer()).put(`/policies/${testState.policy.id}/`)
-        .set('X-App-Token', `${appToken}`)
-        .set('Origin', 'http://localhost:8080')
-        .auth(testState.admin.jwtToken, {type: 'bearer'})
-        .field('type', PolicyType.privacy)
-        .field('publishdate', '2022-07-11T09:31:18.997Z')
-        .expect(200).then(({body}: { body: TaskDto }) => {
-          testState.policy.id = body.id;
-        })
+    it('/policies/:id (PUT) updates publishdate', () => {
+      return Auth.put(`/policies/${testState.policy.id}/`, {
+        type: PolicyType.privacy,
+        publishdate: '2022-07-11T09:31:18.997Z'
+      }).expect(200).then(({body}: { body: PolicyDto }) => {
+        testState.policy.id = body.id;
+      })
     });
 
-    it('/policies (DELETE) policy with file', () => {
+
+    it('/policies (DELETE) one policy translation', () => {
+      return Auth.delete(`/policies/${testState.policy.id}/translations/${testState.policy.translationID}`, undefined).expect(200);
+    });
+
+    /*
+    it('/policies (DELETE) policy', () => {
       return Auth.delete(`/policies/${testState.policy.id}/`, undefined).expect(200);
     });
+     */
 
-    it('/policies (POST) add new text', () => {
-      return request(app.getHttpServer()).post(`/policies`)
+    /*
+     return request(app.getHttpServer()).post(`/policies`)
         .set('X-App-Token', `${appToken}`)
         .set('Origin', 'http://localhost:8080')
         .auth(testState.admin.jwtToken, {type: 'bearer'})
@@ -586,23 +624,7 @@ describe('OCTRA Nest API admin (e2e)', () => {
         .expect(201).then(({body}: { body: TaskDto }) => {
           testState.policy.id = body.id;
         })
-    });
-
-    it('/policies (PUT) updates text', () => {
-      return request(app.getHttpServer()).put(`/policies/${testState.policy.id}/`)
-        .set('X-App-Token', `${appToken}`)
-        .set('Origin', 'http://localhost:8080')
-        .auth(testState.admin.jwtToken, {type: 'bearer'})
-        .field('type', PolicyType.privacy)
-        .field('text', 'This is a second test')
-        .expect(200).then(({body}: { body: TaskDto }) => {
-          testState.policy.id = body.id;
-        })
-    });
-
-    it('/policies (DELETE) policy with text', () => {
-      return Auth.delete(`/policies/${testState.policy.id}/`, undefined).expect(200);
-    });
+     */
   });
 
   describe('Settings', () => {

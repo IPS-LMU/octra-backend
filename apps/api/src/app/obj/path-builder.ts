@@ -44,7 +44,7 @@ export class PathBuilder {
     return Path.join(`project_${projectID}`);
   }
 
-  public getNewPolicyFileName(type: PolicyType, policy_version: number, extension: string) {
+  public getNewPolicyFileName(type: PolicyType, policy_version: number, language: string, extension: string) {
     let filename = '';
 
     switch (type) {
@@ -57,7 +57,7 @@ export class PathBuilder {
         break;
     }
 
-    return Path.join(`${filename}_${policy_version}${extension}`);
+    return Path.join(`${filename}_${policy_version}_${language.replace('-', '_')}${extension}`);
   }
 
   public getPoliciesFolderPath() {
@@ -66,6 +66,10 @@ export class PathBuilder {
 
   public getPoliciesFolderDBPath() {
     return Path.join('{policies}');
+  }
+
+  getPublicPolicyURL(type: PolicyType, version: number, language: string) {
+    return this.settings.url + Path.join(`/policies/${type}/${version}/${language}/`);
   }
 
   public getAbsoluteProjectPath(projectID: string) {
@@ -150,6 +154,6 @@ export class PathBuilder {
   }
 
   public isLocalPath(path: string): boolean {
-    return (path && path.trim() !== '' && /^\{projects}/g.exec(path).length > 0);
+    return (path && path.trim() !== '' && /^(\{projects})|(\{policies})|(\{uploads})/g.exec(path).length > 0);
   }
 }

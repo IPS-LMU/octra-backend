@@ -259,7 +259,6 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       })
     ]);
 
-
     console.log(`-> Create table "policy"...`);
     await queryRunner.createTable(new Table({
       name: 'policy',
@@ -276,22 +275,8 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
           type: m('text'),
         },
         {
-          name: 'url',
-          type: m('text'),
-          isNullable: true
-        },
-        {
-          name: 'text',
-          type: m('text'),
-          isNullable: true
-        },
-        {
           name: 'version',
           type: m('integer')
-        },
-        {
-          name: 'author_id',
-          type: m('bigint')
         },
         {
           name: 'publishdate',
@@ -306,14 +291,65 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       ]
     }), true);
 
-    await queryRunner.createForeignKeys('policy', [
+    console.log(`-> Create table "policy_translation"...`);
+    await queryRunner.createTable(new Table({
+      name: 'policy_translation',
+      columns: [
+        {
+          name: 'id',
+          type: m('integer'),
+          isPrimary: true,
+          isGenerated: true,
+          generationStrategy: 'increment'
+        },
+        {
+          name: 'policy_id',
+          type: m('integer'),
+        },
+        {
+          name: 'language',
+          type: m('text')
+        },
+        {
+          name: 'url',
+          type: m('text'),
+          isNullable: true
+        },
+        {
+          name: 'text',
+          type: m('text'),
+          isNullable: true
+        },
+        {
+          name: 'author_id',
+          type: m('bigint')
+        },
+        {
+          name: 'creationdate',
+          default: 'CURRENT_TIMESTAMP',
+          type: m('timestamp without time zone')
+        },
+        {
+          name: 'updatedate',
+          type: m('timestamp without time zone'),
+          default: 'CURRENT_TIMESTAMP',
+          onUpdate: 'CURRENT_TIMESTAMP'
+        }
+      ]
+    }), true);
+
+    await queryRunner.createForeignKeys('policy_translation', [
       new TableForeignKey({
         referencedTableName: 'account',
         referencedColumnNames: ['id'],
         columnNames: ['author_id']
+      }),
+      new TableForeignKey({
+        referencedTableName: 'policy',
+        referencedColumnNames: ['id'],
+        columnNames: ['policy_id']
       })
     ]);
-
 
     console.log(`-> Create table "policy_account_consent"...`);
     await queryRunner.createTable(new Table({
@@ -321,7 +357,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       columns: [
         {
           name: 'id',
-          type: m('integer'),
+          type: m('bigint'),
           isPrimary: true,
           isGenerated: true,
           generationStrategy: 'increment'

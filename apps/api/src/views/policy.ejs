@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="_description" content="">
+    <meta name="author" content="">
+
+    <title><%= locals.title %></title>
+    <!-- Bootstrap core CSS -->
+    <link href="<%= locals.baseURL %>assets/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <script type="application/javascript"
+            src="<%= locals.baseURL %>assets/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom styles for this template -->
+    <link href="<%= locals.baseURL %>assets/style/policy.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<nav class="navbar navbar-expand-sm navbar-dark bg-dark" aria-label="Third navbar example">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">OCTRA-Backend</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExample03"
+                aria-controls="navbarsExample03" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarsExample03">
+            <ul class="navbar-nav me-auto mb-2 mb-sm-0">
+            </ul>
+            <div class="dropdown">
+                <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                   data-bs-toggle="dropdown" aria-expanded="false">
+                    <%= locals.currentLang %>
+                </a>
+
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                    <% for(var i = 0; i < locals.translations?.length; i++) { %>
+                        <a class="dropdown-item"
+                           href="<%= locals.translations[i].url %>"><%= locals.translations[i].language %></a>
+                    <% } %>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+<div class="row">
+    <div class="col-12 col-lg-12 col-xxl-8 bg-light p-md-3 p-lg-4">
+        <%- locals.text %>
+    </div>
+    <div class="col-auto"></div>
+</div>
+</body>
+</html>

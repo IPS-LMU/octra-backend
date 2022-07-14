@@ -26,7 +26,8 @@ export const testState = {
     delivery_url: ''
   },
   policy: {
-    id: '0'
+    id: '0',
+    translationID: '0'
   },
   task: {
     id: '0'

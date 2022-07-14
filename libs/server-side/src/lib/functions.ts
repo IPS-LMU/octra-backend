@@ -31,15 +31,19 @@ export function removeNullAttributes<T>(obj: T): T {
 }
 
 export function removeProperties(obj: any, properties: string[]) {
-  if (obj) {
-    const keys = Object.keys(obj);
+  const copy = {
+    ...obj
+  };
+
+  if (copy) {
+    const keys = Object.keys(copy);
     for (const property of properties) {
       if (keys.find(a => a === property)) {
-        delete obj[property];
+        delete copy[property];
       }
     }
   }
-  return obj;
+  return copy;
 }
 
 // TODO remove duplicate code
