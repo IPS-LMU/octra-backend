@@ -83,7 +83,7 @@ async function bootstrap() {
     if (environment.development) {
       fs.writeFileSync(path.join(getConfigPath(), 'swagger-spec.json'), JSON.stringify(document));
     }
-    await RedocModule.setup(config.baseURL + 'reference', app, document, redocOptions);
+    await RedocModule.setup(config.baseURL + 'reference', app as any, document, redocOptions);
   }
 
   app.useGlobalPipes(new ValidationPipe({

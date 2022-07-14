@@ -607,24 +607,9 @@ describe('OCTRA Nest API admin (e2e)', () => {
       return Auth.delete(`/policies/${testState.policy.id}/translations/${testState.policy.translationID}`, undefined).expect(200);
     });
 
-    /*
     it('/policies (DELETE) policy', () => {
       return Auth.delete(`/policies/${testState.policy.id}/`, undefined).expect(200);
     });
-     */
-
-    /*
-     return request(app.getHttpServer()).post(`/policies`)
-        .set('X-App-Token', `${appToken}`)
-        .set('Origin', 'http://localhost:8080')
-        .auth(testState.admin.jwtToken, {type: 'bearer'})
-        .field('type', PolicyType.privacy)
-        .field('text', 'This is a test')
-        .field('publishdate', '2022-07-12T09:31:18.997Z')
-        .expect(201).then(({body}: { body: TaskDto }) => {
-          testState.policy.id = body.id;
-        })
-     */
   });
 
   describe('Settings', () => {
