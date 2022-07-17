@@ -33,9 +33,6 @@ export class AccountPersonEntity extends StandardEntity {
 @Entity({name: 'account'})
 export class AccountEntity extends StandardEntityWithTimestamps {
   @DbAwareColumn()
-  training!: string;
-
-  @DbAwareColumn()
   comment!: string;
 
   @DbAwareColumn({

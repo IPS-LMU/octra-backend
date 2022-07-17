@@ -24,7 +24,6 @@ export class FirstIViews1656925000956 extends OctraMigration implements Migratio
           .addSelect('p.loginmethod', 'loginmethod')
           .addSelect('p.hash', 'hash')
           .addSelect('p.active', 'active')
-          .addSelect('a.training', 'training')
           .addSelect('a.comment', 'comment')
           .addSelect('r.label', 'role')
           .addSelect('a.updatedate', 'updatedate')

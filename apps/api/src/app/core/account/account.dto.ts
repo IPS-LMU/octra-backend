@@ -105,12 +105,6 @@ export class AccountDto extends StandardWithTimeDto {
     example: true
   })
   active: boolean;
-  @IsNotEmpty()
-  @ApiProperty({
-    description: 'describes the set of skills of this user.',
-    example: 'orthographic transcription'
-  })
-  training?: string;
   @ApiProperty({
     description: 'some comment about this account.',
     example: 'Some comment.'

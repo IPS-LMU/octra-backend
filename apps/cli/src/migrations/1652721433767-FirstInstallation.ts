@@ -1,9 +1,14 @@
 import {MigrationInterface, QueryRunner, Table, TableForeignKey} from 'typeorm';
 import {
+  AccountCategorySelection,
   AccountEntity,
+  AccountFieldCheckboxes,
+  AccountFieldDefinitionEntity,
+  AccountFieldTextArea,
   AccountPersonEntity,
   AppTokenEntity,
   DBPostgresType,
+  generateLanguageOptions,
   getPasswordHash,
   getRandomString,
   OptionEntity,
@@ -218,11 +223,6 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
           type: m('bigint')
         },
         {
-          name: 'training',
-          type: m('text'),
-          isNullable: true
-        },
-        {
           name: 'comment',
           type: m('text'),
           isNullable: true
@@ -391,78 +391,6 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       })
     ]);
 
-    console.log(`-> Create table "account_field_definition"...`);
-    await queryRunner.createTable(new Table({
-      name: 'account_field_definition',
-      columns: [
-        {
-          name: 'id',
-          type: m('bigint'),
-          isPrimary: true,
-          isGenerated: true,
-          generationStrategy: 'increment'
-        },
-        {
-          name: 'name',
-          type: m('text'),
-        },
-        {
-          name: 'definition',
-          type: m('jsonb')
-        },
-        {
-          name: 'type',
-          type: m('text')
-        },
-        {
-          name: 'remove_on_account_delete',
-          type: m('boolean'),
-          default: false
-        }
-      ]
-    }), true);
-
-    console.log(`-> Create table "account_field_value"...`);
-    await queryRunner.createTable(new Table({
-      name: 'account_field_value',
-      columns: [
-        {
-          name: 'id',
-          type: m('bigint'),
-          isPrimary: true,
-          isGenerated: true,
-          generationStrategy: 'increment'
-        },
-        {
-          name: 'account_field_definition_id',
-          type: m('bigint'),
-        },
-        {
-          name: 'account_id',
-          type: m('bigint'),
-        },
-        {
-          name: 'value',
-          type: m('jsonb'),
-          isNullable: true
-        }
-      ]
-    }), true);
-
-    await queryRunner.createForeignKeys('account_field_value', [
-      new TableForeignKey({
-        referencedTableName: 'account',
-        referencedColumnNames: ['id'],
-        columnNames: ['account_id']
-      }),
-      new TableForeignKey({
-        referencedTableName: 'account_field_definition',
-        referencedColumnNames: ['id'],
-        columnNames: ['account_field_definition_id']
-      })
-    ]);
-
-
     // create project table
     await queryRunner.createTable(new Table({
       name: 'project',
@@ -526,6 +454,218 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
         }
       ]
     }), true);
+
+    console.log(`-> Create table "account_field_definition"...`);
+    await queryRunner.createTable(new Table({
+      name: 'account_field_definition',
+      columns: [
+        {
+          name: 'id',
+          type: m('bigint'),
+          isPrimary: true,
+          isGenerated: true,
+          generationStrategy: 'increment'
+        },
+        {
+          name: 'context',
+          type: m('text'),
+        },
+        {
+          name: 'name',
+          type: m('text'),
+        },
+        {
+          name: 'definition',
+          type: m('jsonb')
+        },
+        {
+          name: 'type',
+          type: m('text')
+        },
+        {
+          name: 'remove_value_on_account_delete',
+          type: m('boolean'),
+          default: false
+        },
+        {
+          name: 'removable',
+          type: m('boolean'),
+          default: true
+        },
+        {
+          name: 'sort_order',
+          type: m('integer'),
+          default: -1
+        }
+      ]
+    }), true);
+
+    await queryRunner.manager.insert(AccountFieldDefinitionEntity, {
+      context: 'project',
+      name: 'comment',
+      definition: new AccountFieldTextArea({
+        schema: {
+          label: [
+            {
+              language: 'de',
+              value: 'Kommentar'
+            },
+            {
+              language: 'en',
+              value: 'Comment'
+            }
+          ],
+          placeholder: [
+            {
+              language: 'de',
+              value: 'Kommentar'
+            },
+            {
+              language: 'en',
+              value: 'Comment'
+            }
+          ]
+        }
+      }),
+      type: 'textarea',
+      remove_value_on_account_delete: true,
+      removable: false,
+      sort_order: 0
+    });
+
+    await queryRunner.manager.insert(AccountFieldDefinitionEntity, {
+        context: 'account',
+        name: 'language_skills',
+        definition: new AccountCategorySelection({
+          multipleResults: true,
+          schema: {
+            label: [
+              {
+                language: 'en',
+                value: 'Language skills'
+              },
+              {
+                language: 'de',
+                value: 'Sprachkenntnisse'
+              }
+            ],
+            selections: [
+              {
+                name: 'language',
+                options: generateLanguageOptions()
+              }
+            ]
+          }
+        }),
+        type: 'category_selection',
+        remove_value_on_account_delete: false,
+        removable: false,
+        sort_order: 0
+      }
+    );
+
+    await queryRunner.manager.insert(AccountFieldDefinitionEntity, {
+        context: 'account',
+        name: 'transcription_skills',
+        definition: new AccountFieldCheckboxes({
+          schema: {
+            label: [
+              {
+                language: 'en',
+                value: 'Transcription skills'
+              },
+              {
+                language: 'de',
+                value: 'Transkriptionserfahrungen'
+              }
+            ],
+            arrangement: 'horizontal',
+            options: [
+              {
+                label: [
+                  {
+                    language: 'en',
+                    value: 'Orthographic transcription'
+                  },
+                  {
+                    language: 'de',
+                    value: 'Orthografische Transkription'
+                  }
+                ],
+                value: 'orthographic'
+              },
+              {
+                label: [
+                  {
+                    language: 'en',
+                    value: 'Phonetic transcription'
+                  },
+                  {
+                    language: 'de',
+                    value: 'Phonetische Transkription'
+                  }
+                ],
+                value: 'phonetic'
+              }
+            ]
+          }
+        }),
+        type: 'multiple_choice',
+        remove_value_on_account_delete: false,
+        removable: false,
+        sort_order: 1
+      }
+    );
+
+    console.log(`-> Create table "account_field_value"...`);
+    await queryRunner.createTable(new Table({
+      name: 'account_field_value',
+      columns: [
+        {
+          name: 'id',
+          type: m('bigint'),
+          isPrimary: true,
+          isGenerated: true,
+          generationStrategy: 'increment'
+        },
+        {
+          name: 'account_field_definition_id',
+          type: m('bigint'),
+        },
+        {
+          name: 'account_id',
+          type: m('bigint'),
+        },
+        {
+          name: 'project_id',
+          type: m('bigint'),
+          isNullable: true
+        },
+        {
+          name: 'value',
+          type: m('text')
+        }
+      ]
+    }), true);
+
+    await queryRunner.createForeignKeys('account_field_value', [
+      new TableForeignKey({
+        referencedTableName: 'account',
+        referencedColumnNames: ['id'],
+        columnNames: ['account_id']
+      }),
+      new TableForeignKey({
+        referencedTableName: 'project',
+        referencedColumnNames: ['id'],
+        columnNames: ['project_id']
+      }),
+      new TableForeignKey({
+        referencedTableName: 'account_field_definition',
+        referencedColumnNames: ['id'],
+        columnNames: ['account_field_definition_id']
+      })
+    ]);
+
 
     console.log(`-> Create table "account_role_project"...`);
     await queryRunner.createTable(new Table({
@@ -951,7 +1091,6 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       active: true
     });
     await queryRunner.manager.insert(AccountEntity, {
-      training: '',
       comment: '',
       account_person_id: insertResult.identifiers[0].id,
       role_id: '1',
