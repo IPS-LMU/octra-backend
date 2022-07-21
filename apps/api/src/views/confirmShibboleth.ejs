@@ -15,6 +15,7 @@
     <script type="application/javascript">
       var jwtToken = "<%= locals.token %>";
       var redirectTo = "<%= locals.redirectTo %>";
+      var listOfCountries = <%- JSON.stringify(locals.listOfCountries); %>;
 
       function message_broadcast(key, value) {
         value = typeof value === "object" ? JSON.stringify(value) : value;
@@ -39,22 +40,66 @@
         var inputUserName = document.getElementById("inputUserName");
         var inputEmail = document.getElementById("inputEmail");
         var submitButton = document.getElementById("submitButton");
+        var checkDataCorrectness = document.getElementById("checkDataCorrectness");
         var checkDataPolicy = document.getElementById("checkDataPolicy");
         var checkTerms = document.getElementById("checkTerms");
+        var inputFirstname = document.getElementById("inputFirstname");
+        var inputLastname = document.getElementById("inputLastname");
+        var inputGender = document.getElementById("inputGender");
+        var inputCountry = document.getElementById("inputCountry");
+        var inputState = document.getElementById("inputState");
 
         function checkInputs() {
-          if ((window.inputUserName === undefined || window.inputUserName.value?.trim() === "") || (window.inputEmail === undefined || window.inputEmail.value.trim() === "") || !window.checkDataPolicy.checked || !window.checkTerms.checked) {
+          if (
+            (window.inputUserName === undefined || window.inputUserName.value?.trim() === "") ||
+            (window.inputEmail === undefined || window.inputEmail.value.trim() === "") ||
+            (window.inputFirstname === undefined || window.inputFirstname.value.trim() === "") ||
+            (window.inputLastname === undefined || window.inputLastname.value.trim() === "") ||
+            (window.inputGender === undefined || window.inputGender.value.trim() === "") ||
+            (window.inputCountry === undefined || window.inputCountry.value.trim() === "") ||
+            (window.inputState === undefined || window.inputState.value.trim() === "") ||
+            !window.checkDataPolicy.checked || !window.checkTerms.checked || !window.checkDataCorrectness.checked) {
             submitButton.setAttribute("disabled", "disabled");
           } else {
             submitButton.removeAttribute("disabled");
           }
         }
 
+        function setCountryStates(country) {
+          var obj = listOfCountries.find(function (a) {
+            return a.country === country
+          });
+
+          if (obj) {
+            var states = obj.states;
+
+            var result = "<option></option>";
+
+            for (var i = 0; i < states.length; i++) {
+              const state = states[i];
+              result += "\n<option value=\"" + state + "\">" + state + "</option>"
+            }
+            inputState.innerHTML = result;
+          }
+        }
+
+        function onCountrySelected(event) {
+          setCountryStates(event.target.value);
+          checkInputs();
+        }
+
         inputUserName.addEventListener("keyup", checkInputs);
         inputEmail.addEventListener("keyup", checkInputs);
         checkDataPolicy.addEventListener("change", checkInputs);
         checkTerms.addEventListener("change", checkInputs);
+        checkDataCorrectness.addEventListener("change", checkInputs);
+        inputState.addEventListener("change", checkInputs);
+        inputGender.addEventListener("change", checkInputs);
+        inputFirstname.addEventListener("keyup", checkInputs);
+        inputLastname.addEventListener("keyup", checkInputs);
+        inputCountry.addEventListener("change", onCountrySelected);
         checkInputs();
+        setCountryStates(inputCountry.value);
       };
     </script>
 </head>
@@ -63,47 +108,121 @@
     Please enable Javascript.
 </noscript>
 <% if(locals.windowURL.trim() === "" && locals.token.trim() === ""){ %>
-    <form class="form-signin" id="signinForm" method="post">
-        <h1 class="h3 mb-3 font-weight-normal" style="text-align: center;">Please register</h1>
-        <p style="text-align: justify;">
-            In order to use our services you need to create an account. The account is
-            connected to your account authenticated by Shibboleth.
-        </p>
-        <p>
-            Please fill in the form. All required fields are marked with <span
-                    class="text-danger">*</span>.
-        </p>
-        <div class="form-group mb-3 mt-3">
-            <label for="inputUserName">User name</label>
-            <input type="text" id="inputUserName" class="form-control" name="username"
-                   placeholder="Username"
-                   required="required" autofocus="">
-        </div>
-        <div class="form-group mb-3">
-            <label for="inputEmail">Email Address</label>
-            <input type="email" id="inputEmail" class="form-control" name="email" placeholder="Email address"
-                   required="required"
-                   autofocus="">
-        </div>
-        <div class="form-group" style="display: none;">
-            <input type="hidden" name="shibToken" value="<%= locals.shibToken %>"/>
-        </div>
-        <div class="form-group mt-3">
-            <input id="checkDataPolicy" type="checkbox" name="dataPolicyAccepted" value="yes" style="cursor: pointer;"/>
-            <label for="checkDataPolicy" style="cursor: pointer;">I accept the <a href="<%= locals.dataPolicyURL %>"
-                                                                                  target="_blank">data policy</a> <span
-                        class="text-danger">*</span></label>
-        </div>
-        <div class="form-group mb-3">
-            <input id="checkTerms" type="checkbox" name="termsAccepted" value="yes" style="cursor: pointer;"/>
-            <label for="checkTerms" style="cursor: pointer;">I accept the <a href="<%= locals.termsConditionsURL %>"
-                                                                             target="_blank">terms of
-                    service</a> <span
-                        class="text-danger">*</span></label>
-        </div>
-        <button class="btn btn-lg btn-primary btn-block" id="submitButton" disabled="disabled" type="submit">Sign in
-        </button>
-    </form>
+    <div class="row w-100 m-0">
+        <div class="col-sm-1"></div>
+        <form class="col-12 col-sm-10 form-signin" id="signinForm" method="post">
+            <h1 class="h3 mb-3 font-weight-normal" style="text-align: center;">Please register</h1>
+            <p style="text-align: justify;">
+                In order to use our services you need to create an account. The account is
+                connected to your account authenticated by Shibboleth.
+            </p>
+            <p>
+                Please fill in the form. All required fields are marked with <span
+                        class="text-danger">*</span>.
+            </p>
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <label for="inputUserName">Username<span
+                                class="text-danger">*</span></label>
+                    <input type="text" id="inputUserName" class="form-control form-control-sm mb-3" name="username"
+                           placeholder="Username"
+                           required="required" autofocus="">
+                </div>
+                <div class="col-md-6">
+                    <label for="inputEmail">Email Address<span
+                                class="text-danger">*</span></label>
+                    <input type="email" id="inputEmail" class="form-control form-control-sm mb-3" name="email"
+                           placeholder="Email address"
+                           required="required"
+                           autofocus="">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <label for="inputFirstname">Firstname<span
+                                class="text-danger">*</span></label>
+                    <input type="text" id="inputFirstname" class="form-control form-control-sm mb-3" name="first_name"
+                           placeholder="Firstname"
+                           required="required" autofocus="">
+                </div>
+                <div class="col-md-6">
+                    <label for="inputLastname">Lastname<span
+                                class="text-danger">*</span></label>
+                    <input type="text" id="inputLastname" class="form-control form-control-sm mb-3" name="last_name"
+                           placeholder="Lastname"
+                           required="required"
+                           autofocus="">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <label for="inputGender">Your gender<span
+                                class="text-danger">*</span></label>
+                    <select id="inputGender" name="gender" class="form-select form-select-sm mb-3"
+                            aria-label="gender selection">
+                        <option value=""></option>
+                        <option value="male">male</option>
+                        <option value="female">female</option>
+                        <option value="divers">divers</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="inputOrganization">Organization</label>
+                    <input type="text" id="inputOrganization" class="form-control form-control-sm mb-3"
+                           name="organization"
+                           placeholder="Organization"
+                           autofocus="">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <label for="inputCountry">Country<span
+                                class="text-danger">*</span></label>
+                    <select class="form-select form-select-sm mb-3" id="inputCountry" name="country">
+                        <option></option>
+                        <% for(var i = 0; i < locals.listOfCountries.length; i++) { %>
+                            <option value="<%= listOfCountries[i].country %>"><%= listOfCountries[i].country %></option>
+                        <% } %>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="inputState">State<span
+                                class="text-danger">*</span></label>
+                    <select class="form-select form-select-sm" id="inputState" name="state">
+                    </select>
+                </div>
+            </div>
+            <div class="form-group" style="display: none;">
+                <input type="hidden" name="shibToken" value="<%= locals.shibToken %>"/>
+            </div>
+            <div class="form-group mt-3">
+                <input id="checkDataCorrectness" type="checkbox" name="dataCorrectness" value="yes"
+                       style="cursor: pointer;"/>
+                <label for="checkDataCorrectness" style="cursor: pointer;">
+                    Yes, the data I filled in the form is correct.<span
+                            class="text-danger">*</span></label>
+            </div>
+            <div class="form-group">
+                <input id="checkDataPolicy" type="checkbox" name="dataPolicyAccepted" value="yes"
+                       style="cursor: pointer;"/>
+                <label for="checkDataPolicy" style="cursor: pointer;">
+                    Yes, I read and accept the <a href="<%= locals.dataPolicyURL %>" target="_blank">data policy.</a>
+                    <span
+                            class="text-danger">*</span></label>
+            </div>
+            <div class="form-group mb-3">
+                <input id="checkTerms" type="checkbox" name="termsAccepted" value="yes" style="cursor: pointer;"/>
+                <label for="checkTerms" style="cursor: pointer;">Yes, I read and accept the <a
+                            href="<%= locals.termsConditionsURL %>"
+                            target="_blank">terms of
+                        service</a> <span
+                            class="text-danger">*</span></label>
+            </div>
+            <button class="btn btn-primary btn-block" id="submitButton" disabled="disabled" type="submit">Sign up
+            </button>
+        </form>
+        <div class="col-sm-1"></div>
+    </div>
 <% } else { %>
     <p style="width:100%; text-align: center;">You are going to be redirected. Please wait...
         <br/>

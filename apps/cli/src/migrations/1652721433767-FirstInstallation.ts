@@ -14,7 +14,13 @@ import {
   OptionEntity,
   RoleEntity
 } from '@octra/server-side';
-import {AccountFieldDefinitionType, AccountRole, AccountRoleScope} from '@octra/api-types';
+import {
+  AccountFieldContext,
+  AccountFieldDefinitionType,
+  AccountPersonGender,
+  AccountRole,
+  AccountRoleScope
+} from '@octra/api-types';
 import {OctraMigration} from '../octra-migration';
 
 export class FirstInstallation1652721433767 extends OctraMigration implements MigrationInterface {
@@ -192,6 +198,63 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
         },
         {
           name: 'hash',
+          type: m('text')
+        },
+        {
+          name: 'gender',
+          type: m('text')
+        },
+        {
+          name: 'first_name',
+          type: m('text')
+        },
+        {
+          name: 'last_name',
+          type: m('text')
+        },
+        {
+          name: 'organization',
+          isNullable: true,
+          type: m('text')
+        },
+        {
+          name: 'birthday',
+          isNullable: true,
+          type: m('timestamp without time zone')
+        },
+        {
+          name: 'street',
+          isNullable: true,
+          type: m('text')
+        },
+        {
+          name: 'street_number',
+          isNullable: true,
+          type: m('text')
+        },
+        {
+          name: 'phone',
+          isNullable: true,
+          type: m('text')
+        },
+        {
+          name: 'town',
+          isNullable: true,
+          type: m('text')
+        },
+        {
+          name: 'postcode',
+          isNullable: true,
+          type: m('text')
+        },
+        {
+          name: 'state',
+          isNullable: true,
+          type: m('text')
+        },
+        {
+          name: 'country',
+          isNullable: true,
           type: m('text')
         },
         {
@@ -507,7 +570,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
     }), true);
 
     await queryRunner.manager.insert(AccountFieldDefinitionEntity, {
-      context: 'project',
+      context: AccountFieldContext.project,
       name: 'comment',
       definition: new AccountFieldTextArea({
         schema: {
@@ -540,17 +603,17 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
     });
 
     await queryRunner.manager.insert(AccountFieldDefinitionEntity, {
-        context: 'account',
-        name: 'language_skills',
-        definition: new AccountCategorySelection({
-          multipleResults: true,
-          schema: {
-            label: [
-              {
-                language: 'en',
-                value: 'Language skills'
-              },
-              {
+      context: AccountFieldContext.account,
+      name: 'language_skills',
+      definition: new AccountCategorySelection({
+        multipleResults: true,
+        schema: {
+          label: [
+            {
+              language: 'en',
+              value: 'Language skills'
+            },
+            {
                 language: 'de',
                 value: 'Sprachkenntnisse'
               }
@@ -571,7 +634,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
     );
 
     await queryRunner.manager.insert(AccountFieldDefinitionEntity, {
-        context: 'account',
+        context: AccountFieldContext.account,
         name: 'transcription_skills',
         definition: new AccountFieldCheckboxes({
           schema: {
@@ -616,7 +679,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
             ]
           }
         }),
-        type: 'multiple_choice',
+        type: AccountFieldDefinitionType.multiple_choice,
         remove_value_on_account_delete: false,
         removable: false,
         sort_order: 1
@@ -1091,6 +1154,12 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
     console.log(`-> Create first administrator..."`);
     const insertResult = await queryRunner.manager.insert(AccountPersonEntity, {
       username: admin_name,
+      gender: AccountPersonGender.male,
+      first_name: 'Standard',
+      last_name: 'Admin',
+      postcode: '12345',
+      state: 'Bavaria',
+      country: 'Germany',
       email: process.env['ADMIN_MAIL'],
       loginmethod: 'local',
       hash: getPasswordHash(this.config.api.security.keys.password.salt, password),

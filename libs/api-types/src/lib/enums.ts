@@ -66,3 +66,9 @@ export enum AccountFieldContext {
   'project' = 'project',
   'account' = 'account'
 }
+
+export enum AccountPersonGender {
+  'male' = 'male',
+  'female' = 'female',
+  'divers' = 'divers'
+}

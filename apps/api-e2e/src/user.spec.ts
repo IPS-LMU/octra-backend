@@ -14,6 +14,7 @@ import {
 import {ProjectRequestDto, ProjectRoleDto} from '../../api/src/app/core/project/project.dto';
 import {
   AccountLoginMethod,
+  AccountPersonGender,
   AccountRole,
   PolicyType,
   ProjectRemoveRequestDto,
@@ -57,9 +58,14 @@ describe('OCTRA Nest API (e2e)', () => {
     it('/account/register (POST)', () => {
       return request(app.getHttpServer())
         .post('/account/register').send({
-          'name': testState.user.name,
-          'password': 'Test123',
-          'email': testState.user.email
+          username: testState.user.name,
+          gender: AccountPersonGender.male,
+          first_name: 'Test',
+          last_name: 'Person',
+          country: 'Germany',
+          state: 'Bavaria',
+          password: 'Test123',
+          email: testState.user.email
         } as AccountRegisterRequestDto)
         .set('X-App-Token', `${appToken}`)
         .set('Origin', 'http://localhost:8080')
@@ -88,9 +94,14 @@ describe('OCTRA Nest API (e2e)', () => {
 
   it('/account/ (POST)', () => {
     return Auth.post('/account', {
-      'name': testState.user.name,
-      'password': 'Test1234',
-      'email': testState.user.email,
+      username: testState.user.name,
+      password: 'Test1234',
+      email: testState.user.email,
+      gender: AccountPersonGender.male,
+      first_name: 'Test',
+      last_name: 'Person',
+      country: 'Germany',
+      state: 'Bavaria',
       role: 'data_delivery'
     } as AccountCreateRequestDto, false)
       .expect(403);

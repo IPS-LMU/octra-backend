@@ -191,9 +191,14 @@ export class AccountService {
       });
 
       let insertResult = await manager.insert(AccountPersonEntity, {
-        username: dto.name,
+        username: dto.username,
         hash: (loginmethod === AccountLoginMethod.local) ? getPasswordHash(this.configService.get('api.security.keys.password.salt'), dto.password) : dto.password,
         email: dto.email,
+        gender: dto.gender,
+        first_name: dto.first_name,
+        last_name: dto.last_name,
+        state: dto.state,
+        country: dto.country,
         loginmethod
       });
 

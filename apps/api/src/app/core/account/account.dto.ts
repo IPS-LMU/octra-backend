@@ -1,9 +1,15 @@
 import {StandardWithTimeDto} from '../standard.dto';
-import {IsArray, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString} from 'class-validator';
+import {IsArray, IsDate, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString} from 'class-validator';
 import {Expose, Transform, Type} from 'class-transformer';
 import {ApiProperty, OmitType, PartialType} from '@nestjs/swagger';
-import {AccountLoginMethod, AccountRole, AccountRoleScope} from '@octra/api-types';
-import {AccountEntity, AccountRoleProjectEntity, IsOptionalEnum, removeProperties} from '@octra/server-side';
+import {AccountLoginMethod, AccountPersonGender, AccountRole, AccountRoleScope} from '@octra/api-types';
+import {
+  AccountEntity,
+  AccountRoleProjectEntity,
+  IsOptionalEnum,
+  IsOptionalString,
+  removeProperties
+} from '@octra/server-side';
 
 export class RoleDto {
   @IsNotEmpty()
@@ -99,6 +105,45 @@ export class AccountDto extends StandardWithTimeDto {
     example: 'local'
   })
   loginmethod: AccountLoginMethod;
+
+  @IsString()
+  gender: string;
+
+  @IsString()
+  first_name: string;
+
+  @IsString()
+  last_name: string;
+
+  @IsOptional()
+  @IsDate()
+  birthday: string;
+
+  @IsOptional()
+  @IsString()
+  street: string;
+
+  @IsOptional()
+  @IsString()
+  street_number: string;
+
+  @IsOptional()
+  @IsString()
+  phone: string;
+
+  @IsOptional()
+  @IsString()
+  town: string;
+
+  @IsString()
+  postcode: string;
+
+  @IsString()
+  state: string;
+
+  @IsString()
+  country: string;
+
   @IsNotEmpty()
   @ApiProperty({
     description: 'describes if the account is active.',
@@ -171,7 +216,7 @@ export class AccountRegisterRequestDto extends StandardWithTimeDto {
     description: 'account name',
     example: 'testuser'
   })
-  name: string;
+  username: string;
   @IsNotEmpty()
   @ApiProperty({
     description: 'password of the account',
@@ -184,6 +229,24 @@ export class AccountRegisterRequestDto extends StandardWithTimeDto {
     example: 'test@test.com'
   })
   email: string;
+
+  @IsString()
+  gender: AccountPersonGender;
+
+  @IsString()
+  first_name: string;
+
+  @IsString()
+  last_name: string;
+
+  @IsOptionalString()
+  organization: string;
+
+  @IsString()
+  state: string;
+
+  @IsString()
+  country: string;
 }
 
 export class AccountCreateRequestDto extends AccountRegisterRequestDto {

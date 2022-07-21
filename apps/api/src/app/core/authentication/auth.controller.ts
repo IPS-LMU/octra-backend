@@ -22,7 +22,7 @@ import * as jwt from 'jsonwebtoken';
 import {ConfigService} from '@nestjs/config';
 import {SHA256} from 'crypto-js';
 import {AccountService} from '../account';
-import {AccountLoginMethod, AccountRole} from '@octra/api-types';
+import {AccountLoginMethod, AccountRole, CountryStates} from '@octra/api-types';
 import {Request, Response} from 'express';
 import {JWTPayload} from './jwt.types';
 import {JwtService} from '@nestjs/jwt';
@@ -133,7 +133,8 @@ export class AuthController {
       baseURL: this.configService.get('api.baseURL'),
       dataPolicyURL,
       termsConditionsURL,
-      redirectTo: redirectTo ?? ''
+      redirectTo: redirectTo ?? '',
+      listOfCountries: CountryStates
     });
   }
 
@@ -182,7 +183,8 @@ export class AuthController {
           dataPolicyURL,
           termsConditionsURL,
           redirectTo: redirectTo ?? '',
-          windowURL
+          windowURL,
+          listOfCountries: CountryStates
         });
       }
 
@@ -195,8 +197,14 @@ export class AuthController {
           // user wants to create a new account
           // save user
           const createUser: AccountCreateRequestDto = {
-            name: body.username,
+            username: body.username,
             email: body.email,
+            first_name: body.first_name,
+            last_name: body.last_name,
+            gender: body.gender,
+            country: body.country,
+            organization: body.organization,
+            state: body.state,
             id: undefined,
             role: AccountRole.user,
             creationdate: new Date(),
@@ -217,6 +225,7 @@ export class AuthController {
             redirectTo: redirectTo ?? '',
             dataPolicyURL,
             termsConditionsURL,
+            listOfCountries: CountryStates
           });
         }
       }
