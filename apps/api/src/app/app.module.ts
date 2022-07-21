@@ -25,6 +25,8 @@ import {ServeStaticModule} from '@nestjs/serve-static';
 import {join} from 'path';
 import {SettingsModule} from './core/settings/settings.module';
 import {PolicyModule} from './core/policy/policy.module';
+import {AccountFieldsModule} from './core/account/fields';
+import {ProjectFieldsModule} from './core/project/fields';
 
 const config = Configuration.getInstance();
 
@@ -50,6 +52,8 @@ const TypeORMOptions: TypeOrmModuleOptions = {
     ToolModule,
     PolicyModule,
     SettingsModule,
+    AccountFieldsModule,
+    ProjectFieldsModule,
     ConfigModule.forRoot({
       load: [() => (config)],
       ignoreEnvFile: true,

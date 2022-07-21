@@ -14,7 +14,7 @@ import {
   OptionEntity,
   RoleEntity
 } from '@octra/server-side';
-import {AccountRole, AccountRoleScope} from '@octra/api-types';
+import {AccountFieldDefinitionType, AccountRole, AccountRoleScope} from '@octra/api-types';
 import {OctraMigration} from '../octra-migration';
 
 export class FirstInstallation1652721433767 extends OctraMigration implements MigrationInterface {
@@ -472,6 +472,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
         },
         {
           name: 'name',
+          isUnique: true,
           type: m('text'),
         },
         {
@@ -489,6 +490,11 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
         },
         {
           name: 'removable',
+          type: m('boolean'),
+          default: true
+        },
+        {
+          name: 'active',
           type: m('boolean'),
           default: true
         },
@@ -527,7 +533,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
           ]
         }
       }),
-      type: 'textarea',
+      type: AccountFieldDefinitionType.longtext,
       remove_value_on_account_delete: true,
       removable: false,
       sort_order: 0
@@ -557,7 +563,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
             ]
           }
         }),
-        type: 'category_selection',
+        type: AccountFieldDefinitionType.category_selection,
         remove_value_on_account_delete: false,
         removable: false,
         sort_order: 0

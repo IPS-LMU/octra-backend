@@ -51,3 +51,18 @@ export enum PolicyType {
   'privacy' = 'privacy',
   'terms_and_conditions' = 'terms and conditions'
 }
+
+export enum AccountFieldDefinitionType {
+  'longtext' = 'longtext',
+  'text' = 'text',
+  'selection' = 'selection',
+  'category_selection' = 'category_selection',
+  'multiple_choice' = 'multiple_choice',
+  'radio_buttons' = 'radio_buttons',
+  'boolean' = 'boolean'
+}
+
+export enum AccountFieldContext {
+  'project' = 'project',
+  'account' = 'account'
+}

@@ -3,22 +3,24 @@ import {StandardEntity} from './standard-entities';
 import {DbAwareColumn} from '../decorators';
 import {AccountEntity, ProjectEntity} from '@octra/server-side';
 import {AccountFieldDefinition} from '../../account-fields';
+import {AccountFieldContext, AccountFieldDefinitionType} from '@octra/api-types';
 
 @Entity({name: 'account_field_definition'})
 export class AccountFieldDefinitionEntity extends StandardEntity {
   @DbAwareColumn({
     type: 'text'
   })
-  context!: string;
+  context!: AccountFieldContext;
 
   @DbAwareColumn({
-    type: 'text'
+    type: 'text',
+    unique: true
   })
   name!: string;
   @DbAwareColumn({
     type: 'text'
   })
-  type!: string;
+  type!: AccountFieldDefinitionType;
   @DbAwareColumn({
     type: 'jsonb'
   })
@@ -35,6 +37,12 @@ export class AccountFieldDefinitionEntity extends StandardEntity {
     default: false
   })
   removable!: boolean;
+
+  @DbAwareColumn({
+    type: 'boolean',
+    default: true
+  })
+  active!: boolean;
 
   @DbAwareColumn({
     type: 'integer',
