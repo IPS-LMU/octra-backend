@@ -16,13 +16,13 @@ import {
   AccountLoginMethod,
   AccountPersonGender,
   AccountRole,
+  ContentType,
   PolicyType,
   ProjectRemoveRequestDto,
   ProjectVisibility
 } from '@octra/api-types';
 import {ToolCreateRequestDto, ToolDto} from '../../api/src/app/core/tool/tool.dto';
 import {TaskDto, TaskProperties} from '../../api/src/app/core/project/tasks';
-import {SaveAnnotationDto} from '../../api/src/app/core/project/annotations/annotation.dto';
 import {GuidelinesDto} from 'apps/api/src/app/core/project/guidelines/guidelines.dto';
 import {AnnotJSONType, TranscriptDto} from '@octra/server-side';
 import {GeneralSettingsDto} from '../../api/src/app/core/settings/settings.dto';
@@ -88,8 +88,6 @@ describe('OCTRA Nest API admin (e2e)', () => {
         .expect(201).then(({body}: { body: AuthDto }) => {
           testState.admin.jwtToken = body.accessToken;
           testState.admin.id = body.account.id;
-        }).catch((e) => {
-          console.log(e)
         })
     });
 
@@ -274,7 +272,7 @@ describe('OCTRA Nest API admin (e2e)', () => {
           orgtext: 'asdas',
           files_destination: 'test/../../../test2'
         }))
-        .field('transcriptType', 'AnnotJSON')
+        .field('content_type', ContentType.AnnotJSON)
         .field('transcript', JSON.stringify({
           sampleRate: 16000,
           levels: [{
@@ -288,6 +286,8 @@ describe('OCTRA Nest API admin (e2e)', () => {
         .expect(201).then(({body}: { body: TaskDto }) => {
           testState.task.id = body.id;
           testState.mediaItem.url = body.inputs[0].url;
+        }).catch((e) => {
+          throw new Error(e);
         })
     });
 
@@ -300,7 +300,6 @@ describe('OCTRA Nest API admin (e2e)', () => {
           orgtext: 'asdas',
           files_destination: 'test/../../../test3'
         }))
-        .field('transcriptType', 'AnnotJSON')
         .attach('inputs[]', './testfiles/WebTranscribe.wav', 'WebTranscribe.wav')
         .auth(testState.admin.jwtToken, {type: 'bearer'})
         .expect(201).then(({body}: { body: TaskDto }) => {
@@ -316,7 +315,7 @@ describe('OCTRA Nest API admin (e2e)', () => {
           type: 'annotation',
           orgtext: 'asdas'
         }))
-        .field('transcriptType', 'AnnotJSON')
+        .field('content_type', ContentType.AnnotJSON)
         .attach('inputs[]', './data/files/tmp/test.json', 'test.json')
         .attach('inputs[]', './testfiles/WebTranscribe.wav', 'WebTranscribe.wav')
         .auth(testState.admin.jwtToken, {type: 'bearer'})
@@ -335,7 +334,7 @@ describe('OCTRA Nest API admin (e2e)', () => {
           type: 'annotation',
           orgtext: 'asdas'
         }))
-        .field('transcriptType', 'Text')
+        .field('content_type', ContentType.Text)
         .attach('inputs[]', './data/files/tmp/test.txt', 'test.txt')
         .attach('inputs[]', './testfiles/WebTranscribe.wav', 'WebTranscribe.wav')
         .auth(testState.admin.jwtToken, {type: 'bearer'})
@@ -352,7 +351,7 @@ describe('OCTRA Nest API admin (e2e)', () => {
           type: 'annotation',
           assessment: 'ok'
         } as TaskProperties))
-        .field('transcriptType', 'AnnotJSON')
+        .field('content_type', ContentType.AnnotJSON)
         .field('transcript', JSON.stringify({
           sampleRate: 16000,
           levels: [{
@@ -376,7 +375,7 @@ describe('OCTRA Nest API admin (e2e)', () => {
           type: 'annotation',
           assessment: 'ok'
         } as TaskProperties))
-        .field('transcriptType', 'Text')
+        .field('content_type', ContentType.Text)
         .field('transcript', 'this is a test inline transcript')
         .attach('inputs[]', './testfiles/WebTranscribe2.wav', 'WebTranscribe2.wav')
         .auth(testState.admin.jwtToken, {type: 'bearer'})
@@ -393,7 +392,6 @@ describe('OCTRA Nest API admin (e2e)', () => {
           type: 'annotation',
           assessment: 'ok2'
         } as TaskProperties))
-        .field('transcriptType', 'AnnotJSON')
         .attach('inputs[]', './testfiles/WebTranscribe2.wav', 'WebTranscribe2.wav')
         .auth(testState.admin.jwtToken, {type: 'bearer'})
         .expect(200).then(({body}: { body: TaskDto }) => {
@@ -410,7 +408,7 @@ describe('OCTRA Nest API admin (e2e)', () => {
           assessment: 'ok2',
           status: 'FREE'
         } as TaskProperties))
-        .field('transcriptType', 'AnnotJSON')
+        .field('content_type', ContentType.AnnotJSON)
         .attach('inputs[]', './data/files/tmp/test2.json', 'test2.json')
         .attach('inputs[]', './testfiles/WebTranscribe2.wav', 'WebTranscribe2.wav')
         .auth(testState.admin.jwtToken, {type: 'bearer'})
@@ -428,7 +426,7 @@ describe('OCTRA Nest API admin (e2e)', () => {
           assessment: 'ok2',
           status: 'BUSY'
         } as TaskProperties))
-        .field('transcriptType', 'Text')
+        .field('content_type', ContentType.Text)
         .attach('inputs[]', './data/files/tmp/test2.txt', 'test2.txt')
         .attach('inputs[]', './testfiles/WebTranscribe2.wav', 'WebTranscribe2.wav')
         .auth(testState.admin.jwtToken, {type: 'bearer'})
@@ -446,7 +444,7 @@ describe('OCTRA Nest API admin (e2e)', () => {
           assessment: 'ok3',
           status: 'FREE'
         } as TaskProperties))
-        .field('transcriptType', 'Text')
+        .field('content_type', ContentType.Text)
         .auth(testState.admin.jwtToken, {type: 'bearer'})
         .expect(200).then(({body}: { body: TaskDto }) => {
           testState.task.id = body.id;
@@ -472,9 +470,7 @@ describe('OCTRA Nest API admin (e2e)', () => {
     it('/projects/:project_id/annotations/:task_id/continue/ (POST)', () => {
       return Auth.put(`/projects/${testState.project.id}/annotations/${testState.task.id}/continue`, undefined).expect(200).then(({body}) => {
         testState.task.id = body.id;
-      }).catch((a) => {
-        const t = a;
-      });
+      })
     });
 
     it('/projects/project_id/annotations/save/ (PUT)', () => {
@@ -482,7 +478,9 @@ describe('OCTRA Nest API admin (e2e)', () => {
         assessment: 'assessment', code: 'code', comment: 'comment', log: [{
           name: 'tzas',
           value: 'uiahs'
-        }], orgtext: 'orgtext', transcript: {
+        }], orgtext: 'orgtext',
+        content_type: ContentType.AnnotJSON,
+        transcript: {
           sampleRate: 16000,
           levels: [{
             name: 'OCTRA',
@@ -499,7 +497,7 @@ describe('OCTRA Nest API admin (e2e)', () => {
           }]
         },
         pid: 'test'
-      } as SaveAnnotationDto).expect(200).then(({body}) => {
+      }).expect(200).then(({body}) => {
         const t = body;
       }).catch((e) => {
         console.log(e);
@@ -509,17 +507,13 @@ describe('OCTRA Nest API admin (e2e)', () => {
     it('/projects/:project_id/annotations/:task_id/resume/ (POST)', () => {
       return Auth.put(`/projects/${testState.project.id}/annotations/${testState.task.id}/resume`, undefined).expect(200).then(({body}) => {
         testState.task.id = body.id;
-      }).catch((a) => {
-        const t = a;
-      });
+      })
     });
 
     it('/projects/project_id/annotations/free/ (POST)', () => {
       return Auth.put(`/projects/${testState.project.id}/annotations/${testState.task.id}/free`, undefined).expect(200).then(({body}) => {
         testState.task.id = body.id;
-      }).catch((a) => {
-        const t = a;
-      });
+      })
     });
 
     it('/files/:encryptedPath/:fileName (GET)', () => {

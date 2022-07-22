@@ -22,13 +22,11 @@ import {TaskInputOutputCreatorType, TaskStatus} from '@octra/api-types';
 import {DatabaseService} from '../../../database.service';
 import {SaveAnnotationDto} from '../annotations/annotation.dto';
 import {
-  AnnotJSONType,
   FileProjectEntity,
   removeNullAttributes,
   removeProperties,
   TaskEntity,
-  TaskInputOutputEntity,
-  TranscriptType
+  TaskInputOutputEntity
 } from '@octra/server-side';
 import {ForbiddenResource} from '../../../obj/exceptions';
 import {FileProjectCreateDto} from '../../files/file.project.dto';
@@ -76,30 +74,7 @@ export class TasksService {
 
     if (transcriptFile) {
       //read transcript file
-      const content = await readFile(transcriptFile.path, 'utf-8');
-      if (body.transcriptType === TranscriptType.AnnotJSON) {
-        body.transcript = JSON.parse(content);
-      } else {
-        body.transcript = {
-          links: [],
-          annotates: mediaFile.originalName,
-          name: `${Path.parse(mediaFile.originalName).name}_annot.json`,
-          sampleRate: dbFile.metadata.sampleRate,
-          levels: [{
-            name: 'TRN',
-            type: AnnotJSONType.SEGMENT,
-            items: [{
-              sampleStart: 0,
-              sampleDur: dbFile.metadata.duration.samples,
-              id: 1,
-              labels: [{
-                name: 'TRN',
-                value: content
-              }]
-            }]
-          }]
-        };
-      }
+      body.transcript = await readFile(transcriptFile.path, 'utf-8');
     }
 
 
@@ -108,7 +83,6 @@ export class TasksService {
       path: dbFile.path ?? dbFile.url
     }
 
-    body = await this.adaptConvertedTranscript(body, mediaFile, dbFile) as any;
     taskProperties.status = TaskStatus.draft;
     const id = await this.addChangeNewTask(project_id, body, dbFile, reqData, taskProperties);
     return this.getTask(project_id, id);
@@ -146,30 +120,7 @@ export class TasksService {
 
     if (transcriptFile) {
       //read transcript file
-      const content = await readFile(transcriptFile.path, 'utf-8');
-      if (body.transcriptType === TranscriptType.AnnotJSON) {
-        body.transcript = JSON.parse(content);
-      } else {
-        body.transcript = {
-          links: [],
-          annotates: mediaFile.originalName,
-          name: `${Path.parse(mediaFile.originalName).name}_annot.json`,
-          sampleRate: dbFile.metadata.sampleRate,
-          levels: [{
-            name: 'TRN',
-            type: AnnotJSONType.SEGMENT,
-            items: [{
-              sampleStart: 0,
-              sampleDur: dbFile.metadata.duration.samples,
-              id: 1,
-              labels: [{
-                name: 'TRN',
-                value: content
-              }]
-            }]
-          }]
-        };
-      }
+      body.transcript = await readFile(transcriptFile.path, 'utf-8');
     }
 
     reqData = {
@@ -177,7 +128,6 @@ export class TasksService {
       path: ''
     }
 
-    body = await this.adaptConvertedTranscript(body, mediaFile, dbFile);
     await this.addChangeNewTask(project_id, body, dbFile, reqData, taskProperties, task);
     return this.getTask(project_id, task_id);
   }
@@ -278,7 +228,8 @@ export class TasksService {
           type: 'input',
           creator_type: TaskInputOutputCreatorType.user,
           label: 'transcript',
-          content: body.transcript
+          content: body.transcript,
+          content_type: body.content_type
         } as TaskInputOutputEntity;
 
         // insert or update transcript
@@ -452,6 +403,7 @@ export class TasksService {
         task_id: task.id,
         type: 'output',
         content: dto.transcript,
+        content_type: dto.content_type,
         creator_type: TaskInputOutputCreatorType.user,
         label: 'transcript'
       });
@@ -459,7 +411,7 @@ export class TasksService {
       const updateResult = await manager.update(TaskEntity, {
         id: task.id
       }, {
-        ...removeProperties(dto, ['transcript']),
+        ...removeProperties(dto, ['transcript', 'content_type']),
         status: TaskStatus.finished,
         enddate: new Date().toISOString(),
         worker_id
@@ -536,22 +488,6 @@ export class TasksService {
         relations: ['inputsOutputs', 'inputsOutputs.file_project'],
       });
     });
-  }
-
-  private async adaptConvertedTranscript(body: TaskUploadDto | TaskChangeDto, mediaFile: FileHashStorage, dbFile: FileProjectEntity) {
-    if (body.transcript && body.transcriptType === TranscriptType.Text) {
-      // adapt transcript
-      body.transcript.annotates = mediaFile.originalName;
-      body.transcript.name = `${Path.parse(mediaFile.originalName).name}_annot.json`;
-      if (dbFile.metadata.sampleRate && dbFile.metadata.sampleRate > 0) {
-        body.transcript.sampleRate = dbFile.metadata.sampleRate;
-      }
-      if (dbFile.metadata.duration.samples && dbFile.metadata.duration.samples > 0) {
-        body.transcript.levels[0].items[0].sampleDur = dbFile.metadata.duration.samples;
-      }
-      body.transcript.levels[0].name = 'TRN';
-    }
-    return body;
   }
 
   private async removeTempFiles(mediaFiles: FileHashStorage[]) {

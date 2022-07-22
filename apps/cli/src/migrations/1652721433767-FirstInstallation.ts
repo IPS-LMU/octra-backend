@@ -1084,8 +1084,13 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
           isNullable: true
         },
         {
+          name: 'content_type',
+          type: m('text'),
+          isNullable: true
+        },
+        {
           name: 'content',
-          type: m('json'),
+          type: m('text'),
           isNullable: true
         }
       ]

@@ -2,12 +2,6 @@ import {IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNes
 import {Type} from 'class-transformer';
 import {IsOptionalNumber, IsOptionalString} from '../typeorm/decorators';
 
-
-export enum TranscriptType {
-  'Text' = 'Text',
-  'AnnotJSON' = 'AnnotJSON'
-}
-
 export class TranscriptDto {
   @IsOptionalString()
   name!: string;

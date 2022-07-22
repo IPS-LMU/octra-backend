@@ -16,13 +16,13 @@ import {
   AccountLoginMethod,
   AccountPersonGender,
   AccountRole,
+  ContentType,
   PolicyType,
   ProjectRemoveRequestDto,
   ProjectVisibility
 } from '@octra/api-types';
 import {ToolCreateRequestDto} from '../../api/src/app/core/tool/tool.dto';
 import {TaskProperties} from '../../api/src/app/core/project/tasks';
-import {SaveAnnotationDto} from '../../api/src/app/core/project/annotations/annotation.dto';
 import {GuidelinesDto} from 'apps/api/src/app/core/project/guidelines/guidelines.dto';
 import {AnnotJSONType, TranscriptDto} from '@octra/server-side';
 import {GeneralSettingsDto} from '../../api/src/app/core/settings/settings.dto';
@@ -260,7 +260,7 @@ describe('Projects', () => {
         orgtext: 'asdas',
         files_destination: 'test/../../../test2'
       }))
-      .field('transcriptType', 'AnnotJSON')
+      .field('content_type', ContentType.AnnotJSON)
       .field('transcript', JSON.stringify({
         sampleRate: 16000,
         levels: [{
@@ -283,7 +283,7 @@ describe('Projects', () => {
         orgtext: 'asdas',
         files_destination: 'test/../../../test3'
       }))
-      .field('transcriptType', 'AnnotJSON')
+      .field('content_type', ContentType.AnnotJSON)
       .attach('inputs[]', './testfiles/WebTranscribe.wav', 'WebTranscribe.wav')
       .auth(testState.user.jwtToken, {type: 'bearer'})
       .expect(403);
@@ -297,7 +297,7 @@ describe('Projects', () => {
         type: 'annotation',
         orgtext: 'asdas'
       }))
-      .field('transcriptType', 'AnnotJSON')
+      .field('content_type', ContentType.AnnotJSON)
       .attach('inputs[]', './data/files/tmp/test.json', 'test.json')
       .attach('inputs[]', './testfiles/WebTranscribe.wav', 'WebTranscribe.wav')
       .auth(testState.user.jwtToken, {type: 'bearer'})
@@ -312,7 +312,7 @@ describe('Projects', () => {
         type: 'annotation',
         orgtext: 'asdas'
       }))
-      .field('transcriptType', 'Text')
+      .field('content_type', ContentType.Text)
       .attach('inputs[]', './data/files/tmp/test.txt', 'test.txt')
       .attach('inputs[]', './testfiles/WebTranscribe.wav', 'WebTranscribe.wav')
       .auth(testState.user.jwtToken, {type: 'bearer'})
@@ -327,7 +327,7 @@ describe('Projects', () => {
         type: 'annotation',
         assessment: 'ok'
       } as TaskProperties))
-      .field('transcriptType', 'AnnotJSON')
+      .field('content_type', ContentType.Text)
       .field('transcript', JSON.stringify({
         sampleRate: 16000,
         levels: [{
@@ -349,7 +349,7 @@ describe('Projects', () => {
         type: 'annotation',
         assessment: 'ok'
       } as TaskProperties))
-      .field('transcriptType', 'Text')
+      .field('content_type', ContentType.Text)
       .field('transcript', 'this is a test inline transcript')
       .attach('inputs[]', './testfiles/WebTranscribe2.wav', 'WebTranscribe2.wav')
       .auth(testState.user.jwtToken, {type: 'bearer'})
@@ -364,7 +364,7 @@ describe('Projects', () => {
         type: 'annotation',
         assessment: 'ok2'
       } as TaskProperties))
-      .field('transcriptType', 'AnnotJSON')
+      .field('content_type', ContentType.AnnotJSON)
       .attach('inputs[]', './testfiles/WebTranscribe2.wav', 'WebTranscribe2.wav')
       .auth(testState.user.jwtToken, {type: 'bearer'})
       .expect(403);
@@ -379,7 +379,7 @@ describe('Projects', () => {
         assessment: 'ok2',
         status: 'FREE'
       } as TaskProperties))
-      .field('transcriptType', 'AnnotJSON')
+      .field('content_type', ContentType.AnnotJSON)
       .attach('inputs[]', './data/files/tmp/test2.json', 'test2.json')
       .attach('inputs[]', './testfiles/WebTranscribe2.wav', 'WebTranscribe2.wav')
       .auth(testState.user.jwtToken, {type: 'bearer'})
@@ -395,7 +395,7 @@ describe('Projects', () => {
         assessment: 'ok2',
         status: 'BUSY'
       } as TaskProperties))
-      .field('transcriptType', 'Text')
+      .field('content_type', ContentType.Text)
       .attach('inputs[]', './data/files/tmp/test2.txt', 'test2.txt')
       .attach('inputs[]', './testfiles/WebTranscribe2.wav', 'WebTranscribe2.wav')
       .auth(testState.user.jwtToken, {type: 'bearer'})
@@ -411,7 +411,7 @@ describe('Projects', () => {
         assessment: 'ok3',
         status: 'FREE'
       } as TaskProperties))
-      .field('transcriptType', 'Text')
+      .field('content_type', ContentType.Text)
       .auth(testState.user.jwtToken, {type: 'bearer'})
       .expect(403);
   });
@@ -454,7 +454,7 @@ describe('Projects', () => {
         }]
       },
       pid: 'test'
-    } as SaveAnnotationDto, false).expect(403)
+    }, false).expect(403)
   });
 
   it('/projects/:project_id/annotations/:task_id/resume/ (POST)', () => {

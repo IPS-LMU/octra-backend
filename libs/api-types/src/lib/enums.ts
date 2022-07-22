@@ -72,3 +72,9 @@ export enum AccountPersonGender {
   'female' = 'female',
   'divers' = 'divers'
 }
+
+export enum ContentType {
+  'Text' = 'Text',
+  'AnnotJSON' = 'AnnotJSON',
+  'Textgrid' = 'Textgrid',
+}

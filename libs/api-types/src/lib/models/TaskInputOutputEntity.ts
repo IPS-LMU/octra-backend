@@ -25,7 +25,8 @@ export class TaskInputOutputEntity {
   'description'?: string;
   'filename'?: string;
   'url'?: string;
-  'content'?: TranscriptDto;
+  'content_type'?: string;
+  'content'?: string;
 
   static readonly discriminator: string | undefined = undefined;
 

@@ -57,7 +57,8 @@ export class AnnotationController {
   @CustomApiException(new NotFoundException(`Can't find any project with this id.`))
   @Put(':project_id/annotations/:task_id/save')
   async saveAnnotation(@Param('project_id', NumericStringValidationPipe) project_id: string, @Param('task_id', NumericStringValidationPipe) task_id: string, @Body() dto: SaveAnnotationDto, @Req() req: InternRequest): Promise<TaskDto> {
-    return new TaskDto(removeNullAttributes(await this.tasksService.saveAnnotationData(project_id, task_id, req.user.userId, dto, req)));
+    const result = await this.tasksService.saveAnnotationData(project_id, task_id, req.user.userId, dto, req);
+    return new TaskDto(removeNullAttributes(result));
   }
 
   /**

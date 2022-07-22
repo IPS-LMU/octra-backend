@@ -1,6 +1,7 @@
-import {IsArray, IsObject, IsOptional} from 'class-validator';
-import {Type} from 'class-transformer';
+import {IsArray, IsEnum, IsObject, IsOptional} from 'class-validator';
+import {Transform} from 'class-transformer';
 import {IsOptionalNotEmptyString, IsOptionalNumber, IsOptionalString, TranscriptDto} from '@octra/server-side';
+import {ContentType} from '@octra/api-types';
 
 export class SaveAnnotationDto {
   /* id for scientific issues */
@@ -28,9 +29,17 @@ export class SaveAnnotationDto {
   log?: any[];
 
   @IsOptional()
-  @IsObject()
-  @Type(() => TranscriptDto)
-  transcript: TranscriptDto
+  @Transform(({value}) => {
+    if (typeof value === 'object') {
+      return JSON.stringify(value);
+    }
+    return value;
+  })
+  transcript?: string;
+
+  @IsOptional()
+  @IsEnum(ContentType)
+  content_type?: ContentType
 
   constructor(partial: Partial<TranscriptDto>) {
     Object.assign(this, partial);

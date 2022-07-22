@@ -1,4 +1,4 @@
-import {plainToInstance, Transform, Type} from 'class-transformer';
+import {Transform, Type} from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -13,18 +13,15 @@ import {
 } from 'class-validator';
 import {HasMimeType, IsFiles} from 'nestjs-form-data';
 import {FileHashStorage} from '../../../obj/file-hash-storage';
-import {AudioFileMetaData, TaskInputOutputCreatorType, TaskStatus} from '@octra/api-types';
+import {AudioFileMetaData, ContentType, TaskInputOutputCreatorType, TaskStatus} from '@octra/api-types';
 import {StandardWithTimeDto} from '../../standard.dto';
 import {
-  AnnotJSONType,
   IsOptionalEnum,
   IsOptionalNotEmptyString,
   IsOptionalNumber,
   IsOptionalString,
   removeProperties,
-  TaskEntity,
-  TranscriptDto,
-  TranscriptType
+  TaskEntity
 } from '@octra/server-side';
 import {ApiProperty} from '@nestjs/swagger';
 
@@ -145,12 +142,21 @@ export class TaskInputOutputDto {
   description?: string;
   filename: string;
   url: string;
-  content?: any;
+  content_type: string;
+  content: any;
   fileType?: string;
   size?: number;
   metadata?: AudioFileMetaData;
 
   constructor(partial: Partial<TaskInputOutputDto>) {
+    if (partial.content_type === ContentType.AnnotJSON) {
+      try {
+        const parsed = JSON.parse(partial.content);
+        partial.content = parsed;
+      } catch (e) {
+        // ignore
+      }
+    }
     Object.assign(this, partial);
   }
 }
@@ -187,6 +193,7 @@ export class TaskDto extends StandardWithTimeDto {
       filename: a.filename ?? a.file_project?.real_name,
       url: a.url ?? (a.file_project?.path ?? a.file_project?.url),
       content: a.content,
+      content_type: a.content_type,
       fileType: a.file_project?.type,
       size: a.file_project?.size,
       metadata: a.file_project?.metadata
@@ -234,46 +241,24 @@ export class TaskUploadDto {
   /**
    * the type of transcript. If it's "Text" the transcript is going to be converted to AnnotJSON automatically.
    */
-  @IsNotEmpty()
-  @IsEnum(TranscriptType)
-  transcriptType: TranscriptType;
+  @IsOptional()
+  @IsEnum(ContentType)
+  content_type?: ContentType;
 
   /**
    * the transcript. Either AnnotJSON or plain Text. See "transcriptType" for more information.
    */
   @Transform(({obj, value}: { obj: TaskUploadDto, value: string }) => {
-    if (obj.transcriptType === TranscriptType.AnnotJSON) {
-      if (typeof value === 'string') {
-        return plainToInstance(TranscriptDto, JSON.parse(value));
+    if (obj.content_type === ContentType.AnnotJSON) {
+      if (typeof value === 'object') {
+        return JSON.stringify(value);
       }
-      return value;
     }
-    return plainToInstance(TranscriptDto, new TranscriptDto({
-      sampleRate: 0,
-      links: [],
-      annotates: '',
-      name: ``,
-      levels: [{
-        name: 'CONVERTER_TRN',
-        type: AnnotJSONType.SEGMENT,
-        items: [
-          {
-            id: 1,
-            labels: [
-              {
-                name: 'TRN',
-                value
-              }
-            ]
-          }
-        ]
-      }
-      ]
-    }))
+    return value;
   })
-  @Type(() => TranscriptDto)
-  @ValidateNested()
-  transcript: TranscriptDto;
+  @IsOptional()
+  @IsString()
+  transcript?: string;
 
 
   /**
@@ -308,46 +293,24 @@ export class TaskChangeDto {
   /**
    * the type of transcript. If it's "Text" the transcript is going to be converted to AnnotJSON automatically.
    */
-  @IsNotEmpty()
-  @IsEnum(TranscriptType)
-  transcriptType: TranscriptType;
+  @IsOptional()
+  @IsEnum(ContentType)
+  content_type: ContentType;
 
   /**
    * the transcript. Either AnnotJSON or plain Text. See "transcriptType" for more information.
    */
   @Transform(({obj, value}: { obj: TaskUploadDto, value: string }) => {
-    if (obj.transcriptType === TranscriptType.AnnotJSON) {
-      if (typeof value === 'string') {
-        return plainToInstance(TranscriptDto, JSON.parse(value));
+    if (obj.content_type === ContentType.AnnotJSON) {
+      if (typeof value === 'object') {
+        return JSON.stringify(value);
       }
-      return value;
     }
-    return plainToInstance(TranscriptDto, new TranscriptDto({
-      sampleRate: 0,
-      links: [],
-      annotates: '',
-      name: ``,
-      levels: [{
-        name: 'CONVERTER_TRN',
-        type: AnnotJSONType.SEGMENT,
-        items: [
-          {
-            id: 1,
-            labels: [
-              {
-                name: 'TRN',
-                value
-              }
-            ]
-          }
-        ]
-      }
-      ]
-    }))
+    return value;
   })
-  @Type(() => TranscriptDto)
-  @ValidateNested()
-  transcript: TranscriptDto;
+  @IsOptional()
+  @IsString()
+  transcript?: string;
 
   /**
    * the input files. Currently, only an audio file (WAVE) is supported.

@@ -1,12 +1,11 @@
 import {Entity, JoinColumn, ManyToOne, OneToMany, OneToOne} from 'typeorm';
 import {StandardEntity, StandardEntityWithTimestamps} from './standard-entities';
 import {DbAwareColumn} from '../decorators';
-import {TaskInputOutputCreatorType, TaskStatus} from '@octra/api-types';
+import {ContentType, TaskInputOutputCreatorType, TaskStatus} from '@octra/api-types';
 import {ToolEntity} from './tool.entity';
 import {Type} from 'class-transformer';
 import {FileProjectEntity, ProjectEntity} from './project.entity';
 import {AccountEntity} from './account.entity';
-import {TranscriptDto} from '../../dtos';
 import {dateTransformer} from '../transformers';
 
 @Entity({name: 'task'})
@@ -169,9 +168,16 @@ export class TaskInputOutputEntity extends StandardEntity {
     nullable: true
   })
   url?: string;
+
+  @DbAwareColumn({
+    type: 'text',
+    nullable: true
+  })
+  content_type?: ContentType;
+
   @DbAwareColumn({
     type: 'json',
     nullable: true
   })
-  content?: TranscriptDto;
+  content?: string;
 }
