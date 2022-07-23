@@ -50,9 +50,9 @@ export class AnnotationController {
   /**
    * saves the current annotation. It doesn't automatically start a new annotation, it rather responds with the saved annotation.
    *
-   * Allowed user roles: <code>administrator, project_admin, transcriber</code>
+   * Allowed user roles: <code>administrator, project_admin, transcriber, user</code>
    */
-  @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.transcriber)
+  @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.transcriber, AccountRole.user)
   @UseInterceptors(ProjectAccessInterceptor)
   @CustomApiException(new NotFoundException(`Can't find any project with this id.`))
   @Put(':project_id/annotations/:task_id/save')
@@ -66,7 +66,7 @@ export class AnnotationController {
    *
    * Allowed user roles: <code>administrator, project_admin, transcriber</code>
    */
-  @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.transcriber)
+  @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.transcriber, AccountRole.user)
   @UseInterceptors(ProjectAccessInterceptor)
   @CustomApiException(new NotFoundException(`Can't find any project with this id.`))
   @Put(':project_id/annotations/:task_id/free')
@@ -79,7 +79,7 @@ export class AnnotationController {
    *
    * Allowed user roles: <code>administrator, project_admin, transcriber</code>
    */
-  @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.transcriber)
+  @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.transcriber, AccountRole.user)
   @UseInterceptors(ProjectAccessInterceptor)
   @CustomApiException(new NotFoundException(`Can't find any project with this id.`))
   @Put(':project_id/annotations/:task_id/continue')
@@ -92,7 +92,7 @@ export class AnnotationController {
    *
    * Allowed user roles: <code>administrator, project_admin, transcriber</code>
    */
-  @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.transcriber)
+  @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.transcriber, AccountRole.user)
   @UseInterceptors(ProjectAccessInterceptor)
   @Put(':project_id/annotations/:task_id/resume')
   async resumeAnnotation(@Param('project_id', NumericStringValidationPipe) project_id: string, @Param('task_id', NumericStringValidationPipe) task_id: string, @Req() req: InternRequest): Promise<TaskDto> {

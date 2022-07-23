@@ -49,9 +49,9 @@ export class GuidelinesController {
    * Changes the guidelines for a specific project.
    *
    *
-   * Allowed user roles: <code>administrator, project_admin, transcriber</code>
+   * Allowed user roles: <code>administrator, project_admin, transcriber, user</code>
    */
-  @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.transcriber)
+  @CombinedRoles(AccountRole.administrator, AccountRole.projectAdministrator, AccountRole.transcriber, AccountRole.user)
   @UseInterceptors(ProjectAccessInterceptor)
   @Get(':project_id/guidelines')
   async getGuidelines(@Param('project_id', NumericStringValidationPipe) id: string): Promise<GuidelinesDto[]> {
