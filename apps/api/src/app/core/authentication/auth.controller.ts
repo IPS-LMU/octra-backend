@@ -22,19 +22,25 @@ import * as jwt from 'jsonwebtoken';
 import {ConfigService} from '@nestjs/config';
 import {SHA256} from 'crypto-js';
 import {AccountService} from '../account';
-import {AccountLoginMethod, AccountRole, CountryStates} from '@octra/api-types';
+import {AccountFieldContext, AccountLoginMethod, AccountRole, CountryStates} from '@octra/api-types';
 import {Request, Response} from 'express';
 import {JWTPayload} from './jwt.types';
 import {JwtService} from '@nestjs/jwt';
 import {SettingsService} from '../settings/settings.service';
 import {AccountCreateRequestDto} from '../account/account.dto';
 import {GeneralSettingsDto} from '../settings/settings.dto';
+import {I18n, I18nContext, TranslateOptions} from 'nestjs-i18n';
+import {InternRequest} from '../../obj/types';
+import {AccountFieldsService} from '../account/fields';
+import {AccountFieldDefinitionEntity} from '@octra/server-side';
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService, private configService: ConfigService, private accountService: AccountService, private jwtService: JwtService,
-              private settingsService: SettingsService) {
+  constructor(private authService: AuthService, private configService: ConfigService,
+              private accountService: AccountService, private jwtService: JwtService,
+              private settingsService: SettingsService,
+              private accountFieldService: AccountFieldsService) {
   }
 
   /**
@@ -116,12 +122,55 @@ export class AuthController {
     return this.authService.login(dto);
   }
 
+
+  @Public()
+  @Header('content-type', 'text/html')
+  @Get('personal-information')
+  async askPersonalInformation(@Body() body: any,
+                               @Query('windowURL') windowURL: string,
+                               @Query('r') redirectTo: string,
+                               @I18n() i18n: I18nContext,
+                               @Res() res: Response, @Req() req: InternRequest) {
+    const page = this.getPageMeta(req);
+
+    const accountFields = await this.accountFieldService.listFieldDefinitions({
+      where: {
+        context: AccountFieldContext.account
+      },
+      order: {
+        sort_order: {
+          direction: 'asc'
+        },
+        name: {
+          direction: 'asc'
+        }
+      }
+    });
+
+    res.render('personalInformation', {
+      cid: 435345,
+      token: body.token,
+      windowURL: '',
+      baseURL: this.configService.get('api.baseURL'),
+      redirectTo: redirectTo ?? '',
+      listOfCountries: CountryStates,
+      t: (key: string, args: TranslateOptions) => i18n.t(key, args),
+      page,
+      accountFields
+    });
+  }
+
   @Public()
   @Header('content-type', 'text/html')
   @Get('confirmShibboleth')
-  async introduceShibboleth(@Body() body: any, @Query('windowURL') windowURL: string, @Query('r') redirectTo: string, @Res() res: Response, @Req() req: Request) {
+  async introduceShibboleth(@Body() body: any,
+                            @Query('windowURL') windowURL: string,
+                            @Query('r') redirectTo: string,
+                            @I18n() i18n: I18nContext,
+                            @Res() res: Response, @Req() req: InternRequest) {
     const generalSettings = await this.settingsService.getGeneralSettings();
     const {dataPolicyURL, termsConditionsURL} = await this.getURLS(generalSettings, req);
+    const page = this.getPageMeta(req);
 
     res.render('confirmShibboleth', {
       userName: 'displayName',
@@ -134,17 +183,23 @@ export class AuthController {
       dataPolicyURL,
       termsConditionsURL,
       redirectTo: redirectTo ?? '',
-      listOfCountries: CountryStates
+      listOfCountries: CountryStates,
+      t: (key: string, args: TranslateOptions) => i18n.t(key, args),
+      page
     });
   }
 
   @Public()
   @Header('content-type', 'text/html')
   @Post('confirmShibboleth')
-  async confirmShibboleth(@Body() body: any, @Query('windowURL') windowURL: string, @Query('cid') cid: string, @Query('r') redirectTo: string, @Res() res: Response, @Req() req: Request) {
+  async confirmShibboleth(@Body() body: any, @Query('windowURL') windowURL: string,
+                          @Query('cid') cid: string, @Query('r') redirectTo: string,
+                          @I18n() i18n: I18nContext,
+                          @Res() res: Response, @Req() req: InternRequest) {
     let tokenBody;
     const generalSettings = await this.settingsService.getGeneralSettings();
     const {dataPolicyURL, termsConditionsURL} = await this.getURLS(generalSettings, req);
+    const page = this.getPageMeta(req);
 
     try {
       tokenBody = await this.jwtVerfiy(body.shibToken, this.configService.get('api.plugins.shibboleth.secret'));
@@ -174,6 +229,7 @@ export class AuthController {
           customSalt: this.configService.get<string>('api.security.keys.jwt.salt'),
           sub: user.id
         };
+
         res.render('confirmShibboleth', {
           userName: '',
           email: '',
@@ -184,7 +240,9 @@ export class AuthController {
           termsConditionsURL,
           redirectTo: redirectTo ?? '',
           windowURL,
-          listOfCountries: CountryStates
+          listOfCountries: CountryStates,
+          t: i18n.t,
+          page
         });
       }
 
@@ -225,7 +283,9 @@ export class AuthController {
             redirectTo: redirectTo ?? '',
             dataPolicyURL,
             termsConditionsURL,
-            listOfCountries: CountryStates
+            listOfCountries: CountryStates,
+            t: i18n.t,
+            page
           });
         }
       }
@@ -257,5 +317,34 @@ export class AuthController {
     return {
       dataPolicyURL, termsConditionsURL
     };
+  }
+
+  private getPageMeta(req: InternRequest) {
+    const lang: string = req.query?.lang as string ?? req.header('Accept-Language')
+    return {
+      lang: lang?.replace(/-.*$/g, '') ?? 'en'
+    }
+  }
+
+  private prepareAccountFields(accountFields: AccountFieldDefinitionEntity[], language: string) {
+    let result: any = {
+      ...accountFields
+    };
+
+    for (const accountField of accountFields) {
+      let translation: any = {};
+      for (const attr of Object.keys(accountField.definition)) {
+        if (attr === 'translations') {
+          for (const langObj of accountField.definition[attr]) {
+            translation = {
+              ...translation,
+
+            }
+          }
+        }
+      }
+    }
+
+    return result;
   }
 }

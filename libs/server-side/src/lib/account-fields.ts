@@ -1,35 +1,36 @@
 import {LANGUAGES} from './account-fields-defaults';
 
 export class AccountFieldDefinition {
-  constructor(partial: Partial<AccountFieldDefinition>) {
-    Object.assign(this, partial);
-  }
+  public schema: unknown;
 }
 
+export type AccountFieldTranslation = Record<string, string | Record<string, string>>;
+
 export class AccountFieldHeadline extends AccountFieldDefinition {
-  public translations: AccountFieldLabel[];
-  public size: number;
+  public schema: {
+    translation: AccountFieldTranslation;
+    size: number;
+  }
 
   constructor(partial: Partial<AccountFieldHeadline>) {
-    super(partial);
+    super();
     Object.assign(this, partial);
   }
 }
 
 export class AccountFieldControl extends AccountFieldDefinition {
   public isRequired: boolean = false;
-  public helpTextLabels: AccountFieldLabel[] = [];
-  public schema: any;
+  public helpTextLabels: AccountFieldTranslation;
 
   constructor(partial: Partial<AccountFieldControl>) {
-    super(partial);
+    super();
     Object.assign(this, partial);
   }
 }
 
 export class AccountFieldRadio extends AccountFieldControl {
   public schema: {
-    label: AccountFieldLabel[],
+    label: AccountFieldTranslation,
     value: string
   }[] = [];
 
@@ -41,8 +42,8 @@ export class AccountFieldRadio extends AccountFieldControl {
 
 export class AccountFieldInlineText extends AccountFieldControl {
   public schema: {
-    label: AccountFieldLabel[],
-    placeholder: AccountFieldLabel[],
+    label: AccountFieldTranslation,
+    placeholder: AccountFieldTranslation,
     minLength: number;
     maxLength: number;
   };
@@ -55,8 +56,8 @@ export class AccountFieldInlineText extends AccountFieldControl {
 
 export class AccountFieldTextArea extends AccountFieldControl {
   public schema: {
-    label: AccountFieldLabel[],
-    placeholder?: AccountFieldLabel[],
+    label: AccountFieldTranslation,
+    placeholder?: AccountFieldTranslation,
     minLength?: number;
     maxLength?: number;
   };
@@ -69,9 +70,9 @@ export class AccountFieldTextArea extends AccountFieldControl {
 
 export class AccountFieldSelection extends AccountFieldControl {
   public schema: {
-    label: AccountFieldLabel[],
+    label: AccountFieldTranslation,
     options: {
-      label: AccountFieldLabel[],
+      label: AccountFieldTranslation,
       value: string
     }[]
   };
@@ -86,11 +87,12 @@ export class AccountCategorySelection extends AccountFieldControl {
   public multipleResults = false;
 
   public schema: {
-    label: AccountFieldLabel[],
+    label: AccountFieldTranslation,
     selections: {
       name: string,
+      class?: string,
       options: {
-        label: AccountFieldLabel[],
+        label: AccountFieldTranslation,
         value: string
       }[]
     }[]
@@ -104,25 +106,16 @@ export class AccountCategorySelection extends AccountFieldControl {
 
 export class AccountFieldCheckboxes extends AccountFieldControl {
   public schema: {
-    label: AccountFieldLabel[],
+    label: AccountFieldTranslation,
     arrangement: 'horizontal' | 'vertical';
     options: {
-      label: AccountFieldLabel[];
+      label: AccountFieldTranslation;
       value: string;
     }[]
   };
 
   constructor(partial: Partial<AccountFieldCheckboxes>) {
     super(partial);
-    Object.assign(this, partial);
-  }
-}
-
-export class AccountFieldLabel {
-  public language: string;
-  public value: string;
-
-  constructor(partial: Partial<AccountFieldLabel>) {
     Object.assign(this, partial);
   }
 }
@@ -138,10 +131,9 @@ export class AccountFieldValue {
 
 export function generateLanguageOptions() {
   return LANGUAGES.map(a => ({
-    label: [{
-      language: 'en',
-      value: a.language
-    }],
+    label: {
+      'en': a.language
+    },
     value: a.language
   }));
 }

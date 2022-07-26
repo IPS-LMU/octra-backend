@@ -53,6 +53,7 @@ export enum PolicyType {
 }
 
 export enum AccountFieldDefinitionType {
+  'header' = 'header',
   'longtext' = 'longtext',
   'text' = 'text',
   'selection' = 'selection',

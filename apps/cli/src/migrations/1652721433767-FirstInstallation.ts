@@ -4,6 +4,7 @@ import {
   AccountEntity,
   AccountFieldCheckboxes,
   AccountFieldDefinitionEntity,
+  AccountFieldHeadline,
   AccountFieldTextArea,
   AccountPersonEntity,
   AppTokenEntity,
@@ -11,6 +12,7 @@ import {
   generateLanguageOptions,
   getPasswordHash,
   getRandomString,
+  LANGUAGE_SKILL_LEVELS,
   OptionEntity,
   RoleEntity
 } from '@octra/server-side';
@@ -570,34 +572,19 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
     }), true);
 
     await queryRunner.manager.insert(AccountFieldDefinitionEntity, {
-      context: AccountFieldContext.project,
-      name: 'comment',
-      definition: new AccountFieldTextArea({
+      context: AccountFieldContext.account,
+      name: 'header_skills',
+      type: AccountFieldDefinitionType.header,
+      definition: new AccountFieldHeadline({
         schema: {
-          label: [
-            {
-              language: 'de',
-              value: 'Kommentar'
-            },
-            {
-              language: 'en',
-              value: 'Comment'
-            }
-          ],
-          placeholder: [
-            {
-              language: 'de',
-              value: 'Kommentar'
-            },
-            {
-              language: 'en',
-              value: 'Comment'
-            }
-          ]
+          translation: {
+            de: 'Fähigkeiten',
+            en: 'Skills'
+          },
+          size: 2
         }
       }),
-      type: AccountFieldDefinitionType.longtext,
-      remove_value_on_account_delete: true,
+      remove_value_on_account_delete: false,
       removable: false,
       sort_order: 0
     });
@@ -608,28 +595,33 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       definition: new AccountCategorySelection({
         multipleResults: true,
         schema: {
-          label: [
+          label: {
+            en: 'Language skills',
+            de: 'Sprachkenntnisse'
+          },
+          selections: [
             {
-              language: 'en',
-              value: 'Language skills'
+              name: 'language',
+              class: 'col-8',
+              options: generateLanguageOptions()
             },
             {
-                language: 'de',
-                value: 'Sprachkenntnisse'
-              }
-            ],
-            selections: [
-              {
-                name: 'language',
-                options: generateLanguageOptions()
-              }
-            ]
+              name: 'level',
+              class: 'col-4',
+              options: LANGUAGE_SKILL_LEVELS.map(a => ({
+                label: {
+                  'en': a
+                },
+                value: a
+              }))
+            }
+          ]
           }
         }),
         type: AccountFieldDefinitionType.category_selection,
         remove_value_on_account_delete: false,
         removable: false,
-        sort_order: 0
+      sort_order: 1
       }
     );
 
@@ -638,42 +630,24 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
         name: 'transcription_skills',
         definition: new AccountFieldCheckboxes({
           schema: {
-            label: [
-              {
-                language: 'en',
-                value: 'Transcription skills'
-              },
-              {
-                language: 'de',
-                value: 'Transkriptionserfahrungen'
-              }
-            ],
+            label: {
+              'en': 'Transcription skills',
+              'de': 'Transkriptionserfahrungen'
+            },
             arrangement: 'horizontal',
             options: [
               {
-                label: [
-                  {
-                    language: 'en',
-                    value: 'Orthographic transcription'
-                  },
-                  {
-                    language: 'de',
-                    value: 'Orthografische Transkription'
-                  }
-                ],
+                label: {
+                  'en': 'Orthographic transcription',
+                  'de': 'Orthografische Transkription'
+                },
                 value: 'orthographic'
               },
               {
-                label: [
-                  {
-                    language: 'en',
-                    value: 'Phonetic transcription'
-                  },
-                  {
-                    language: 'de',
-                    value: 'Phonetische Transkription'
-                  }
-                ],
+                label: {
+                  'en': 'Phonetic transcription',
+                  'de': 'Phonetische Transkription'
+                },
                 value: 'phonetic'
               }
             ]
@@ -682,9 +656,31 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
         type: AccountFieldDefinitionType.multiple_choice,
         remove_value_on_account_delete: false,
         removable: false,
-        sort_order: 1
+        sort_order: 2
       }
     );
+
+
+    await queryRunner.manager.insert(AccountFieldDefinitionEntity, {
+      context: AccountFieldContext.project,
+      name: 'comment',
+      definition: new AccountFieldTextArea({
+        schema: {
+          label: {
+            'en': 'Comment',
+            'de': 'Kommentar'
+          },
+          placeholder: {
+            'de': 'Kommentar',
+            'en': 'Comment'
+          }
+        }
+      }),
+      type: AccountFieldDefinitionType.longtext,
+      remove_value_on_account_delete: true,
+      removable: false,
+      sort_order: 0
+    });
 
     console.log(`-> Create table "account_field_value"...`);
     await queryRunner.createTable(new Table({

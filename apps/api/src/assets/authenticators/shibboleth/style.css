@@ -3,6 +3,7 @@ body {
   height: 100%;
 }
 
+/*
 body {
   display: -ms-flexbox;
   display: flex;
@@ -12,6 +13,7 @@ body {
   padding-bottom: 40px;
   background-color: #f5f5f5;
 }
+ */
 
 .form-signin {
   text-align: left;
@@ -35,4 +37,38 @@ body {
   margin-bottom: 10px;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
+}
+
+.form-custom-select {
+  display: block;
+  padding: .375rem 2.25rem .375rem .75rem;
+  -moz-padding-start: calc(0.75rem - 3px);
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #212529;
+  background-color: #fff;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right .75rem center;
+  background-size: 16px 12px;
+  border: 1px solid #ced4da;
+  border-radius: .25rem;
+  transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.action-icon {
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.action-icon.add {
+  color: cornflowerblue;
+}
+
+.action-icon.remove {
+  color: red;
 }

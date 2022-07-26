@@ -27,9 +27,10 @@ import {SettingsModule} from './core/settings/settings.module';
 import {PolicyModule} from './core/policy/policy.module';
 import {AccountFieldsModule} from './core/account/fields';
 import {ProjectFieldsModule} from './core/project/fields';
+import {AcceptLanguageResolver, I18nModule, QueryResolver} from 'nestjs-i18n';
 
 const config = Configuration.getInstance();
-
+console.log(getOrmConfig(config));
 const TypeORMOptions: TypeOrmModuleOptions = {
   ...getOrmConfig(config),
   keepConnectionAlive: true,
@@ -67,6 +68,18 @@ const TypeORMOptions: TypeOrmModuleOptions = {
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, 'assets'),
       serveRoot: join(config.api.baseURL, 'assets')
+    }),
+    I18nModule.forRoot({
+      fallbackLanguage: 'en',
+      loaderOptions: {
+        path: join(__dirname, 'assets', 'i18n'),
+        watch: true,
+      },
+      resolvers: [
+        {use: QueryResolver, options: ['lang']},
+        AcceptLanguageResolver,
+      ],
+      viewEngine: 'ejs'
     }),
   ],
   controllers: [AppController, AppTokenController, FilesController, ProjectController, ToolController],

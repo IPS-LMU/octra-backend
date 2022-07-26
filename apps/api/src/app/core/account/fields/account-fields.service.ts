@@ -1,5 +1,5 @@
 import {Injectable} from '@nestjs/common';
-import {Repository} from 'typeorm';
+import {FindManyOptions, Repository} from 'typeorm';
 import {InjectRepository} from '@nestjs/typeorm';
 import {ConfigService} from '@nestjs/config';
 import {AccountFieldDefinitionEntity, AccountFieldValueEntity} from '@octra/server-side';
@@ -34,8 +34,8 @@ export class AccountFieldsService {
     return this.accountFieldDefinitionRepository.findOneBy({id});
   }
 
-  async listFieldDefinitions() {
-    return this.accountFieldDefinitionRepository.find();
+  async listFieldDefinitions(options?: FindManyOptions<AccountFieldDefinitionEntity>) {
+    return this.accountFieldDefinitionRepository.find(options);
   }
 
   async removeFieldDefinition(id: string) {

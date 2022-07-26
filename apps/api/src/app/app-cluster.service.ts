@@ -20,6 +20,7 @@ export class AppClusterService {
 
   static async buildCluster(callback: () => void) {
     if (config.api.performance?.cluster?.enabled) {
+      console.log('DO CLUSTER!');
       if (cluster.isPrimary) {
         console.log(`Master server started on ${process.pid}`);
         await this.createWorkers();

@@ -1,0 +1,8 @@
+{
+  "introduction": "Damit Sie unsere Online-Dienste nutzen können, benötigen Sie ein Nutzerkonto. Dieses Nutzerkonto wird bei uns mit Ihrem Shibboleth Konto verknüpft, sodass Sie sich in Zukunft mit ihrem Shibboleth-Account anmelden können.<br/><br/>Bitte füllen Sie das folgende Formular aus. Alle erforderlichen Felder sind mit {mark} markiert.",
+  "confirmation": {
+    "data correctness": "Ich bestätige die Richtigkeit meiner Angaben.",
+    "data policy": "Ich habe die <a href=\"{dataPolicyURL}\" target=\"_blank\">Datenschutzerklärung</a> gelesen und akzeptiere sie.",
+    "terms of service": "Ich habe die <a href=\"{termsConditionsURL}\" target=\"_blank\">AGB</a> gelesen und akzeptiere sie."
+  }
+}

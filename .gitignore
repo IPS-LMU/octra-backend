@@ -636,4 +636,5 @@ test.sql-shm
 test.sql-wal
 
 /apps/api/src/assets/bootstrap/
+/apps/api/src/assets/bootstrap-icons/
 /napi

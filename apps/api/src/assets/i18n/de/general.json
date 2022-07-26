@@ -1,0 +1,17 @@
+{
+  "registration": "Registrierung",
+  "sign up": "Registrieren",
+  "username": "Nutzername",
+  "email address": "E-Mail Adresse",
+  "firstname": "Vorname",
+  "lastname": "Nachname",
+  "gender": "Geschlecht",
+  "organization": "Firma / Organisation",
+  "country": "Land",
+  "state": "Bundesland",
+  "male": "Männlich",
+  "female": "Weiblich",
+  "divers": "Divers",
+  "save and continue": "Speichern und weiter"
+}
+

@@ -1,0 +1,16 @@
+{
+  "registration": "Registration",
+  "sign up": "Sign up",
+  "username": "Username",
+  "email address": "Email Address",
+  "firstname": "Firstname",
+  "lastname": "Lastname",
+  "gender": "Gender",
+  "organization": "Organization",
+  "country": "Country",
+  "state": "State",
+  "male": "Male",
+  "female": "Female",
+  "divers": "Divers",
+  "save and continue": "Save and continue"
+}
