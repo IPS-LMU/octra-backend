@@ -1,7 +1,7 @@
 import {Body, Controller, Get, Header, Post, Query, Req, Res, UseFilters} from '@nestjs/common';
 import {AuthService} from './auth.service';
 import {Public} from '../authorization/public.decorator';
-import {AuthDto, AuthLoginDto} from './auth.dto';
+import {AuthLoginDto} from './auth.dto';
 import {ApiBody, ApiTags} from '@nestjs/swagger';
 import {HttpExceptionFilter} from '../../obj/filters/http-exception.filter';
 import {BadRequestException, InvalidCredentialsException} from '../../obj/exceptions';
@@ -21,6 +21,7 @@ import {InternRequest} from '../../obj/types';
 import {AccountFieldsService} from '../account/fields';
 import {AccountFieldDefinitionEntity} from '@octra/server-side';
 import {AppTokenService} from '../app-token/app-token.service';
+import {CombinedRoles} from '../../obj/decorators/combine.decorators';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -106,12 +107,18 @@ export class AuthController {
   @CustomApiException(new InvalidCredentialsException())
   @Post('login')
   @UseFilters(new HttpExceptionFilter())
-  async login(@Body() dto: AuthLoginDto): Promise<AuthDto> {
+  async login(@Body() dto: AuthLoginDto, @Res() res: Response): Promise<void> {
     console.log('login');
-    return this.authService.login(dto);
+    const result = await this.authService.login(dto);
+    if (result.accessToken) {
+      this.authService.setSessionCookie(res, result.accessToken);
+      this.authService.setAuthenticatedCookie(res, AccountLoginMethod.local);
+    }
+    res.status(201).send(result);
   }
 
   @Post('logout')
+  @CombinedRoles(AccountRole.administrator, AccountRole.user)
   @UseFilters(new HttpExceptionFilter())
   async logout(@Res() res: Response, @Req() req: InternRequest): Promise<void> {
     return this.authService.logout(res, req);
@@ -316,11 +323,8 @@ export class AuthController {
     const token = this.jwtService.sign(payload);
 
     // set ocb_sessiontoken cookie
-    res.cookie('ocb_sessiontoken', token, {
-      sameSite: 'strict',
-      httpOnly: true,
-      secure: true
-    });
+    this.authService.setSessionCookie(res, token);
+    this.authService.setAuthenticatedCookie(res, AccountLoginMethod.shibboleth);
 
     //remove shibtoken because we don't need it anymore
     res.clearCookie('ocb_shibtoken');
@@ -328,21 +332,7 @@ export class AuthController {
     if (isNew) {
       res.redirect(this.configService.get('api.baseURL') + 'auth/complete-profile' + (query ?? ''));
     } else {
-      res.render('confirm-shibboleth', {
-        userName: '',
-        email: '',
-        cid,
-        token,
-        baseURL: this.configService.get('api.baseURL'),
-        dataPolicyURL,
-        termsConditionsURL,
-        redirectTo: redirectTo ?? '',
-        windowURL,
-        listOfCountries: CountryStates,
-        t: (key: string, args: TranslateOptions) => i18n.t(key, args),
-        page,
-        query
-      });
+      res.redirect(redirectTo);
     }
   }
 

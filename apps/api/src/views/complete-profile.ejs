@@ -20,29 +20,9 @@
       var listOfCountries = <%- JSON.stringify(locals.listOfCountries); %>;
       var accountFields = <%- JSON.stringify(locals.accountFields); %>;
       var page = <%- JSON.stringify(locals.page); %>;
-      var saveSuccess = <%- locals.saveSuccess ?? false; %>;
 
       var data = {};
       var indices = {};
-
-      function message_broadcast(key, value) {
-        value = typeof value === "object" ? JSON.stringify(value) : value;
-        var cid = "<%= locals.cid %>";
-        localStorage.setItem(key + "_" + cid, value);
-      }
-
-      if (saveSuccess) {
-        message_broadcast("token", "<%= locals.token %>");
-        if (redirectTo === "") {
-          // opened in other window
-          window.close();
-        } else {
-          // opened in same window
-          window.setTimeout(() => {
-            document.location.href = redirectTo;
-          }, 0);
-        }
-      }
 
       function onActionClick(event) {
         var id = event.target.getAttribute("data-field-id");
@@ -343,11 +323,9 @@
         var xhr = new XMLHttpRequest();
         xhr.open("post", "<%= locals.baseURL %>account/complete-profile");
         xhr.setRequestHeader("content-type", "application/json");
-        xhr.setRequestHeader("Authorization", "Bearer " + jwtToken);
         xhr.setRequestHeader("X-App-Token", "<%= locals.appToken %>");
         xhr.addEventListener("load", (data) => {
           console.log(data);
-          message_broadcast("token", "<%= locals.token %>");
           if (redirectTo === "") {
             // opened in other window
             window.close();
@@ -400,20 +378,16 @@
     <noscript>
         Please enable Javascript.
     </noscript>
-    <% if(!locals.saveSuccess) { %>
-        <!-- TODO read user values -->
-        <h1><%= t("general.complete profile") %></h1>
-        <p class="mb-5">
-            <%- t("registration.data completion.introduction"); %>
-        </p>
-        <main>
-        </main>
-        <button class="btn btn-primary btn-block mt-3" id="submitButton">
-            <%= locals.t('general.save and continue') %>
-        </button>
-    <% } else { %>
-        <p>Redirect...</p>
-    <% } %>
+    <!-- TODO read user values -->
+    <h1><%= t("general.complete profile") %></h1>
+    <p class="mb-5">
+        <%- t("registration.data completion.introduction"); %>
+    </p>
+    <main>
+    </main>
+    <button class="btn btn-primary btn-block mt-3" id="submitButton">
+        <%= locals.t('general.save and continue') %>
+    </button>
 </div>
 </body>
 </html>

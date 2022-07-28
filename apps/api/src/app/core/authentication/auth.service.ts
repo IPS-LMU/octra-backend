@@ -11,6 +11,7 @@ import {InvalidCredentialsException} from '../../obj/exceptions';
 import * as jwt from 'jsonwebtoken';
 import {Response} from 'express';
 import {InternRequest} from '../../obj/types';
+import {AccountLoginMethod} from '@octra/api-types';
 
 @Injectable()
 export class AuthService {
@@ -60,7 +61,10 @@ export class AuthService {
   }
 
   async logout(res: Response, req: InternRequest) {
-    res.clearCookie('ocb_sesssiontoken');
+    res.clearCookie('ocb_sessiontoken');
+    res.clearCookie('ocb_authenticated');
+    res.setHeader('Content-Type', 'application/json');
+    res.status(200).send('')
   }
 
   private getPasswordHash(password: string): string {
@@ -116,6 +120,22 @@ export class AuthService {
           resolve(tokenBody);
         }
       })
+    });
+  }
+
+  setAuthenticatedCookie(res: Response, method: AccountLoginMethod) {
+    res.cookie('ocb_authenticated', method, {
+      sameSite: 'strict',
+      httpOnly: false,
+      secure: true
+    });
+  }
+
+  setSessionCookie(res: Response, token: string) {
+    res.cookie('ocb_sessiontoken', token, {
+      sameSite: 'strict',
+      httpOnly: true,
+      secure: true
     });
   }
 }

@@ -26,6 +26,7 @@ export class OctraAPIService {
   }
 
   private appToken = '';
+  private useCookieStrategy = false;
   private _webToken = '';
   private apiURL = '';
 
@@ -39,15 +40,15 @@ export class OctraAPIService {
   constructor(private http: HttpClient) {
   }
 
-  public init(apiURL: string, appToken: string) {
+  public init(apiURL: string, appToken: string, useCookieStrategy: boolean) {
     this.apiURL = apiURL;
     console.log(`initialized api url`);
     this.appToken = appToken;
+    this.useCookieStrategy = useCookieStrategy;
     this._initialized = true;
   }
 
   public async login(type: AccountLoginMethod, username?: string, password?: string) {
-    console.log(`LOGIN TEST`);
     return new Promise<AuthDto>((resolve, reject) => {
       let data: any = {
         type, username, password
@@ -57,7 +58,9 @@ export class OctraAPIService {
         headers: this.getHeaders(false)
       })).then((result: AuthDto) => {
         if (!result.openURL && result.accessToken) {
-          this._webToken = result.accessToken;
+          if (!this.useCookieStrategy) {
+            this._webToken = result.accessToken;
+          }
           resolve(result);
         } else if (result.openURL && result.openURL.trim() !== '') {
           resolve(result);
@@ -73,18 +76,8 @@ export class OctraAPIService {
   /**
    * does logout process
    */
-  public logout() {
-    return new Promise<void>((resolve, reject) => {
-      firstValueFrom(this.http.post<AuthDto>(`${this.apiURL}/auth/logout`, undefined, {
-        headers: this.getHeaders(false)
-      })).then(() => {
-        this._webToken = '';
-        this._authenticated = false;
-        resolve();
-      }).catch((error) => {
-        reject((error.error?.message) ? error.error.message : error.message);
-      });
-    });
+  public async logout() {
+    return this.post(`/auth/logout`, undefined, true);
   }
 
   /***
@@ -247,7 +240,7 @@ export class OctraAPIService {
       'X-App-token': this.appToken
     };
 
-    if (needsJWT) {
+    if (needsJWT && !this.useCookieStrategy) {
       headers = {
         ...headers,
         Authorization: `Bearer ${this._webToken}`

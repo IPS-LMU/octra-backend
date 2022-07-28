@@ -19,22 +19,10 @@
       var redirectTo = "<%= locals.redirectTo %>";
       var listOfCountries = <%- JSON.stringify(locals.listOfCountries); %>;
 
-      function message_broadcast(key, value) {
-        value = typeof value === "object" ? JSON.stringify(value) : value;
-        var cid = "<%= locals.cid %>";
-        localStorage.setItem(key + "_" + cid, value);
-      }
-
       if (token.trim() !== "") {
-        message_broadcast("token", "<%= locals.token %>");
         if (redirectTo === "") {
           // opened in other window
           window.close();
-        } else {
-          // opened in same window
-          window.setTimeout(() => {
-            document.location.href = redirectTo;
-          }, 0);
         }
       }
 

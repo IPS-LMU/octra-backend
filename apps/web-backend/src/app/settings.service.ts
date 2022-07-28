@@ -31,7 +31,7 @@ export class SettingsService {
     }).subscribe((response: any) => {
         this._settings = response as AppSettings;
         this._settingsLoaded.emit(true);
-        this.api.init(this._settings.api.url, this._settings.api.token);
+        this.api.init(this._settings.api.url, this._settings.api.token, true);
       },
       (e) => {
         alert('Can not load config.json.');

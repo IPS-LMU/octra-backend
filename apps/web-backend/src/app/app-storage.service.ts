@@ -8,11 +8,15 @@ import {AccountDto, AccountLoginMethod, AccountRole} from '@octra/api-types';
   providedIn: 'root'
 })
 export class AppStorageService {
+  get authenticated(): boolean | undefined {
+    return this._authenticated;
+  }
+
   get initialized(): boolean {
     return this._initialized;
   }
 
-  @SessionStorage() private _webToken: string | undefined;
+  @SessionStorage() private _authenticated?: boolean;
   @SessionStorage() private _authType: 'local' | 'shibboleth' | undefined;
 
   private _user?: AccountDto;
@@ -29,10 +33,6 @@ export class AppStorageService {
     return this._authType;
   }
 
-  get webToken(): string | undefined {
-    return this._webToken;
-  }
-
   public login(type: AccountLoginMethod, name?: string, password?: string) {
     return this.api.login(type, name, password).then(({accessToken, openURL, account}) => {
       if (openURL !== undefined) {
@@ -41,10 +41,11 @@ export class AppStorageService {
         const url = `${openURL}?cid=${cid}&r=${encodeURIComponent(document.location.href)}`;
         localStorage.setItem('cid', cid.toString());
         document.location.href = url;
+        this._authenticated = false;
       } else if (account) {
         this._user = account;
-        this._webToken = accessToken;
         this._authType = type;
+        this._authenticated = true;
         console.log(`navigate because account set`);
         this.router.navigate(['/loading']);
       }
@@ -52,20 +53,25 @@ export class AppStorageService {
   }
 
   public logout(message: string = '') {
-    this.logoutMessage = message;
-    this._webToken = '';
-    this.router.navigate(['/login']);
+    this.api.logout().then(() => {
+      this.logoutMessage = message;
+      this._authenticated = false;
+      this.router.navigate(['/login']);
+    }).catch((e) => {
+      alert('error occurred:\n' + e);
+    });
   }
 
   public initAfterLogin(): Promise<void> {
-    this.api.webToken = (this._webToken) ? this._webToken : '';
     return new Promise<void>((resolve, reject) => {
       this.api.getCurrentUserInformation().then((information) => {
+        this._authenticated = true;
         this._user = information;
         this._initialized = true;
 
         resolve();
       }).catch((error) => {
+        this._authenticated = false;
         reject(error);
       });
     });
@@ -75,21 +81,10 @@ export class AppStorageService {
     return this._user?.generalRole === AccountRole.administrator;
   }
 
-  public readShibbolethAuthToken() {
-    const cid = localStorage.getItem(`cid`);
-
-    if (cid) {
-      const token = localStorage.getItem(`token_${cid}`);
-
-      if (token) {
-        console.log(token);
-        this._webToken = token;
-        this._authType = 'shibboleth';
-        localStorage.removeItem(`token_${cid}`);
-        this.router.navigate(['/loading']);
-      }
-      localStorage.removeItem(`cid`);
-    }
+  public autoLogin(method: AccountLoginMethod) {
+    this._authType = method;
+    this._authenticated = true;
+    this.router.navigate(['/loading']);
   }
 
   constructor(private router: Router, private api: OctraAPIService) {
