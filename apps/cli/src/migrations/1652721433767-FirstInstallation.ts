@@ -590,44 +590,54 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
     });
 
     await queryRunner.manager.insert(AccountFieldDefinitionEntity, {
-      context: AccountFieldContext.account,
-      name: 'language_skills',
-      definition: new AccountCategorySelection({
-        multipleResults: true,
-        schema: {
-          label: {
-            en: 'Language skills',
-            de: 'Sprachkenntnisse'
-          },
-          selections: [
-            {
-              name: 'language',
-              class: 'col-7',
-              options: generateLanguageOptions()
+        context: AccountFieldContext.account,
+        name: 'language_skills',
+        definition: new AccountCategorySelection({
+          multipleResults: true,
+          schema: {
+            label: {
+              en: 'Language skills',
+              de: 'Sprachkenntnisse'
             },
-            {
-              name: 'level',
-              class: 'col-4',
-              options: LANGUAGE_SKILL_LEVELS.map(a => ({
-                label: {
-                  'en': a
-                },
-                value: a
-              }))
-            }
-          ]
+            selections: [
+              {
+                name: 'language',
+                class: 'col-7',
+                options: [
+                  ...generateLanguageOptions()
+                ]
+              },
+              {
+                name: 'level',
+                class: 'col-4',
+                options: [
+                  ...LANGUAGE_SKILL_LEVELS.map(a => ({
+                    label: {
+                      'en': a
+                    },
+                    value: a
+                  })),
+                  {
+                    label: {
+                      'en': 'Native Language',
+                      'de': 'Muttersprache'
+                    },
+                    value: 'Native'
+                  }]
+              }
+            ]
           }
         }),
         type: AccountFieldDefinitionType.category_selection,
         remove_value_on_account_delete: false,
         removable: false,
-      sort_order: 1
+        sort_order: 1
       }
     );
 
     await queryRunner.manager.insert(AccountFieldDefinitionEntity, {
-        context: AccountFieldContext.account,
-        name: 'transcription_skills',
+      context: AccountFieldContext.account,
+      name: 'transcription_skills',
       definition: new AccountFieldMultipleChoice({
         schema: {
           label: {
@@ -639,18 +649,25 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
             {
               label: {
                 'en': 'Orthographic transcription',
-                  'de': 'Orthografische Transkription'
-                },
-                value: 'orthographic'
+                'de': 'Orthografische Transkription'
               },
-              {
-                label: {
-                  'en': 'Phonetic transcription',
-                  'de': 'Phonetische Transkription'
-                },
-                value: 'phonetic'
-              }
-            ]
+              value: 'orthographic'
+            },
+            {
+              label: {
+                'en': 'Phonetic transcription',
+                'de': 'Phonetische Transkription'
+              },
+              value: 'phonetic'
+            },
+            {
+              label: {
+                'en': 'Qualitative analysis',
+                'de': 'Qualitative Analyse'
+              },
+              value: 'qualitative analysis'
+            }
+          ]
           }
         }),
         type: AccountFieldDefinitionType.multiple_choice,
@@ -659,7 +676,6 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
         sort_order: 2
       }
     );
-
 
     await queryRunner.manager.insert(AccountFieldDefinitionEntity, {
       context: AccountFieldContext.project,
@@ -708,7 +724,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
         },
         {
           name: 'value',
-          type: m('text')
+          type: m('json')
         }
       ]
     }), true);
@@ -1128,12 +1144,14 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
       })
     ]);
 
-    console.log(`-> Create first app token...`);
+    console.log(`-> Create app token for intern processes...`);
+    const matches = /https?:\/\/([^/]+)/g.exec(this.config.api.url);
+    const apiDomain = matches.length > 0 ? matches[1] : '*';
     await queryRunner.manager.insert(AppTokenEntity, {
-      name: 'first token',
+      name: 'Intern',
       key: getRandomString(30),
-      domain: 'localhost',
-      description: 'First App Token',
+      domain: apiDomain,
+      description: 'Apptoken for internal process. Don\'t remove it.',
       registrations: false
     });
 

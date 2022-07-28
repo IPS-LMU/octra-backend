@@ -29,12 +29,13 @@ import {NumericStringValidationPipe} from '../../obj/pipes/numeric-string-valida
 import {removeNullAttributes} from '@octra/server-side';
 import {CustomApiException} from '../../obj/decorators/api-exception.decorators';
 import {BadRequestException, NotFoundException} from '../../obj/exceptions';
+import {AccountFieldsService} from './fields';
 
 @ApiTags('Accounts')
 @ApiBearerAuth()
 @Controller('account')
 export class AccountController {
-  constructor(private accountService: AccountService) {
+  constructor(private accountService: AccountService, private accountFieldService: AccountFieldsService) {
   }
 
   /**
@@ -46,6 +47,12 @@ export class AccountController {
   @Get()
   async listAccounts(@Req() req: Request): Promise<AccountDto[]> {
     return (await this.accountService.getAll()).map(a => removeNullAttributes(new AccountDto(a)));
+  }
+
+  @CombinedRoles(AccountRole.administrator, AccountRole.user)
+  @Post('complete-profile')
+  async completeProfile(@Body() body: any, @Req() req: InternRequest): Promise<void> {
+    return await this.accountFieldService.saveAccountFieldValuesForUser(req.user.userId, body);
   }
 
   /**

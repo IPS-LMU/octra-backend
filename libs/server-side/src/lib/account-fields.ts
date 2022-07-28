@@ -104,7 +104,7 @@ export class AccountCategorySelection extends AccountFieldControl {
   }
 }
 
-export class AccountFieldCheckboxes extends AccountFieldControl {
+export class AccountFieldMultipleChoice extends AccountFieldControl {
   public schema: {
     label: AccountFieldTranslation,
     arrangement: 'horizontal' | 'vertical';
@@ -114,7 +114,7 @@ export class AccountFieldCheckboxes extends AccountFieldControl {
     }[]
   };
 
-  constructor(partial: Partial<AccountFieldCheckboxes>) {
+  constructor(partial: Partial<AccountFieldMultipleChoice>) {
     super(partial);
     Object.assign(this, partial);
   }

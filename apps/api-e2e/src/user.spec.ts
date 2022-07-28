@@ -7,7 +7,7 @@ import {TestHandlers} from './core/test-handlers';
 import {TestManager} from './core/test-cases';
 
 let app;
-jest.setTimeout(10000);
+jest.setTimeout(60000);
 
 describe('OCTRA Nest API user (e2e)', () => {
   beforeEach(async () => {
@@ -32,6 +32,7 @@ describe('OCTRA Nest API user (e2e)', () => {
   testManager.overWriteHandler('createNewProject', () => TestHandlers.createNewProject(AccountRole.administrator));
   testManager.overWriteHandler('uploadTaskDataWithTranscriptFileJSON', () => TestHandlers.uploadTaskDataWithTranscriptFileJSON(AccountRole.administrator));
   testManager.overWriteHandler('changeTaskDataWithoutInputs', () => TestHandlers.changeTaskDataWithoutInputs(AccountRole.administrator));
+  testManager.removeTestCase('completeProfile');
 
   testManager.cases.forEach((group) => {
     describe(group.name, () => {

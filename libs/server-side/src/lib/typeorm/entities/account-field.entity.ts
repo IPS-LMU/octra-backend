@@ -59,7 +59,7 @@ export class AccountFieldValueEntity extends StandardEntity {
   account_field_definition_id!: string;
 
   @OneToOne(() => AccountFieldDefinitionEntity)
-  account_field_definition: AccountFieldDefinitionEntity;
+  account_field_definition?: AccountFieldDefinitionEntity;
 
   @DbAwareColumn({
     type: 'bigint'
@@ -67,7 +67,7 @@ export class AccountFieldValueEntity extends StandardEntity {
   account_id!: string;
 
   @OneToOne(() => AccountEntity)
-  account: AccountEntity;
+  account?: AccountEntity;
 
   @DbAwareColumn({
     type: 'bigint'
@@ -75,10 +75,10 @@ export class AccountFieldValueEntity extends StandardEntity {
   project_id?: string;
 
   @OneToOne(() => ProjectEntity)
-  project: ProjectEntity;
+  project?: ProjectEntity;
 
   @DbAwareColumn({
-    type: 'text'
+    type: 'json'
   })
-  value!: string;
+  value!: any;
 }

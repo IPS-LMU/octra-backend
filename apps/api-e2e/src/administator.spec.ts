@@ -7,7 +7,7 @@ import {TestHandlers} from './core/test-handlers';
 import {TestManager} from './core/test-cases';
 
 let app;
-jest.setTimeout(10000);
+jest.setTimeout(60000);
 
 describe('OCTRA Nest API admin (e2e)', () => {
   beforeEach(async () => {

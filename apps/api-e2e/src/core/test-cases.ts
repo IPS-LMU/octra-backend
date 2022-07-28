@@ -87,6 +87,10 @@ export class TestManager {
           {
             name: 'authenticate',
             handler: TestHandlers.authenticate
+          },
+          {
+            name: 'completeProfile',
+            handler: TestHandlers.completeProfile
           }
         ]
       },

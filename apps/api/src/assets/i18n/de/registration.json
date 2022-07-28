@@ -4,5 +4,8 @@
     "data correctness": "Ich bestätige die Richtigkeit meiner Angaben.",
     "data policy": "Ich habe die <a href=\"{dataPolicyURL}\" target=\"_blank\">Datenschutzerklärung</a> gelesen und akzeptiere sie.",
     "terms of service": "Ich habe die <a href=\"{termsConditionsURL}\" target=\"_blank\">AGB</a> gelesen und akzeptiere sie."
+  },
+  "data completion": {
+    "introduction": "Für die optimale Nutzung unserer Services benötigen wir weitere Informationen zu Ihrer Person. Diese Informationen werden u.A. dazu verwendet, um passende Teilnehmer:Innen für Projekte auszuwählen und nach Abschluss eines Projektes diese Daten zu analysieren.<br/><br/> Nehmen Sie später an einem Projekt Teil, werden Sie gesondert um Erlaubnis gefragt, dass diese Daten mit den Projektleitern geteilt werden dürfen. Sie haben auch später noch die Möglichkeit diese Daten zu ergänzen. Wir empfehlen Ihnen die Daten jetzt gleich anzugeben."
   }
 }

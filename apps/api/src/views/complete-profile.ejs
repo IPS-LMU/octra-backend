@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="<%= locals.page.lang %>">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="_description" content="">
+    <meta name="author" content="">
+
+    <title>Complete Profile</title>
+    <!-- Bootstrap core CSS -->
+    <link href="<%= locals.baseURL %>assets/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="<%= locals.baseURL %>assets/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" type="text/css">
+
+    <!-- Custom styles for this template -->
+    <link href="<%= locals.baseURL %>assets/authenticators/shibboleth/style.css" rel="stylesheet" type="text/css">
+    <script src="<%= locals.baseURL %>assets/bootstrap/js/bootstrap.bundle.min.js" type="text/javascript"></script>
+    <script type="application/javascript">
+      var jwtToken = "<%= locals.token %>";
+      var redirectTo = "<%= locals.redirectTo %>";
+      var listOfCountries = <%- JSON.stringify(locals.listOfCountries); %>;
+      var accountFields = <%- JSON.stringify(locals.accountFields); %>;
+      var page = <%- JSON.stringify(locals.page); %>;
+      var saveSuccess = <%- locals.saveSuccess ?? false; %>;
+
+      var data = {};
+      var indices = {};
+
+      function message_broadcast(key, value) {
+        value = typeof value === "object" ? JSON.stringify(value) : value;
+        var cid = "<%= locals.cid %>";
+        localStorage.setItem(key + "_" + cid, value);
+      }
+
+      if (saveSuccess) {
+        message_broadcast("token", "<%= locals.token %>");
+        if (redirectTo === "") {
+          // opened in other window
+          window.close();
+        } else {
+          // opened in same window
+          window.setTimeout(() => {
+            document.location.href = redirectTo;
+          }, 0);
+        }
+      }
+
+      function onActionClick(event) {
+        var id = event.target.getAttribute("data-field-id");
+        var type = event.target.getAttribute("data-action-type");
+        var parent = event.target.parentElement.parentElement.parentElement;
+        var fieldName = event.target.getAttribute("data-field-name");
+        var index = event.target.getAttribute("data-index");
+
+        if (type === "remove") {
+          event.target.parentElement.parentElement.remove();
+          if (data.hasOwnProperty(fieldName)) {
+            data[fieldName] = data[fieldName].filter(a => a._index !== index)
+          }
+        } else if (type === "add") {
+          var selectionRow = generateCategorySelectionRow(accountFields.find(a => a.id === id), true);
+          parent.appendChild(selectionRow);
+        }
+
+        updateActionIcons(parent);
+      }
+
+      function updateActionIcons(div) {
+        const actions = div.getElementsByClassName("action");
+        for (var i = 0; i < actions.length; i++) {
+          var actionColumn = actions[i];
+          var actionIcon = actionColumn.querySelector("i");
+
+          if (i === 0 && i === actions.length - 1) {
+            actionColumn.innerHTML = '<i class="bi bi-plus-circle action-icon add" data-action-type="add"' +
+              ' data-field-id="' + actionIcon.getAttribute("data-field-id") +
+              '" data-field-name="' + actionIcon.getAttribute("data-field-name") + '" data-index="' + actionIcon.getAttribute("data-index") + '"></i>';
+          } else if (i < actions.length - 1) {
+            actionColumn.innerHTML = '<i class="bi bi-dash-circle action-icon remove" data-action-type="remove"' +
+              ' data-field-id="' + '" data-field-name="' + actionIcon.getAttribute("data-field-name") + '" data-index="' + actionIcon.getAttribute("data-index") + '" style="visibility: hidden;"></i>';
+          } else {
+            actionColumn.innerHTML = '<i class="bi bi-plus-circle action-icon add" data-action-type="add"' +
+              ' data-field-id="' + actionIcon.getAttribute("data-field-id") + '" data-field-name="' + actionIcon.getAttribute("data-field-name") + '" data-index="' + actionIcon.getAttribute("data-index") + '"></i>';
+            actionColumn.innerHTML += ' <i class="bi bi-dash-circle action-icon remove" data-action-type="remove"' +
+              ' data-field-id="' + actionIcon.getAttribute("data-field-id") + '" data-field-name="' + actionIcon.getAttribute("data-field-name") + '" data-index="' + actionIcon.getAttribute("data-index") + '" style="visibility: hidden;"></i>';
+          }
+        }
+      }
+
+      function onSelectionChange(event) {
+        var field_name = event.target.getAttribute("data-field-name");
+        var name = event.target.getAttribute("data-name");
+        var index = event.target.getAttribute("data-index");
+        var value = event.target.value;
+
+        if (!data[field_name]) {
+          const pair = {
+            _index: index
+          };
+          pair[name] = value;
+          data[field_name] = [pair];
+        } else {
+          var found = false;
+          data[field_name] = data[field_name].map((a) => {
+            if (a._index === index) {
+              a[name] = value;
+              found = true;
+            }
+            return a;
+          });
+
+          if (!found) {
+            const pair = {
+              _index: index
+            };
+            pair[name] = value;
+
+            data[field_name].push(pair);
+          }
+        }
+      }
+
+      function onSelectionCategoryHover(event) {
+        var action = this.querySelector(".action");
+        var actionIcons = action.getElementsByTagName("i");
+
+        for (var i = 0; i < actionIcons.length; i++) {
+          var actionIcon = actionIcons[i];
+          if (actionIcon.getAttribute("data-action-type") !== "add") {
+            if (event.type === "mouseenter") {
+              actionIcon.style.visibility = "visible";
+            } else {
+              actionIcon.style.visibility = "hidden";
+            }
+          }
+        }
+      }
+
+      function generateHeadline(accountField) {
+        var definition = accountField.definition;
+        var schema = definition.schema;
+        var size = definition.schema.size ?? 2;
+        var result = document.createElement("div");
+        result.setAttribute("class", "row g-0");
+
+        var headline = document.createElement("h" + size);
+        headline.setAttribute("class", "col-md-12");
+        headline.innerHTML = schema.translation[page.lang];
+        result.appendChild(headline);
+
+        return result;
+      }
+
+      function generateCategorySelectionRow(accountField) {
+        indices[accountField.name] = indices.hasOwnProperty(accountField.name) ? indices[accountField.name] + 1 : 0
+        var definition = accountField.definition;
+        var schema = definition.schema;
+        var selectRow = document.createElement("div");
+        selectRow.setAttribute("class", "row mb-2");
+
+        for (var i = 0; i < schema.selections.length; i++) {
+          var selection = schema.selections[i];
+
+          var selectColumn = document.createElement("div");
+          if (i > 0) {
+            selectColumn.setAttribute("class", selection.class + " g-0");
+          } else {
+            selectColumn.setAttribute("class", selection.class);
+          }
+
+          var selectElement = document.createElement("select");
+          selectElement.setAttribute("data-field-name", accountField.name);
+          selectElement.setAttribute("data-name", selection.name);
+          selectElement.setAttribute("data-index", indices[accountField.name]);
+          selectElement.setAttribute("class", "form-select");
+          selectElement.appendChild(document.createElement("option"));
+
+          for (let j = 0; j < selection.options.length; j++) {
+            var option = selection.options[j];
+            var lang = option.label.hasOwnProperty(page.lang) ? page.lang : "en";
+            var optionElement = document.createElement("option");
+            optionElement.setAttribute("value", option.value);
+            optionElement.innerHTML = option.label[lang];
+            selectElement.appendChild(optionElement);
+          }
+
+          selectElement.addEventListener("change", onSelectionChange);
+
+          selectColumn.appendChild(selectElement);
+          selectRow.appendChild(selectColumn);
+        }
+
+        if (definition.multipleResults) {
+          var actionColumn = document.createElement("div");
+          actionColumn.setAttribute("class", "col-1 action");
+
+          actionColumn.innerHTML = '<i class="bi bi-plus-circle action-icon add" data-action-type="add"' +
+            ' data-field-id="' + accountField.id + '" data-field-name="' + accountField.name + '" data-index="' + indices[accountField.name] + '"></i>';
+
+          actionColumn.addEventListener("click", onActionClick);
+          selectRow.addEventListener("mouseenter", onSelectionCategoryHover);
+          selectRow.addEventListener("mouseleave", onSelectionCategoryHover);
+          selectRow.appendChild(actionColumn);
+        }
+
+        return selectRow;
+      }
+
+      function generateCategorySelection(accountField) {
+        var definition = accountField.definition;
+        var schema = definition.schema;
+        var result = document.createElement("div");
+        result.setAttribute("class", "row category-selection mb-1");
+        result.setAttribute("id", "category_selection_" + accountField.id);
+
+        var labelRow = document.createElement("div");
+        labelRow.setAttribute("class", "col-12");
+        labelRow.innerHTML = "<label>" + schema.label[page.lang] + "</label>";
+        result.appendChild(labelRow);
+
+        result.appendChild(generateCategorySelectionRow(accountField));
+        return result;
+      }
+
+      function onCheckboxChange(event) {
+        var field_name = event.target.getAttribute("data-field-name");
+        var value = event.target.value;
+
+        if (event.target.checked) {
+          if (data.hasOwnProperty(field_name)) {
+            data[field_name].push(value);
+          } else {
+            data[field_name] = [value];
+          }
+        } else {
+          if (data.hasOwnProperty(field_name)) {
+            data[field_name] = data[field_name].filter(a => a !== value);
+          } else {
+            data[field_name] = [];
+          }
+        }
+      }
+
+      function generateMultipleChoice(accountField) {
+        var definition = accountField.definition;
+        var schema = definition.schema;
+        var result = document.createElement("div");
+
+        result.setAttribute("class", "row multiple-choice");
+        result.setAttribute("id", "multiple_choice_" + accountField.id);
+
+        var label = document.createElement("label");
+        label.setAttribute("class", "col-12");
+        label.innerHTML = schema.label[page.lang];
+        result.appendChild(label);
+
+        var column = document.createElement("div");
+        column.setAttribute("class", "col-12");
+
+        for (var i = 0; i < schema.options.length; i++) {
+          indices[accountField.name] = indices.hasOwnProperty(accountField.name) ? indices[accountField.name] + 1 : 0
+          var option = schema.options[i];
+          var lang = option.label.hasOwnProperty(page.lang) ? page.lang : "en";
+
+          var div = document.createElement("div");
+          var classStr = "form-check " + ((schema.arrangement === "horizontal") ? "form-check-inline" : "");
+          div.setAttribute("class", classStr);
+
+          var optionElement = document.createElement("input");
+          optionElement.setAttribute("class", "form-check-input");
+          optionElement.setAttribute("id", accountField.name + "_" + indices[accountField.name]);
+          optionElement.setAttribute("type", "checkbox");
+          optionElement.setAttribute("data-field-name", accountField.name);
+          optionElement.setAttribute("value", option.value);
+          optionElement.addEventListener("change", onCheckboxChange);
+          div.appendChild(optionElement);
+
+          var optionLabel = document.createElement("label");
+          optionLabel.setAttribute("class", "form-check-label");
+          optionLabel.setAttribute("for", accountField.name + "_" + indices[accountField.name]);
+          optionLabel.innerHTML = option.label[lang]
+          div.appendChild(optionLabel);
+
+          column.appendChild(div);
+        }
+
+        result.appendChild(column);
+        return result;
+      }
+
+      function generateFields() {
+        var main = document.getElementsByTagName("main")[0];
+
+        for (var i = 0; i < accountFields.length; i++) {
+          var accountField = accountFields[i];
+
+          switch (accountField.type) {
+            case "header":
+              var headline = generateHeadline(accountField);
+              main.appendChild(headline);
+              break;
+            case "category_selection":
+              var categorySelection = generateCategorySelection(accountField);
+              main.appendChild(categorySelection);
+              break;
+            case "multiple_choice":
+              var multipleChoice = generateMultipleChoice(accountField);
+              main.appendChild(multipleChoice);
+              break;
+          }
+        }
+      }
+
+      function onSubmit() {
+        // prepare data
+        var dataCopy = Object.assign({}, data);
+        dataCopy = removeUnderscoreAttributes(dataCopy);
+
+        submit(dataCopy);
+      }
+
+      function removeUnderscoreAttributes(obj) {
+        if (Array.isArray(obj)) {
+          for (var i = 0; i < obj.length; i++) {
+            obj[i] = removeUnderscoreAttributes(obj[i]);
+          }
+        } else {
+          var attributes = Object.keys(obj);
+          var underscores = [];
+
+          for (var i = 0; i < attributes.length; i++) {
+            var attr = attributes[i];
+            if (/^_/g.exec(attr)) {
+              delete obj[attr];
+            } else if (typeof obj[attr] === "object") {
+              obj[attr] = removeUnderscoreAttributes(obj[attr]);
+            }
+          }
+        }
+        return obj;
+      }
+
+      function submit(dataCopy) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("post", "<%= locals.baseURL %>account/complete-profile");
+        xhr.setRequestHeader("content-type", "application/json");
+        xhr.setRequestHeader("Authorization", "Bearer " + jwtToken);
+        xhr.setRequestHeader("X-App-Token", "<%= locals.appToken %>");
+        xhr.addEventListener("load", (data) => {
+          console.log(data);
+          message_broadcast("token", "<%= locals.token %>");
+          if (redirectTo === "") {
+            // opened in other window
+            window.close();
+          } else {
+            // opened in same window
+            window.setTimeout(() => {
+              document.location.href = redirectTo;
+            }, 0);
+          }
+        });
+        xhr.addEventListener("error", (data) => {
+          console.error(data);
+          alert("An error occured. Please try again. If this error still occurres, please contact one of the administrators.");
+        });
+        xhr.send(JSON.stringify(dataCopy));
+      }
+
+      window.onload = function () {
+        generateFields();
+        submitButton.addEventListener("click", onSubmit)
+      }
+    </script>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-success mb-3" aria-label="Fifth navbar example">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">OCTRA-API</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExample05"
+                aria-controls="navbarsExample05" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarsExample05">
+            <ul class="navbar-nav me-auto mb-lg-0">
+            </ul>
+            <div class="dropdown pr-3">
+                <a class="dropdown-toggle text-white text-decoration-none mr-3 pr-3" href="#" data-bs-toggle="dropdown"
+                   aria-expanded="false"><%= locals.page.lang.toUpperCase() %></a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="<%= (locals.query === "") ? "?" : locals.query + "&" %>lang=de">DE</a>
+                    </li>
+                    <li><a class="dropdown-item" href="<%= (locals.query === "") ? "?" : locals.query + "&" %>lang=en">EN</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+<div class="container">
+    <noscript>
+        Please enable Javascript.
+    </noscript>
+    <% if(!locals.saveSuccess) { %>
+        <!-- TODO read user values -->
+        <h1><%= t("general.complete profile") %></h1>
+        <p class="mb-5">
+            <%- t("registration.data completion.introduction"); %>
+        </p>
+        <main>
+        </main>
+        <button class="btn btn-primary btn-block mt-3" id="submitButton">
+            <%= locals.t('general.save and continue') %>
+        </button>
+    <% } else { %>
+        <p>Redirect...</p>
+    <% } %>
+</div>
+</body>
+</html>

@@ -72,8 +72,8 @@ const TypeORMOptions: TypeOrmModuleOptions = {
     I18nModule.forRoot({
       fallbackLanguage: 'en',
       loaderOptions: {
-        path: join(__dirname, 'assets', 'i18n'),
-        watch: true,
+        path: join(__dirname, (process.env['test'] ? '..' : ''), 'assets', 'i18n'),
+        watch: false,
       },
       resolvers: [
         {use: QueryResolver, options: ['lang']},

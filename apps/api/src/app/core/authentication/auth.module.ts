@@ -14,23 +14,25 @@ import {
   AccountFieldDefinitionEntity,
   AccountPersonEntity,
   AccountRoleProjectEntity,
+  AppTokenEntity,
   Configuration,
   OptionEntity,
   RoleEntity
 } from '@octra/server-side';
 import {SettingsService} from '../settings/settings.service';
 import {AccountFieldsService} from '../account/fields';
+import {AppTokenService} from '../app-token/app-token.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([AccountPersonEntity, AccountEntity, AccountRoleProjectEntity, RoleEntity, OptionEntity, AccountFieldDefinitionEntity]),
+    TypeOrmModule.forFeature([AccountPersonEntity, AccountEntity, AccountRoleProjectEntity, RoleEntity, OptionEntity, AccountFieldDefinitionEntity, AppTokenEntity]),
     AccountModule, PassportModule, JwtModule.register({
       secret: Configuration.getInstance().api.security.keys.jwt.secret,
       signOptions: {expiresIn: '1 day'}, // TODO set expiration time to config.json
     })
   ],
   providers: [
-    AccountService, AuthService, LocalStrategy, JwtStrategy,
+    AccountService, AuthService, LocalStrategy, JwtStrategy, AppTokenService,
     DatabaseService, SettingsService, AccountFieldsService
   ],
   controllers: [AuthController],

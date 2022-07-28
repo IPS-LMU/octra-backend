@@ -20,12 +20,14 @@ import {I18n, I18nContext, TranslateOptions} from 'nestjs-i18n';
 import {InternRequest} from '../../obj/types';
 import {AccountFieldsService} from '../account/fields';
 import {AccountFieldDefinitionEntity} from '@octra/server-side';
+import {AppTokenService} from '../app-token/app-token.service';
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService, private configService: ConfigService,
               private accountService: AccountService, private jwtService: JwtService,
+              private appTokenService: AppTokenService,
               private settingsService: SettingsService,
               private accountFieldService: AccountFieldsService) {
   }
@@ -109,7 +111,6 @@ export class AuthController {
     return this.authService.login(dto);
   }
 
-  @CustomApiException(new InvalidCredentialsException())
   @Post('logout')
   @UseFilters(new HttpExceptionFilter())
   async logout(@Res() res: Response, @Req() req: InternRequest): Promise<void> {
@@ -121,6 +122,7 @@ export class AuthController {
   @Get('complete-profile')
   async showCompleteProfile(@Body() body: any,
                             @Query('windowURL') windowURL: string,
+                            @Query('cid') cid: string,
                             @Query('r') redirectTo: string,
                             @I18n() i18n: I18nContext,
                             @Res() res: Response, @Req() req: InternRequest) {
@@ -139,51 +141,16 @@ export class AuthController {
       }
     });
 
+    const appToken = await this.appTokenService.getOne('1');
+
     res.render('complete-profile', {
-      cid: 435345,
+      cid,
       token: req.cookies['ocb_sessiontoken'],
       windowURL: '',
       baseURL: this.configService.get('api.baseURL'),
       redirectTo: redirectTo ?? '',
       listOfCountries: CountryStates,
-      t: (key: string, args: TranslateOptions) => i18n.t(key, args),
-      page,
-      accountFields
-    });
-  }
-
-  @Header('content-type', 'text/html')
-  @Post('complete-profile')
-  async completeProfile(@Body() body: any,
-                        @Query('windowURL') windowURL: string,
-                        @Query('r') redirectTo: string,
-                        @I18n() i18n: I18nContext,
-                        @Res() res: Response, @Req() req: InternRequest) {
-    // TODO save to DB
-    // TODO move this function to account
-
-    const page = this.getPageMeta(req, i18n);
-    const accountFields = await this.accountFieldService.listFieldDefinitions({
-      where: {
-        context: AccountFieldContext.account
-      },
-      order: {
-        sort_order: {
-          direction: 'asc'
-        },
-        name: {
-          direction: 'asc'
-        }
-      }
-    });
-
-    res.render('complete-profile', {
-      cid: 435345,
-      token: body.token,
-      windowURL: '',
-      baseURL: this.configService.get('api.baseURL'),
-      redirectTo: redirectTo ?? '',
-      listOfCountries: CountryStates,
+      appToken: appToken.key,
       t: (key: string, args: TranslateOptions) => i18n.t(key, args),
       page,
       accountFields
@@ -359,7 +326,7 @@ export class AuthController {
     res.clearCookie('ocb_shibtoken');
 
     if (isNew) {
-      res.redirect(this.configService.get('api.baseURL') + 'auth/complete-profile');
+      res.redirect(this.configService.get('api.baseURL') + 'auth/complete-profile' + (query ?? ''));
     } else {
       res.render('confirm-shibboleth', {
         userName: '',

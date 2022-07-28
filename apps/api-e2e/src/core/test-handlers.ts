@@ -128,6 +128,15 @@ export class TestHandlers {
       })
   }
 
+  public static completeProfile = () => {
+    const test = this.post('/account/complete-profile', {
+      'language_skills': [{'language': 'German', 'level': 'A2'}],
+      'transcription_skills': ['orthographic', 'phonetic']
+    }, this.roleToTest);
+
+    return test.expect(201);
+  }
+
   public static createNewTool = () => {
     const test = this.post('/tool', {
       name: `Tool_${Date.now()}`,
