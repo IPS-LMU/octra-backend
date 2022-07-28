@@ -1,26 +1,13 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Header,
-  InternalServerErrorException,
-  Post,
-  Query,
-  Req,
-  Res,
-  UnauthorizedException,
-  UseFilters
-} from '@nestjs/common';
+import {Body, Controller, Get, Header, Post, Query, Req, Res, UseFilters} from '@nestjs/common';
 import {AuthService} from './auth.service';
 import {Public} from '../authorization/public.decorator';
 import {AuthDto, AuthLoginDto} from './auth.dto';
 import {ApiBody, ApiTags} from '@nestjs/swagger';
 import {HttpExceptionFilter} from '../../obj/filters/http-exception.filter';
-import {InvalidCredentialsException} from '../../obj/exceptions';
+import {BadRequestException, InvalidCredentialsException} from '../../obj/exceptions';
 import {CustomApiException} from '../../obj/decorators/api-exception.decorators';
 import * as jwt from 'jsonwebtoken';
 import {ConfigService} from '@nestjs/config';
-import {SHA256} from 'crypto-js';
 import {AccountService} from '../account';
 import {AccountFieldContext, AccountLoginMethod, AccountRole, CountryStates} from '@octra/api-types';
 import {Request, Response} from 'express';
@@ -122,17 +109,22 @@ export class AuthController {
     return this.authService.login(dto);
   }
 
+  @CustomApiException(new InvalidCredentialsException())
+  @Post('logout')
+  @UseFilters(new HttpExceptionFilter())
+  async logout(@Res() res: Response, @Req() req: InternRequest): Promise<void> {
+    return this.authService.logout(res, req);
+  }
 
   @Public()
   @Header('content-type', 'text/html')
-  @Get('personal-information')
-  async askPersonalInformation(@Body() body: any,
-                               @Query('windowURL') windowURL: string,
-                               @Query('r') redirectTo: string,
-                               @I18n() i18n: I18nContext,
-                               @Res() res: Response, @Req() req: InternRequest) {
-    const page = this.getPageMeta(req);
-
+  @Get('complete-profile')
+  async showCompleteProfile(@Body() body: any,
+                            @Query('windowURL') windowURL: string,
+                            @Query('r') redirectTo: string,
+                            @I18n() i18n: I18nContext,
+                            @Res() res: Response, @Req() req: InternRequest) {
+    const page = this.getPageMeta(req, i18n);
     const accountFields = await this.accountFieldService.listFieldDefinitions({
       where: {
         context: AccountFieldContext.account
@@ -147,7 +139,45 @@ export class AuthController {
       }
     });
 
-    res.render('personalInformation', {
+    res.render('complete-profile', {
+      cid: 435345,
+      token: req.cookies['ocb_sessiontoken'],
+      windowURL: '',
+      baseURL: this.configService.get('api.baseURL'),
+      redirectTo: redirectTo ?? '',
+      listOfCountries: CountryStates,
+      t: (key: string, args: TranslateOptions) => i18n.t(key, args),
+      page,
+      accountFields
+    });
+  }
+
+  @Header('content-type', 'text/html')
+  @Post('complete-profile')
+  async completeProfile(@Body() body: any,
+                        @Query('windowURL') windowURL: string,
+                        @Query('r') redirectTo: string,
+                        @I18n() i18n: I18nContext,
+                        @Res() res: Response, @Req() req: InternRequest) {
+    // TODO save to DB
+    // TODO move this function to account
+
+    const page = this.getPageMeta(req, i18n);
+    const accountFields = await this.accountFieldService.listFieldDefinitions({
+      where: {
+        context: AccountFieldContext.account
+      },
+      order: {
+        sort_order: {
+          direction: 'asc'
+        },
+        name: {
+          direction: 'asc'
+        }
+      }
+    });
+
+    res.render('complete-profile', {
       cid: 435345,
       token: body.token,
       windowURL: '',
@@ -162,96 +192,85 @@ export class AuthController {
 
   @Public()
   @Header('content-type', 'text/html')
-  @Get('confirmShibboleth')
-  async introduceShibboleth(@Body() body: any,
-                            @Query('windowURL') windowURL: string,
-                            @Query('r') redirectTo: string,
-                            @I18n() i18n: I18nContext,
-                            @Res() res: Response, @Req() req: InternRequest) {
-    const generalSettings = await this.settingsService.getGeneralSettings();
-    const {dataPolicyURL, termsConditionsURL} = await this.getURLS(generalSettings, req);
-    const page = this.getPageMeta(req);
-
-    res.render('confirmShibboleth', {
-      userName: 'displayName',
-      email: 'someEmail',
-      shibToken: 'shib token',
-      cid: 435345,
-      token: '',
-      windowURL: '',
-      baseURL: this.configService.get('api.baseURL'),
-      dataPolicyURL,
-      termsConditionsURL,
-      redirectTo: redirectTo ?? '',
-      listOfCountries: CountryStates,
-      t: (key: string, args: TranslateOptions) => i18n.t(key, args),
-      page
-    });
-  }
-
-  @Public()
-  @Header('content-type', 'text/html')
-  @Post('confirmShibboleth')
+  @Get('confirm-shibboleth')
   async confirmShibboleth(@Body() body: any, @Query('windowURL') windowURL: string,
                           @Query('cid') cid: string, @Query('r') redirectTo: string,
                           @I18n() i18n: I18nContext,
                           @Res() res: Response, @Req() req: InternRequest) {
-    let tokenBody;
     const generalSettings = await this.settingsService.getGeneralSettings();
     const {dataPolicyURL, termsConditionsURL} = await this.getURLS(generalSettings, req);
-    const page = this.getPageMeta(req);
+    const page = this.getPageMeta(req, i18n);
+    let query = this.getQueryString(req.query, ['lang']);
+    const sessionToken = req.cookies['ocb_sessiontoken'];
+    const shibToken = req.cookies['ocb_shibtoken'];
 
-    try {
-      tokenBody = await this.jwtVerfiy(body.shibToken, this.configService.get('api.plugins.shibboleth.secret'));
-    } catch (e) {
-      throw new UnauthorizedException('Invalid Web Token. Please authenticate again.');
-    }
-
-    if (!((tokenBody.userInformation.mail && tokenBody.userInformation.mail.trim() !== '') ||
-      (tokenBody.userInformation.oidEduPersonPrincipalName || tokenBody.userInformation.oidEduPersonPrincipalName.trim() !== ''))) {
-      throw new UnauthorizedException(`You can\'t authenticate with the server because of missing parameters. Please contact : <a href="mailto:${generalSettings?.mail_support_address}">${generalSettings?.mail_support_address}</a>`);
-    }
-
-    // generate UUID
-    let UUID = '';
-    if (tokenBody.userInformation.oidEduPersonPrincipalName && tokenBody.userInformation.oidEduPersonPrincipalName !== '') {
-      UUID = tokenBody.userInformation.oidEduPersonPrincipalName;
-    } else if (tokenBody.userInformation.mail && tokenBody.userInformation.mail !== '') {
-      UUID = tokenBody.userInformation.mail;
-    }
-
-    if (UUID !== '') {
-      // hash uuid of user
-      UUID = SHA256(UUID + this.configService.get('api.plugins.shibboleth.uuidSalt')).toString();
-      // check if user exists
-      const redirectWithToken = (user: any) => {
-        const payload: JWTPayload = {
-          customSalt: this.configService.get<string>('api.security.keys.jwt.salt'),
-          sub: user.id
-        };
-
-        res.render('confirmShibboleth', {
+    if (shibToken) {
+      const userObj = await this.authService.checkShibbolethUser(shibToken, generalSettings);
+      if (!userObj.user) {
+        // show registration form
+        res.render('confirm-shibboleth', {
           userName: '',
           email: '',
           cid,
-          token: this.jwtService.sign(payload),
+          token: '',
+          windowURL: '',
           baseURL: this.configService.get('api.baseURL'),
           dataPolicyURL,
           termsConditionsURL,
           redirectTo: redirectTo ?? '',
-          windowURL,
           listOfCountries: CountryStates,
-          t: i18n.t,
+          query,
+          t: (key: string, args: TranslateOptions) => i18n.t(key, args),
           page
         });
-      }
-
-      const user = await this.accountService.findAccountByHash(UUID);
-
-      if (user) {
-        redirectWithToken(user);
       } else {
-        if (body.dataPolicyAccepted === 'yes' && body.termsAccepted === 'yes' && body.username?.trim() !== '' && body.email?.trim() !== '' && body.shibToken?.trim() !== '') {
+        await this.redirectWithToken(userObj.user, false, res, cid, dataPolicyURL, termsConditionsURL, windowURL, redirectTo, i18n, page, query);
+      }
+    } else {
+      res.render('confirm-shibboleth', {
+        userName: '',
+        email: '',
+        cid,
+        token: sessionToken ?? '',
+        windowURL: windowURL ?? '',
+        baseURL: this.configService.get('api.baseURL'),
+        dataPolicyURL,
+        termsConditionsURL,
+        redirectTo: redirectTo ?? '',
+        listOfCountries: CountryStates,
+        query,
+        t: (key: string, args: TranslateOptions) => i18n.t(key, args),
+        page
+      });
+    }
+  }
+
+  @Public()
+  @Header('content-type', 'text/html')
+  @Post('confirm-shibboleth')
+  async createAccountAfterShibbolethAuthentication(@Body() body: any, @Query('windowURL') windowURL: string,
+                                                   @Query('cid') cid: string, @Query('r') redirectTo: string,
+                                                   @I18n() i18n: I18nContext,
+                                                   @Res() res: Response, @Req() req: InternRequest) {
+
+    const generalSettings = await this.settingsService.getGeneralSettings();
+    const {dataPolicyURL, termsConditionsURL} = await this.getURLS(generalSettings, req);
+    const page = this.getPageMeta(req, i18n);
+    let query = this.getQueryString(req.query, ['lang']);
+    const shibToken = req.cookies['ocb_shibtoken'];
+
+    if (!shibToken) {
+      throw new BadRequestException(`Registration failed. Missing Shibboleth authentication.`);
+    } else {
+      // after shibboleth authentification
+      const userObj = await this.authService.checkShibbolethUser(shibToken, generalSettings);
+
+      // check if user exists
+
+      if (userObj.user) {
+        await this.redirectWithToken(userObj.user, false, res, cid, dataPolicyURL, termsConditionsURL, windowURL, redirectTo, i18n, page, query);
+      } else {
+        if (body.dataPolicyAccepted === 'yes' && body.termsAccepted === 'yes' && body.username?.trim() !== '' && body.email?.trim() !== '') {
           // user wants to create a new account
           // save user
           const createUser: AccountCreateRequestDto = {
@@ -267,30 +286,27 @@ export class AuthController {
             role: AccountRole.user,
             creationdate: new Date(),
             updatedate: new Date(),
-            password: UUID
+            password: userObj.uuid
           };
           const newUser = await this.accountService.createAccount(createUser, AccountLoginMethod.shibboleth);
-          redirectWithToken(newUser);
+          await this.redirectWithToken(newUser, true, res, cid, dataPolicyURL, termsConditionsURL, windowURL, redirectTo, i18n, page, query);
         } else {
           // ask for account creation
-
-          res.render('confirmShibboleth', {
-            shibToken: body.shibToken,
+          res.render('confirm-shibboleth', {
             cid,
             token: '',
             baseURL: this.configService.get('api.baseURL'),
-            windowURL: '',
+            windowURL,
             redirectTo: redirectTo ?? '',
             dataPolicyURL,
             termsConditionsURL,
             listOfCountries: CountryStates,
-            t: i18n.t,
-            page
+            t: (key: string, args: TranslateOptions) => i18n.t(key, args),
+            page,
+            query
           });
         }
       }
-    } else {
-      throw new InternalServerErrorException('Can not generate UUID.');
     }
   }
 
@@ -319,11 +335,63 @@ export class AuthController {
     };
   }
 
-  private getPageMeta(req: InternRequest) {
-    const lang: string = req.query?.lang as string ?? req.header('Accept-Language')
+  private getPageMeta(req: InternRequest, i18n: I18nContext) {
     return {
-      lang: lang?.replace(/-.*$/g, '') ?? 'en'
+      lang: i18n.lang
     }
+  }
+
+  private redirectWithToken = async (user: any, isNew: boolean, res, cid, dataPolicyURL, termsConditionsURL, windowURL, redirectTo, i18n, page, query) => {
+    const payload: JWTPayload = {
+      customSalt: this.configService.get<string>('api.security.keys.jwt.salt'),
+      sub: user.id
+    };
+    const token = this.jwtService.sign(payload);
+
+    // set ocb_sessiontoken cookie
+    res.cookie('ocb_sessiontoken', token, {
+      sameSite: 'strict',
+      httpOnly: true,
+      secure: true
+    });
+
+    //remove shibtoken because we don't need it anymore
+    res.clearCookie('ocb_shibtoken');
+
+    if (isNew) {
+      res.redirect(this.configService.get('api.baseURL') + 'auth/complete-profile');
+    } else {
+      res.render('confirm-shibboleth', {
+        userName: '',
+        email: '',
+        cid,
+        token,
+        baseURL: this.configService.get('api.baseURL'),
+        dataPolicyURL,
+        termsConditionsURL,
+        redirectTo: redirectTo ?? '',
+        windowURL,
+        listOfCountries: CountryStates,
+        t: (key: string, args: TranslateOptions) => i18n.t(key, args),
+        page,
+        query
+      });
+    }
+  }
+
+  private getQueryString(query, ignoredKeys = []) {
+    let result = '';
+    let i = 0;
+    const keys = Object.keys(query).filter((a) => !ignoredKeys.includes(a))
+    for (const key of keys) {
+      if (i === 0) {
+        result += `?${key}=${query[key]}`;
+      } else {
+        result += `&${key}=${query[key]}`;
+      }
+      i++;
+    }
+    return result;
   }
 
   private prepareAccountFields(accountFields: AccountFieldDefinitionEntity[], language: string) {

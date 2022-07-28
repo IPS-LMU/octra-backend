@@ -20,6 +20,7 @@
       "assets/**/*",
       "views/**/*",
       "../../../node_modules/better-sqlite3-multiple-ciphers/**/*",
+      "../../../nestjs-i18n/**/*",
       "../../../node_modules/node-addon-api/**/*",
       "../../../node_modules/node-gyp/**/*",
       "../../../node_modules/graceful-fs/**/*",

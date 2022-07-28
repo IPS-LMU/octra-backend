@@ -7,6 +7,7 @@ import {version} from '../package.json'
 import {Logger, ValidationPipe} from '@nestjs/common';
 import {NestFactory} from '@nestjs/core';
 import * as bodyParser from 'body-parser';
+import * as cookieParser from 'cookie-parser';
 
 import {AppModule} from './app/app.module';
 import {ConfigService} from '@nestjs/config';
@@ -98,6 +99,8 @@ async function bootstrap() {
   app.setViewEngine('ejs');
 
   app.enableCors();
+  app.use(cookieParser());
+
   await app.listen(port, config.host);
   const url = config.url && config.url.trim() !== '' ? config.url : `http://localhost:${port}${config.baseURL}`;
   Logger.log(

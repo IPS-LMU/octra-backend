@@ -74,8 +74,17 @@ export class OctraAPIService {
    * does logout process
    */
   public logout() {
-    this._webToken = '';
-    this._authenticated = false;
+    return new Promise<void>((resolve, reject) => {
+      firstValueFrom(this.http.post<AuthDto>(`${this.apiURL}/auth/logout`, undefined, {
+        headers: this.getHeaders(false)
+      })).then(() => {
+        this._webToken = '';
+        this._authenticated = false;
+        resolve();
+      }).catch((error) => {
+        reject((error.error?.message) ? error.error.message : error.message);
+      });
+    });
   }
 
   /***

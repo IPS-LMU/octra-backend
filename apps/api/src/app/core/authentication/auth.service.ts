@@ -1,4 +1,4 @@
-import {HttpException, Injectable, InternalServerErrorException} from '@nestjs/common';
+import {HttpException, Injectable, InternalServerErrorException, UnauthorizedException} from '@nestjs/common';
 import {AccountService} from '../account';
 import {JwtService} from '@nestjs/jwt';
 import {SHA256} from 'crypto-js';
@@ -8,6 +8,9 @@ import {AuthDto, AuthLoginDto} from './auth.dto';
 import {AccountEntity} from '@octra/server-side';
 import {AccountDto} from '../account/account.dto';
 import {InvalidCredentialsException} from '../../obj/exceptions';
+import * as jwt from 'jsonwebtoken';
+import {Response} from 'express';
+import {InternRequest} from '../../obj/types';
 
 @Injectable()
 export class AuthService {
@@ -56,9 +59,63 @@ export class AuthService {
     }
   }
 
+  async logout(res: Response, req: InternRequest) {
+    res.clearCookie('ocb_sesssiontoken');
+  }
+
   private getPasswordHash(password: string): string {
     let salt = this.configService.get('api.security.keys.password.salt');
     salt = SHA256(salt).toString();
     return SHA256(password + salt).toString();
+  }
+
+  public async checkShibbolethUser(shibToken, generalSettings: any): Promise<{
+    user: AccountEntity,
+    uuid: string
+  }> {
+    // after shibboleth authentification
+    let tokenBody;
+    try {
+      tokenBody = await this.jwtVerfiy(shibToken, this.configService.get('api.plugins.shibboleth.secret'));
+    } catch (e) {
+      throw new UnauthorizedException('Invalid Web Token. Please authenticate again.');
+    }
+
+    if (!((tokenBody.userInformation.mail && tokenBody.userInformation.mail.trim() !== '') ||
+      (tokenBody.userInformation.oidEduPersonPrincipalName || tokenBody.userInformation.oidEduPersonPrincipalName.trim() !== ''))) {
+      throw new UnauthorizedException(`You can\'t authenticate with the server because of missing parameters. Please contact : <a href="mailto:${generalSettings?.mail_support_address}">${generalSettings?.mail_support_address}</a>`);
+    }
+
+    // generate UUID
+    let UUID = '';
+    if (tokenBody.userInformation.oidEduPersonPrincipalName && tokenBody.userInformation.oidEduPersonPrincipalName !== '') {
+      UUID = tokenBody.userInformation.oidEduPersonPrincipalName;
+    } else if (tokenBody.userInformation.mail && tokenBody.userInformation.mail !== '') {
+      UUID = tokenBody.userInformation.mail;
+    }
+
+    if (UUID !== '') {
+      // hash uuid of user
+      UUID = SHA256(UUID + this.configService.get('api.plugins.shibboleth.uuidSalt')).toString();
+      // check if user exists
+      return {
+        user: await this.usersService.findAccountByHash(UUID),
+        uuid: UUID
+      };
+    } else {
+      throw new InternalServerErrorException('Can not generate UUID.');
+    }
+  }
+
+  private async jwtVerfiy(token: string, secretOrPublicKey: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      jwt.verify(token, secretOrPublicKey, (err, tokenBody) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(tokenBody);
+        }
+      })
+    });
   }
 }
