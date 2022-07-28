@@ -1,4 +1,5 @@
 import * as yargs from 'yargs';
+import {Options} from 'yargs';
 import {OctraCLIArgv, OctraCLICommand} from './command';
 import {ScriptRunner} from '../script-runner';
 import {GlobalVariables} from '../types';
@@ -10,7 +11,21 @@ import * as chalk from 'chalk';
 export class InstallationCommand extends OctraCLICommand {
   override init(argv: yargs.Argv, globals: GlobalVariables): yargs.Argv {
     argv = super.init(argv, globals);
-    return argv.command('install', 'Installs a new Octra-DB on the given connection in config.json.', this.install as any);
+    return argv.command('install', 'Installs a new Octra-DB on the given connection in config.json.', this.install as any)
+      .option<{ verbose: Options, 'keep-secrets': Options }>({
+        'verbose': {
+          alias: 'v',
+          default: false,
+          type: 'boolean',
+          description: 'show console outputs while running commands'
+        },
+        'keep-secrets': {
+          alias: 'k',
+          default: false,
+          type: 'boolean',
+          description: 'show console outputs while running commands'
+        }
+      });
   }
 
   private install = async (args: OctraCLIArgv) => {
@@ -32,8 +47,7 @@ export class InstallationCommand extends OctraCLICommand {
   name: ${configFile.database.dbName}
   host: ${configFile.database.dbHost}
   port: ${configFile.database.dbPort}
-
-! All secret keys from the config.json file are going to be re-generated.
+${!args.argv['keep-secrets'] ? '\n! All secret keys from the config.json file are going to be re-generated.' : ''}
   Path to config file:
   ${join(process.env['configPath'], 'config.json')}
 
@@ -85,38 +99,40 @@ export class InstallationCommand extends OctraCLICommand {
         webBackendURL = await this.askQuestion(`\n-> What is the public URL of the web-backend? (full URL incl. 'https://') Leave empty if you don't want to use the web-backend`);
       }
 
-      configFile = {
-        ...configFile,
-        api: {
-          ...configFile.api,
-          security: {
-            keys: {
-              password: {
+      if (!args.argv['keep-secrets']) {
+        configFile = {
+          ...configFile,
+          api: {
+            ...configFile.api,
+            security: {
+              keys: {
+                password: {
+                  secret: getRandomString(30),
+                  salt: getRandomString(30)
+                },
+                jwt: {
+                  secret: getRandomString(30),
+                  salt: getRandomString(30)
+                },
+                url: {
+                  secret: getRandomString(30),
+                  salt: getRandomString(30)
+                }
+              }
+            },
+            plugins: {
+              ...configFile.api.plugins,
+              shibboleth: {
+                ...configFile.api.plugins.shibboleth,
+                enabled: true,
+                windowURL: '',
                 secret: getRandomString(30),
-                salt: getRandomString(30)
-              },
-              jwt: {
-                secret: getRandomString(30),
-                salt: getRandomString(30)
-              },
-              url: {
-                secret: getRandomString(30),
-                salt: getRandomString(30)
+                uuidSalt: getRandomString(30)
               }
             }
-          },
-          plugins: {
-            ...configFile.api.plugins,
-            shibboleth: {
-              ...configFile.api.plugins.shibboleth,
-              enabled: true,
-              windowURL: '',
-              secret: getRandomString(30),
-              uuidSalt: getRandomString(30)
-            }
           }
-        }
-      };
+        };
+      }
 
       if (configFile.api.plugins?.webBackend?.url || (webBackendURL && webBackendURL.trim() !== '')) {
         configFile = {

@@ -2,9 +2,9 @@ import {MigrationInterface, QueryRunner, Table, TableForeignKey} from 'typeorm';
 import {
   AccountCategorySelection,
   AccountEntity,
-  AccountFieldCheckboxes,
   AccountFieldDefinitionEntity,
   AccountFieldHeadline,
+  AccountFieldMultipleChoice,
   AccountFieldTextArea,
   AccountPersonEntity,
   AppTokenEntity,
@@ -602,7 +602,7 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
           selections: [
             {
               name: 'language',
-              class: 'col-8',
+              class: 'col-7',
               options: generateLanguageOptions()
             },
             {
@@ -628,17 +628,17 @@ export class FirstInstallation1652721433767 extends OctraMigration implements Mi
     await queryRunner.manager.insert(AccountFieldDefinitionEntity, {
         context: AccountFieldContext.account,
         name: 'transcription_skills',
-        definition: new AccountFieldCheckboxes({
-          schema: {
-            label: {
-              'en': 'Transcription skills',
-              'de': 'Transkriptionserfahrungen'
-            },
-            arrangement: 'horizontal',
-            options: [
-              {
-                label: {
-                  'en': 'Orthographic transcription',
+      definition: new AccountFieldMultipleChoice({
+        schema: {
+          label: {
+            'en': 'Transcription skills',
+            'de': 'Transkriptionserfahrungen'
+          },
+          arrangement: 'horizontal',
+          options: [
+            {
+              label: {
+                'en': 'Orthographic transcription',
                   'de': 'Orthografische Transkription'
                 },
                 value: 'orthographic'
