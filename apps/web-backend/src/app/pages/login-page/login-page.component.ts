@@ -24,13 +24,13 @@ export class LoginPageComponent implements OnInit {
   windowChecker: number = -1;
 
   constructor(public api: OctraAPIService, private router: Router, private modalsService: ModalsService, public appStorage: AppStorageService, private route: ActivatedRoute) {
-  }
-
-  ngOnInit(): void {
     const method = this.getCookie('ocb_authenticated') as AccountLoginMethod;
     if (method) {
       this.appStorage.autoLogin(method);
     }
+  }
+
+  ngOnInit(): void {
   }
 
   onSubmit(type: AccountLoginMethod) {
