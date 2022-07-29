@@ -3,6 +3,7 @@ import {SessionStorage} from 'ngx-webstorage';
 import {Router} from '@angular/router';
 import {OctraAPIService} from '@octra/ngx-octra-api';
 import {AccountDto, AccountLoginMethod, AccountRole} from '@octra/api-types';
+import {SettingsService} from './settings.service';
 
 @Injectable({
   providedIn: 'root'
@@ -46,6 +47,7 @@ export class AppStorageService {
         this._user = account;
         this._authType = type;
         this._authenticated = true;
+        this.settingsService.webToken = accessToken;
         console.log(`navigate because account set`);
         this.router.navigate(['/loading']);
       }
@@ -87,7 +89,7 @@ export class AppStorageService {
     this.router.navigate(['/loading']);
   }
 
-  constructor(private router: Router, private api: OctraAPIService) {
+  constructor(private router: Router, private api: OctraAPIService, private settingsService: SettingsService) {
 
   }
 }

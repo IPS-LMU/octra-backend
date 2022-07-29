@@ -4,6 +4,7 @@ import {ModalsService} from '../../modals/modals.service';
 import {OctraAPIService} from '@octra/ngx-octra-api';
 import {AppStorageService} from '../../app-storage.service';
 import {AccountLoginMethod} from '@octra/api-types';
+import {SettingsService} from '../../settings.service';
 
 @Component({
   selector: 'ocb-login-page',
@@ -23,11 +24,12 @@ export class LoginPageComponent implements OnInit {
 
   windowChecker: number = -1;
 
-  constructor(public api: OctraAPIService, private router: Router, private modalsService: ModalsService, public appStorage: AppStorageService, private route: ActivatedRoute) {
-    const method = this.getCookie('ocb_authenticated') as AccountLoginMethod;
-    if (method) {
-      this.appStorage.autoLogin(method);
-    }
+  constructor(private settingsService: SettingsService, public api: OctraAPIService, private router: Router, private modalsService: ModalsService, public appStorage: AppStorageService, private route: ActivatedRoute) {
+    this.settingsService.asSoonAsAPILoaded().then(() => {
+      if (this.api.authType) {
+        this.appStorage.autoLogin(this.api.authType);
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -40,21 +42,5 @@ export class LoginPageComponent implements OnInit {
     this.appStorage.login(type, name, password).catch((error) => {
       this.modalsService.openErrorModal('Error occurred', error);
     });
-  }
-
-  getCookie(cname: string) {
-    let name = cname + '=';
-    let decodedCookie = decodeURIComponent(document.cookie);
-    let ca = decodedCookie.split(';');
-    for (let i = 0; i < ca.length; i++) {
-      let c = ca[i];
-      while (c.charAt(0) == ' ') {
-        c = c.substring(1);
-      }
-      if (c.indexOf(name) == 0) {
-        return c.substring(name.length, c.length);
-      }
-    }
-    return '';
   }
 }

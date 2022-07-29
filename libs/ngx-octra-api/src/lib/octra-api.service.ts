@@ -21,13 +21,21 @@ import {removeNullAttributes} from './functions';
   providedIn: 'root'
 })
 export class OctraAPIService {
-  set webToken(value: string) {
+  get authType(): AccountLoginMethod | undefined {
+    return this._authType;
+  }
+
+  get authenticated(): boolean {
+    return this._authenticated;
+  }
+
+  set webToken(value: string | undefined) {
     this._webToken = value;
   }
 
   private appToken = '';
   private useCookieStrategy = false;
-  private _webToken = '';
+  private _webToken?: string = '';
   private apiURL = '';
 
   get initialized(): boolean {
@@ -36,15 +44,19 @@ export class OctraAPIService {
 
   private _initialized = false;
   private _authenticated = false;
+  private _authType?: AccountLoginMethod;
 
   constructor(private http: HttpClient) {
   }
 
-  public init(apiURL: string, appToken: string, useCookieStrategy: boolean) {
+  public init(apiURL: string, appToken: string, webToken: string | undefined, useCookieStrategy: boolean) {
     this.apiURL = apiURL;
     console.log(`initialized api url`);
     this.appToken = appToken;
     this.useCookieStrategy = useCookieStrategy;
+    this._authenticated = (!this.getCookie('ocb_authenticated'));
+    this._authType = this.getCookie('ocb_authenticated') as AccountLoginMethod;
+    this._webToken = webToken;
     this._initialized = true;
   }
 
@@ -248,5 +260,21 @@ export class OctraAPIService {
     }
 
     return headers;
+  }
+
+  getCookie(cname: string) {
+    let name = cname + '=';
+    let decodedCookie = decodeURIComponent(document.cookie);
+    let ca = decodedCookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) == ' ') {
+        c = c.substring(1);
+      }
+      if (c.indexOf(name) == 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+    return '';
   }
 }
