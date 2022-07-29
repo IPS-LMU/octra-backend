@@ -15,7 +15,7 @@ do
     platform="${BASH_REMATCH[1]}"
     arch="${BASH_REMATCH[2]}"
     echo "${platform}-${arch}"
-    mv "napi/build/Release/better_sqlite3.node" "napi/better_sqlite3-${platform}-${arch}.node"
+    cp "napi/build/Release/better_sqlite3.node" "napi/better_sqlite3-${platform}-${arch}.node"
     rm "${i}"
     rm -rf "napi/build"
 done
