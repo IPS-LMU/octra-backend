@@ -3,8 +3,10 @@ import {HttpClient} from '@angular/common/http';
 import {AppSettings} from './obj/settings.interface';
 import {OctraAPIService} from '@octra/ngx-octra-api';
 import {firstValueFrom} from 'rxjs';
-import {SessionStorage} from 'ngx-webstorage';
+import {LocalStorage, SessionStorage} from 'ngx-webstorage';
 import {environment} from '../environments/environment';
+import {getBrowserLang, TranslocoService} from '@ngneat/transloco';
+import {SubscriptionManager} from '@octra/utilities';
 
 @Injectable({
   providedIn: 'root'
@@ -34,20 +36,33 @@ export class SettingsService {
   private _apiLoaded: EventEmitter<void> = new EventEmitter();
 
   @SessionStorage() private _webToken?: string;
+  @LocalStorage() private _language?: string;
 
-  constructor(private http: HttpClient, private api: OctraAPIService) {
+  private subscrManager = new SubscriptionManager();
+
+  constructor(private http: HttpClient, private api: OctraAPIService, private transloco: TranslocoService) {
+    this.transloco.setActiveLang(this._language ?? getBrowserLang() ?? 'en');
     this.http.get('./config/config.json', {
       responseType: 'json'
-    }).subscribe((response: any) => {
+    }).subscribe({
+      next: (response: any) => {
         this._settings = response as AppSettings;
         this._settingsLoaded.emit(true);
         this.api.init(this._settings.api.url, this._settings.api.token, this._webToken, environment.production);
         this._apiLoaded.emit();
       },
-      (e) => {
+      error: (e) => {
         alert('Can not load config.json.');
         console.error(e);
-      });
+      }
+    });
+
+    this.subscrManager.add(
+      this.transloco.langChanges$.subscribe({
+        next: (lang) => {
+          this._language = lang;
+        }
+      }))
   }
 
   public async asSoonAsAPILoaded(): Promise<void> {
@@ -55,5 +70,9 @@ export class SettingsService {
       return;
     }
     return firstValueFrom(this._apiLoaded);
+  }
+
+  public destroy() {
+    this.subscrManager.destroy();
   }
 }

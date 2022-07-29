@@ -1,13 +1,13 @@
 import {LANGUAGES} from './account-fields-defaults';
 
 export class AccountFieldDefinition {
-  public schema: unknown;
+  public schema!: unknown;
 }
 
-export type AccountFieldTranslation = Record<string, string | Record<string, string>>;
+export type AccountFieldTranslation = Record<string, string>;
 
 export class AccountFieldHeadline extends AccountFieldDefinition {
-  public schema: {
+  public override schema!: {
     translation: AccountFieldTranslation;
     size: number;
   }
@@ -20,7 +20,7 @@ export class AccountFieldHeadline extends AccountFieldDefinition {
 
 export class AccountFieldControl extends AccountFieldDefinition {
   public isRequired: boolean = false;
-  public helpTextLabels: AccountFieldTranslation;
+  public helpTextLabels?: AccountFieldTranslation;
 
   constructor(partial: Partial<AccountFieldControl>) {
     super();
@@ -29,7 +29,7 @@ export class AccountFieldControl extends AccountFieldDefinition {
 }
 
 export class AccountFieldRadio extends AccountFieldControl {
-  public schema: {
+  public override schema: {
     label: AccountFieldTranslation,
     value: string
   }[] = [];
@@ -41,7 +41,7 @@ export class AccountFieldRadio extends AccountFieldControl {
 }
 
 export class AccountFieldInlineText extends AccountFieldControl {
-  public schema: {
+  public override schema!: {
     label: AccountFieldTranslation,
     placeholder: AccountFieldTranslation,
     minLength: number;
@@ -55,7 +55,7 @@ export class AccountFieldInlineText extends AccountFieldControl {
 }
 
 export class AccountFieldTextArea extends AccountFieldControl {
-  public schema: {
+  public override schema!: {
     label: AccountFieldTranslation,
     placeholder?: AccountFieldTranslation,
     minLength?: number;
@@ -69,7 +69,7 @@ export class AccountFieldTextArea extends AccountFieldControl {
 }
 
 export class AccountFieldSelection extends AccountFieldControl {
-  public schema: {
+  public override schema!: {
     label: AccountFieldTranslation,
     options: {
       label: AccountFieldTranslation,
@@ -86,7 +86,7 @@ export class AccountFieldSelection extends AccountFieldControl {
 export class AccountCategorySelection extends AccountFieldControl {
   public multipleResults = false;
 
-  public schema: {
+  public override schema!: {
     label: AccountFieldTranslation,
     selections: {
       name: string,
@@ -105,7 +105,7 @@ export class AccountCategorySelection extends AccountFieldControl {
 }
 
 export class AccountFieldMultipleChoice extends AccountFieldControl {
-  public schema: {
+  public override schema!: {
     label: AccountFieldTranslation,
     arrangement: 'horizontal' | 'vertical';
     options: {
@@ -121,8 +121,8 @@ export class AccountFieldMultipleChoice extends AccountFieldControl {
 }
 
 export class AccountFieldValue {
-  public pattern: string;
-  public value: string;
+  public pattern?: string;
+  public value?: string;
 
   constructor(partial: Partial<AccountFieldValue>) {
     Object.assign(this, partial);

@@ -3,13 +3,13 @@ import {FindManyOptions, Repository} from 'typeorm';
 import {InjectRepository} from '@nestjs/typeorm';
 import {ConfigService} from '@nestjs/config';
 import {AccountFieldDefinitionEntity, AccountFieldValueEntity} from '@octra/server-side';
-import {DatabaseService} from '../../../database.service';
 import {AccountFieldDefinitionCreateDto} from './account-fields.dto';
 import {AccountFieldContext} from '@octra/api-types';
-import {BadRequestException} from '../../../obj/exceptions';
+import {DatabaseService} from '../../database.service';
+import {BadRequestException} from '../../obj/exceptions';
 
 @Injectable()
-export class AccountFieldsService {
+export class AccountFieldManagementService {
   constructor(
     @InjectRepository(AccountFieldDefinitionEntity)
     private accountFieldDefinitionRepository: Repository<AccountFieldDefinitionEntity>,

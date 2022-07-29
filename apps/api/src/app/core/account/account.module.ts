@@ -11,14 +11,14 @@ import {
   AccountRoleProjectEntity,
   RoleEntity
 } from '@octra/server-side';
-import {AccountFieldsService} from './fields';
+import {AccountFieldManagementService} from '../fields';
 
 export const ACCOUNT_ENTITIES = [AccountPersonEntity, AccountEntity, AccountRoleProjectEntity, RoleEntity, AccountFieldValueEntity, AccountFieldDefinitionEntity];
 
 @Module({
   imports: [TypeOrmModule.forFeature(ACCOUNT_ENTITIES)],
   controllers: [AccountController],
-  providers: [AccountService, DatabaseService, AccountFieldsService],
+  providers: [AccountService, DatabaseService, AccountFieldManagementService],
   exports: [AccountService]
 })
 export class AccountModule {

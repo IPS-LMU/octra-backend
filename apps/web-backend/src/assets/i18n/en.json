@@ -1,0 +1,30 @@
+{
+  "general": {
+    "registration": "Registration",
+    "sign up": "Sign up",
+    "username": "Username",
+    "email address": "Email Address",
+    "firstname": "Firstname",
+    "lastname": "Lastname",
+    "gender": "Gender",
+    "organization": "Organization",
+    "country": "Country",
+    "state": "State",
+    "male": "Male",
+    "female": "Female",
+    "divers": "Divers",
+    "save and continue": "Save and continue",
+    "complete profile": "Complete profile"
+  },
+  "registration": {
+    "introduction": "In order to use our online services you need to create an account. The account is connected to your account authenticated by Shibboleth. Later you can sign in with your Shibboleth credentials to use our services.<br/><br/>Please fill in the form. All required fields are marked with {mark}.",
+    "confirmation": {
+      "data correctness": "Yes, the data I filled in the form is correct.",
+      "data policy": "Yes, I read and accept the <a href=\"{dataPolicyURL}\" target=\"_blank\">data policy</a>.",
+      "terms of service": "Yes, I read and accept the <a href=\"{termsConditionsURL}\" target=\"_blank\">terms of service</a>."
+    },
+    "data completion": {
+      "introduction": "For the best experience using our services we need further information about your person. This information is going to be useed for selection of participants for projects or for further analyzation after a project has been finished.<br/><br/> As soon as you participate in a project you are going to be asked to give access to this information to the project managers. Later you have still the option to complete this information. We recommend to complete this information now."
+    }
+  }
+}

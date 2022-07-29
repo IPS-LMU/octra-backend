@@ -29,13 +29,13 @@ import {NumericStringValidationPipe} from '../../obj/pipes/numeric-string-valida
 import {removeNullAttributes} from '@octra/server-side';
 import {CustomApiException} from '../../obj/decorators/api-exception.decorators';
 import {BadRequestException, NotFoundException} from '../../obj/exceptions';
-import {AccountFieldsService} from './fields';
+import {AccountFieldManagementService} from '../fields';
 
 @ApiTags('Accounts')
 @ApiBearerAuth()
 @Controller('account')
 export class AccountController {
-  constructor(private accountService: AccountService, private accountFieldService: AccountFieldsService) {
+  constructor(private accountService: AccountService, private accountFieldService: AccountFieldManagementService) {
   }
 
   /**

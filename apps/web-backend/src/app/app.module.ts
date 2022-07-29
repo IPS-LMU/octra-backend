@@ -39,6 +39,9 @@ import {AccountsPage} from './pages/members-area/accounts/accounts.page';
 import {TooltipModule} from 'ngx-bootstrap/tooltip';
 import {CollapseModule} from 'ngx-bootstrap/collapse';
 import {PageHeaderComponent} from './components/page-header/page-header.component';
+import {OCBFormsModule} from './forms/forms.module';
+import {CompleteProfileComponent} from './pages/members-area/profile/complete-profile/complete-profile.component';
+import {TranslocoRootModule} from './transloco-root.module';
 
 @NgModule({
   declarations: [
@@ -62,7 +65,8 @@ import {PageHeaderComponent} from './components/page-header/page-header.componen
     AddProjectComponent,
     UserDropdownComponent,
     ProjectConfigModalComponent,
-    PageHeaderComponent
+    PageHeaderComponent,
+    CompleteProfileComponent,
   ],
   imports: [
     BrowserModule,
@@ -80,10 +84,12 @@ import {PageHeaderComponent} from './components/page-header/page-header.componen
     NgxOctraApiModule,
     AlertModule,
     TooltipModule,
-    CollapseModule
+    CollapseModule,
+    OCBFormsModule,
+    TranslocoRootModule
   ],
   providers: [SettingsService, OctraAPIService, ModalsService],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
 export class AppModule {
   constructor() {

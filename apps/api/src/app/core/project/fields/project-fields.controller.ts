@@ -3,14 +3,14 @@ import {ApiBearerAuth, ApiTags} from '@nestjs/swagger';
 import {AccountRole} from '@octra/api-types';
 import {CombinedRoles} from '../../../obj/decorators/combine.decorators';
 import {NumericStringValidationPipe} from '../../../obj/pipes/numeric-string-validation.pipe';
-import {AccountFieldsService} from '../../account/fields';
 import {ProjectFieldDefinitionDto} from './project-fields.dto';
+import {AccountFieldManagementService} from '../../fields';
 
 @ApiTags('Projects')
 @ApiBearerAuth()
 @Controller('projects')
 export class ProjectFieldsController {
-  constructor(private accountFieldsService: AccountFieldsService) {
+  constructor(private accountFieldsService: AccountFieldManagementService) {
   }
 
   /**

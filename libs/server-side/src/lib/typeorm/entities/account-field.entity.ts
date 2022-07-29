@@ -2,8 +2,7 @@ import {Entity, OneToOne} from 'typeorm';
 import {StandardEntity} from './standard-entities';
 import {DbAwareColumn} from '../decorators';
 import {AccountEntity, ProjectEntity} from '@octra/server-side';
-import {AccountFieldDefinition} from '../../account-fields';
-import {AccountFieldContext, AccountFieldDefinitionType} from '@octra/api-types';
+import {AccountFieldContext, AccountFieldDefinition, AccountFieldDefinitionType} from '@octra/api-types';
 
 @Entity({name: 'account_field_definition'})
 export class AccountFieldDefinitionEntity extends StandardEntity {

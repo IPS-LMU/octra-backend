@@ -23,6 +23,9 @@
       ],
       "@octra/server-side": [
         "libs/server-side/src/index.ts"
+      ],
+      "@octra/utilities": [
+        "../octra/extern/libs/utilities"
       ]
     }
   },

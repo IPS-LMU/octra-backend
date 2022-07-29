@@ -20,8 +20,8 @@ import {
   RoleEntity
 } from '@octra/server-side';
 import {SettingsService} from '../settings/settings.service';
-import {AccountFieldsService} from '../account/fields';
 import {AppTokenService} from '../app-token/app-token.service';
+import {AccountFieldManagementService} from '../fields';
 
 @Module({
   imports: [
@@ -33,7 +33,7 @@ import {AppTokenService} from '../app-token/app-token.service';
   ],
   providers: [
     AccountService, AuthService, LocalStrategy, JwtStrategy, AppTokenService,
-    DatabaseService, SettingsService, AccountFieldsService
+    DatabaseService, SettingsService, AccountFieldManagementService
   ],
   controllers: [AuthController],
   exports: [AuthService]

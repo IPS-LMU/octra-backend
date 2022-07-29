@@ -1,5 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {AppStorageService} from '../../app-storage.service';
+import {TranslocoService} from '@ngneat/transloco';
 
 @Component({
   selector: 'ocb-members-area',
@@ -8,7 +9,12 @@ import {AppStorageService} from '../../app-storage.service';
 })
 export class MembersAreaComponent implements OnInit {
   public navbarCollapsed = true;
-  constructor(public appStorage: AppStorageService) {
+
+  public get availableLangs() {
+    return this.transloco.getAvailableLangs() as string[];
+  }
+
+  constructor(public appStorage: AppStorageService, public transloco: TranslocoService) {
   }
 
   ngOnInit(): void {

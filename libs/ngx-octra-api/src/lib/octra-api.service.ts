@@ -2,11 +2,11 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {
   AccountDto,
+  AccountFieldDefinitionDto,
   AccountLoginMethod,
   AppTokenChangeDto,
   AppTokenCreateDto,
   AppTokenDto,
-  AuthDto,
   GuidelinesDto,
   ProjectDto,
   ProjectRequestDto,
@@ -61,14 +61,14 @@ export class OctraAPIService {
   }
 
   public async login(type: AccountLoginMethod, username?: string, password?: string) {
-    return new Promise<AuthDto>((resolve, reject) => {
+    return new Promise<any>((resolve, reject) => {
       let data: any = {
         type, username, password
       };
       data = removeNullAttributes(data);
-      firstValueFrom(this.http.post<AuthDto>(`${this.apiURL}/auth/login`, data, {
+      firstValueFrom(this.http.post<any>(`${this.apiURL}/auth/login`, data, {
         headers: this.getHeaders(false)
-      })).then((result: AuthDto) => {
+      })).then((result: any) => {
         if (!result.openURL && result.accessToken) {
           if (!this.useCookieStrategy) {
             this._webToken = result.accessToken;
@@ -200,6 +200,10 @@ export class OctraAPIService {
     // formData.append('data', new File([data], 'data.json', {type: 'application/json'}));
     // return this.post(`delivery/media/upload`, formData, true);
     return undefined;
+  }
+
+  public async listAccountFields() {
+    return this.get<AccountFieldDefinitionDto[]>('/fields', true);
   }
 
   private async get<T>(partURL: string, needsJWT: boolean): Promise<T> {

@@ -1,13 +1,8 @@
-import {
-  AccountFieldDefinition,
-  AccountFieldDefinitionEntity,
-  AccountFieldValueEntity,
-  IsOptionalString
-} from '@octra/server-side';
-import {StandardDto} from '../../standard.dto';
+import {AccountFieldDefinitionEntity, AccountFieldValueEntity, IsOptionalString} from '@octra/server-side';
 import {IsBoolean, IsEnum, IsInstance, IsNumber, IsString} from 'class-validator';
-import {AccountFieldContext, AccountFieldDefinitionType} from '@octra/api-types';
+import {AccountFieldContext, AccountFieldDefinition, AccountFieldDefinitionType} from '@octra/api-types';
 import {ApiProperty, OmitType} from '@nestjs/swagger';
+import {StandardDto} from '../standard.dto';
 
 export class AccountFieldValueDto extends StandardDto {
   @IsString()

@@ -10,6 +10,7 @@ import {ProfileComponent} from './profile/profile.component';
 import {ProjectsComponent} from './projects/projects.component';
 import {AddProjectComponent} from './projects/add-project/add-project.component';
 import {AccountsPage} from './accounts/accounts.page';
+import {CompleteProfileComponent} from './profile/complete-profile/complete-profile.component';
 
 export const MEMBERSAREA_ROUTES: Route[] = [
   {
@@ -35,6 +36,9 @@ export const MEMBERSAREA_ROUTES: Route[] = [
   },
   {
     path: 'profile', component: ProfileComponent, canActivate: [APIInitializeGuard]
+  },
+  {
+    path: 'profile/complete-profile', component: CompleteProfileComponent, canActivate: [APIInitializeGuard]
   },
   {
     path: '404', component: NotFoundPageComponent,

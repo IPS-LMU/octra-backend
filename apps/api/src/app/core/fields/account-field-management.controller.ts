@@ -1,16 +1,16 @@
 import {Body, Controller, Delete, Get, Param, Post, Put} from '@nestjs/common';
 import {ApiBearerAuth, ApiTags} from '@nestjs/swagger';
 import {AccountRole} from '@octra/api-types';
-import {AccountFieldsService} from './account-fields.service';
-import {CombinedRoles} from '../../../obj/decorators/combine.decorators';
+import {AccountFieldManagementService} from './account-field-management.service';
 import {AccountFieldDefinitionCreateDto, AccountFieldDefinitionDto} from './account-fields.dto';
-import {NumericStringValidationPipe} from '../../../obj/pipes/numeric-string-validation.pipe';
+import {CombinedRoles} from '../../obj/decorators/combine.decorators';
+import {NumericStringValidationPipe} from '../../obj/pipes/numeric-string-validation.pipe';
 
-@ApiTags('Accounts')
+@ApiTags('Account Fields')
 @ApiBearerAuth()
 @Controller('fields')
-export class AccountFieldsController {
-  constructor(private accountFieldsService: AccountFieldsService) {
+export class AccountFieldManagementController {
+  constructor(private accountFieldsService: AccountFieldManagementService) {
   }
 
   /**

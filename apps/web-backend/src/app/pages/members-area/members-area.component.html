@@ -9,52 +9,70 @@
 
     <div class="collapse navbar-collapse" id="navbarsExampleDefault" [collapse]="navbarCollapsed" [isAnimated]="true">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item" *ngIf="appStorage.isAdministrator()">
-          <a class="nav-link" [routerLinkActive]="['active']" aria-current="page"
-             [routerLink]="['/members/dashboard']">
-            <i class="bi bi-speedometer"></i>
-            Dashboard
-          </a>
-        </li>
-        <li class="nav-item" *ngIf="appStorage.isAdministrator()">
-          <a class="nav-link" [routerLinkActive]="['active']" aria-current="page"
-             [routerLink]="['/members/projects']">
-            <i class="bi bi-box"></i>
-            Projects
-          </a>
-        </li>
-        <li class="nav-item" *ngIf="appStorage.isAdministrator()">
-          <a class="nav-link" [routerLinkActive]="['active']" aria-current="page"
-             [routerLink]="['/members/accounts']">
-            <i class="bi bi-people-fill"></i>
-            Accounts
-          </a>
-        </li>
-        <li class="nav-item" *ngIf="appStorage.isAdministrator()">
-          <a class="nav-link" [routerLinkActive]="['active']" aria-current="page"
-             [routerLink]="['/members/apptokens']">
-            <i class="bi bi-tags-fill"></i>
-            Apptokens
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" [routerLinkActive]="['active']" aria-current="page"
-             [routerLink]="['/members/settings']">
-            <i class="bi bi-gear-wide-connected"></i>
-            Settings
-          </a>
-        </li>
+        <ng-container *ngIf="!appStorage.needsRedirectionTo">
+          <li class="nav-item" *ngIf="appStorage.isAdministrator()">
+            <a class="nav-link" [routerLinkActive]="['active']" aria-current="page"
+               [routerLink]="['/members/dashboard']">
+              <i class="bi bi-speedometer"></i>
+              Dashboard
+            </a>
+          </li>
+          <li class="nav-item" *ngIf="appStorage.isAdministrator()">
+            <a class="nav-link" [routerLinkActive]="['active']" aria-current="page"
+               [routerLink]="['/members/projects']">
+              <i class="bi bi-box"></i>
+              Projects
+            </a>
+          </li>
+          <li class="nav-item" *ngIf="appStorage.isAdministrator()">
+            <a class="nav-link" [routerLinkActive]="['active']" aria-current="page"
+               [routerLink]="['/members/accounts']">
+              <i class="bi bi-people-fill"></i>
+              Accounts
+            </a>
+          </li>
+          <li class="nav-item" *ngIf="appStorage.isAdministrator()">
+            <a class="nav-link" [routerLinkActive]="['active']" aria-current="page"
+               [routerLink]="['/members/apptokens']">
+              <i class="bi bi-tags-fill"></i>
+              Apptokens
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" [routerLinkActive]="['active']" aria-current="page"
+               [routerLink]="['/members/settings']">
+              <i class="bi bi-gear-wide-connected"></i>
+              Settings
+            </a>
+          </li>
+        </ng-container>
       </ul>
       <ul class="navbar-nav d-flex">
-        <li class="nav-item" style="border-right: 1px solid gray;">
-          <a class="nav-link" [routerLink]="['/members/profile']">
-            <i class="bi bi-person-circle"></i>
-            {{appStorage.user?.username}}</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" (click)="appStorage.logout('')">Sign out
-            <i class="bi bi-door-open"></i>
-          </a>
+        <ng-container *ngIf="!appStorage.needsRedirectionTo">
+          <li class="nav-item" style="border-right: 1px solid gray;">
+            <a class="nav-link" [routerLink]="['/members/profile']">
+              <i class="bi bi-person-circle"></i>
+              {{appStorage.user?.username}}</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" (click)="appStorage.logout('')">Sign out
+              <i class="bi bi-door-open"></i>
+            </a>
+          </li>
+        </ng-container>
+        <li>
+          <div class="btn-group" dropdown>
+            <btn id="button-basic" dropdownToggle type="button" class="btn bg-dark text-white dropdown-toggle"
+                 aria-controls="dropdown-basic">
+              {{transloco.getActiveLang() | uppercase}} <span class="caret"></span>
+            </btn>
+            <ul id="dropdown-basic" *dropdownMenu class="dropdown-menu"
+                role="menu" aria-labelledby="button-basic">
+              <li *ngFor="let lang of availableLangs">
+                <span class="dropdown-item" (click)="transloco.setActiveLang(lang)">{{lang}}</span>
+              </li>
+            </ul>
+          </div>
         </li>
       </ul>
     </div>
@@ -62,7 +80,8 @@
 </nav>
 <div class="container-fluid">
   <div class="row bg-white">
-    <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+    <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse"
+         *ngIf="!appStorage.needsRedirectionTo">
       <div class="d-flex flex-column flex-shrink-0 p-2 h-100">
         <ul class="nav nav-pills flex-column mb-auto bg-light">
           <li class="nav-item" *ngIf="appStorage.isAdministrator()">
@@ -104,7 +123,11 @@
       </div>
     </nav>
 
-    <main class="col-md-9 ms-sm-auto col-lg-10">
+    <main [ngClass]="
+    {
+      'col-12 p-1 p-sm-2 p-md-3': appStorage.needsRedirectionTo,
+      'col-md-9 col-lg-10 ms-sm-auto': !appStorage.needsRedirectionTo
+    }">
       <router-outlet></router-outlet>
     </main>
   </div>

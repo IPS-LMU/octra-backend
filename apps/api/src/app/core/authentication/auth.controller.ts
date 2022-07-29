@@ -18,10 +18,10 @@ import {AccountCreateRequestDto} from '../account/account.dto';
 import {GeneralSettingsDto} from '../settings/settings.dto';
 import {I18n, I18nContext, TranslateOptions} from 'nestjs-i18n';
 import {InternRequest} from '../../obj/types';
-import {AccountFieldsService} from '../account/fields';
 import {AccountFieldDefinitionEntity} from '@octra/server-side';
 import {AppTokenService} from '../app-token/app-token.service';
 import {CombinedRoles} from '../../obj/decorators/combine.decorators';
+import {AccountFieldManagementService} from '../fields';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -30,7 +30,7 @@ export class AuthController {
               private accountService: AccountService, private jwtService: JwtService,
               private appTokenService: AppTokenService,
               private settingsService: SettingsService,
-              private accountFieldService: AccountFieldsService) {
+              private accountFieldService: AccountFieldManagementService) {
   }
 
   /**

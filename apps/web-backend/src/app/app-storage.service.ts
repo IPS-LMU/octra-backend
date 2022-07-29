@@ -1,14 +1,19 @@
 import {Injectable} from '@angular/core';
 import {SessionStorage} from 'ngx-webstorage';
-import {Router} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {OctraAPIService} from '@octra/ngx-octra-api';
 import {AccountDto, AccountLoginMethod, AccountRole} from '@octra/api-types';
 import {SettingsService} from './settings.service';
+import {SubscriptionManager} from '@octra/utilities';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AppStorageService {
+  get needsRedirectionTo(): string | undefined {
+    return this._needsRedirectionTo;
+  }
+
   get authenticated(): boolean | undefined {
     return this._authenticated;
   }
@@ -25,6 +30,9 @@ export class AppStorageService {
   private _initialized = false;
 
   public logoutMessage = '';
+
+  private subscrManager = new SubscriptionManager();
+  private _needsRedirectionTo?: string;
 
   get user(): AccountDto | undefined {
     return this._user;
@@ -89,7 +97,17 @@ export class AppStorageService {
     this.router.navigate(['/loading']);
   }
 
-  constructor(private router: Router, private api: OctraAPIService, private settingsService: SettingsService) {
+  constructor(private router: Router, private api: OctraAPIService, private settingsService: SettingsService, private route: ActivatedRoute) {
+    this.subscrManager.add(this.route.queryParams.subscribe({
+      next: (params) => {
+        if (params['r']) {
+          this._needsRedirectionTo = params['r'];
+        }
+      }
+    }))
+  }
 
+  public destroy() {
+    this.subscrManager.destroy();
   }
 }
